@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Pólizas - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    
+    <!-- Dashboard Fonts & CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/dashboard.css">
+    
+    <style>
+        .status-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-align: center;
+        }
+        .status-activo { color: #16a34a; background-color: rgba(22, 163, 74, 0.1); }
+        .status-cancelada { color: #dc2626; background-color: rgba(220, 38, 38, 0.1); }
+
+        /* Estilo de monto */
+        .monto-positivo { color: #059669; font-weight: 600; }
+        .monto-negativo { color: #dc2626; font-weight: 600; }
+        .monto-neutro { color: #4f46e5; font-weight: 600; }
+        
+        /* Table Styles override */
+        .data-table th { 
+            padding: 14px 12px; 
+            background-color: #f5f3ff; 
+            border-bottom: 2px solid #e0e7ff; 
+            color: #4338ca; 
+            font-weight: 700; 
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .data-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; }
+        .data-table tr:hover { background-color: #f8fafc; }
+        
+        .action-icon { cursor: pointer; color: #6366f1; font-size: 15px; margin: 0 5px; transition: all 0.2s; }
+        .action-icon:hover { color: #4338ca; transform: scale(1.15); }
+
+        /* Estilos de filtrado superiores */
+        .filter-panel {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-group { flex: 1; display:flex; flex-direction:column; }
+        .filter-group label { color: rgba(255, 255, 255, 0.9); font-size: 12px; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
+        .filter-group input { 
+            padding: 10px 14px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 8px; 
+            outline: none; 
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .filter-group input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .filter-group input:focus { background: rgba(255, 255, 255, 0.25); border-color: #fff; }
+        
+        .btn-search {
+            background-color: #fff;
+            color: #4f46e5;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 22px;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-search:hover { background-color: #f8fafc; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+
+        .filter-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-top: 22px;
+            color: #fff;
+            font-size: 13px;
+        }
+        .filter-actions a { color: rgba(255, 255, 255, 0.9); text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: color 0.2s; }
+        .filter-actions a:hover { color: #fff; }
+        .filter-actions a i { font-size: 20px; }
+
+        /* Estilos específicos para uso dentro del iframe del dashboard principal */
+        .sidebar { display: none !important; }
+        .top-navbar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
+        .content-area { padding: 24px !important; margin-top: 0 !important; height: 100vh; overflow-y: auto; box-sizing: border-box; background: #f8fafc; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Content Area -->
+        <div class="content-area">
+            
+            <div class="page-header" style="margin-bottom: 10px;">
+                <div style="width: 100%; display:flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap:10px; align-items: center; font-size: 24px; font-weight: bold; color: #1e293b;">
+                        Póliza: Panel
+                    </div>
+                    <div style="font-size: 13px; color: #64748b;">
+                        Inicio > Seguro > Panel > Póliza
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de Filtros -->
+            <div class="filter-panel">
+                <div class="filter-group" style="flex: 2;">
+                    <label>Estoy buscando...</label>
+                    <input type="text" id="filterBusqueda" placeholder="Digite su búsqueda">
+                </div>
+                <div class="filter-group">
+                    <label>Fecha de inicio</label>
+                    <input type="date" id="filterInicio">
+                </div>
+                <div class="filter-group">
+                    <label>Fecha final</label>
+                    <input type="date" id="filterFin">
+                </div>
+                <div>
+                    <button class="btn-search" onclick="cargarPolizas()">
+                        <i class="fa-solid fa-search"></i> Buscar
+                    </button>
+                </div>
+                <div class="filter-actions">
+                    <a onclick="limpiarFiltros()"><i class="fa-solid fa-border-all"></i> Ver todos</a>
+                    <a onclick="alert('Función de impresión masiva en desarrollo')"><i class="fa-solid fa-print"></i> Imprimir</a>
+                </div>
+            </div>
+
+            <!-- Tabla de datos -->
+            <div class="table-container" style="background:#fff; border-radius: 0 0 8px 8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow-x:auto;">
+                <table class="data-table" id="tablaPolizas" style="width:100%; border-collapse:collapse; min-width:1000px;">
+                    <thead>
+                        <tr>
+                            <th>Póliza</th>
+                            <th></th> <!-- Indice -->
+                            <th>Tipo póliza <i class="fa-solid fa-caret-down"></i></th>
+                            <th>Nombre</th>
+                            <th>Ramo</th>
+                            <th>Vigencia <i class="fa-solid fa-caret-up"></i></th>
+                            <th>Fin de cobertura</th>
+                            <th>Prima Total</th>
+                            <th>Balance</th>
+                            <th>Estatus <i class="fa-solid fa-caret-down"></i></th>
+                            <th>Validada</th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="polizasList">
+                        <tr>
+                            <td colspan="12" class="text-center" style="padding:20px; text-align:center;">Cargando pólizas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="paginationContainer" style="padding: 15px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; color: #64748b; font-size: 13px;">
+                    <div style="display: flex; gap: 5px;" id="paginatorPages">
+                        <!-- Paginación se generará dinámicamente -->
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div>Mostrando: <select style="padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px;"><option>10</option></select></div>
+                        <div id="totalRegistrosStats">de: 0 registros</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../assets/api-client.js?v=6"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+             cargarPolizas();
+        });
+
+        async function cargarPolizas() {
+            const tbody = document.getElementById('polizasList');
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Cargando...</td></tr>';
+
+            try {
+                const search = document.getElementById('filterBusqueda').value;
+                const startDate = document.getElementById('filterInicio').value;
+                const endDate = document.getElementById('filterFin').value;
+                
+                let query = '';
+                if(search) query += `search=${encodeURIComponent(search)}&`;
+                if(startDate) query += `start_date=${encodeURIComponent(startDate)}&`;
+                if(endDate) query += `end_date=${encodeURIComponent(endDate)}&`;
+
+                const response = await fetch(`../backend/api/polizas.php?${query}`);
+                const data = await response.json();
+
+                if (data.exito) {
+                    renderizarTabla(data.data);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:red;">${data.mensaje}</td></tr>`;
+                }
+            } catch (error) {
+                console.error("Error cargando pólizas", error);
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; color:red;">Error de conexión.</td></tr>';
+            }
+        }
+
+        function renderizarTabla(polizas) {
+            const tbody = document.getElementById('polizasList');
+            const stats = document.getElementById('totalRegistrosStats');
+            tbody.innerHTML = '';
+            
+            stats.innerText = `de: ${polizas.length} registros`;
+
+            if (polizas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">No se encontraron pólizas.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            polizas.forEach((p, index) => {
+                const estatusClase = (p.estado && p.estado.toLowerCase() === 'activa') ? 'status-activo' : 'status-cancelada';
+                
+                // Vigencia formatted
+                let vigenciaStr = 'N/A';
+                if(p.fecha_emision && p.fecha_vencimiento) {
+                    const d1 = new Date(p.fecha_emision).toLocaleDateString('es-DO');
+                    const d2 = new Date(p.fecha_vencimiento).toLocaleDateString('es-DO');
+                    vigenciaStr = `${d1} a<br>${d2}`;
+                }
+
+                // Fin Cobertura
+                let finCoberturaStr = p.fecha_vencimiento ? new Date(p.fecha_vencimiento).toLocaleDateString('es-DO') : 'N/A';
+
+                // Currency format
+                const primaFmt = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.prima_total || 0);
+                const primaClase = (parseFloat(p.prima_total) > 0) ? 'monto-neutro' : 'monto-positivo';
+                
+                const balanceFmt = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.balance || 0);
+
+                html += `
+                    <tr>
+                        <td style="color:#64748b;">${p.numero_poliza}</td>
+                        <td style="color:#94a3b8;">${index + 1}</td>
+                        <td>${p.tipo_poliza || 'Individual'}</td>
+                        <td>${p.cliente_nombre || 'Desconocido'}</td>
+                        <td>${p.tipo_seguro || 'Desconocido'}</td>
+                        <td style="font-size:12px; color:#64748b;">${vigenciaStr}</td>
+                        <td style="color:#16a34a;">${finCoberturaStr}</td>
+                        <td class="${primaClase}">${primaFmt} <i class="fa-solid fa-caret-down" style="font-size:10px;"></i></td>
+                        <td class="monto-positivo">${balanceFmt} <i class="fa-solid fa-caret-down" style="font-size:10px;"></i></td>
+                        <td><span class="status-badge ${estatusClase}">${(p.estado || '').toUpperCase()}</span></td>
+                        <td>${p.validada || 'No'}</td>
+                        <td style="text-align: center;">
+                            <i class="fa-solid fa-eye action-icon" title="Ver Póliza" onclick="accion('Ver', '${p.id}')"></i>
+                            <i class="fa-solid fa-print action-icon" title="Imprimir" onclick="accion('Imprimir', '${p.id}')"></i>
+                            <i class="fa-solid fa-file-invoice action-icon" title="Aviso Siniestros" onclick="accion('Siniestro', '${p.id}')"></i>
+                            <i class="fa-regular fa-comment-dots action-icon" title="Seguimiento" onclick="accion('Chat', '${p.id}')"></i>
+                            <i class="fa-solid fa-sack-dollar action-icon" title="Efectuar Pago" onclick="accion('Pago', '${p.id}')"></i>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filterBusqueda').value = '';
+            document.getElementById('filterInicio').value = '';
+            document.getElementById('filterFin').value = '';
+            cargarPolizas();
+        }
+
+        function accion(tipo, id) {
+            alert(`Acción seleccionada: ${tipo} para la Póliza ID: ${id}.\n\nEsta funcionalidad se implementará en su módulo correspondiente.`);
+        }
+    </script>
+</body>
+</html>

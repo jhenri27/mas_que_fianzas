@@ -1,0 +1,3 @@
+<?php
+echo "HOLA PHP - FUNCIONA CORRECTAMENTE";
+?>

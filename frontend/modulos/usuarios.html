@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Usuarios - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/dashboard.css">
+    <style>
+        .sidebar{display:none!important}.top-navbar{display:none!important}.main-content{margin-left:0!important;width:100%!important;padding-top:0!important}.content-area{padding:20px!important;margin-top:0!important;height:100vh;overflow-y:auto;box-sizing:border-box}
+        .badge-activo{background:#dcfce7;color:#166534;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+        .badge-inactivo{background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+        .badge-bloqueado{background:#fef9c3;color:#854d0e;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+        .badge-com{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px}
+        .data-table th{padding:11px 13px;background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:700;font-size:12px;text-align:left}
+        .data-table td{padding:11px 13px;border-bottom:1px solid #f1f5f9;color:#334155;font-size:13px;vertical-align:middle}
+        .data-table tr:hover{background:#f8fafc}
+        .codigo-chip{background:#f1f5f9;color:#475569;font-family:monospace;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center}
+        .modal-box{background:#fff;width:95%;max-width:680px;border-radius:12px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.2);max-height:90vh;display:flex;flex-direction:column}
+        .modal-header{padding:16px 22px;background:#1e293b;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+        .modal-header h3{margin:0;font-size:16px;font-weight:700}
+        .modal-close{background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;line-height:1}
+        .modal-close:hover{color:#fff}
+        .modal-body{padding:22px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .field-full{grid-column:1/-1}
+        .form-label{display:block;margin-bottom:6px;font-weight:600;font-size:12px;color:#475569;text-transform:uppercase;letter-spacing:.4px}
+        .form-input{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:8px;box-sizing:border-box;outline:none;font-size:14px;transition:border .2s}
+        .form-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+        .toggle-row{display:flex;align-items:center;gap:12px}
+        .toggle-switch{position:relative;width:46px;height:24px;flex-shrink:0}
+        .toggle-switch input{opacity:0;width:0;height:0}
+        .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:24px;transition:.3s}
+        .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+        input:checked+.toggle-slider{background:#6366f1}
+        input:checked+.toggle-slider:before{transform:translateX(22px)}
+        .toggle-label{font-size:14px;color:#334155;font-weight:600}
+        .toggle-status{font-size:12px;color:#94a3b8}
+        #seccion_comisiones{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:16px;background:#f0f4ff;border-radius:10px;padding:16px;border:1.5px solid #c7d2fe}
+        #seccion_comisiones.visible{display:grid}
+        #seccion_referente{display:none;grid-column:1/-1;background:#f8fafc;border-radius:10px;padding:16px;border:1.5px solid #e2e8f0}
+        #seccion_referente.visible{display:block}
+        .red-card{border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;background:#f8fafc;margin-top:8px}
+        .red-avatar{width:36px;height:36px;border-radius:50%;background:#6366f1;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+        .red-info{flex:1}
+        .red-name{font-weight:700;font-size:13px;color:#1e293b}
+        .red-code{font-size:11px;color:#64748b;font-family:monospace}
+        .modal-footer{padding:16px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:#f8fafc}
+        .btn-cancel{padding:9px 20px;border:1.5px solid #cbd5e1;background:#fff;color:#475569;font-weight:600;border-radius:8px;cursor:pointer;font-size:14px}
+        .btn-save{padding:9px 22px;border:none;background:#6366f1;color:#fff;font-weight:700;border-radius:8px;cursor:pointer;font-size:14px}
+        .btn-save:hover{background:#4f46e5}
+        .action-btn{padding:5px 9px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:12px;color:#475569;transition:all .15s;margin-left:2px}
+        .action-btn:hover{background:#6366f1;color:#fff;border-color:#6366f1}
+        .action-btn.danger:hover{background:#ef4444;border-color:#ef4444;color:#fff}
+    </style>
+</head>
+<body class="dashboard-body">
+<main class="main-content">
+<div class="content-area">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-users-gear" style="color:#6366f1;margin-right:8px;"></i>Gestion de Usuarios</h1>
+            <p class="page-subtitle">Administra los usuarios de la plataforma, comisiones y red comercial</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+            <input type="text" id="buscadorUsuarios" placeholder="Buscar por nombre, usuario o codigo..." style="padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:8px;outline:none;font-size:13px;width:280px;">
+            <button class="btn btn-primary" onclick="abrirModalUsuario()" id="btn-nuevo-usuario">
+                <i class="fa-solid fa-plus"></i> Nuevo Usuario
+            </button>
+        </div>
+    </div>
+    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;margin-top:10px;">
+        <table class="data-table" style="width:100%;border-collapse:collapse;min-width:900px;">
+            <thead><tr>
+                <th>Codigo</th><th>Nombre</th><th>Usuario</th><th>Perfil</th><th>Comisionante</th><th>Referente</th><th>Estado</th><th>Acciones</th>
+            </tr></thead>
+            <tbody id="usuariosList">
+                <tr><td colspan="8" style="padding:30px;text-align:center;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="paginacion" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;color:#64748b;"></div>
+</div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="usuarioModal">
+<div class="modal-box">
+    <div class="modal-header">
+        <h3 id="modalTitle"><i class="fa-solid fa-user-pen" style="margin-right:8px;"></i>Nuevo Usuario</h3>
+        <button class="modal-close" onclick="cerrarModal()">&times;</button>
+    </div>
+    <form id="usuarioForm" autocomplete="off">
+    <input type="hidden" id="user_id">
+    <div class="modal-body">
+        <div><label class="form-label">Cedula / RNC *</label><input class="form-input" type="text" id="u_cedula" required></div>
+        <div><label class="form-label">Usuario (login) *</label><input class="form-input" type="text" id="u_username" required></div>
+        <div><label class="form-label">Nombre *</label><input class="form-input" type="text" id="u_nombre" required></div>
+        <div><label class="form-label">Apellido *</label><input class="form-input" type="text" id="u_apellido" required></div>
+        <div><label class="form-label">Correo electronico *</label><input class="form-input" type="email" id="u_email" required></div>
+        <div><label class="form-label">Telefono</label><input class="form-input" type="tel" id="u_telefono"></div>
+        <div>
+            <label class="form-label">Perfil *</label>
+            <select class="form-input" id="u_perfil" required>
+                <option value="1">Administrador</option>
+                <option value="2" selected>Agente Comercial</option>
+                <option value="3">Supervisor Comercial</option>
+                <option value="4">Supervisor Zona</option>
+                <option value="5">Socio Comercial PDV</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Estado</label>
+            <select class="form-input" id="u_estado">
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="bloqueado">Bloqueado</option>
+            </select>
+        </div>
+        <!-- COMISIONANTE TOGGLE -->
+        <div class="field-full" style="background:#f8fafc;border-radius:10px;padding:14px 16px;border:1.5px solid #e2e8f0;">
+            <label class="form-label" style="margin-bottom:10px;"><i class="fa-solid fa-hand-holding-dollar" style="color:#6366f1;margin-right:5px;"></i>Este usuario es Comisionante?</label>
+            <div class="toggle-row">
+                <label class="toggle-switch"><input type="checkbox" id="u_es_comisionante" onchange="toggleComisiones()"><span class="toggle-slider"></span></label>
+                <span class="toggle-label" id="toggle_label_txt">No</span>
+                <span class="toggle-status" id="toggle_label_sub">El usuario no recibira comisiones directas</span>
+            </div>
+        </div>
+        <!-- SECCION COMISIONES -->
+        <div id="seccion_comisiones">
+            <div>
+                <label class="form-label"><i class="fa-solid fa-percent" style="color:#6366f1;font-size:11px;"></i> % Comision Directa</label>
+                <input class="form-input" type="number" id="u_comision" min="0" max="100" step="0.01" placeholder="Ej: 5.00">
+                <span style="font-size:11px;color:#64748b;">Porcentaje sobre polizas propias</span>
+            </div>
+            <div>
+                <label class="form-label"><i class="fa-solid fa-network-wired" style="color:#8b5cf6;font-size:11px;"></i> % Comision por Red</label>
+                <input class="form-input" type="number" id="u_comision_red" min="0" max="100" step="0.01" placeholder="Ej: 2.00">
+                <span style="font-size:11px;color:#64748b;">Porcentaje sobre produccion de su red</span>
+            </div>
+        </div>
+        <!-- REFERENTE -->
+        <div id="seccion_referente" class="visible">
+            <label class="form-label"><i class="fa-solid fa-sitemap" style="color:#0ea5e9;margin-right:5px;"></i>Supervisor / Referente</label>
+            <select class="form-input" id="u_referente" style="margin-top:6px;">
+                <option value="">Ninguno (raiz)</option>
+            </select>
+            <span style="font-size:11px;color:#64748b;display:block;margin-top:4px;">Usuario superior bajo cuya red quedara registrado</span>
+        </div>
+        <!-- RED DE USUARIOS - solo en edicion -->
+        <div class="field-full" id="seccion_red_usuarios" style="display:none;">
+            <label class="form-label"><i class="fa-solid fa-users" style="color:#0ea5e9;margin-right:5px;"></i>Red de Usuarios bajo su supervision</label>
+            <div id="red_usuarios_lista" style="margin-top:6px;"><p style="color:#94a3b8;font-size:13px;">Sin usuarios referidos.</p></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" class="btn-save" id="btn_guardar_usuario">
+            <i class="fa-solid fa-save" style="margin-right:5px;"></i>Guardar Usuario
+        </button>
+    </div>
+    </form>
+</div>
+</div>
+
+<script src="../assets/api-client.js?v=7"></script>
+<script>
+window.usuariosData = [];
+var paginaActual = 1;
+
+async function cargarUsuarios(pagina) {
+    pagina = pagina || 1;
+    var buscar = document.getElementById('buscadorUsuarios').value;
+    var tbody = document.getElementById('usuariosList');
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+    try {
+        var params = 'pagina=' + pagina + '&por_pagina=20' + (buscar ? '&buscar=' + encodeURIComponent(buscar) : '');
+        var res = await api.solicitud('/usuarios.php/listar?' + params);
+        if (!res.exito || !res.datos) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:#ef4444;">No se pudo cargar la lista.</td></tr>';
+            return;
+        }
+        var usuarios = res.datos.usuarios || [];
+        var paginacion = res.datos.paginacion;
+        window.usuariosData = usuarios;
+        paginaActual = pagina;
+        renderTabla(usuarios);
+        renderPaginacion(paginacion);
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error de conexion.</td></tr>';
+    }
+}
+
+function renderTabla(usuarios) {
+    var tbody = document.getElementById('usuariosList');
+    if (!usuarios.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:#94a3b8;">No hay usuarios registrados.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = usuarios.map(function(u) {
+        var badgeEstado = u.estado === 'activo'
+            ? '<span class="badge-activo">' + u.estado + '</span>'
+            : u.estado === 'bloqueado'
+                ? '<span class="badge-bloqueado">' + u.estado + '</span>'
+                : '<span class="badge-inactivo">' + u.estado + '</span>';
+        var esCom = parseInt(u.es_comisionante) === 1;
+        var badgeCom = esCom
+            ? '<span class="badge-com"><i class="fa-solid fa-percent" style="font-size:9px;"></i> Comisionante</span>'
+            : '<span style="color:#94a3b8;font-size:12px;">-</span>';
+        var referente = u.username_referente
+            ? '<span style="font-size:12px;color:#0ea5e9;"><i class="fa-solid fa-arrow-up"></i> ' + u.username_referente + '</span>'
+            : '<span style="color:#cbd5e1;font-size:12px;">-</span>';
+        var accBloqueo = u.estado === 'bloqueado'
+            ? '<button class="action-btn" onclick="desbloquearUsuario(' + u.id + ')" title="Desbloquear"><i class="fa-solid fa-lock-open"></i></button>'
+            : '<button class="action-btn" onclick="bloquearUsuario(' + u.id + ')" title="Bloquear"><i class="fa-solid fa-lock"></i></button>';
+        return '<tr>'
+            + '<td><span class="codigo-chip">' + (u.codigo_usuario || '-') + '</span></td>'
+            + '<td><strong>' + u.nombre + ' ' + u.apellido + '</strong><br><span style="font-size:11px;color:#94a3b8;">' + u.email + '</span></td>'
+            + '<td style="font-family:monospace;font-size:13px;">@' + u.username + '</td>'
+            + '<td style="font-size:12px;">' + (u.nombre_perfil || '-') + '</td>'
+            + '<td>' + badgeCom + '</td>'
+            + '<td>' + referente + '</td>'
+            + '<td>' + badgeEstado + '</td>'
+            + '<td style="white-space:nowrap;">'
+                + '<button class="action-btn" onclick="editarUsuario(' + u.id + ')" title="Mantenimiento"><i class="fa-solid fa-pen-to-square"></i></button>'
+                + '<button class="action-btn" onclick="resetPassword(' + u.id + ')" title="Restablecer password"><i class="fa-solid fa-key"></i></button>'
+                + accBloqueo
+                + '<button class="action-btn danger" onclick="eliminarUsuario(' + u.id + ')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>'
+            + '</td>'
+            + '</tr>';
+    }).join('');
+}
+
+function renderPaginacion(pag) {
+    if (!pag) return;
+    var div = document.getElementById('paginacion');
+    div.innerHTML = '<span>' + pag.total_registros + ' usuario(s) encontrado(s)</span>'
+        + '<div style="display:flex;gap:6px;">'
+        + '<button onclick="cargarUsuarios(' + (pag.pagina_actual - 1) + ')" ' + (pag.pagina_actual <= 1 ? 'disabled' : '') + ' style="padding:5px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#fff;"><i class="fa-solid fa-chevron-left"></i></button>'
+        + '<span style="padding:5px 12px;background:#6366f1;color:#fff;border-radius:6px;">' + pag.pagina_actual + ' / ' + pag.total_paginas + '</span>'
+        + '<button onclick="cargarUsuarios(' + (pag.pagina_actual + 1) + ')" ' + (pag.pagina_actual >= pag.total_paginas ? 'disabled' : '') + ' style="padding:5px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#fff;"><i class="fa-solid fa-chevron-right"></i></button>'
+        + '</div>';
+}
+
+function toggleComisiones() {
+    var isComisionante = document.getElementById('u_es_comisionante').checked;
+    var seccion = document.getElementById('seccion_comisiones');
+    var lbl = document.getElementById('toggle_label_txt');
+    var sub = document.getElementById('toggle_label_sub');
+    if (isComisionante) {
+        seccion.classList.add('visible');
+        lbl.textContent = 'Si';
+        lbl.style.color = '#6366f1';
+        sub.textContent = 'El usuario recibira comisiones por su produccion y por su red';
+    } else {
+        seccion.classList.remove('visible');
+        lbl.textContent = 'No';
+        lbl.style.color = '#334155';
+        sub.textContent = 'El usuario no recibira comisiones directas';
+    }
+}
+
+function cargarListaReferentes(excludeId) {
+    var select = document.getElementById('u_referente');
+    var currentVal = select.value;
+    select.innerHTML = '<option value="">Ninguno (raiz)</option>';
+    window.usuariosData.forEach(function(u) {
+        if (u.id != excludeId) {
+            var opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = u.nombre + ' ' + u.apellido + ' (@' + u.username + ') - ' + (u.nombre_perfil || '');
+            select.appendChild(opt);
+        }
+    });
+    if (currentVal) select.value = currentVal;
+}
+
+function abrirModalUsuario() {
+    document.getElementById('usuarioForm').reset();
+    document.getElementById('user_id').value = '';
+    document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>Nuevo Usuario';
+    document.getElementById('seccion_red_usuarios').style.display = 'none';
+    document.getElementById('seccion_referente').className = 'field-full visible';
+    toggleComisiones();
+    cargarListaReferentes(null);
+    document.getElementById('usuarioModal').style.display = 'flex';
+}
+
+function cerrarModal() { document.getElementById('usuarioModal').style.display = 'none'; }
+
+async function editarUsuario(id) {
+    document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-gear" style="margin-right:8px;"></i>Mantenimiento de Usuario';
+    var fullUser = window.usuariosData.find(function(x){ return x.id == id; }) || {};
+    try {
+        var res = await api.solicitud('/usuarios.php/obtener/' + id);
+        if (res.exito && res.datos) fullUser = res.datos;
+    } catch(e) { console.warn('Sin datos completos:', e); }
+
+    document.getElementById('user_id').value   = fullUser.id || '';
+    document.getElementById('u_cedula').value  = fullUser.cedula || '';
+    document.getElementById('u_username').value= fullUser.username || '';
+    document.getElementById('u_nombre').value  = fullUser.nombre || '';
+    document.getElementById('u_apellido').value= fullUser.apellido || '';
+    document.getElementById('u_email').value   = fullUser.email || '';
+    document.getElementById('u_telefono').value= fullUser.telefono || '';
+    document.getElementById('u_perfil').value  = fullUser.perfil_id || '2';
+    document.getElementById('u_estado').value  = fullUser.estado || 'activo';
+    document.getElementById('u_es_comisionante').checked = (parseInt(fullUser.es_comisionante) === 1);
+    document.getElementById('u_comision').value     = parseFloat(fullUser.porcentaje_comision || 0).toFixed(2);
+    document.getElementById('u_comision_red').value = parseFloat(fullUser.porcentaje_comision_red || 0).toFixed(2);
+    toggleComisiones();
+    document.getElementById('seccion_referente').className = 'field-full visible';
+    cargarListaReferentes(fullUser.id);
+    document.getElementById('u_referente').value = fullUser.referente_id || '';
+    document.getElementById('seccion_red_usuarios').style.display = 'block';
+    renderRedUsuarios(fullUser.id);
+    document.getElementById('usuarioModal').style.display = 'flex';
+}
+
+function renderRedUsuarios(supervisorId) {
+    var lista = document.getElementById('red_usuarios_lista');
+    var subordinados = window.usuariosData.filter(function(u){ return u.referente_id == supervisorId; });
+    if (!subordinados.length) {
+        lista.innerHTML = '<p style="color:#94a3b8;font-size:13px;margin:0;">Este usuario no tiene usuarios referidos en su red.</p>';
+        return;
+    }
+    lista.innerHTML = subordinados.map(function(u) {
+        var initials = ((u.nombre||' ')[0]+(u.apellido||' ')[0]).toUpperCase();
+        var esCom = parseInt(u.es_comisionante) === 1;
+        return '<div class="red-card">'
+            + '<div class="red-avatar">' + initials + '</div>'
+            + '<div class="red-info">'
+                + '<div class="red-name">' + u.nombre + ' ' + u.apellido + (esCom ? ' <span class="badge-com">Com.</span>' : '') + '</div>'
+                + '<div class="red-code"><span class="codigo-chip">' + (u.codigo_usuario||'?') + '</span> @' + u.username + ' | ' + (u.nombre_perfil||'') + (esCom ? ' | Com: ' + (u.porcentaje_comision||0) + '%' : '') + '</div>'
+            + '</div>'
+            + '<button class="action-btn" onclick="editarUsuario(' + u.id + ')" title="Abrir mantenimiento"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>'
+            + '</div>';
+    }).join('');
+}
+
+document.getElementById('usuarioForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var id  = document.getElementById('user_id').value;
+    var btn = document.getElementById('btn_guardar_usuario');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+    var esComisionante = document.getElementById('u_es_comisionante').checked ? 1 : 0;
+    var data = {
+        cedula:    document.getElementById('u_cedula').value.trim(),
+        username:  document.getElementById('u_username').value.trim(),
+        nombre:    document.getElementById('u_nombre').value.trim(),
+        apellido:  document.getElementById('u_apellido').value.trim(),
+        email:     document.getElementById('u_email').value.trim(),
+        telefono:  document.getElementById('u_telefono').value.trim(),
+        perfil_id: parseInt(document.getElementById('u_perfil').value),
+        estado:    document.getElementById('u_estado').value,
+        es_comisionante: esComisionante,
+        porcentaje_comision:     esComisionante ? parseFloat(document.getElementById('u_comision').value || 0) : 0,
+        porcentaje_comision_red: esComisionante ? parseFloat(document.getElementById('u_comision_red').value || 0) : 0,
+        referente_id: document.getElementById('u_referente').value ? parseInt(document.getElementById('u_referente').value) : null
+    };
+    try {
+        var endpoint = id ? '/usuarios.php/editar/' + id : '/usuarios.php/crear';
+        var method   = id ? 'PUT' : 'POST';
+        var res      = await api.solicitud(endpoint, method, data);
+        if (res.exito) {
+            var msg = res.mensaje || 'Usuario guardado exitosamente.';
+            if (!id && res.password_temporal) msg += '\n\nContrasena temporal: ' + res.password_temporal + '\nEl usuario debera cambiarla al primer ingreso.';
+            alert(msg);
+            cerrarModal();
+            cargarUsuarios(paginaActual);
+        } else {
+            alert('Error: ' + (res.mensaje || 'No se pudo guardar.'));
+        }
+    } catch(e) {
+        alert('Error de conexion con el servidor.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-save" style="margin-right:5px;"></i>Guardar Usuario';
+    }
+});
+
+async function resetPassword(id) {
+    if (!confirm('Restablecer la contrasena de este usuario?')) return;
+    try {
+        var res = await api.solicitud('/usuarios.php/restablecer-password/' + id, 'POST');
+        if (res.exito) alert('Contrasena restablecida.\nNueva clave temporal: ' + res.password_temporal);
+        else alert('Error: ' + res.mensaje);
+    } catch(e) { alert('Error de conexion.'); }
+}
+
+async function bloquearUsuario(id) {
+    var razon = prompt('Motivo del bloqueo:', 'Bloqueo administrativo');
+    if (razon === null) return;
+    try {
+        var res = await api.solicitud('/usuarios.php/bloquear/' + id, 'POST', { razon: razon });
+        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
+        else alert(res.mensaje);
+    } catch(e) { alert('Error de conexion.'); }
+}
+
+async function desbloquearUsuario(id) {
+    if (!confirm('Desbloquear este usuario?')) return;
+    try {
+        var res = await api.solicitud('/usuarios.php/desbloquear/' + id, 'POST');
+        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
+        else alert(res.mensaje);
+    } catch(e) { alert('Error de conexion.'); }
+}
+
+async function eliminarUsuario(id) {
+    var password = prompt('Esta seguro de eliminar este usuario? Ingrese su contrasena de Administrador para confirmar:');
+    if (!password) return;
+    try {
+        var res = await api.solicitud('/usuarios.php/eliminar/' + id, 'DELETE', { confirm_password: password });
+        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
+        else alert('Error: ' + res.mensaje);
+    } catch(e) { alert('Error de conexion.'); }
+}
+
+var searchTimeout;
+document.getElementById('buscadorUsuarios').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function(){ cargarUsuarios(1); }, 400);
+});
+
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') cerrarModal(); });
+cargarUsuarios();
+</script>
+</body>
+</html>

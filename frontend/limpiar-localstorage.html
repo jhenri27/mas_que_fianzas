@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Limpiar localStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; margin-top: 100px; }
+        button { padding: 15px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .msg { margin-top: 30px; font-size: 20px; color: green; }
+    </style>
+</head>
+<body>
+    <h1>Limpiar localStorage</h1>
+    <button onclick="limpiar()">Limpiar</button>
+    <div class="msg" id="msg"></div>
+    <script>
+        function limpiar() {
+            localStorage.clear();
+            document.getElementById('msg').textContent = '¡localStorage limpiado!';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Dashboard API with Session Token</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-box { margin: 20px 0; padding: 15px; border: 1px solid #ccc; background: #f9f9f9; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre { background: #eee; padding: 10px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard API Test Con Sesión</h1>
+    
+    <div class="test-box">
+        <h2>Paso 1: Login</h2>
+        <button onclick="testLogin()">Ejecutar Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Paso 2: Listar Perfiles</h2>
+        <button onclick="testListarPerfiles()">Ejecutar Listar Perfiles</button>
+        <div id="perfilesResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Paso 3: Listar Usuarios</h2>
+        <button onclick="testListarUsuarios()">Ejecutar Listar Usuarios</button>
+        <div id="usuariosResult"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Paso 4: Obtener Usuario Actual</h2>
+        <button onclick="testObtenerUsuarioActual()">Ejecutar Obtener Usuario</button>
+        <div id="usuarioActualResult"></div>
+    </div>
+
+    <script>
+        let token = null;
+        let usuario = null;
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p class="info">Enviando solicitud de login...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/PLATAFORMA_INTEGRADA/backend/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'Demo@123'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Login response:', data);
+
+                if (data.exito) {
+                    token = data.token_sesion;
+                    usuario = data;
+                    resultDiv.innerHTML = `<p class="success">✓ Login exitoso</p>
+                        <p>Token: ${token}</p>
+                        <p>Usuario: ${data.nombre_completo}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${data.mensaje}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error de conexión: ${error.message}</p>`;
+            }
+        }
+
+        async function testListarPerfiles() {
+            const resultDiv = document.getElementById('perfilesResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">✗ Primero debes hacer login</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="info">Enviando solicitud...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/PLATAFORMA_INTEGRADA/backend/api/perfiles/listar', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                console.log('Listar perfiles response:', data);
+
+                if (data.exito) {
+                    resultDiv.innerHTML = `<p class="success">✓ Perfiles obtenidos (${data.datos.length})</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${data.mensaje}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error de conexión: ${error.message}</p>`;
+            }
+        }
+
+        async function testListarUsuarios() {
+            const resultDiv = document.getElementById('usuariosResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">✗ Primero debes hacer login</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p class="info">Enviando solicitud...</p>';
+            
+            try {
+                const response = await fetch('http://localhost/PLATAFORMA_INTEGRADA/backend/api/usuarios/listar?pagina=1&por_pagina=20', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                console.log('Listar usuarios response:', data);
+
+                if (data.exito) {
+                    let usuarioCount = data.datos?.usuarios?.length || 0;
+                    resultDiv.innerHTML = `<p class="success">✓ Usuarios obtenidos (${usuarioCount})</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${data.mensaje}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error de conexión: ${error.message}</p>`;
+            }
+        }
+
+        async function testObtenerUsuarioActual() {
+            const resultDiv = document.getElementById('usuarioActualResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">✗ Primero debes hacer login</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = `<p class="success">✓ Usuario actual desde memoria</p>
+                <p>Token: ${token}</p>
+                <pre>${JSON.stringify(usuario, null, 2)}</pre>`;
+        }
+    </script>
+</body>
+</html>

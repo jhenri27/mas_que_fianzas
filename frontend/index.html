@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAS QUE FIANZAS - Sistema Integrado</title>
+    <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="assets/login.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-circle" style="background:transparent; box-shadow:none; border:none; width:auto; margin-bottom:8px;">
+                    <img src="assets/logo_mqf.png" alt="MAS QUE FIANZAS" style="width:130px; height:auto; object-fit:contain; display:block; margin:0 auto;">
+                </div>
+                <h1>MAS QUE FIANZAS</h1>
+                <p>Sistema Integrado de Gestión</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="form-control" 
+                        placeholder="Ingresa tu usuario"
+                        required
+                        autofocus
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="form-control" 
+                        placeholder="Ingresa tu contraseña"
+                        required
+                    >
+                </div>
+
+                <div class="form-group form-check">
+                    <input 
+                        type="checkbox" 
+                        id="rememberMe" 
+                        name="rememberMe" 
+                        class="form-check-input"
+                    >
+                    <label class="form-check-label" for="rememberMe">
+                        Recuérdame
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login">
+                    <span class="btn-text">Iniciar Sesión</span>
+                    <span class="btn-loader" style="display:none;">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>+Que Fianzas SIG | Copyright &copy; 2026 Sypempresariales</p>
+            </div>
+
+            <div id="alertaContainer"></div>
+        </div>
+
+        <div class="login-side">
+            <div class="login-side-content">
+                <h2>Bienvenido</h2>
+                <p>Accede a tu plataforma de gestión de fianzas y seguros con seguridad y control total.</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <span class="feature-icon">🔒</span>
+                        <span>Acceso Seguro</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">👥</span>
+                        <span>Control de Usuarios</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">📊</span>
+                        <span>Reportes Avanzados</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">⚙️</span>
+                        <span>Configuración Total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/api-client.js"></script>
+    <script src="assets/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Dashboard Test</title>
+    <link rel="stylesheet" href="assets/dashboard.css">
+    <link rel="stylesheet" href="assets/modulos.css">
+    <style>
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: yellow;
+            padding: 20px;
+            border: 2px solid red;
+            border-radius: 5px;
+            z-index: 9999;
+            max-width: 400px;
+            max-height: 400px;
+            overflow: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .debug-log { margin: 5px 0; line-height: 1.2; }
+        .debug-error { color: red; font-weight: bold; }
+        .debug-success { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="debug-panel" id="debugPanel">
+        <h3 style="margin-top: 0;">DEBUG LOG</h3>
+        <div id="debugLog"></div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏛️</span>
+                    <h2>MAS QUE</h2>
+                    <h3>FIANZAS</h3>
+                </div>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-module="dashboard">
+                    <span class="icon">🏠</span>
+                    <span class="label">INICIO</span>
+                </a>
+                <a href="#" class="nav-item" data-module="usuarios">
+                    <span class="icon">👨‍💼</span>
+                    <span class="label">USUARIOS</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <span class="icon">🚪</span>
+                    <span class="label">SALIR</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">INICIO</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Usuario</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard Module -->
+                <section id="modulo-dashboard" class="module active">
+                    <div class="module-header">
+                        <h2>Bienvenido al Sistema de Gestión MAS QUE FIANZAS</h2>
+                        <p id="userGreeting">Gestiona fianzas, seguros y cotizaciones de forma eficiente</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <h3>Estado: <span id="systemStatus" style="color: red;">Cargando...</span></h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-content">
+                                <h3>Sesión Válida: <span id="sessionStatus" style="color: red;">Verificando...</span></h3>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usuarios Module -->
+                <section id="modulo-usuarios" class="module">
+                    <div class="module-header">
+                        <h2>Gestión de Usuarios</h2>
+                    </div>
+
+                    <div id="usuarios-tab" class="tab-content active">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Email</th>
+                                        <th>Perfil</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usuariosList">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/api-client.js"></script>
+    <script>
+        // Enhanced debug logging
+        const debugLog = [];
+        const debugPanel = document.getElementById('debugLog');
+
+        function addDebugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            
+            const logClass = type === 'error' ? 'debug-error' : type === 'success' ? 'debug-success' : '';
+            const logHTML = `<div class="debug-log ${logClass}">${logEntry}</div>`;
+            
+            debugPanel.innerHTML += logHTML;
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        // Override console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            addDebugLog(args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addDebugLog('ERROR: ' + args.join(' '), 'error');
+        };
+
+        // Main dashboard logic
+        document.addEventListener('DOMContentLoaded', async function() {
+            addDebugLog('📍 DOMContentLoaded event fired', 'info');
+            
+            try {
+                // Check if API client is ready
+                addDebugLog('Checking api-client.js...', 'info');
+                if (typeof api === 'undefined') {
+                    addDebugLog('❌ api object is undefined!', 'error');
+                    document.getElementById('systemStatus').textContent = '❌ API NOT READY';
+                    return;
+                }
+                addDebugLog('✓ api object loaded', 'success');
+
+                // Check session
+                addDebugLog('Checking session...', 'info');
+                const hasSession = api.tieneSesion();
+                addDebugLog(`api.tieneSesion() = ${hasSession}`, 'info');
+
+                if (!hasSession) {
+                    addDebugLog('❌ No session found, should redirect to login', 'error');
+                    document.getElementById('sessionStatus').textContent = '❌ SIN SESIÓN';
+                    return;
+                }
+                addDebugLog('✓ Session is valid', 'success');
+                document.getElementById('sessionStatus').textContent = '✓ VÁLIDA';
+
+                // Get current user
+                const usuario = api.obtenerUsuarioActual();
+                addDebugLog(`✓ Current user: ${usuario?.nombre_completo || 'Unknown'}`, 'success');
+
+                // Update UI
+                const userName = document.getElementById('userName');
+                if (userName) {
+                    userName.textContent = usuario?.nombre_completo || 'Usuario';
+                    addDebugLog('✓ User name updated in UI', 'success');
+                }
+
+                const userGreeting = document.getElementById('userGreeting');
+                if (userGreeting) {
+                    const hora = new Date().getHours();
+                    let saludo = '¡Hola! ';
+                    if (hora < 12) saludo += 'Buenos días';
+                    else if (hora < 18) saludo += 'Buenas tardes';
+                    else saludo += 'Buenas noches';
+                    userGreeting.textContent = saludo + ', ' + (usuario?.nombre_completo || 'Usuario');
+                    addDebugLog('✓ Greeting updated', 'success');
+                }
+
+                // Try to load users
+                addDebugLog('Loading usuarios...', 'info');
+                const usuariosResult = await api.listarUsuarios(1, 20);
+                addDebugLog(`listarUsuarios() returned: exito=${usuariosResult.exito}`, 'info');
+
+                if (usuariosResult.exito) {
+                    const usuarios = usuariosResult.datos?.usuarios || [];
+                    addDebugLog(`✓ Loaded ${usuarios.length} usuarios`, 'success');
+
+                    const tbody = document.getElementById('usuariosList');
+                    if (usuarios.length > 0) {
+                        tbody.innerHTML = usuarios.map(u => `
+                            <tr>
+                                <td>${u.nombre} ${u.apellido}</td>
+                                <td>${u.email}</td>
+                                <td>${u.nombre_perfil || '-'}</td>
+                                <td>${u.estado}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4">No hay usuarios</td></tr>';
+                    }
+                } else {
+                    addDebugLog(`❌ listarUsuarios() failed: ${usuariosResult.mensaje}`, 'error');
+                }
+
+                document.getElementById('systemStatus').textContent = '✓ FUNCIONANDO';
+                addDebugLog('✓ Dashboard initialized successfully', 'success');
+
+            } catch (error) {
+                addDebugLog(`❌ EXCEPTION: ${error.message}`, 'error');
+                addDebugLog(`Stack: ${error.stack}`, 'error');
+                document.getElementById('systemStatus').textContent = '❌ ERROR: ' + error.message;
+            }
+
+            // Setup event listeners
+            document.getElementById('logoutBtn')?.addEventListener('click', async function() {
+                addDebugLog('Logout clicked...', 'info');
+                const result = await api.logout();
+                if (result.exito) {
+                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

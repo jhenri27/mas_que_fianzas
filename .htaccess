@@ -1,0 +1,28 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /PLATAFORMA_INTEGRADA/
+
+    # No reescribir archivos y carpetas existentes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Permitir acceso directo a archivos PHP
+    RewriteCond %{REQUEST_URI} \.(php|html|js|css|jpg|jpeg|png|gif|svg|woff|woff2|ttf|eot)$ [OR]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+</IfModule>
+
+# Proteger archivos sensibles
+<FilesMatch "\.env$|\.git$|\.sql$">
+    <RequireAll>
+        Require all denied
+    </RequireAll>
+</FilesMatch>
+
+# Permitir acceso a archivos estáticos
+<FilesMatch "\.(jpg|jpeg|png|gif|css|js|svg|woff|woff2|ttf|eot)$">
+    <RequireAll>
+        Require all granted
+    </RequireAll>
+</FilesMatch>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="assets/dashboard.css">
+    <link rel="stylesheet" href="assets/modulos.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                <img src="assets/mqf-logo-sidebar.ico" alt="MAS QUE FIANZAS" style="width:42px; height:42px; object-fit:contain; display:block; margin: 0 auto 4px;">
+                <h2>MAS QUE</h2>
+                <h3>FIANZAS</h3>
+            </div>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-module="dashboard">
+                    <span class="icon">🏠</span>
+                    <span class="label">INICIO</span>
+                </a>
+                <a href="#" class="nav-item" data-module="clientes">
+                    <span class="icon">👥</span>
+                    <span class="label">CLIENTES</span>
+                </a>
+                <a href="#" class="nav-item" data-module="cotizaciones">
+                    <span class="icon">📈</span>
+                    <span class="label">COTIZACIONES</span>
+                </a>
+                <a href="#" class="nav-item" data-module="polizas">
+                    <span class="icon">📋</span>
+                    <span class="label">PÓLIZAS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="fianzas">
+                    <span class="icon">🛡️</span>
+                    <span class="label">FIANZAS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="pagos">
+                    <span class="icon">💰</span>
+                    <span class="label">PAGOS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="siniestros">
+                    <span class="icon">⚠️</span>
+                    <span class="label">SINIESTROS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="productos">
+                    <span class="icon">🧾</span>
+                    <span class="label">PRODUCTOS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="reportes">
+                    <span class="icon">📊</span>
+                    <span class="label">REPORTES</span>
+                </a>
+                <a href="#" class="nav-item" data-module="usuarios">
+                    <span class="icon">👨‍💼</span>
+                    <span class="label">USUARIOS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="configuracion">
+                    <span class="icon">⚙️</span>
+                    <span class="label">CONFIGURACIÓN</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <span class="icon">🚪</span>
+                    <span class="label">SALIR</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">INICIO</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Usuario</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ccircle cx='50' cy='35' r='15' fill='white'/%3E%3Cpath d='M30,70 Q30,55 50,55 Q70,55 70,70' fill='white'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
+                    </div>
+                    <button class="notification-btn" id="notificationBtn" title="Notificaciones">🔔</button>
+                    <div class="user-menu-toggle" id="userMenuToggle" title="Menú de usuario">⋮</div>
+                </div>
+            </header>
+
+            <!-- User Dropdown Menu -->
+            <div class="user-dropdown-menu" id="userDropdownMenu" style="display:none;">
+                <a href="#" id="cambiarPasswordBtn" class="dropdown-item">
+                    <span>🔐</span> Cambiar Contraseña
+                </a>
+                <a href="#" id="miPerfilBtn" class="dropdown-item">
+                    <span>👤</span> Mi Perfil
+                </a>
+                <a href="#" id="logoutBtnMenu" class="dropdown-item logout">
+                    <span>🚪</span> Cerrar Sesión
+                </a>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard Module -->
+                <section id="modulo-dashboard" class="module active">
+                    <div class="module-header">
+                        <h2>Bienvenido al Sistema de Gestión MAS QUE FIANZAS</h2>
+                        <p id="userGreeting">Gestiona fianzas, seguros y cotizaciones de forma eficiente</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <h3>Total Pólizas</h3>
+                                <p class="stat-number" id="totalPolizas">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-content">
+                                <h3>Total Clientes</h3>
+                                <p class="stat-number" id="totalClientes">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-content">
+                                <h3>Pagos Pendientes</h3>
+                                <p class="stat-number" id="pagosPendientes">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🛡️</div>
+                            <div class="stat-content">
+                                <h3>Fianzas Activas</h3>
+                                <p class="stat-number" id="fianzasActivas">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="quick-actions">
+                            <h3>Acciones Rápidas</h3>
+                            <div class="action-buttons">
+                                <button class="action-btn" data-action="nueva-cotizacion">
+                                    <span>📈</span>
+                                    <span>Nueva Cotización</span>
+                                </button>
+                                <button class="action-btn" data-action="nuevo-cliente">
+                                    <span>👥</span>
+                                    <span>Nuevo Cliente</span>
+                                </button>
+                                <button class="action-btn" data-action="registrar-pago">
+                                    <span>💳</span>
+                                    <span>Registrar Pago</span>
+                                </button>
+                                <button class="action-btn" data-action="ver-reportes">
+                                    <span>📊</span>
+                                    <span>Ver Reportes</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="recent-activity">
+                            <h3>Actividad Reciente</h3>
+                            <div id="recentActivityList" class="activity-list">
+                                <p class="empty-state">No hay actividades recientes</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cotizaciones Module (Integrated) -->
+                <section id="modulo-cotizaciones" class="module" style="padding:0; overflow:hidden;">
+                    <iframe
+                        id="cotizador-iframe"
+                        src=""
+                        style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
+                        title="Módulo de Cotizaciones">
+                    </iframe>
+                </section>
+
+                <!-- Usuarios Module (Integrated) -->
+                <section id="modulo-usuarios" class="module" style="padding:0; overflow:hidden;">
+                    <iframe
+                        id="usuarios-iframe"
+                        src=""
+                        style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
+                        title="Módulo de Usuarios y Perfiles">
+                    </iframe>
+                </section>
+
+
+                <!-- Otros módulos (placeholders) -->
+                <!-- Clientes Module (Integrated) -->
+                <section id="modulo-clientes" class="module" style="padding:0; overflow:hidden;">
+                    <iframe
+                        id="clientes-iframe"
+                        src="/PLATAFORMA_INTEGRADA/frontend/modulos/clientes.html"
+                        style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
+                        title="Módulo de Clientes">
+                    </iframe>
+                </section>
+
+                <section id="modulo-polizas" class="module" style="padding:0; overflow:hidden;">
+                    <iframe
+                        id="polizas-iframe"
+                        src="/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html"
+                        style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
+                        title="Módulo de Pólizas">
+                    </iframe>
+                </section>
+
+                <section id="modulo-fianzas" class="module">
+                    <div class="module-header">
+                        <h2>Gestión de Fianzas</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>Módulo de gestión de fianzas en desarrollo</p>
+                    </div>
+                </section>
+
+                <section id="modulo-pagos" class="module">
+                    <div class="module-header">
+                        <h2>Registro de Pagos</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>Módulo de pagos en desarrollo</p>
+                    </div>
+                </section>
+
+                <section id="modulo-siniestros" class="module">
+                    <div class="module-header">
+                        <h2>Gestión de Siniestros</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>Módulo de siniestros en desarrollo</p>
+                    </div>
+                </section>
+
+                <section id="modulo-productos" class="module">
+                    <div class="module-header">
+                        <h2>Gestión de Productos</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>Módulo de productos en desarrollo</p>
+                    </div>
+                </section>
+
+                <section id="modulo-reportes" class="module">
+                    <div class="module-header">
+                        <h2>Reportes y Análisis</h2>
+                    </div>
+                    <div class="coming-soon">
+                        <p>Módulo de reportes en desarrollo</p>
+                    </div>
+                </section>
+
+                <section id="modulo-configuracion" class="module">
+                    <div class="module-header">
+                        <h2>Configuración del Sistema</h2>
+                    </div>
+                    <div class="opciones-configuracion" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
+                        <!-- Cambiar Logo -->
+                        <div class="config-card" style="background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05); border:1px solid #edf2f7;">
+                            <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Cambiar Logo de la Plataforma</h3>
+                            <p style="font-size:13px; color:#718096; margin-bottom:15px;">Este logo se actualizará en las pantallas (login y menús) y en los documentos PDF (Cotizaciones, etc.). Se prefiere formato PNG con fondo transparente.</p>
+                            
+                            <img id="previewLogo" src="assets/logo_mqf.png?v=latest" alt="Logo Actual" style="max-width:180px; max-height:80px; object-fit:contain; background:#f8fafc; padding:10px; border-radius:4px; margin-bottom:15px; display:block;">
+                            
+                            <form id="formLogoUpload" enctype="multipart/form-data">
+                                <input type="file" id="inputLogoImg" accept="image/png, image/jpeg, image/x-icon" style="display:none;" onchange="document.getElementById('fileNameLogo').textContent = this.files[0] ? this.files[0].name : '';">
+                                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                                    <button type="button" class="btn" style="background:#e2e8f0; color:#4a5568;" onclick="document.getElementById('inputLogoImg').click();">Seleccionar Archivo</button>
+                                    <span id="fileNameLogo" style="font-size:13px; color:#4a5568; align-self:center;"></span>
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="subirLogo()">Subir y Guardar Logo</button>
+                            </form>
+                            <div id="logoUploadStatus" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        async function subirLogo() {
+                            const fileInput = document.getElementById('inputLogoImg');
+                            const statusDiv = document.getElementById('logoUploadStatus');
+                            
+                            if (!fileInput.files.length) {
+                                statusDiv.style.color = 'red';
+                                statusDiv.innerText = 'Selecciona un archivo primero.';
+                                return;
+                            }
+                            
+                            const formData = new FormData();
+                            formData.append('logo', fileInput.files[0]);
+                            
+                            statusDiv.style.color = 'blue';
+                            statusDiv.innerText = 'Subiendo y procesando logo...';
+                            
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/upload_logo.php', {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                const result = await response.json();
+                                
+                                if (result.exito) {
+                                    statusDiv.style.color = 'green';
+                                    statusDiv.innerHTML = '✅ ' + result.mensaje + '<br>Recarga la página para ver los cambios en el menú.';
+                                    document.getElementById('previewLogo').src = 'assets/logo_mqf.png?t=' + Date.now();
+                                } else {
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ Error: ' + result.mensaje;
+                                }
+                            } catch (e) {
+                                statusDiv.style.color = 'red';
+                                statusDiv.innerText = '❌ Error de red: ' + e.message;
+                            }
+                        }
+                    </script>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modales -->
+    <div id="usuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="usuarioModalTitle">Crear Usuario</h3>
+                <button class="modal-close" onclick="cerrarModal('usuarioModal')">&times;</button>
+            </div>
+            <form id="usuarioForm" class="modal-body">
+                <input type="hidden" id="usuarioId">
+                <div class="form-group" id="grupoCodigo" style="display: none;">
+                    <label>Código de Usuario (Nomenclatura)</label>
+                    <input type="text" id="usuarioCodigo" class="form-control" readonly style="background: #f0f0f0;">
+                </div>
+                <div class="form-group">
+                    <label for="usuarioCedula">Cédula</label>
+                    <input type="text" id="usuarioCedula" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioNombre">Nombre</label>
+                    <input type="text" id="usuarioNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioApellido">Apellido</label>
+                    <input type="text" id="usuarioApellido" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioEmail">Email</label>
+                    <input type="email" id="usuarioEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioUsername">Usuario</label>
+                    <input type="text" id="usuarioUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioPerfil">Perfil</label>
+                    <select id="usuarioPerfil" class="form-control" required>
+                        <option value="">Selecciona un perfil</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                    <label style="margin: 0;">¿Es Comisionante?</label>
+                    <input type="checkbox" id="usuarioEsComisionante" style="width: 20px; height: 20px; cursor: pointer;">
+                </div>
+
+                <div id="seccionComision" style="display: none; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-top: 10px; background: #fafafa;">
+                    <div class="form-group">
+                        <label for="usuarioComision">Porcentaje Comisión Propia (%)</label>
+                        <input type="number" id="usuarioComision" class="form-control" step="0.01" min="0" max="100" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="usuarioComisionRed">Porcentaje Comisión Red (%)</label>
+                        <input type="number" id="usuarioComisionRed" class="form-control" step="0.01" min="0" max="100" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="usuarioReferente">Referente (Superior/Referido por)</label>
+                        <select id="usuarioReferente" class="form-control">
+                            <option value="">Ninguno (Raíz)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('usuarioModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Perfil -->
+    <div id="perfilModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="perfilModalTitle">Crear Perfil</h3>
+                <button class="modal-close" onclick="cerrarModal('perfilModal')">&times;</button>
+            </div>
+            <form id="perfilForm" class="modal-body">
+                <input type="hidden" id="perfilId">
+                <div class="form-group">
+                    <label for="perfilNombre">Nombre del Perfil</label>
+                    <input type="text" id="perfilNombre" class="form-control" required>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label for="perfilNivel">Nivel Jerárquico (1-10)</label>
+                    <input type="number" id="perfilNivel" class="form-control" min="1" max="10" required>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label for="perfilDescripcion">Descripción</label>
+                    <textarea id="perfilDescripcion" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="modal-footer" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('perfilModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Perfil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/api-client.js"></script>
+    <script src="assets/dashboard.js"></script>
+</body>
+</html>

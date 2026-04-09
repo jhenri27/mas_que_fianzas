@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cotizaciones - MAS QUE FIANZAS</title>
+  <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { corePlugins: { preflight: false } };
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
+
+    /* ===== TAB NAVIGATION ===== */
+    .cot-header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      padding: 20px 28px 0;
+      border-bottom: none;
+    }
+    .cot-header h1 {
+      color: #fff; font-size: 22px; font-weight: 700; margin: 0 0 4px;
+    }
+    .cot-header p { color: rgba(255,255,255,0.75); font-size: 13px; margin: 0 0 16px; }
+    .cot-tabs {
+      display: flex; gap: 4px;
+    }
+    .cot-tab {
+      padding: 10px 22px; border: none; cursor: pointer;
+      border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 600;
+      transition: all 0.2s; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+    }
+    .cot-tab:hover { background: rgba(255,255,255,0.25); color: #fff; }
+    .cot-tab.active { background: #fff; color: #4f46e5; }
+    .cot-tab i { margin-right: 7px; }
+
+    /* ===== CONTENT PANELS ===== */
+    .cot-panel { display: none; padding: 24px; }
+    .cot-panel.active { display: block; }
+
+    /* ===== COT NUMBER BADGE ===== */
+    .cot-num {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #eef2ff; color: #4338ca; font-size: 12px; font-weight: 600;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;
+    }
+
+    /* ===== REACT ROOT (Seguros de Ley) ===== */
+    #root-seguros { font-family: ui-sans-serif, system-ui, sans-serif; }
+
+    /* ===== FIANZAS FORM ===== */
+    .fianza-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 640px) { .fianza-grid { grid-template-columns: 1fr; } }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-size: 14px; color: #111827; outline: none; transition: border-color 0.2s;
+      background: #fff;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .form-group.full { grid-column: 1 / -1; }
+
+    /* ===== RESULT CARD (Fianzas) ===== */
+    .result-card {
+      background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+      border: 1.5px solid #c7d2fe; border-radius: 12px; padding: 20px;
+    }
+    .result-card h3 { font-size: 14px; color: #4338ca; font-weight: 600; margin: 0 0 12px; }
+    .result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #e0e7ff; font-size: 14px;
+    }
+    .result-row:last-child { border: none; }
+    .result-row .label { color: #6b7280; }
+    .result-row .value { font-weight: 600; color: #1e1b4b; }
+    .result-row .amount { font-size: 20px; font-weight: 700; color: #4f46e5; }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 24px; background: #4f46e5; color: #fff;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 20px; background: #fff; color: #374151;
+      border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: #6366f1; color: #4f46e5; }
+
+    /* ===== SECTION CARDS ===== */
+    .section-card {
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 15px; font-weight: 700; color: #1e1b4b; margin: 0 0 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title i { color: #6366f1; }
+    .action-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;
+    }
+    .new-cot-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+    }
+  </style>
+
+  <!-- Librerías de Exportación -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+  <!-- ===== HEADER CON TABS ===== -->
+  <!-- Modal Alta Cliente (para Emisión) -->
+  <div id="modalAltaCliente" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; font-family: 'Inter', sans-serif;">
+    <div style="background:#fff; width:95%; max-width:550px; border-radius:12px; overflow:hidden; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+      <div style="padding:15px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; font-size:16px; color:#1e293b; font-weight:700;">Alta de Cliente para Emisión</h3>
+        <button onclick="document.getElementById('modalAltaCliente').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">&times;</button>
+      </div>
+      <form id="formAltaCliente" style="padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#64748b; text-transform:uppercase;">Nombre / Razón Social *</label>
+          <input type="text" id="ac_nombre" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">
+        </div>
+        <div>
+          <label style="display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#64748b; text-transform:uppercase;">RNC / Cédula *</label>
+          <input type="text" id="ac_cedula" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">
+        </div>
+        <div>
+          <label style="display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#64748b; text-transform:uppercase;">Teléfono</label>
+          <input type="text" id="ac_telefono" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#64748b; text-transform:uppercase;">Correo Electrónico</label>
+          <input type="email" id="ac_email" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">
+        </div>
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#64748b; text-transform:uppercase;">Comisionante *</label>
+          <select id="ac_comisionante" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:#fff;">
+            <option value="">Seleccione perfil...</option>
+            <option value="Supervisor comercial">Supervisor comercial</option>
+            <option value="Supervisor Comercial de Zona">Supervisor Comercial de Zona</option>
+            <option value="Agente Comercial">Agente Comercial</option>
+            <option value="Socio Comercial PDV">Socio Comercial PDV</option>
+          </select>
+        </div>
+        <div style="grid-column:1 / -1; margin-top:10px; padding-top:15px; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" onclick="document.getElementById('modalAltaCliente').style.display='none'" style="padding:10px 16px; border:1px solid #e2e8f0; background:#fff; color:#64748b; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">Cancelar</button>
+          <button type="submit" style="padding:10px 20px; background:#059669; color:#fff; border:none; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">Confirmar y Emitir Póliza</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="cot-header">
+    <h1><i class="fa-solid fa-chart-line mr-2"></i>Módulo de Cotizaciones</h1>
+    <p>Genera cotizaciones de Seguros de Ley y Fianzas para tus clientes</p>
+    <div class="cot-tabs">
+      <button class="cot-tab active" onclick="switchTab('seguros')" id="tab-seguros">
+        <i class="fa-solid fa-car"></i> Seguros de Ley
+      </button>
+      <button class="cot-tab" onclick="switchTab('fianzas')" id="tab-fianzas">
+        <i class="fa-solid fa-shield-halved"></i> Fianzas
+      </button>
+      <button class="cot-tab" onclick="switchTab('historial')" id="tab-historial">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historial
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== TAB: SEGUROS DE LEY ===== -->
+  <div class="cot-panel active" id="panel-seguros">
+    <div class="new-cot-bar">
+      <div>
+        <div class="cot-num"><i class="fa-solid fa-hashtag"></i> Nueva Cotización</div>
+        <p style="margin:0; font-size:13px; color:#6b7280;">Cotizador rápido de Seguros de Ley — tarifario MULTISEGUROS</p>
+      </div>
+      <button class="btn-secondary" onclick="resetCotizador()">
+        <i class="fa-solid fa-rotate-right"></i> Limpiar
+      </button>
+    </div>
+    <div id="dev-errors" style="color:#dc2626; font-size:12px; padding: 0 0 8px;"></div>
+    <div id="root-seguros"></div>
+  </div>
+
+  <!-- ===== TAB: FIANZAS ===== -->
+  <div class="cot-panel" id="panel-fianzas">
+    <div class="new-cot-bar">
+      <div>
+        <div class="cot-num"><i class="fa-solid fa-hashtag"></i> Cotización de Fianza</div>
+        <p style="margin:0; font-size:13px; color:#6b7280;">Fianzas judiciales, contractuales, aduanales y de fiel cumplimiento</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+      <!-- Formulario Fianza -->
+      <div>
+        <div class="section-card">
+          <div class="section-title"><i class="fa-solid fa-user"></i> Datos del Cliente</div>
+          <div class="fianza-grid">
+            <div class="form-group">
+              <label>Nombre Completo</label>
+              <input type="text" id="f_nombre" placeholder="Nombre del tomador">
+            </div>
+            <div class="form-group">
+              <label>Cédula / RNC</label>
+              <input type="text" id="f_cedula" placeholder="000-0000000-0">
+            </div>
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input type="tel" id="f_telefono" placeholder="(809) 000-0000">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico</label>
+              <input type="email" id="f_email" placeholder="cliente@email.com">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title"><i class="fa-solid fa-file-contract"></i> Datos de la Fianza</div>
+          <div class="fianza-grid">
+            <div class="form-group">
+              <label>Tipo de Fianza</label>
+              <select id="f_tipo" onchange="calcularFianza()">
+                <option value="">Seleccione...</option>
+                <option value="judicial">Fianza Judicial</option>
+                <option value="contractual">Fianza Contractual</option>
+                <option value="aduanal">Fianza Aduanal</option>
+                <option value="cumplimiento">Fiel Cumplimiento</option>
+                <option value="licitacion">Licitación / Propuesta</option>
+                <option value="anticipo">Anticipo</option>
+                <option value="garantia">Garantía de Pago</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Plazo (meses)</label>
+              <select id="f_plazo" onchange="calcularFianza()">
+                <option value="1">1 mes</option>
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12" selected>12 meses</option>
+                <option value="18">18 meses</option>
+                <option value="24">24 meses</option>
+                <option value="36">36 meses</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Monto Afianzado (DOP)</label>
+              <input type="number" id="f_monto" placeholder="0.00" min="0" oninput="calcularFianza()">
+            </div>
+            <div class="form-group full">
+              <label>Beneficiario / Entidad</label>
+              <input type="text" id="f_beneficiario" placeholder="Nombre de la entidad beneficiaria">
+            </div>
+            <div class="form-group full">
+              <label>Descripción / Propósito</label>
+              <textarea id="f_descripcion" rows="2" placeholder="Breve descripción del propósito de la fianza"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:4px;">
+          <div style="position:relative; display:inline-block;">
+            <button class="btn-primary" onclick="window.togglePrintOptions('fianzas')">
+              <i class="fa-solid fa-print"></i> Imprimir cotización <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="printOptions-fianzas" class="dropdown-content" style="display:none; position:absolute; bottom:100%; left:0; width:200px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); z-index:50; margin-bottom:5px;">
+              <a href="#" onclick="emitirFianza('pdf'); return false;" style="display:flex; align-items:center; gap:10px; padding:10px 15px; color:#475569; text-decoration:none; font-size:13px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-file-pdf" style="color:#ef4444;"></i> Descargar PDF</a>
+              <a href="#" onclick="emitirFianza('email'); return false;" style="display:flex; align-items:center; gap:10px; padding:10px 15px; color:#475569; text-decoration:none; font-size:13px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-envelope" style="color:#6366f1;"></i> Enviar por Email</a>
+              <a href="#" onclick="emitirFianza('whatsapp'); return false;" style="display:flex; align-items:center; gap:10px; padding:10px 15px; color:#475569; text-decoration:none; font-size:13px;"><i class="fa-brands fa-whatsapp" style="color:#22c55e;"></i> Enviar por WhatsApp</a>
+            </div>
+          </div>
+          <button id="btn-emitir-fianza-final" class="btn-primary" style="background:#059669; display:none;" onclick="window.abrirModalAltaCliente()">
+            <i class="fa-solid fa-check-double"></i> Emitir Póliza Final
+          </button>
+          <button class="btn-secondary" onclick="resetFianza()">
+            <i class="fa-solid fa-rotate-right"></i> Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Resultado Fianza -->
+      <div>
+        <div class="result-card" id="fianza-result">
+          <h3><i class="fa-solid fa-calculator mr-2"></i>Resultado de Cotización</h3>
+          <div id="fianza-result-body">
+            <p style="color:#9ca3af; font-size:13px; text-align:center; padding:20px 0;">
+              Completa el formulario para ver el resultado
+            </p>
+          </div>
+        </div>
+
+        <!-- Tabla de Tasas -->
+        <div class="section-card" style="margin-top:16px;">
+          <div class="section-title"><i class="fa-solid fa-percent"></i> Tasas de Referencia</div>
+          <table style="width:100%; font-size:13px; border-collapse:collapse;">
+            <thead>
+              <tr style="background:#f5f3ff;">
+                <th style="text-align:left; padding:8px 10px; color:#4338ca; font-weight:600; border-bottom:2px solid #e0e7ff;">Tipo de Fianza</th>
+                <th style="text-align:right; padding:8px 10px; color:#4338ca; font-weight:600; border-bottom:2px solid #e0e7ff;">Tasa Anual</th>
+              </tr>
+            </thead>
+            <tbody id="tasas-body">
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Judicial</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">3.0%</td></tr>
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Contractual</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">2.5%</td></tr>
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Aduanal</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">2.0%</td></tr>
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Fiel Cumplimiento</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">2.5%</td></tr>
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Licitación / Propuesta</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">1.5%</td></tr>
+              <tr><td style="padding:7px 10px; border-bottom:1px solid #f3f4f6; color:#374151;">Anticipo</td><td style="text-align:right; padding:7px 10px; border-bottom:1px solid #f3f4f6; font-weight:600; color:#4f46e5;">3.5%</td></tr>
+              <tr><td style="padding:7px 10px; color:#374151;">Garantía de Pago</td><td style="text-align:right; padding:7px 10px; font-weight:600; color:#4f46e5;">2.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB: HISTORIAL ===== -->
+  <div class="cot-panel" id="panel-historial">
+    <div class="section-card">
+      <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Cotizaciones</div>
+      <div id="historial-body" style="min-height:200px;">
+        <p style="color:#9ca3af; font-size:14px; text-align:center; padding:30px 0;">
+          <i class="fa-solid fa-inbox" style="font-size:32px; display:block; margin-bottom:10px; color:#d1d5db;"></i>
+          No hay cotizaciones guardadas en este dispositivo.<br>
+          <span style="font-size:12px;">Las cotizaciones emitidas aparecerán aquí.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.cot-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.cot-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+    }
+
+    // ===== FIANZAS LOGIC =====
+    const TASAS = { judicial:0.030, contractual:0.025, aduanal:0.020, cumplimiento:0.025, licitacion:0.015, anticipo:0.035, garantia:0.020 };
+    const TIPO_LABELS = { judicial:'Fianza Judicial', contractual:'Fianza Contractual', aduanal:'Fianza Aduanal', cumplimiento:'Fiel Cumplimiento', licitacion:'Licitación / Propuesta', anticipo:'Anticipo', garantia:'Garantía de Pago' };
+    const IMPUESTO = 0.18; // 18% ITBIS
+
+    function fmt(n) { return Number(n).toLocaleString('es-DO', {style:'currency', currency:'DOP', minimumFractionDigits:2}); }
+
+    function calcularFianza() {
+      const tipo = document.getElementById('f_tipo').value;
+      const monto = parseFloat(document.getElementById('f_monto').value) || 0;
+      const plazo = parseInt(document.getElementById('f_plazo').value) || 12;
+      const body = document.getElementById('fianza-result-body');
+
+      if (!tipo || monto <= 0) {
+        body.innerHTML = '<p style="color:#9ca3af;font-size:13px;text-align:center;padding:20px 0;">Selecciona el tipo de fianza e ingresa el monto afianzado</p>';
+        return;
+      }
+
+      const tasa = TASAS[tipo] || 0.025;
+      const primaAnual = monto * tasa;
+      const primaProporcional = primaAnual * (plazo / 12);
+      const impuesto = primaProporcional * IMPUESTO;
+      const total = primaProporcional + impuesto;
+
+      const numCot = 'F-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+
+      body.innerHTML = `
+        <div class="result-row"><span class="label">N° Cotización</span><span class="value" style="font-family:monospace;">${numCot}</span></div>
+        <div class="result-row"><span class="label">Tipo de Fianza</span><span class="value">${TIPO_LABELS[tipo]}</span></div>
+        <div class="result-row"><span class="label">Monto Afianzado</span><span class="value">${fmt(monto)}</span></div>
+        <div class="result-row"><span class="label">Plazo</span><span class="value">${plazo} meses</span></div>
+        <div class="result-row"><span class="label">Tasa Anual</span><span class="value">${(tasa*100).toFixed(1)}%</span></div>
+        <div class="result-row"><span class="label">Prima Base</span><span class="value">${fmt(primaProporcional)}</span></div>
+        <div class="result-row"><span class="label">ITBIS (18%)</span><span class="value">${fmt(impuesto)}</span></div>
+        <div class="result-row" style="margin-top:8px;padding-top:12px;border-top:2px solid #c7d2fe;">
+          <span class="label" style="font-weight:600;color:#1e1b4b;">Total a Pagar</span>
+          <span class="amount">${fmt(total)}</span>
+        </div>
+      `;
+    }
+
+    window.togglePrintOptions = function(type) {
+      const el = document.getElementById('printOptions-' + type);
+      const other = document.getElementById('printOptions-' + (type === 'fianzas' ? 'seguros' : 'fianzas'));
+      if (other) other.style.display = 'none';
+      if (el) {
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+      }
+      // Cerrar al hacer clic fuera
+      const close = (e) => {
+        if (!el.contains(e.target) && e.target.tagName !== 'BUTTON') {
+          el.style.display = 'none';
+          document.removeEventListener('click', close);
+        }
+      };
+      setTimeout(() => document.addEventListener('click', close), 10);
+    };
+
+    function emitirFianza(action = 'pdf') {
+      const tipo = document.getElementById('f_tipo').value;
+      const monto = parseFloat(document.getElementById('f_monto').value) || 0;
+      const nombre = document.getElementById('f_nombre').value.trim();
+      const cedula = document.getElementById('f_cedula').value.trim();
+      
+      if (!tipo || monto <= 0 || !nombre) {
+        alert('Por favor completa: Nombre del cliente, Tipo de fianza y Monto afianzado.');
+        return;
+      }
+
+      const tasa = TASAS[tipo] || 0.025;
+      const plazo = parseInt(document.getElementById('f_plazo').value) || 12;
+      const prima = monto * tasa * (plazo/12);
+      const impuesto = prima * IMPUESTO;
+      const total = prima + impuesto;
+      const numCot = 'F-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+      
+      const draft = {
+        tipo: 'FIANZA', subtipo: TIPO_LABELS[tipo], numero: numCot,
+        cliente: nombre, cedula: cedula,
+        monto_afianzado: monto, plazo, prima_base: prima, impuesto, total,
+        fecha: new Date().toISOString()
+      };
+
+      // Guardar en MySQL
+      fetch('../../backend/api/cotizaciones.php?action=guardar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(draft)
+      }).then(r => r.json()).then(res => {
+        if (res.exito) {
+          window.currentCotId = res.id;
+          window.currentCotType = 'FIANZA';
+          document.getElementById('btn-emitir-fianza-final').style.display = 'inline-flex';
+          loadHistorial();
+        }
+      }).catch(e => console.error('Error guardando cotizaci\u00f3n:', e));
+
+      // Procesar Acción de Impresión/Envío
+      if (action === 'pdf') {
+        alert(`Generando PDF para la cotizaci\u00f3n ${numCot}...`);
+        // Aquí iría la lógica de jsPDF similar a la de clientes.html
+      } else if (action === 'email') {
+        const body = `Hola ${nombre},\n\nAdjuntamos la cotizaci\u00f3n ${numCot} por un monto de ${fmt(total)}.\n\nSaludos,\nSyP Empresariales\ninfo@sypempresariales.com`;
+        window.location.href = `mailto:${document.getElementById('f_email').value || ''}?subject=Cotizaci\u00f3n ${numCot} - SyP Empresariales&body=${encodeURIComponent(body)}`;
+      } else if (action === 'whatsapp') {
+        const text = `*Cotización SyP Empresariales*\n*N°:* ${numCot}\n*Cliente:* ${nombre}\n*Monto:* ${fmt(total)}\n*Tipo:* ${TIPO_LABELS[tipo]}`;
+        window.open(`https://wa.me/${document.getElementById('f_telefono').value.replace(/\D/g,'') || ''}?text=${encodeURIComponent(text)}`, '_blank');
+      }
+    }
+
+    // === MODAL ALTA CLIENTE ===
+    window.abrirModalAltaCliente = function() {
+      if (!window.currentCotId) { alert('Primero debe generar una cotizaci\u00f3n.'); return; }
+      document.getElementById('ac_nombre').value = document.getElementById('f_nombre')?.value || '';
+      document.getElementById('ac_cedula').value = document.getElementById('f_cedula')?.value || '';
+      document.getElementById('modalAltaCliente').style.display = 'flex';
+    };
+
+    document.getElementById('formAltaCliente').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.innerText = 'Procesando...';
+
+      const clienteData = {
+        nombre_razon_social: document.getElementById('ac_nombre').value,
+        rnc: document.getElementById('ac_cedula').value,
+        telefono: document.getElementById('ac_telefono').value,
+        correo: document.getElementById('ac_email').value,
+        comisionante: document.getElementById('ac_comisionante').value,
+        estatus: 'Activo'
+      };
+
+      try {
+        // 1. Crear Cliente
+        const resCli = await fetch('../../backend/api/clientes.php/crear', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(clienteData)
+        }).then(r => r.json());
+
+        if (!resCli.exito) throw new Error(resCli.mensaje);
+
+        // 2. Emitir Póliza Final
+        const emissionData = {
+          id_cotizacion: window.currentCotId,
+          id_cliente: resCli.id, // ID del cliente recién creado
+          numero_poliza: 'POL-' + Date.now()
+        };
+
+        const resPol = await fetch('../../backend/api/polizas.php?action=emitir', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(emissionData)
+        }).then(r => r.json());
+
+        if (resPol.exito) {
+          alert('\u2705 P\u00f3liza emitida exitosamente. Redirigiendo...');
+          window.location.href = 'polizas.html';
+        } else {
+          throw new Error(resPol.mensaje);
+        }
+      } catch(err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false; btn.innerText = 'Confirmar y Emitir Póliza';
+      }
+    });
+
+    function resetFianza() {
+      ['f_nombre','f_cedula','f_telefono','f_email','f_monto','f_beneficiario','f_descripcion'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('f_tipo').value = '';
+      document.getElementById('f_plazo').value = '12';
+      document.getElementById('fianza-result-body').innerHTML = '<p style="color:#9ca3af;font-size:13px;text-align:center;padding:20px 0;">Completa el formulario para ver el resultado</p>';
+      document.getElementById('btn-emitir-fianza-final').style.display = 'none';
+      window.currentCotId = null;
+    }
+
+    // Procesa una cotización desde el historial
+    window.procesarCotizacion = function(num) {
+      if (!window.cotizacionesData) return;
+      const c = window.cotizacionesData.find(x => x.numero === num);
+      if (!c) return;
+
+      if (c.tipo === 'FIANZA') {
+        switchTab('fianzas');
+        document.getElementById('f_nombre').value = c.cliente || '';
+        document.getElementById('f_cedula').value = c.cedula || '';
+        document.getElementById('f_tipo').value = Object.keys(TIPO_LABELS).find(k => TIPO_LABELS[k] === c.subtipo) || '';
+        document.getElementById('f_plazo').value = c.plazo || '12';
+        document.getElementById('f_monto').value = c.monto_afianzado || 0;
+        calcularFianza();
+        document.getElementById('btn-emitir-fianza-final').style.display = 'inline-flex';
+        window.currentCotId = c.id;
+        window.currentCotType = 'FIANZA';
+      } else {
+        switchTab('seguros');
+        if (window.loadQuoteIntoReact) {
+          window.loadQuoteIntoReact(c);
+        }
+      }
+    };
+
+    window.emitirPolizaFinal = async function() {
+        const num = 'POL-' + new Date().getTime();
+        const data = {
+            numero_poliza: num,
+            cotizacion_id: window.currentCotId,
+            cliente_id: 1, // Por ahora fijo al cliente de prueba, luego se puede validar
+            tipo_seguro: window.currentCotType === 'FIANZA' ? 'Fianzas' : 'Seguro de Ley',
+            prima_total: window.currentTotalPrima || 0,
+            fecha_vencimiento: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+        };
+
+        try {
+            const resp = await fetch('../../backend/api/polizas.php?action=emitir', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const res = await resp.json();
+            if (res.exito) {
+                alert('✅ Póliza emitida con éxito: ' + num);
+                window.parent.location.reload(); // Recargar el dashboard para ver el cambio
+            } else {
+                alert('❌ Error: ' + res.mensaje);
+            }
+        } catch (e) {
+            alert('❌ Error de conexión al emitir póliza.');
+        }
+    };
+
+    // ===== HISTORIAL - DESDE MYSQL =====
+    function loadHistorial() {
+      const body = document.getElementById('historial-body');
+      body.innerHTML = '<p style="color:#9ca3af;font-size:14px;text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:22px;"></i><br>Cargando...</p>';
+
+      // Leer de MySQL primero, fallback a localStorage
+      fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=listar')
+        .then(function(r){ return r.json(); })
+        .then(function(res) {
+          var all = [];
+          if (res.exito && Array.isArray(res.datos) && res.datos.length > 0) {
+            all = res.datos;
+          } else {
+            // Fallback: localStorage
+            try {
+              all = JSON.parse(localStorage.getItem('cotHistorial') || '[]');
+              if (localStorage.getItem('quoteDraft')) {
+                var d = JSON.parse(localStorage.getItem('quoteDraft'));
+                if (d && !all.find(function(x){ return x.numero === d.numero; })) all.unshift(d);
+              }
+            } catch(e){ all = []; }
+            // Si hay datos en localStorage pero no en BD, importarlos
+            if (all.length > 0) {
+              fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=importar', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(all)
+              }).then(function(r){ return r.json(); })
+                .then(function(r2){ if(r2.exito) loadHistorial(); }) // recargar desde DB
+                .catch(function(){});
+            }
+          }
+          renderHistorial(body, all);
+        })
+        .catch(function() {
+          // Sin conexión: usar localStorage
+          var all = [];
+          try { all = JSON.parse(localStorage.getItem('cotHistorial') || '[]'); } catch(e){}
+          renderHistorial(body, all);
+        });
+    }
+
+    function renderHistorial(body, all) {
+      if (!all || !all.length) {
+        body.innerHTML = '<p style="color:#9ca3af;font-size:14px;text-align:center;padding:30px 0;"><i class="fa-solid fa-inbox" style="font-size:32px;display:block;margin-bottom:10px;color:#d1d5db;"></i>No hay cotizaciones guardadas en este dispositivo.</p>';
+        return;
+      }
+      window.cotizacionesData = all;
+      body.innerHTML = `
+        <div class="action-bar" style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+          <div id="bulkActionsCot" style="display:none; gap:10px;">
+            <button class="btn-primary" style="background:#ef4444;" onclick="window.eliminarSeleccionados()">
+              <i class="fa-solid fa-trash-can"></i> Eliminar <span id="selectedCountCot">0</span>
+            </button>
+          </div>
+          <div style="flex:1"></div>
+          <div class="dropdown-export" style="position:relative; display:inline-block; margin-right:10px;">
+            <button class="btn-secondary" onclick="document.getElementById('exportMenuCot').style.display = document.getElementById('exportMenuCot').style.display === 'block' ? 'none' : 'block'; event.stopPropagation();">
+              <i class="fa-solid fa-download"></i> Exportar <i class="fa-solid fa-caret-down"></i>
+            </button>
+            <div id="exportMenuCot" class="dropdown-content" style="display:none; position:absolute; right:0; top:100%; margin-top:5px; background-color:#fff; min-width:160px; box-shadow:0px 8px 16px rgba(0,0,0,0.2); z-index:100; border-radius:6px; overflow:hidden;">
+              <a href="#" onclick="window.exportarListado('pdf','cotizaciones');return false;"><i class="fa-solid fa-file-pdf" style="color:#ef4444;width:20px;"></i> PDF</a>
+              <a href="#" onclick="window.exportarListado('excel','cotizaciones');return false;"><i class="fa-solid fa-file-excel" style="color:#16a34a;width:20px;"></i> Excel</a>
+              <a href="#" onclick="window.exportarListado('csv','cotizaciones');return false;"><i class="fa-solid fa-file-csv" style="color:#0284c7;width:20px;"></i> CSV</a>
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="document.getElementById('importFileCot').click()">
+            <i class="fa-solid fa-upload"></i> Importar
+          </button>
+          <input type="file" id="importFileCot" accept=".csv,.xlsx,.json" style="display:none;" onchange="window.importarCotizaciones(event)">
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:#f5f3ff;">
+            <th style="width:40px; text-align:center; padding:9px 12px; border-bottom:2px solid #e0e7ff;"><input type="checkbox" id="selectAllCot" onclick="window.toggleSelectAllCot(this)"></th>
+            <th style="text-align:left;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">N&#176; Cotizaci&#243;n</th>
+            <th style="text-align:left;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">Tipo</th>
+            <th style="text-align:left;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">Cliente</th>
+            <th style="text-align:right;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">Prima Total</th>
+            <th style="text-align:left;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">Fecha</th>
+            <th style="text-align:center;padding:9px 12px;color:#4338ca;font-weight:600;border-bottom:2px solid #e0e7ff;">Acs</th>
+          </tr></thead>
+          <tbody>${all.map(function(c){ return `
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td style="text-align:center; padding:8px 12px;"><input type="checkbox" class="cot-check" data-id="${c.id}" onclick="window.updateBulkVisibilityCot()"></td>
+            <td style="padding:8px 12px;font-family:monospace;font-weight:500;color:#4f46e5;">${c.numero||'&#8212;'}</td>
+            <td style="padding:8px 12px;"><span style="background:#eef2ff;color:#4338ca;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600;">${c.tipo||'SEGURO'}</span></td>
+            <td style="padding:8px 12px;color:#374151;">${c.cliente||'&#8212;'}</td>
+            <td style="padding:8px 12px;text-align:right;font-weight:700;color:#059669;">${fmt(c.total||c.prima_total||0)}</td>
+            <td style="padding:8px 12px;color:#9ca3af;">${c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO') : '&#8212;'}</td>
+            <td style="padding:8px 12px;text-align:center;display:flex;gap:5px;justify-content:center;">
+              <button class="btn-secondary" style="padding:4px 8px;font-size:12px;" onclick="window.imprimirItem('${c.numero}','cotizaciones')" title="Imprimir PDF"><i class="fa-solid fa-print"></i></button>
+              <button class="btn-primary" style="padding:4px 8px;font-size:12px;background:#6366f1;" onclick="window.procesarCotizacion('${c.numero}')" title="Procesar / Emitir"><i class="fa-solid fa-gear"></i></button>
+              <button class="btn-secondary" style="padding:4px 8px;font-size:12px;color:#ef4444;border-color:#fecaca;" onclick="window.eliminarCotizacion(${c.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>`;}).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    window.toggleSelectAllCot = function(master) {
+      document.querySelectorAll('.cot-check').forEach(cb => cb.checked = master.checked);
+      window.updateBulkVisibilityCot();
+    };
+
+    window.updateBulkVisibilityCot = function() {
+      const selected = document.querySelectorAll('.cot-check:checked');
+      const bar = document.getElementById('bulkActionsCot');
+      const count = document.getElementById('selectedCountCot');
+      if (selected.length > 0) {
+        bar.style.display = 'flex';
+        count.innerText = selected.length;
+      } else {
+        bar.style.display = 'none';
+        document.getElementById('selectAllCot').checked = false;
+      }
+    };
+
+    window.eliminarCotizacion = async function(id) {
+      if (!confirm('\u00bfEst\u00e1 seguro de que desea eliminar esta cotizaci\u00f3n?')) return;
+      try {
+        const res = await fetch('../../backend/api/cotizaciones.php?action=eliminar', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ id: id })
+        }).then(r => r.json());
+        if (res.exito) {
+          loadHistorial();
+        } else {
+          alert('Error: ' + res.mensaje);
+        }
+      } catch(e) { alert('Error de conexi\u00f3n'); }
+    };
+
+    window.eliminarSeleccionados = async function() {
+      const selected = Array.from(document.querySelectorAll('.cot-check:checked')).map(cb => parseInt(cb.dataset.id));
+      if (!selected.length) return;
+      if (!confirm(`\u00bfDesea eliminar las ${selected.length} cotizaciones seleccionadas?`)) return;
+      
+      try {
+        const res = await fetch('../../backend/api/cotizaciones.php?action=eliminar', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ ids: selected })
+        }).then(r => r.json());
+        if (res.exito) {
+          loadHistorial();
+        } else {
+          alert('Error: ' + res.mensaje);
+        }
+      } catch(e) { alert('Error de conexi\u00f3n'); }
+    };
+
+    document.getElementById('tab-historial').addEventListener('click', loadHistorial);
+
+    // Close dropdown click outside
+    document.addEventListener('click', function(event) {
+        const exportMenu = document.getElementById('exportMenuCot');
+        if (exportMenu && event.target.closest('.dropdown-export') === null) {
+            exportMenu.style.display = 'none';
+        }
+    });
+  </script>
+  
+  <!-- Data Export Script -->
+  <!-- Archivo JS con Logo Base64 para prevenir bloqueos de impresión -->
+  <script src="../assets/logo_b64.js?v=4"></script>
+  <script src="../assets/data-export.js?v=2"></script>
+
+  <!-- ===== REACT APP: SEGUROS DE LEY ===== -->
+  <script type="text/babel">
+    function currency(v){ return Number(v).toLocaleString('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 2 }); }
+
+    let cotizadorResetFn = null;
+
+    function App(){
+      const [type, setType] = React.useState('');
+      const [uso, setUso] = React.useState('');
+      const [capacidad, setCapacidad] = React.useState('');
+      const [insurer, setInsurer] = React.useState('');
+      const [price, setPrice] = React.useState(0);
+      const [errors, setErrors] = React.useState({});
+      const [selectedCoverage, setSelectedCoverage] = React.useState('');
+      const [showCoverageDetails, setShowCoverageDetails] = React.useState(false);
+      const [optionalSelected, setOptionalSelected] = React.useState({});
+      const [cotNum, setCotNum] = React.useState('');
+
+      const TIPO_VALUES = ['AUTOMOVILES','AUTOBUS','CAMION (CAMA O CAJA)','CAMIONES CABEZOTE, TRACTOR O PATANA','CAMIONES VOLTEO','CAMIONETAS','FURGONETAS','JEEP','MAQUINAS PESADAS CON AUTOPROPULSION','MINIVAN / VANETTES','MOTOCICLETAS','PLACA DE DEMOSTRACION','REMOLQUES'];
+      const USO_VALUES = ['PRIVADO','PUBLICO','RENT CAR'];
+
+      const CAPACIDAD_MAP = {
+        'MOTOCICLETAS': ['Hasta 250 cc','Mas de 250 cc','Mas de 350 cc','Bicicleta Eléctrica','Patineta Eléctrica','Buggy','Cuatrimoto','Motonetas (Trimotor)','Four Wheel'],
+        'AUTOMOVILES': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
+        'JEEP': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
+        'MINIVAN / VANETTES': ['Hasta 7 pasajeros','Hasta 9  pasajeros'],
+        'CAMIONETAS': ['Hasta 1/2 Tonelada (Platanera)','Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada y/o 5 Pasajeros'],
+        'FURGONETAS': ['Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada'],
+        'AUTOBUS': ['Hasta 10 Pasajeros','Hasta 20 Pasajeros','Hasta 30 Pasajeros','Hasta 40 Pasajeros','Hasta 50 Pasajeros'],
+        'CAMION (CAMA O CAJA)': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
+        'CAMIONES VOLTEO': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
+        'CAMIONES CABEZOTE, TRACTOR O PATANA': ['Hasta 6 Toneladas','Hasta 18 Toneladas','Hasta 40 Toneladas','Hasta 60 Toneladas'],
+        'MAQUINAS PESADAS CON AUTOPROPULSION': ['Sobre ruedas de gomas','Sobre Orugas','Grúas Móviles, excluyendo RC de Carga'],
+        'PLACA DE DEMOSTRACION': ['Vehiculos hasta 6 Pasajeros','Vehiculos de mas de 6 Pasajeros'],
+        'REMOLQUES': ['Automoviles y Station','Jeeps y Vanettes','Camionetas','Camiones']
+      };
+
+      const COVERAGE_PROFILES = {
+        'MOTOCICLETA BASICO': [{label:'Daños a la Propiedad Ajena',amount:50000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:50000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:100000},{label:'Fianza Judicial',amount:50000}],
+        'LIVIANO BASICO': [{label:'Daños a la Propiedad Ajena',amount:100000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:100000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:200000},{label:'Lesiones Corporales o Muerte a 1 Pasajero',amount:100000},{label:'Lesiones Corporales o Muerte a Más de 1 Pasajero',amount:200000},{label:'Fianza Judicial',amount:200000},{label:'Riesgo Conductor',amount:50000}],
+        'PESADO PLUS': [{label:'Daños a la Propiedad Ajena',amount:300000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:300000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:600000},{label:'Lesiones Corporales o Muerte a 1 Pasajero',amount:300000},{label:'Lesiones Corporales o Muerte a Más de 1 Pasajero',amount:600000},{label:'Fianza Judicial',amount:500000},{label:'Riesgo Conductor',amount:50000}]
+      };
+
+      const RAW_RULES = [
+        ['MOTOCICLETAS','Hasta 250 cc','MOTOCICLETA BASICO','MULTISEGUROS','$400.00'],
+        ['MOTOCICLETAS','Mas de 250 cc','MOTOCICLETA BASICO','MULTISEGUROS','$772.00'],
+        ['MOTOCICLETAS','Mas de 350 cc','MOTOCICLETA BASICO','MULTISEGUROS','$1,229.00'],
+        ['MOTOCICLETAS','Bicicleta Eléctrica','MOTOCICLETA BASICO','MULTISEGUROS','$750.00'],
+        ['MOTOCICLETAS','Patineta Eléctrica','MOTOCICLETA BASICO','MULTISEGUROS','$750.00'],
+        ['MOTOCICLETAS','Buggy','LIVIANO BASICO','MULTISEGUROS','$1,662.57'],
+        ['MOTOCICLETAS','Cuatrimoto','LIVIANO BASICO','MULTISEGUROS','$1,662.57'],
+        ['MOTOCICLETAS','Motonetas (Trimotor)','LIVIANO BASICO','MULTISEGUROS','$1,662.57'],
+        ['MOTOCICLETAS','Four Wheel','LIVIANO BASICO','MULTISEGUROS','$1,662.57'],
+        ['AUTOMOVILES','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','$1,662.57'],
+        ['AUTOMOVILES','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','$1,671.88'],
+        ['AUTOMOVILES','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','$2,139.34'],
+        ['JEEP','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','$2,111.20'],
+        ['JEEP','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','$2,322.32'],
+        ['JEEP','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','$2,554.56'],
+        ['MINIVAN / VANETTES','Hasta 7 pasajeros','LIVIANO BASICO','MULTISEGUROS','$2,923.20'],
+        ['MINIVAN / VANETTES','Hasta 9  pasajeros','LIVIANO BASICO','MULTISEGUROS','$4,209.40'],
+        ['CAMIONETAS','Hasta 1/2 Tonelada (Platanera)','LIVIANO BASICO','MULTISEGUROS','$1,666.00'],
+        ['CAMIONETAS','Hasta 3/4 Tonelada','LIVIANO BASICO','MULTISEGUROS','$2,111.20'],
+        ['CAMIONETAS','Hasta 1 Tonelada','LIVIANO BASICO','MULTISEGUROS','$2,639.14'],
+        ['CAMIONETAS','Hasta 2 Tonelada y/o 5 Pasajeros','LIVIANO BASICO','MULTISEGUROS','$2,952.74'],
+        ['FURGONETAS','Hasta 3/4 Tonelada','LIVIANO BASICO','MULTISEGUROS','$2,111.20'],
+        ['FURGONETAS','Hasta 1 Tonelada','LIVIANO BASICO','MULTISEGUROS','$2,639.14'],
+        ['FURGONETAS','Hasta 2 Tonelada','LIVIANO BASICO','MULTISEGUROS','$2,952.74'],
+        ['AUTOBUS','Hasta 10 Pasajeros','PESADO PLUS','MULTISEGUROS','$3,973.72'],
+        ['AUTOBUS','Hasta 20 Pasajeros','PESADO PLUS','MULTISEGUROS','$5,242.37'],
+        ['AUTOBUS','Hasta 30 Pasajeros','PESADO PLUS','MULTISEGUROS','$6,516.30'],
+        ['AUTOBUS','Hasta 40 Pasajeros','PESADO PLUS','MULTISEGUROS','$7,785.05'],
+        ['AUTOBUS','Hasta 50 Pasajeros','PESADO PLUS','MULTISEGUROS','$9,053.80'],
+        ['CAMION (CAMA O CAJA)','Hasta 3 Toneladas','PESADO PLUS','MULTISEGUROS','$4,760.35'],
+        ['CAMION (CAMA O CAJA)','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','$6,008.80'],
+        ['CAMION (CAMA O CAJA)','Más de 6 Toneladas','PESADO PLUS','MULTISEGUROS','$6,757.97'],
+        ['CAMIONES VOLTEO','Hasta 3 Toneladas','PESADO PLUS','MULTISEGUROS','$4,760.35'],
+        ['CAMIONES VOLTEO','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','$6,008.80'],
+        ['CAMIONES VOLTEO','Más de 6 Toneladas','PESADO PLUS','MULTISEGUROS','$6,757.97'],
+        ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','$6,333.60'],
+        ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 18 Toneladas','PESADO PLUS','MULTISEGUROS','$7,658.17'],
+        ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 40 Toneladas','PESADO PLUS','MULTISEGUROS','$8,317.93'],
+        ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 60 Toneladas','PESADO PLUS','MULTISEGUROS','$8,982.75'],
+        ['MAQUINAS PESADAS CON AUTOPROPULSION','Sobre ruedas de gomas','PESADO PLUS','MULTISEGUROS','$8,317.93'],
+        ['MAQUINAS PESADAS CON AUTOPROPULSION','Sobre Orugas','PESADO PLUS','MULTISEGUROS','$8,317.93'],
+        ['MAQUINAS PESADAS CON AUTOPROPULSION','Grúas Móviles, excluyendo RC de Carga','PESADO PLUS','MULTISEGUROS','$8,317.93'],
+        ['PLACA DE DEMOSTRACION','Vehiculos hasta 6 Pasajeros','PESADO PLUS','MULTISEGUROS','$6,855.10'],
+        ['PLACA DE DEMOSTRACION','Vehiculos de mas de 6 Pasajeros','PESADO PLUS','MULTISEGUROS','$11,242.36'],
+        ['REMOLQUES','Automoviles y Station','PESADO PLUS','MULTISEGUROS','$1,266.11'],
+        ['REMOLQUES','Jeeps y Vanettes','PESADO PLUS','MULTISEGUROS','$2,405.92'],
+        ['REMOLQUES','Camionetas','PESADO PLUS','MULTISEGUROS','$2,146.20'],
+        ['REMOLQUES','Camiones','PESADO PLUS','MULTISEGUROS','$3,281.04']
+      ];
+
+      const RULES_MAP = RAW_RULES.reduce((acc,r)=>{ const tipo=(r[0]||'').toUpperCase().trim(); const cap=(r[1]||'').trim(); const coverage=(r[2]||'').toUpperCase(); const ins=(r[3]||'').toUpperCase().trim(); const prima=Number(String(r[4]||'').replace(/[^0-9.-]+/g,''))||0; acc[`${tipo}||${cap.toUpperCase()}`]={coverage,insurer:ins,prima}; return acc; },{});
+      const OPTIONAL_SERVICES = [{id:'ASIST_VIAL_LIV',label:'ASISTENCIA VIAL (VEHICULO LIVIANO)',price:2600},{id:'ASIST_VIAL_PES',label:'ASISTENCIA VIAL (VEHICULOS PESADOS)',price:4600},{id:'CASA_CONDUCTOR',label:'CASA DEL CONDUCTOR',price:1020},{id:'CENTRO_AUTOMOVILISTA',label:'CENTRO DE AUTOMOVILISTA',price:1020}];
+
+      const capacidades = React.useMemo(()=>{ if(type && CAPACIDAD_MAP[type]) return CAPACIDAD_MAP[type]; return []; },[type]);
+      React.useEffect(()=>{
+        if(!type||!uso||!capacidad) return;
+        const key=`${type.toUpperCase()}||${capacidad.trim().toUpperCase()}`;
+        if(RULES_MAP[key]){ const rule=RULES_MAP[key]; setPrice(rule.prima||0); setInsurer(rule.insurer||''); setSelectedCoverage(rule.coverage||''); }
+        else { setPrice(0); setInsurer(''); }
+      },[type,uso,capacidad]);
+
+      React.useEffect(() => {
+        window.loadQuoteIntoReact = (q) => {
+          if (!q) return;
+          setType(q.subtipo || '');
+          setUso(q.uso || '');
+          setCapacidad(q.capacidad || '');
+          setPrice(q.prima_base || 0);
+          setInsurer(q.aseguradora || '');
+          setSelectedCoverage(q.cobertura || '');
+          setOptionalSelected(q.servicios_opcionales || {});
+          window.currentCotId = q.id;
+          window.currentCotType = 'SEGURO';
+          window.currentTotalPrima = q.total || q.prima_total || 0;
+        };
+      }, []);
+
+      // Keep window updated with current price for emission
+      React.useEffect(() => {
+        window.currentTotalPrima = totalPrice;
+      }, [totalPrice]);
+
+      React.useEffect(()=>{ setShowCoverageDetails(false); },[selectedCoverage]);
+
+      React.useEffect(()=>{
+        if(optionalSelected.CASA_CONDUCTOR && optionalSelected.CENTRO_AUTOMOVILISTA) setOptionalSelected(p=>({...p,CENTRO_AUTOMOVILISTA:false}));
+        if(optionalSelected.CENTRO_AUTOMOVILISTA && optionalSelected.CASA_CONDUCTOR) setOptionalSelected(p=>({...p,CASA_CONDUCTOR:false}));
+      },[optionalSelected]);
+
+      React.useEffect(()=>{
+        if(!selectedCoverage) return;
+        setOptionalSelected(p=>{ const n={...p}; OPTIONAL_SERVICES.forEach(s=>{ if(selectedCoverage.includes('LIVIANO')&&s.id==='ASIST_VIAL_PES') n[s.id]=false; if(selectedCoverage.includes('PESADO')&&s.id==='ASIST_VIAL_LIV') n[s.id]=false; }); return n; });
+      },[selectedCoverage]);
+
+      const insurersList = React.useMemo(()=>{
+        if(!type||!uso||!capacidad) return [];
+        const key=`${type.toUpperCase()}||${capacidad.trim().toUpperCase()}`;
+        if(RULES_MAP[key]) return [{aseguradora:RULES_MAP[key].insurer,prima:RULES_MAP[key].prima}];
+        return [];
+      },[type,uso,capacidad]);
+
+      const totalOptional = React.useMemo(()=> OPTIONAL_SERVICES.reduce((acc,s)=>{ if(selectedCoverage&&selectedCoverage.includes('LIVIANO')&&s.id==='ASIST_VIAL_PES') return acc; if(selectedCoverage&&selectedCoverage.includes('PESADO')&&s.id==='ASIST_VIAL_LIV') return acc; if(optionalSelected[s.id]) return acc+(s.price||0); return acc; },0),[optionalSelected,selectedCoverage]);
+
+      const totalPrice = (Number(price)||0) + Number(totalOptional||0);
+
+      function handleEmitir(action = 'pdf') {
+        if(!type||!uso||!capacidad||!(price>0)){ setErrors({general:'Completa todos los campos para continuar.'}); return; }
+        setErrors({});
+        const num = 'SL-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+        setCotNum(num);
+        const q = { tipo:'SEGURO DE LEY', numero:num, subtipo:type, uso, capacidad, aseguradora:insurer, cobertura:selectedCoverage, prima_base:price, servicios_opcionales:optionalSelected, total:totalPrice, fecha:new Date().toISOString(), cliente:'' };
+        
+        // Guardar en MySQL
+        fetch('../../backend/api/cotizaciones.php?action=guardar', { 
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body:JSON.stringify(q) 
+        }).then(r => r.json()).then(res => {
+          if (res.exito) {
+            window.currentCotId = res.id;
+            window.currentCotType = 'SEGURO';
+            loadHistorial();
+          }
+        }).catch(function(){});
+
+        if (action === 'pdf') {
+          alert(`Generando PDF para ${num}...`);
+        } else if (action === 'email') {
+          const mailBody = `Estimado Cliente,\n\nAdjuntamos la cotizaci\u00f3n ${num} por un monto de ${currency(totalPrice)}.\n\nAtentamente,\nSyP Empresariales\ninfo@sypempresariales.com`;
+          window.location.href = `mailto:?subject=Cotizaci\u00f3n ${num}&body=${encodeURIComponent(mailBody)}`;
+        } else if (action === 'whatsapp') {
+          const waText = `*Cotización SyP Empresariales*\n*N°:* ${num}\n*Vehículo:* ${type}\n*Total:* ${currency(totalPrice)}`;
+          window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`, '_blank');
+        }
+      }
+
+      cotizadorResetFn = ()=>{ setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setOptionalSelected({}); setCotNum(''); };
+
+      return (
+        <div className="flex justify-center w-full">
+          <div className="max-w-5xl w-full bg-white rounded-xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden">
+
+            {/* LEFT PANEL */}
+            <div className="md:col-span-1 p-6 border-r border-gray-100">
+              <div className="p-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-sm mb-6">
+                <div className="text-xs font-semibold opacity-75 uppercase tracking-wider mb-1">Seguros de Ley</div>
+                <div className="text-lg font-bold">Tarifario MULTISEGUROS</div>
+                {cotNum && <div className="text-xs mt-2 bg-white/20 rounded px-2 py-1 font-mono">{cotNum}</div>}
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Tipo de Vehículo</label>
+                  <select value={type} onChange={e=>setType(e.target.value)} className="w-full p-2.5 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 focus:ring-0 outline-none transition-colors bg-white">
+                    <option value="">Seleccione tipo...</option>
+                    {TIPO_VALUES.map(t=><option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Uso del Vehículo</label>
+                  <select value={uso} onChange={e=>setUso(e.target.value)} disabled={!type} className="w-full p-2.5 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 focus:ring-0 outline-none transition-colors bg-white disabled:bg-gray-50 disabled:text-gray-400">
+                    <option value="">Seleccione uso...</option>
+                    {USO_VALUES.map(u=><option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Capacidad / Cilindrada</label>
+                  <select value={capacidad} onChange={e=>setCapacidad(e.target.value)} disabled={!uso} className="w-full p-2.5 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 focus:ring-0 outline-none transition-colors bg-white disabled:bg-gray-50 disabled:text-gray-400">
+                    <option value="">Seleccione capacidad...</option>
+                    {capacidades.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {errors.general && <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{errors.general}</div>}
+            </div>
+
+            {/* RIGHT PANEL */}
+            <div className="md:col-span-2 p-6 bg-gray-50/50">
+              <h2 className="text-base font-bold text-gray-800 mb-4">Resultado de Cotización</h2>
+
+              {/* Cobertura */}
+              {selectedCoverage && (
+                <div className="mb-4 p-4 border-2 border-indigo-100 rounded-xl bg-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Cobertura Asignada</div>
+                      <div className="font-bold text-indigo-900 text-base mt-0.5">{selectedCoverage}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs bg-green-100 text-green-800 font-semibold px-2.5 py-1 rounded-full">✓ Incluida</span>
+                      <button onClick={()=>setShowCoverageDetails(s=>!s)} className="text-xs px-3 py-1.5 border border-indigo-200 rounded-lg hover:bg-indigo-50 text-indigo-600 font-medium transition-colors">{showCoverageDetails?'Ocultar':'Ver detalles'}</button>
+                    </div>
+                  </div>
+                  {showCoverageDetails && (
+                    <div className="mt-3 pt-3 border-t border-indigo-50 space-y-1.5">
+                      {(COVERAGE_PROFILES[selectedCoverage]||[]).map((c,i)=>(
+                        <div key={i} className="flex justify-between text-sm"><span className="text-gray-600">✓ {c.label}</span><span className="font-semibold text-gray-800">{currency(c.amount)}</span></div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Servicios opcionales */}
+              {selectedCoverage && (
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Servicios Opcionales</div>
+                  <div className="space-y-2">
+                    {OPTIONAL_SERVICES.map(s=>{
+                      if(selectedCoverage.includes('LIVIANO')&&s.id==='ASIST_VIAL_PES') return null;
+                      if(selectedCoverage.includes('PESADO')&&s.id==='ASIST_VIAL_LIV') return null;
+                      const disabled=(s.id==='CENTRO_AUTOMOVILISTA'&&optionalSelected.CASA_CONDUCTOR)||(s.id==='CASA_CONDUCTOR'&&optionalSelected.CENTRO_AUTOMOVILISTA);
+                      return (
+                        <label key={s.id} className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${optionalSelected[s.id]?'border-indigo-300 bg-indigo-50':'border-gray-200 bg-white hover:border-indigo-200'} ${disabled?'opacity-40 cursor-not-allowed':''}`}>
+                          <div className="flex items-center">
+                            <input type="checkbox" disabled={disabled} checked={!!optionalSelected[s.id]} onChange={e=>setOptionalSelected(p=>({...p,[s.id]:e.target.checked}))} className="mr-3 w-4 h-4 text-indigo-600 rounded"/>
+                            <span className="text-sm font-medium text-gray-700">{s.label}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-500">{disabled?'—':`+ ${currency(s.price)}`}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Aseguradoras y precio */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="p-4 bg-white border-2 border-gray-200 rounded-xl">
+                  <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Aseguradora</div>
+                  <div className="font-bold text-gray-800 text-base mt-1">{insurer || '—'}</div>
+                </div>
+                <div className="p-4 bg-white border-2 border-green-200 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50">
+                  <div className="text-xs text-green-700 font-semibold uppercase tracking-wider">Prima Total</div>
+                  <div className="font-bold text-green-700 text-2xl mt-1">{currency(totalPrice||0)}</div>
+                </div>
+              </div>
+
+              {/* Lista aseguradoras */}
+              {insurersList.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Opciones de Aseguradora</div>
+                  {insurersList.map(i=>(
+                    <label key={i.aseguradora} className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all ${insurer===i.aseguradora?'border-indigo-400 bg-indigo-50':'border-gray-200 bg-white hover:border-indigo-200'}`}>
+                      <div className="flex items-center">
+                        <input type="radio" name="insurer" value={i.aseguradora} checked={insurer===i.aseguradora} onChange={()=>{setInsurer(i.aseguradora);setPrice(i.prima);}} className="mr-3 w-4 h-4 text-indigo-600"/>
+                        <span className="font-semibold text-gray-700">{i.aseguradora}</span>
+                      </div>
+                      <span className="font-bold text-gray-800">{currency(i.prima)}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* Datos del vehículo */}
+              {capacidad && (
+                <div className="mb-4 p-3 bg-white border border-gray-200 rounded-lg text-sm">
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Datos del Vehículo</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div><span className="text-gray-400">Tipo:</span><br/><span className="font-semibold text-gray-700 text-xs">{type}</span></div>
+                    <div><span className="text-gray-400">Uso:</span><br/><span className="font-semibold text-gray-700 text-xs">{uso}</span></div>
+                    <div><span className="text-gray-400">Capacidad:</span><br/><span className="font-semibold text-gray-700 text-xs">{capacidad}</span></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Acciones */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
+                <div style={{position:'relative', flex:1}}>
+                  <button onClick={() => window.togglePrintOptions('seguros')} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+                    <i className="fa-solid fa-print"></i> Imprimir cotización <i className="fa-solid fa-caret-down"></i>
+                  </button>
+                  <div id="printOptions-seguros" className="dropdown-content" style={{display:'none', position:'absolute', bottom:'100%', left:0, width:'100%', background:'#fff', border:'1px solid #e2e8f0', borderRadius:'8px', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', zIndex:50, marginBottom:'5px'}}>
+                    <a href="#" onClick={(e)=>{ e.preventDefault(); handleEmitir('pdf'); }} style={{display:'flex', alignItems:'center', gap:'10px', padding:'10px 15px', color:'#475569', textDecoration:'none', fontSize:'13px', borderBottom:'1px solid #f1f5f9'}}><i className="fa-solid fa-file-pdf" style={{color:'#ef4444'}}></i> Descargar PDF</a>
+                    <a href="#" onClick={(e)=>{ e.preventDefault(); handleEmitir('email'); }} style={{display:'flex', alignItems:'center', gap:'10px', padding:'10px 15px', color:'#475569', textDecoration:'none', fontSize:'13px', borderBottom:'1px solid #f1f5f9'}}><i className="fa-solid fa-envelope" style={{color:'#6366f1'}}></i> Enviar por Email</a>
+                    <a href="#" onClick={(e)=>{ e.preventDefault(); handleEmitir('whatsapp'); }} style={{display:'flex', alignItems:'center', gap:'10px', padding:'10px 15px', color:'#475569', textDecoration:'none', fontSize:'13px'}}><i className="fa-brands fa-whatsapp" style={{color:'#22c55e'}}></i> Enviar por WhatsApp</a>
+                  </div>
+                </div>
+                {window.currentCotId && window.currentCotType === 'SEGURO' && (
+                  <button onClick={() => window.abrirModalAltaCliente()} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+                    <i className="fa-solid fa-check-double"></i> Emitir Póliza Final
+                  </button>
+                )}
+                <button onClick={()=>{ if(cotizadorResetFn) cotizadorResetFn(); window.currentCotId = null; }} className="px-4 py-3 border-2 border-gray-200 text-gray-600 hover:border-indigo-300 hover:text-indigo-600 font-medium rounded-xl transition-colors text-sm">
+                  <i className="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root-seguros')).render(<App/>);
+  </script>
+
+  <script>
+    function resetCotizador() { if(typeof cotizadorResetFn === 'function') cotizadorResetFn(); }
+  </script>
+</body>
+</html>

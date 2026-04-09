@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Complete Login Flow Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; background: white; border-radius: 5px; }
+        .status-card { padding: 15px; margin: 10px 0; border-left: 4px solid; border-radius: 3px; }
+        .status-success { border-left-color: green; background: #f0f8f0; }
+        .status-error { border-left-color: red; background: #f8f0f0; }
+        .status-info { border-left-color: blue; background: #f0f0f8; }
+        .status-title { font-weight: bold; margin-bottom: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0056b3; }
+        pre { background: #eee; padding: 10px; overflow-x: auto; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .flow-chart { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 3px; margin: 10px 0; }
+        .step { padding: 10px; margin: 5px 0; background: #e3f2fd; border-left: 3px solid #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Complete Login Flow Test</h1>
+        
+        <div class="test-section">
+            <h2>1️⃣ Test 1: Check localStorage & Session</h2>
+            <button onclick="testLocalStorage()">Check Local Storage</button>
+            <div id="localStorage-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2️⃣ Test 2: API Client Initialization</h2>
+            <button onclick="testAPIClient()">Check API Client</button>
+            <div id="api-client-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3️⃣ Test 3: Full Login Flow</h2>
+            <div class="flow-chart">
+                <div class="step">Step 1: Submit login form (admin / Demo@123)</div>
+                <div class="step">Step 2: API sends POST to /backend/api/auth/login</div>
+                <div class="step">Step 3: Backend validates credentials</div>
+                <div class="step">Step 4: Backend returns token and user data</div>
+                <div class="step">Step 5: Frontend stores token & user in localStorage</div>
+                <div class="step">Step 6: Frontend redirects to dashboard.html</div>
+                <div class="step">Step 7: Dashboard loads api-client.js</div>
+                <div class="step">Step 8: Dashboard loads dashboard.js</div>
+                <div class="step">Step 9: Dashboard checks session (api.tieneSesion())</div>
+                <div class="step">Step 10: Dashboard calls cargarDatos()</div>
+            </div>
+            <button onclick="testCompleteFlow()">Execute Complete Flow</button>
+            <div id="flow-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4️⃣ Test 4: Direct Navigation Test</h2>
+            <button onclick="navigateToDashboard()">Navigate to Dashboard Debug</button>
+            <div id="navigation-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5️⃣ Test 5: Browser Console Test</h2>
+            <p>Open Browser Developer Console (F12) and check for errors</p>
+            <button onclick="testConsole()">Trigger Console Logs</button>
+        </div>
+    </div>
+
+    <script src="assets/api-client.js"></script>
+    <script>
+        function updateStatus(elementId, title, status, details) {
+            const statusClass = status === 'success' ? 'status-success' : status === 'error' ? 'status-error' : 'status-info';
+            const icon = status === 'success' ? '✓' : status === 'error' ? '✕' : 'ℹ';
+            
+            let html = `<div class="status-card ${statusClass}">`;
+            html += `<div class="status-title">${icon} ${title}</div>`;
+            if (details) {
+                html += `<pre>${details}</pre>`;
+            }
+            html += `</div>`;
+            
+            document.getElementById(elementId).innerHTML = html;
+        }
+
+        function testLocalStorage() {
+            console.log('[TEST] testLocalStorage()');
+            
+            const token = localStorage.getItem('token_sesion');
+            const usuario = localStorage.getItem('usuario_actual');
+            
+            let details = '';
+            details += 'token_sesion: ' + (token ? token.substring(0, 50) + '...' : 'NOT FOUND') + '\n';
+            details += 'usuario_actual: ' + (usuario ? 'FOUND (' + usuario.length + ' chars)' : 'NOT FOUND') + '\n\n';
+            
+            if (usuario) {
+                try {
+                    const usuarioObj = JSON.parse(usuario);
+                    details += 'Usuario Parsed:\n' + JSON.stringify(usuarioObj, null, 2);
+                } catch (e) {
+                    details += 'ERROR parsing usuario: ' + e.message;
+                }
+            }
+            
+            const status = token && usuario ? 'success' : 'error';
+            updateStatus('localStorage-status', 'Local Storage Check', status, details);
+        }
+
+        function testAPIClient() {
+            console.log('[TEST] testAPIClient()');
+            
+            let details = '';
+            details += 'api object exists: ' + (typeof api !== 'undefined' ? 'YES' : 'NO') + '\n';
+            
+            if (typeof api !== 'undefined') {
+                details += 'api.baseURL: ' + api.baseURL + '\n';
+                details += 'api.tokenSesion: ' + (api.tokenSesion ? api.tokenSesion.substring(0, 30) + '...' : 'null') + '\n';
+                details += 'api.usuario: ' + (api.usuario ? JSON.stringify(api.usuario, null, 2) : 'null') + '\n';
+                details += 'api.tieneSesion(): ' + api.tieneSesion() + '\n';
+                details += 'api.obtenerUsuarioActual(): ' + JSON.stringify(api.obtenerUsuarioActual(), null, 2);
+            }
+            
+            const status = typeof api !== 'undefined' && api.tieneSesion() ? 'success' : 'error';
+            updateStatus('api-client-status', 'API Client Status', status, details);
+        }
+
+        async function testCompleteFlow() {
+            console.log('[TEST] testCompleteFlow()');
+            
+            const flowStatus = document.getElementById('flow-status');
+            flowStatus.innerHTML = '<p>Processing...</p>';
+            
+            try {
+                // Step 1-4: Login
+                console.log('[TEST] Step 1-4: Performing login...');
+                const loginResult = await api.login('admin', 'Demo@123');
+                console.log('[TEST] Login result:', loginResult);
+                
+                if (!loginResult.exito) {
+                    updateStatus('flow-status', 'Complete Flow Test', 'error', 
+                        'Login failed: ' + loginResult.mensaje);
+                    return;
+                }
+                
+                // Step 5: Check localStorage
+                console.log('[TEST] Step 5: Checking localStorage...');
+                const token = localStorage.getItem('token_sesion');
+                const usuario = localStorage.getItem('usuario_actual');
+                
+                let details = 'LOGIN SUCCESSFUL ✓\n';
+                details += 'Token saved: ' + (token ? 'YES' : 'NO') + '\n';
+                details += 'Usuario saved: ' + (usuario ? 'YES' : 'NO') + '\n\n';
+                
+                // Step 6: Simulate redirect
+                details += 'Redirect URL would be: /PLATAFORMA_INTEGRADA/frontend/dashboard.html\n\n';
+                
+                // Step 7-9: Simulate dashboard checks
+                console.log('[TEST] Step 7-9: Simulating dashboard checks...');
+                const hasSession = api.tieneSesion();
+                const currentUser = api.obtenerUsuarioActual();
+                
+                details += 'api.tieneSesion(): ' + hasSession + '\n';
+                details += 'api.obtenerUsuarioActual(): ' + JSON.stringify(currentUser, null, 2);
+                
+                const status = hasSession ? 'success' : 'error';
+                updateStatus('flow-status', 'Complete Flow Test', status, details);
+                
+            } catch (error) {
+                console.error('[TEST] Error in flow:', error);
+                updateStatus('flow-status', 'Complete Flow Test', 'error', error.message);
+            }
+        }
+
+        function navigateToDashboard() {
+            console.log('[TEST] navigateToDashboard()');
+            
+            const hasSesion = api.tieneSesion();
+            if (hasSesion) {
+                updateStatus('navigation-status', 'Navigation', 'success', 
+                    'Session valid. Navigating to dashboard-debug.html...');
+                setTimeout(() => {
+                    window.location.href = 'dashboard-debug.html';
+                }, 1000);
+            } else {
+                updateStatus('navigation-status', 'Navigation', 'error', 
+                    'No valid session. Please login first using the Complete Flow Test.');
+            }
+        }
+
+        function testConsole() {
+            console.log('[TEST] ========== CONSOLE TEST START ==========');
+            console.log('[TEST] localStorage token:', localStorage.getItem('token_sesion'));
+            console.log('[TEST] localStorage usuario:', localStorage.getItem('usuario_actual'));
+            console.log('[TEST] api object:', typeof api);
+            console.log('[TEST] api.tieneSesion():', api.tieneSesion());
+            console.log('[TEST] api.obtenerUsuarioActual():', api.obtenerUsuarioActual());
+            console.log('[TEST] ========== CONSOLE TEST END ==========');
+            
+            updateStatus('flow-status', 'Console Test', 'info', 
+                'Check browser Developer Console (F12) for logs');
+        }
+
+        // Auto-check on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[INIT] Page loaded, auto-checking...');
+            testLocalStorage();
+        });
+    </script>
+</body>
+</html>

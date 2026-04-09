@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MAS QUE FIANZAS (DEBUG)</title>
+    <link rel="stylesheet" href="assets/dashboard.css">
+    <link rel="stylesheet" href="assets/modulos.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🏛️</span>
+                    <h2>MAS QUE</h2>
+                    <h3>FIANZAS</h3>
+                </div>
+                <button class="menu-toggle" id="menuToggle">☰</button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-module="dashboard">
+                    <span class="icon">🏠</span>
+                    <span class="label">INICIO</span>
+                </a>
+                <a href="#" class="nav-item" data-module="usuarios">
+                    <span class="icon">👨‍💼</span>
+                    <span class="label">USUARIOS</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <span class="icon">🚪</span>
+                    <span class="label">SALIR</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="pageTitle">INICIO</h1>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Usuario</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- Dashboard Module -->
+                <section id="modulo-dashboard" class="module active">
+                    <div class="module-header">
+                        <h2>Bienvenido al Sistema de Gestión MAS QUE FIANZAS</h2>
+                        <p id="userGreeting">Gestiona fianzas, seguros y cotizaciones de forma eficiente</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-content">
+                                <h3>Total Pólizas</h3>
+                                <p class="stat-number" id="totalPolizas">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-content">
+                                <h3>Total Clientes</h3>
+                                <p class="stat-number" id="totalClientes">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usuarios Module -->
+                <section id="modulo-usuarios" class="module">
+                    <div class="module-header">
+                        <h2>Gestión de Usuarios y Perfiles</h2>
+                        <button class="btn btn-primary" id="crearUsuarioBtn">+ Crear Usuario</button>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="module-tabs">
+                        <button class="tab-btn active" data-tab="usuarios-tab">Usuarios</button>
+                        <button class="tab-btn" data-tab="perfiles-tab">Perfiles</button>
+                    </div>
+
+                    <!-- Usuarios Tab -->
+                    <div id="usuarios-tab" class="tab-content active">
+                        <div class="filtros-container">
+                            <input type="text" id="buscarUsuarios" class="form-control" placeholder="Buscar...">
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Email</th>
+                                        <th>Perfil</th>
+                                        <th>Estado</th>
+                                        <th>Último Acceso</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usuariosList">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination" id="usuariosPaginacion"></div>
+                    </div>
+
+                    <!-- Perfiles Tab -->
+                    <div id="perfiles-tab" class="tab-content">
+                        <div class="filtros-container">
+                            <button class="btn btn-primary" id="crearPerfilBtn">+ Crear Perfil</button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Perfil</th>
+                                        <th>Descripción</th>
+                                        <th>Nivel Jerárquico</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="perfilesList">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/api-client.js"></script>
+    <script src="assets/dashboard-debug.js"></script>
+</body>
+</html>
