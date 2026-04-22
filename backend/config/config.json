@@ -1,0 +1,22 @@
+{
+    "smtp": {
+        "server": "mail.masquefianzas.com",
+        "port": 465,
+        "username": "info@masquefianzas.com",
+        "password": "M4sq53F14nz4s",
+        "encryption": "ssl",
+        "timeout": 10
+    },
+    "whatsapp": {
+        "phone_number_id": "",
+        "access_token": "",
+        "api_version": "v18.0",
+        "enabled": false
+    },
+    "empresa": {
+        "nombre": "MAS QUE FIANZAS, S.R.L.",
+        "rnc": "131-12345-6",
+        "telefono": "809-000-0000",
+        "direccion": "Santo Domingo, República Dominicana"
+    }
+}

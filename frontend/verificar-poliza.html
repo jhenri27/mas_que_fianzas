@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Póliza — MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #003166 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #003166 0%, #0047a0 100%);
+            padding: 36px 32px 28px;
+            text-align: center;
+            position: relative;
+        }
+        .card-header img { height: 52px; margin-bottom: 12px; }
+        .card-header h1 { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .card-header p { color: rgba(255,255,255,.7); font-size: 13px; }
+
+        .card-body { padding: 32px; }
+
+        /* Estado Loading */
+        .state-loading { text-align:center; padding: 40px; }
+        .state-loading .spinner {
+            width: 56px; height: 56px; border: 5px solid #e0e7ff;
+            border-top-color: #4f46e5; border-radius: 50%;
+            animation: spin .9s linear infinite; margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Estado Error */
+        .state-error { text-align:center; padding: 40px; }
+        .state-error .icon-error { font-size: 56px; color: #dc2626; margin-bottom: 16px; }
+        .state-error h2 { color: #dc2626; font-size: 20px; margin-bottom: 8px; }
+        .state-error p { color: #64748b; font-size: 14px; }
+
+        /* Estado Válida */
+        .state-valid .poliza-badge {
+            background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+            border: 2px solid #86efac;
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .state-valid .check-icon {
+            width: 52px; height: 52px;
+            background: #16a34a; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 24px; flex-shrink: 0;
+        }
+        .state-valid .poliza-num { font-size: 22px; font-weight: 800; color: #16a34a; }
+        .state-valid .poliza-estado { font-size: 13px; color: #166534; }
+
+        /* Estado Inválida/Vencida */
+        .state-invalid .poliza-badge {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .state-invalid .check-icon {
+            width: 52px; height: 52px;
+            background: #dc2626; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 24px; flex-shrink: 0;
+        }
+        .state-invalid .poliza-num { font-size: 22px; font-weight: 800; color: #dc2626; }
+        .state-invalid .poliza-estado { font-size: 13px; color: #991b1b; }
+
+        /* Tabla de datos */
+        .data-table-verif { width:100%; border-collapse:collapse; }
+        .data-table-verif tr:not(:last-child) td { border-bottom: 1px solid #f1f5f9; }
+        .data-table-verif td { padding: 10px 0; font-size: 14px; }
+        .data-table-verif .label { color: #94a3b8; font-weight: 600; font-size: 12px; text-transform: uppercase; width: 42%; vertical-align: top; padding-top: 11px; }
+        .data-table-verif .value { color: #1e293b; font-weight: 500; }
+
+        .vigencia-chip {
+            display: inline-block;
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+        }
+        .vigencia-vigente { background:#dcfce7; color:#16a34a; }
+        .vigencia-vencida { background:#fee2e2; color:#dc2626; }
+
+        .footer-info {
+            margin-top: 24px;
+            padding: 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+        }
+        .footer-info strong { color: #475569; }
+
+        .card-footer {
+            background: #f8fafc;
+            padding: 20px 32px;
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+        }
+        .card-footer a { color: #4f46e5; text-decoration: none; font-weight: 600; }
+
+        /* Input de búsqueda manual */
+        .search-box {
+            display: flex; gap: 10px; margin-top: 20px;
+        }
+        .search-box input {
+            flex: 1; padding: 11px 16px;
+            border: 1.5px solid #e2e8f0; border-radius: 9px;
+            font-size: 14px; outline: none;
+            transition: border-color .2s;
+        }
+        .search-box input:focus { border-color: #4f46e5; }
+        .search-box button {
+            padding: 11px 20px; background: #4f46e5; color: #fff;
+            border: none; border-radius: 9px; cursor: pointer;
+            font-weight: 700; font-size: 14px;
+            transition: background .2s;
+        }
+        .search-box button:hover { background: #4338ca; }
+
+        @media (max-width: 480px) {
+            .card { border-radius: 16px; }
+            .card-header, .card-body { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <div style="font-size:36px;margin-bottom:10px;color:rgba(255,255,255,.9);">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h1>Verificación de Póliza</h1>
+        <p>MAS QUE FIANZAS — Sistema de Verificación Oficial</p>
+    </div>
+
+    <div class="card-body" id="card-body">
+        <!-- Estado: Cargando -->
+        <div class="state-loading" id="st-loading">
+            <div class="spinner"></div>
+            <p style="color:#64748b;font-size:14px;">Consultando la base de datos...</p>
+        </div>
+
+        <!-- Estado: Error / No encontrado -->
+        <div class="state-error" id="st-error" style="display:none;">
+            <div class="icon-error"><i class="fa-solid fa-circle-xmark"></i></div>
+            <h2 id="error-title">Póliza no encontrada</h2>
+            <p id="error-msg">El número de póliza no existe en nuestros registros.</p>
+            <div class="search-box" style="margin-top:24px;">
+                <input type="text" id="manual-num" placeholder="Ingrese N° de póliza manualmente" style="text-transform:uppercase;">
+                <button onclick="buscarManual()"><i class="fa-solid fa-search"></i></button>
+            </div>
+        </div>
+
+        <!-- Estado: Sin número -->
+        <div id="st-empty" style="display:none;">
+            <div style="text-align:center;margin-bottom:24px;">
+                <i class="fa-solid fa-qrcode" style="font-size:48px;color:#c4b5fd;margin-bottom:12px;display:block;"></i>
+                <h2 style="color:#1e293b;font-size:18px;margin-bottom:6px;">Verificar Póliza</h2>
+                <p style="color:#64748b;font-size:13px;">Ingrese el número de póliza para consultar su vigencia y estado.</p>
+            </div>
+            <div class="search-box">
+                <input type="text" id="manual-num-empty" placeholder="Ej: POL-2026-1234" style="text-transform:uppercase;">
+                <button onclick="buscarManualEmpty()"><i class="fa-solid fa-search"></i> Verificar</button>
+            </div>
+        </div>
+
+        <!-- Estado: Poliza Válida -->
+        <div id="st-valida" style="display:none;">
+            <div class="state-valid">
+                <div class="poliza-badge">
+                    <div class="check-icon"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                        <div class="poliza-num" id="v-numero">—</div>
+                        <div class="poliza-estado"><i class="fa-solid fa-circle-check"></i> Póliza Vigente y Verificada</div>
+                    </div>
+                </div>
+            </div>
+            <table class="data-table-verif">
+                <tr><td class="label">Asegurado</td><td class="value" id="v-asegurado">—</td></tr>
+                <tr><td class="label">Aseguradora</td><td class="value" id="v-aseguradora">—</td></tr>
+                <tr><td class="label">Tipo de Seguro</td><td class="value" id="v-tipo">—</td></tr>
+                <tr><td class="label">Cobertura</td><td class="value" id="v-cobertura">—</td></tr>
+                <tr><td class="label">Vehículo</td><td class="value" id="v-vehiculo">—</td></tr>
+                <tr><td class="label">Placa</td><td class="value" id="v-placa">—</td></tr>
+                <tr><td class="label">Vigencia</td>
+                    <td class="value">
+                        <span id="v-desde">—</span> al <span id="v-hasta">—</span><br>
+                        <span id="v-chip" class="vigencia-chip vigencia-vigente">Vigente</span>
+                    </td>
+                </tr>
+                <tr><td class="label">Estado</td><td class="value" id="v-estado">—</td></tr>
+            </table>
+        </div>
+
+        <!-- Estado: Póliza Inválida / Vencida / Cancelada -->
+        <div id="st-invalida" style="display:none;">
+            <div class="state-invalid">
+                <div class="poliza-badge">
+                    <div class="check-icon"><i class="fa-solid fa-xmark"></i></div>
+                    <div>
+                        <div class="poliza-num" id="inv-numero">—</div>
+                        <div class="poliza-estado" id="inv-estado-msg">Póliza con irregularidades</div>
+                    </div>
+                </div>
+            </div>
+            <p style="color:#64748b;font-size:13px;margin-top:8px;">Esta póliza presenta un estado que puede indicar vencimiento, cancelación o falta de vigencia. Contacte a MAS QUE FIANZAS para más información.</p>
+        </div>
+
+        <!-- Pie de verificación -->
+        <div class="footer-info" id="footer-info" style="display:none;">
+            <i class="fa-solid fa-clock"></i> Verificado el <strong id="v-timestamp">—</strong>
+            <br><i class="fa-solid fa-database"></i> Datos obtenidos en tiempo real de la base de datos de <strong>MAS QUE FIANZAS</strong>
+        </div>
+    </div>
+
+    <div class="card-footer">
+        <a href="http://localhost/PLATAFORMA_INTEGRADA/frontend/login.html"><i class="fa-solid fa-arrow-left"></i> Ir al Sistema</a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <i class="fa-solid fa-phone"></i> (829) 629-1952
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <i class="fa-solid fa-envelope"></i> info@masquefianzas.com
+    </div>
+</div>
+
+<script>
+    const API_URL = '../backend/api/verificar_poliza.php';
+
+    // Obtener el número de póliza desde la URL (?n=POL-2026-XXXX)
+    const params = new URLSearchParams(window.location.search);
+    const numeroBuscado = params.get('n');
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (numeroBuscado) {
+            verificarPoliza(numeroBuscado);
+        } else {
+            mostrar('st-empty');
+        }
+    });
+
+    async function verificarPoliza(numero) {
+        mostrar('st-loading');
+        try {
+            const r = await fetch(`${API_URL}?n=${encodeURIComponent(numero)}`);
+            const d = await r.json();
+
+            if (!d.exito) {
+                mostrar('st-error');
+                document.getElementById('error-title').textContent = 'Póliza no encontrada';
+                document.getElementById('error-msg').textContent = d.mensaje || 'No encontramos esta póliza en nuestros registros.';
+                return;
+            }
+
+            const datos = d.datos;
+            document.getElementById('footer-info').style.display = 'block';
+            document.getElementById('v-timestamp').textContent = new Date(datos.verificado_en).toLocaleString('es-DO');
+
+            // Determinar si es válida: activa + vigente
+            const esValida = datos.es_valida && datos.vigente;
+
+            if (esValida) {
+                mostrar('st-valida');
+                document.getElementById('v-numero').textContent = datos.numero_poliza;
+                document.getElementById('v-asegurado').textContent = datos.asegurado || '—';
+                document.getElementById('v-aseguradora').textContent = datos.aseguradora || '—';
+                document.getElementById('v-tipo').textContent = datos.tipo_seguro || '—';
+                document.getElementById('v-cobertura').textContent = datos.cobertura || '—';
+                document.getElementById('v-vehiculo').textContent = datos.vehiculo_info || '—';
+                document.getElementById('v-placa').textContent = datos.vehiculo_placa || '—';
+                document.getElementById('v-desde').textContent = fmtFecha(datos.fecha_emision);
+                document.getElementById('v-hasta').textContent = fmtFecha(datos.fecha_vencimiento);
+                document.getElementById('v-estado').innerHTML = `<span style="color:#16a34a;font-weight:700;">${datos.estado}</span>`;
+                
+                const chip = document.getElementById('v-chip');
+                if (!datos.vigente) {
+                    chip.textContent = 'Vencida'; chip.className = 'vigencia-chip vigencia-vencida';
+                } else {
+                    chip.textContent = 'Vigente'; chip.className = 'vigencia-chip vigencia-vigente';
+                }
+            } else {
+                mostrar('st-invalida');
+                document.getElementById('inv-numero').textContent = datos.numero_poliza;
+                let msg = '';
+                if (!datos.vigente) msg = '⚠️ Póliza Vencida';
+                else if (datos.estado !== 'ACTIVA') msg = `Estado: ${datos.estado}`;
+                else if (!datos.es_valida) msg = '⚠️ Póliza Pendiente de Validación';
+                document.getElementById('inv-estado-msg').textContent = msg;
+            }
+
+        } catch (e) {
+            mostrar('st-error');
+            document.getElementById('error-title').textContent = 'Error de Conexión';
+            document.getElementById('error-msg').textContent = 'No se pudo conectar con el servidor de verificación.';
+        }
+    }
+
+    function buscarManual() {
+        const num = document.getElementById('manual-num').value.trim().toUpperCase();
+        if (num) verificarPoliza(num);
+    }
+
+    function buscarManualEmpty() {
+        const num = document.getElementById('manual-num-empty').value.trim().toUpperCase();
+        if (num) verificarPoliza(num);
+    }
+
+    function mostrar(id) {
+        ['st-loading','st-error','st-empty','st-valida','st-invalida'].forEach(s => {
+            const el = document.getElementById(s);
+            if (el) el.style.display = s === id ? 'block' : 'none';
+        });
+    }
+
+    function fmtFecha(f) {
+        if (!f) return '—';
+        try { return new Date(f).toLocaleDateString('es-DO', { year:'numeric', month:'long', day:'numeric' }); }
+        catch { return f; }
+    }
+</script>
+</body>
+</html>

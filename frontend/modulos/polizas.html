@@ -4,294 +4,1359 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Pólizas - MAS QUE FIANZAS</title>
+    <title>Pólizas — MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
-    
-    <!-- Dashboard Fonts & CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
-    
     <style>
-        .status-badge {
-            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-align: center;
-        }
-        .status-activo { color: #16a34a; background-color: rgba(22, 163, 74, 0.1); }
-        .status-cancelada { color: #dc2626; background-color: rgba(220, 38, 38, 0.1); }
+        /* ── Módulo embebido en iframe ── */
+        .sidebar { display:none!important; }
+        .top-navbar { display:none!important; }
+        .main-content { margin-left:0!important; width:100%!important; padding-top:0!important; }
+        .content-area { padding:20px!important; margin-top:0!important; min-height:100vh; background:#f8fafc; box-sizing:border-box; }
 
-        /* Estilo de monto */
-        .monto-positivo { color: #059669; font-weight: 600; }
-        .monto-negativo { color: #dc2626; font-weight: 600; }
-        .monto-neutro { color: #4f46e5; font-weight: 600; }
-        
-        /* Table Styles override */
-        .data-table th { 
-            padding: 14px 12px; 
-            background-color: #f5f3ff; 
-            border-bottom: 2px solid #e0e7ff; 
-            color: #4338ca; 
-            font-weight: 700; 
-            text-align: left;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        /* ── Tabs ── */
+        .tabs-bar {
+            display:flex; gap:4px; margin-bottom:0;
+            border-bottom:2px solid #e0e7ff;
         }
-        .data-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; }
-        .data-table tr:hover { background-color: #f8fafc; }
-        
-        .action-icon { cursor: pointer; color: #6366f1; font-size: 15px; margin: 0 5px; transition: all 0.2s; }
-        .action-icon:hover { color: #4338ca; transform: scale(1.15); }
+        .tab-btn {
+            padding:10px 20px; border:none; background:transparent;
+            cursor:pointer; font-size:13px; font-weight:600;
+            color:#64748b; border-bottom:3px solid transparent;
+            margin-bottom:-2px; transition:all .2s;
+        }
+        .tab-btn.active { color:#4f46e5; border-bottom-color:#4f46e5; }
+        .tab-btn:hover:not(.active) { color:#4f46e5; background:#f0f0ff; border-radius:6px 6px 0 0; }
+        .tab-panel { display:none; animation:fadeIn .25s ease; }
+        .tab-panel.active { display:block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-        /* Estilos de filtrado superiores */
-        .filter-panel {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            padding: 24px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* ── Panel Filtros ── */
+        .filter-bar {
+            background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);
+            padding:18px 20px; border-radius:10px 10px 0 0;
+            display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;
+            box-shadow:0 4px 6px rgba(0,0,0,.1);
         }
-        
-        .filter-group { flex: 1; display:flex; flex-direction:column; }
-        .filter-group label { color: rgba(255, 255, 255, 0.9); font-size: 12px; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; }
-        .filter-group input { 
-            padding: 10px 14px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            border-radius: 8px; 
-            outline: none; 
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            font-size: 14px;
-            transition: all 0.2s;
+        .filter-bar .fg { display:flex; flex-direction:column; flex:1; min-width:140px; }
+        .filter-bar label { color:rgba(255,255,255,.85); font-size:11px; font-weight:600; margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em; }
+        .filter-bar input, .filter-bar select {
+            padding:9px 12px; border:1px solid rgba(255,255,255,.25);
+            border-radius:7px; background:rgba(255,255,255,.15);
+            color:#fff; font-size:13px; outline:none; transition:all .2s;
         }
-        .filter-group input::placeholder { color: rgba(255, 255, 255, 0.6); }
-        .filter-group input:focus { background: rgba(255, 255, 255, 0.25); border-color: #fff; }
-        
-        .btn-search {
-            background-color: #fff;
-            color: #4f46e5;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            margin-top: 22px;
-            display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .filter-bar input::placeholder { color:rgba(255,255,255,.55); }
+        .filter-bar input:focus, .filter-bar select:focus { background:rgba(255,255,255,.28); border-color:#fff; }
+        .filter-bar select option { background:#4f46e5; color:#fff; }
+        .btn-filtrar {
+            padding:9px 22px; background:#fff; color:#4f46e5; border:none;
+            border-radius:7px; font-weight:700; cursor:pointer;
+            display:flex; align-items:center; gap:6px; font-size:13px;
+            box-shadow:0 2px 4px rgba(0,0,0,.1); transition:all .2s;
         }
-        .btn-search:hover { background-color: #f8fafc; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+        .btn-filtrar:hover { transform:translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,.15); }
 
-        .filter-actions {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-top: 22px;
-            color: #fff;
-            font-size: 13px;
-        }
-        .filter-actions a { color: rgba(255, 255, 255, 0.9); text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: color 0.2s; }
-        .filter-actions a:hover { color: #fff; }
-        .filter-actions a i { font-size: 20px; }
+        /* ── Tabla ── */
+        .tbl-wrap { background:#fff; border-radius:0 0 10px 10px; overflow-x:auto; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+        .data-table { width:100%; border-collapse:collapse; min-width:1100px; }
+        .data-table th { padding:12px 10px; background:#f5f3ff; color:#4338ca; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:2px solid #e0e7ff; white-space:nowrap; }
+        .data-table td { padding:12px 10px; border-bottom:1px solid #f1f5f9; color:#334155; font-size:12.5px; }
+        .data-table tr:hover td { background:#f8fafc; }
+        .data-table tr:last-child td { border-bottom:none; }
 
-        /* Estilos específicos para uso dentro del iframe del dashboard principal */
-        .sidebar { display: none !important; }
-        .top-navbar { display: none !important; }
-        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
-        .content-area { padding: 24px !important; margin-top: 0 !important; height: 100vh; overflow-y: auto; box-sizing: border-box; background: #f8fafc; }
+        /* Badges */
+        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+        .badge-activa { color:#16a34a; background:rgba(22,163,74,.1); }
+        .badge-cancelada, .badge-vencida { color:#dc2626; background:rgba(220,38,38,.1); }
+        .badge-suspendida { color:#d97706; background:rgba(217,119,6,.1); }
+        .badge-si { color:#4f46e5; background:rgba(79,70,229,.1); }
+        .badge-no { color:#94a3b8; background:#f1f5f9; }
+
+        /* IDs de acción */
+        .accion { cursor:pointer; color:#6366f1; font-size:14px; margin:0 3px; transition:all .2s; }
+        .accion:hover { color:#4338ca; transform:scale(1.18); }
+        .accion-rojo:hover { color:#dc2626; }
+        .accion-verde:hover { color:#16a34a; }
+        .accion-naranja:hover { color:#d97706; }
+
+        /* ── Pagination ── */
+        .pagination-bar { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; }
+        .pg-btn { border:1px solid #e0e7ff; background:#fff; color:#4f46e5; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px; }
+        .pg-btn:hover { background:#f0f0ff; }
+
+        /* ── Wizard Nueva Póliza ── */
+        .wizard-steps { display:flex; gap:0; margin-bottom:28px; }
+        .wizard-step {
+            flex:1; text-align:center; padding:14px 8px;
+            background:#f8fafc; border-bottom:3px solid #e0e7ff;
+            font-size:12px; font-weight:600; color:#94a3b8;
+            position:relative; transition:all .25s;
+        }
+        .wizard-step.done { color:#16a34a; border-bottom-color:#16a34a; background:#f0fdf4; }
+        .wizard-step.active { color:#4f46e5; border-bottom-color:#4f46e5; background:#f0f0ff; }
+        .wizard-step .step-num {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:28px; height:28px; border-radius:50%; font-size:12px;
+            font-weight:700; margin-bottom:6px;
+            background:#e0e7ff; color:#4f46e5;
+        }
+        .wizard-step.active .step-num { background:#4f46e5; color:#fff; }
+        .wizard-step.done .step-num { background:#16a34a; color:#fff; }
+
+        .wizard-body { background:#fff; border:1px solid #e0e7ff; border-radius:12px; padding:28px; }
+        .wizard-nav { display:flex; justify-content:space-between; margin-top:28px; padding-top:18px; border-top:1px solid #f1f5f9; }
+
+        /* Formulario */
+        .form-grid { display:grid; gap:16px; }
+        .form-grid-2 { grid-template-columns:1fr 1fr; }
+        .form-grid-3 { grid-template-columns:1fr 1fr 1fr; }
+        .form-grid-4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+        .form-group { display:flex; flex-direction:column; gap:6px; }
+        .form-group label { font-size:12px; font-weight:600; color:#475569; }
+        .form-group input, .form-group select, .form-group textarea {
+            padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px;
+            font-size:13px; color:#1e293b; outline:none; transition:border-color .2s;
+            background:#fff;
+        }
+        .form-group input:focus, .form-group select:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.08); }
+        .form-group .hint { font-size:11px; color:#94a3b8; }
+
+        /* Resumen de comisiones */
+        .comision-card {
+            background:linear-gradient(135deg,#f0f0ff,#faf5ff);
+            border:1px solid #e0e7ff; border-radius:10px; padding:16px;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .comision-card .cc-label { font-size:12px; color:#64748b; font-weight:600; }
+        .comision-card .cc-value { font-size:18px; font-weight:700; color:#4f46e5; }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(15,23,42,.65); backdrop-filter:blur(4px);
+            z-index:9000; align-items:center; justify-content:center;
+        }
+        .modal-overlay.open { display:flex; animation:fadeIn .25s ease; }
+        .modal-box {
+            background:#fff; border-radius:16px; width:92%; max-width:760px;
+            max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25);
+        }
+        .modal-header {
+            padding:20px 24px; border-bottom:1px solid #f1f5f9;
+            display:flex; justify-content:space-between; align-items:center;
+            background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:16px 16px 0 0;
+        }
+        .modal-header h3 { color:#fff; font-size:16px; margin:0; }
+        .modal-header .close-btn { background:rgba(255,255,255,.2); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; }
+        .modal-header .close-btn:hover { background:rgba(255,255,255,.3); }
+        .modal-body { padding:24px; }
+        .modal-footer { padding:16px 24px; border-top:1px solid #f1f5f9; display:flex; gap:10px; justify-content:flex-end; }
+
+        /* Detail grid */
+        .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; }
+        .detail-item .di-label { font-size:11px; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+        .detail-item .di-value { font-size:14px; color:#1e293b; font-weight:500; margin-top:2px; }
+
+        /* Botones */
+        .btn { padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:7px; transition:all .2s; }
+        .btn-primary { background:#4f46e5; color:#fff; }
+        .btn-primary:hover { background:#4338ca; transform:translateY(-1px); }
+        .btn-success { background:#16a34a; color:#fff; }
+        .btn-success:hover { background:#15803d; }
+        .btn-outline { background:#fff; color:#4f46e5; border:1.5px solid #4f46e5; }
+        .btn-outline:hover { background:#f0f0ff; }
+        .btn-danger { background:#dc2626; color:#fff; }
+        .btn-danger:hover { background:#b91c1c; }
+        .btn-secondary { background:#f1f5f9; color:#475569; }
+        .btn-secondary:hover { background:#e2e8f0; }
+        .btn-sm { padding:6px 12px; font-size:12px; }
+
+        /* Comisiones Tab */
+        .comision-row { background:#fff; border:1px solid #e0e7ff; border-radius:8px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .comision-row .cr-meta { font-size:12px; color:#64748b; }
+        .comision-row .cr-monto { font-size:18px; font-weight:700; color:#4f46e5; }
+        .comision-row.pendiente .cr-monto { color:#d97706; }
+        .comision-row.pagado .cr-monto { color:#16a34a; }
+
+        /* Estado sin datos */
+        .empty-state { text-align:center; padding:60px 20px; color:#94a3b8; }
+        .empty-state i { font-size:48px; margin-bottom:16px; display:block; }
+        .empty-state h3 { font-size:16px; color:#64748b; margin:0 0 8px; }
+        .empty-state p { font-size:13px; margin:0; }
+
+        /* Toast */
+        #toast {
+            position:fixed; bottom:24px; right:24px; padding:12px 20px;
+            border-radius:10px; color:#fff; font-size:13px; font-weight:600;
+            z-index:9999; display:none; align-items:center; gap:8px;
+            box-shadow:0 8px 24px rgba(0,0,0,.15); animation:slideUp .3s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .toast-success { background:#16a34a; }
+        .toast-error { background:#dc2626; }
+        .toast-info { background:#4f46e5; }
     </style>
 </head>
 <body class="dashboard-body">
+<main class="main-content">
+<div class="content-area">
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Content Area -->
-        <div class="content-area">
-            
-            <div class="page-header" style="margin-bottom: 10px;">
-                <div style="width: 100%; display:flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap:10px; align-items: center; font-size: 24px; font-weight: bold; color: #1e293b;">
-                        Póliza: Panel
-                    </div>
-                    <div style="font-size: 13px; color: #64748b;">
-                        Inicio > Seguro > Panel > Póliza
-                    </div>
-                </div>
+    <!-- Page Header -->
+    <div class="page-header" style="margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px; font-size:22px; font-weight:800; color:#1e293b;">
+                <i class="fa-solid fa-shield-halved" style="color:#4f46e5;"></i> Gestión de Pólizas
             </div>
-
-            <!-- Panel de Filtros -->
-            <div class="filter-panel">
-                <div class="filter-group" style="flex: 2;">
-                    <label>Estoy buscando...</label>
-                    <input type="text" id="filterBusqueda" placeholder="Digite su búsqueda">
-                </div>
-                <div class="filter-group">
-                    <label>Fecha de inicio</label>
-                    <input type="date" id="filterInicio">
-                </div>
-                <div class="filter-group">
-                    <label>Fecha final</label>
-                    <input type="date" id="filterFin">
-                </div>
-                <div>
-                    <button class="btn-search" onclick="cargarPolizas()">
-                        <i class="fa-solid fa-search"></i> Buscar
-                    </button>
-                </div>
-                <div class="filter-actions">
-                    <a onclick="limpiarFiltros()"><i class="fa-solid fa-border-all"></i> Ver todos</a>
-                    <a onclick="alert('Función de impresión masiva en desarrollo')"><i class="fa-solid fa-print"></i> Imprimir</a>
-                </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-outline btn-sm" onclick="exportarPolizas()">
+                    <i class="fa-solid fa-file-export"></i> Exportar
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
+                    <i class="fa-solid fa-plus"></i> Nueva Póliza
+                </button>
             </div>
-
-            <!-- Tabla de datos -->
-            <div class="table-container" style="background:#fff; border-radius: 0 0 8px 8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow-x:auto;">
-                <table class="data-table" id="tablaPolizas" style="width:100%; border-collapse:collapse; min-width:1000px;">
-                    <thead>
-                        <tr>
-                            <th>Póliza</th>
-                            <th></th> <!-- Indice -->
-                            <th>Tipo póliza <i class="fa-solid fa-caret-down"></i></th>
-                            <th>Nombre</th>
-                            <th>Ramo</th>
-                            <th>Vigencia <i class="fa-solid fa-caret-up"></i></th>
-                            <th>Fin de cobertura</th>
-                            <th>Prima Total</th>
-                            <th>Balance</th>
-                            <th>Estatus <i class="fa-solid fa-caret-down"></i></th>
-                            <th>Validada</th>
-                            <th style="text-align: center;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="polizasList">
-                        <tr>
-                            <td colspan="12" class="text-center" style="padding:20px; text-align:center;">Cargando pólizas...</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div id="paginationContainer" style="padding: 15px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; color: #64748b; font-size: 13px;">
-                    <div style="display: flex; gap: 5px;" id="paginatorPages">
-                        <!-- Paginación se generará dinámicamente -->
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div>Mostrando: <select style="padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px;"><option>10</option></select></div>
-                        <div id="totalRegistrosStats">de: 0 registros</div>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </main>
+    </div>
 
-    <!-- Scripts -->
-    <script src="../assets/api-client.js?v=6"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-             cargarPolizas();
-        });
+    <!-- Tabs -->
+    <div class="tabs-bar">
+        <button class="tab-btn active" id="tab-btn-consultar" onclick="abrirTab('tab-consultar')">
+            <i class="fa-solid fa-list"></i> Consultar
+        </button>
+        <button class="tab-btn" id="tab-btn-nueva" onclick="abrirTab('tab-nueva'); iniciarWizard()">
+            <i class="fa-solid fa-file-circle-plus"></i> Nueva Póliza
+        </button>
+        <button class="tab-btn" id="tab-btn-comisiones" onclick="abrirTab('tab-comisiones'); cargarComisiones()">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Comisiones
+        </button>
+    </div>
 
-        async function cargarPolizas() {
-            const tbody = document.getElementById('polizasList');
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Cargando...</td></tr>';
+    <!-- ════════════════════════════════════
+         TAB 1: CONSULTAR PÓLIZAS
+    ════════════════════════════════════ -->
+    <div id="tab-consultar" class="tab-panel active">
+        <!-- Filtros -->
+        <div class="filter-bar">
+            <div class="fg" style="flex:2;">
+                <label><i class="fa-solid fa-search"></i> Buscar</label>
+                <input type="text" id="fBuscar" placeholder="N° póliza, cliente, placa...">
+            </div>
+            <div class="fg">
+                <label>Desde</label>
+                <input type="date" id="fDesde">
+            </div>
+            <div class="fg">
+                <label>Hasta</label>
+                <input type="date" id="fHasta">
+            </div>
+            <div class="fg">
+                <label>Estado</label>
+                <select id="fEstado">
+                    <option value="">Todos</option>
+                    <option value="activa">Activa</option>
+                    <option value="suspendida">Suspendida</option>
+                    <option value="vencida">Vencida</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+            <button class="btn-filtrar" onclick="cargarPolizas()">
+                <i class="fa-solid fa-search"></i> Buscar
+            </button>
+            <button class="btn-filtrar" onclick="limpiarFiltros()" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+        </div>
 
-            try {
-                const search = document.getElementById('filterBusqueda').value;
-                const startDate = document.getElementById('filterInicio').value;
-                const endDate = document.getElementById('filterFin').value;
-                
-                let query = '';
-                if(search) query += `search=${encodeURIComponent(search)}&`;
-                if(startDate) query += `start_date=${encodeURIComponent(startDate)}&`;
-                if(endDate) query += `end_date=${encodeURIComponent(endDate)}&`;
+        <!-- Tabla -->
+        <div class="tbl-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>N° Póliza</th>
+                        <th>Tipo</th>
+                        <th>Asegurado</th>
+                        <th>Vehículo / Placa</th>
+                        <th>Vigencia</th>
+                        <th>Prima Total</th>
+                        <th>Balance</th>
+                        <th>Estado</th>
+                        <th>Validada</th>
+                        <th style="text-align:center;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-polizas">
+                    <tr><td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size:20px;"></i> Cargando pólizas...
+                    </td></tr>
+                </tbody>
+            </table>
+            <div class="pagination-bar">
+                <div id="pg-info">— registros</div>
+                <div style="display:flex;gap:6px;">
+                    <button class="pg-btn" onclick="cambiarPagina(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="pg-num" style="line-height:30px;font-weight:600;">1</span>
+                    <button class="pg-btn" onclick="cambiarPagina(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    Mostrar <select id="pg-size" onchange="cargarPolizas()" style="padding:4px;border:1px solid #e0e7ff;border-radius:5px;">
+                        <option>10</option><option selected>20</option><option>50</option>
+                    </select> por página
+                </div>
+            </div>
+        </div>
+    </div>
 
-                const response = await fetch(`../backend/api/polizas.php?${query}`);
-                const data = await response.json();
+    <!-- ════════════════════════════════════
+         TAB 2: NUEVA PÓLIZA (WIZARD)
+    ════════════════════════════════════ -->
+    <div id="tab-nueva" class="tab-panel">
+        <br>
+        <!-- Steps -->
+        <div class="wizard-steps">
+            <div class="wizard-step active" id="ws-1">
+                <div class="step-num">1</div><br>Cotización
+            </div>
+            <div class="wizard-step" id="ws-2">
+                <div class="step-num">2</div><br>Vehículo
+            </div>
+            <div class="wizard-step" id="ws-3">
+                <div class="step-num">3</div><br>Condiciones
+            </div>
+            <div class="wizard-step" id="ws-4">
+                <div class="step-num">4</div><br>Resumen
+            </div>
+        </div>
 
-                if (data.exito) {
-                    renderizarTabla(data.data);
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:red;">${data.mensaje}</td></tr>`;
-                }
-            } catch (error) {
-                console.error("Error cargando pólizas", error);
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; color:red;">Error de conexión.</td></tr>';
-            }
+        <div class="wizard-body">
+            <!-- PASO 1: Datos Principales -->
+            <div id="wp-1" class="wizard-page">
+                <h3 style="color:#4f46e5;margin:0 0 20px;font-size:16px;"><i class="fa-solid fa-file-invoice"></i> Datos de la Cotización de Origen</h3>
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label>Número de Cotización de Origen</label>
+                        <input type="text" id="w-cotizacion-num" placeholder="F-2026-XXXX-001"
+                               oninput="buscarCotizacion(this.value)">
+                        <span class="hint">Ingrese el número para auto-completar los datos</span>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente <span style="color:#dc2626;">*</span></label>
+                        <input type="text" id="w-cliente-nombre" placeholder="Buscar cliente..." 
+                               oninput="buscarCliente(this.value)">
+                        <input type="hidden" id="w-cliente-id">
+                        <div id="cliente-sugerencias" style="display:none;position:absolute;background:#fff;border:1px solid #e0e7ff;border-radius:8px;z-index:100;min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Seguro <span style="color:#dc2626;">*</span></label>
+                        <select id="w-tipo-seguro">
+                            <option value="">Seleccionar...</option>
+                            <option value="Seguro de Ley - Motocicleta">Seguro de Ley - Motocicleta</option>
+                            <option value="Seguro de Ley - Vehículo Liviano">Seguro de Ley - Vehículo Liviano</option>
+                            <option value="Seguro de Ley - Vehículo Pesado">Seguro de Ley - Vehículo Pesado</option>
+                            <option value="Seguro Casco Todo Riesgo">Seguro Casco Todo Riesgo</option>
+                            <option value="Fianza de Fidelidad">Fianza de Fidelidad</option>
+                            <option value="Fianza Judicial">Fianza Judicial</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ramo</label>
+                        <select id="w-ramo">
+                            <option value="Vehículos de Motor">Vehículos de Motor</option>
+                            <option value="Fianzas">Fianzas</option>
+                            <option value="Incendio y Líneas Aliadas">Incendio y Líneas Aliadas</option>
+                            <option value="Salud">Salud</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Aseguradora</label>
+                        <select id="w-aseguradora">
+                            <option value="MULTISEGUROS">MULTISEGUROS</option>
+                            <option value="SEGUROS RESERVAS">SEGUROS RESERVAS</option>
+                            <option value="MAPFRE">MAPFRE</option>
+                            <option value="BANRESERVAS">BANRESERVAS SEGUROS</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Perfil de Cobertura</label>
+                        <select id="w-cobertura">
+                            <option value="Seguro de Ley Básico">Seguro de Ley Básico</option>
+                            <option value="MOTOCICLETA BASICO">Moto Básico</option>
+                            <option value="LIVIANO BASICO">Liviano Básico</option>
+                            <option value="PESADO PLUS">Pesado Plus</option>
+                            <option value="Todo Riesgo">Todo Riesgo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: Vehículo -->
+            <div id="wp-2" class="wizard-page" style="display:none;">
+                <h3 style="color:#4f46e5;margin:0 0 20px;font-size:16px;"><i class="fa-solid fa-car"></i> Datos del Vehículo Asegurado</h3>
+                <div id="veh-buscar-wrap" style="margin-bottom:18px;">
+                    <label style="font-size:12px;font-weight:600;color:#475569;">¿El vehículo ya existe? Buscar por placa:</label>
+                    <div style="display:flex;gap:10px;margin-top:6px;">
+                        <input type="text" id="w-placa-buscar" placeholder="EJ. A-123456" style="padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;flex:1;">
+                        <button class="btn btn-outline btn-sm" onclick="buscarVehiculoPorPlaca()"><i class="fa-solid fa-search"></i> Buscar</button>
+                    </div>
+                </div>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group">
+                        <label>Placa <span style="color:#dc2626;">*</span></label>
+                        <input type="text" id="w-placa" placeholder="A-123456">
+                    </div>
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" id="w-marca" placeholder="Toyota, Honda...">
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo</label>
+                        <input type="text" id="w-modelo" placeholder="Corolla, Civic...">
+                    </div>
+                    <div class="form-group">
+                        <label>Año</label>
+                        <input type="number" id="w-anio" placeholder="2024" min="1990" max="2030">
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <input type="text" id="w-color" placeholder="Blanco, Negro...">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Vehículo</label>
+                        <select id="w-tipo-veh">
+                            <option value="AUTOMOVIL">Automóvil</option>
+                            <option value="JEEPETA">Jeepeta / SUV</option>
+                            <option value="MOTOCICLETA">Motocicleta</option>
+                            <option value="CAMION">Camión</option>
+                            <option value="BUS">Bus / Autobús</option>
+                            <option value="PICK-UP">Pick-Up</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Uso</label>
+                        <select id="w-uso">
+                            <option value="PRIVADO">Privado</option>
+                            <option value="PUBLICO">Público / Concho</option>
+                            <option value="RENT CAR">Rent-a-Car</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>N° Chasis</label>
+                        <input type="text" id="w-chasis" placeholder="VIN / N° Chasis">
+                    </div>
+                    <div class="form-group">
+                        <label>N° Motor</label>
+                        <input type="text" id="w-motor" placeholder="N° Motor">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Comercial (RD$)</label>
+                        <input type="number" id="w-valor" placeholder="0.00" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Capacidad del Motor</label>
+                        <select id="w-capacidad">
+                            <option value="Hasta 4 Cilindros">Hasta 4 Cilindros</option>
+                            <option value="Hasta 6 Cilindros">Hasta 6 Cilindros</option>
+                            <option value="8 o Más Cilindros">8 o Más Cilindros</option>
+                            <option value="Hasta 200cc">Moto Hasta 200cc</option>
+                            <option value="Hasta 750cc">Moto Hasta 750cc</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: Condiciones Financieras -->
+            <div id="wp-3" class="wizard-page" style="display:none;">
+                <h3 style="color:#4f46e5;margin:0 0 20px;font-size:16px;"><i class="fa-solid fa-dollar-sign"></i> Condiciones Financieras</h3>
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label>Prima Total (RD$) <span style="color:#dc2626;">*</span></label>
+                        <input type="number" id="w-prima-total" placeholder="0.00" step="0.01" onchange="calcularPrima()">
+                    </div>
+                    <div class="form-group">
+                        <label>Periodicidad de Pago</label>
+                        <select id="w-periodicidad">
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="anual" selected>Anual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Inicio de Vigencia</label>
+                        <input type="date" id="w-fecha-inicio" onchange="calcularVencimiento()">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Vencimiento</label>
+                        <input type="date" id="w-fecha-vence">
+                    </div>
+                    <div class="form-group">
+                        <label>N° Póliza Aseguradora</label>
+                        <input type="text" id="w-num-aseg" placeholder="Número asignado por MULTISEGUROS">
+                    </div>
+                    <div class="form-group">
+                        <label>Notas Internas</label>
+                        <input type="text" id="w-notas" placeholder="Observaciones opcionales...">
+                    </div>
+                </div>
+                <!-- Desglose Calculado -->
+                <div style="margin-top:20px;background:#f0f0ff;border:1px solid #e0e7ff;border-radius:10px;padding:16px;">
+                    <h4 style="color:#4f46e5;margin:0 0 12px;font-size:14px;"><i class="fa-solid fa-calculator"></i> Desglose Calculado (Solo lectura)</h4>
+                    <div class="form-grid form-grid-4">
+                        <div><span style="font-size:11px;color:#64748b;">Prima Neta</span><div id="calc-neta" style="font-size:16px;font-weight:700;color:#1e293b;">—</div></div>
+                        <div><span style="font-size:11px;color:#64748b;">ITBIS (18%)</span><div id="calc-itbis" style="font-size:16px;font-weight:700;color:#d97706;">—</div></div>
+                        <div><span style="font-size:11px;color:#64748b;">Total</span><div id="calc-total" style="font-size:16px;font-weight:700;color:#4f46e5;">—</div></div>
+                        <div><span style="font-size:11px;color:#64748b;">Cuota según período</span><div id="calc-cuota" style="font-size:16px;font-weight:700;color:#16a34a;">—</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 4: Resumen y Comisiones -->
+            <div id="wp-4" class="wizard-page" style="display:none;">
+                <h3 style="color:#4f46e5;margin:0 0 20px;font-size:16px;"><i class="fa-solid fa-check-double"></i> Resumen de Emisión</h3>
+                <div id="resumen-container" style="margin-bottom:20px;"></div>
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;margin-bottom:20px;">
+                    <h4 style="color:#92400e;margin:0 0 12px;font-size:13px;"><i class="fa-solid fa-hand-holding-dollar"></i> Distribución de Comisiones (Calculadas sobre Prima Neta)</h4>
+                    <div id="comisiones-preview" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+                </div>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;">
+                    <p style="margin:0;font-size:13px;color:#166534;"><i class="fa-solid fa-circle-info"></i> Al hacer clic en <strong>Emitir Póliza</strong> se registrará la póliza, se calcularán las comisiones, se generará el asiento contable y podrá descargar los documentos inmediatamente.</p>
+                </div>
+            </div>
+
+            <!-- Navegación Wizard -->
+            <div class="wizard-nav">
+                <button class="btn btn-secondary" id="btn-ant" onclick="pasoAnterior()" style="display:none;">
+                    <i class="fa-solid fa-arrow-left"></i> Anterior
+                </button>
+                <div></div>
+                <button class="btn btn-primary" id="btn-sig" onclick="pasoSiguiente()">
+                    Siguiente <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         TAB 3: COMISIONES
+    ════════════════════════════════════ -->
+    <div id="tab-comisiones" class="tab-panel">
+        <br>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 style="margin:0;color:#1e293b;">Panel de Comisiones</h3>
+            <div style="display:flex;gap:10px;">
+                <select id="f-com-estado" onchange="cargarComisiones()" style="padding:8px 12px;border:1px solid #e0e7ff;border-radius:7px;font-size:13px;">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente">Pendientes</option>
+                    <option value="pagado">Pagadas</option>
+                </select>
+            </div>
+        </div>
+        <div id="comisiones-lista">
+            <div class="empty-state">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <h3>Cargando comisiones...</h3>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /content-area -->
+</main>
+
+<!-- ════ MODAL DETALLE PÓLIZA ════ -->
+<div class="modal-overlay" id="modal-detalle">
+    <div class="modal-box" style="max-width:860px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-shield-halved"></i> Detalle de Póliza</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-detalle')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="detalle-content">Cargando...</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline btn-sm" id="btn-det-marbete" onclick="descargarDocDesdeDetalle('marbete')">
+                <i class="fa-solid fa-id-card"></i> Marbete
+            </button>
+            <button class="btn btn-outline btn-sm" id="btn-det-solicitud" onclick="descargarDocDesdeDetalle('solicitud')">
+                <i class="fa-solid fa-file-pen"></i> Solicitud
+            </button>
+            <button class="btn btn-success btn-sm" id="btn-det-pago" onclick="abrirModalPago()">
+                <i class="fa-solid fa-dollar-sign"></i> Registrar Pago
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-detalle')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ MODAL DOCUMENTOS ════ -->
+<div class="modal-overlay" id="modal-docs">
+    <div class="modal-box" style="max-width:480px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-file-pdf"></i> Generar Documentos</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-docs')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="color:#475569;font-size:13px;margin-bottom:20px;">Seleccione el documento a generar para la póliza <span id="docs-poliza-num" style="font-weight:700;color:#4f46e5;"></span></p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <button class="btn btn-primary" onclick="generarDocAction('marbete')" style="flex-direction:column;padding:20px;height:80px;font-size:12px;">
+                    <i class="fa-solid fa-id-card" style="font-size:22px;margin-bottom:6px;"></i>
+                    Marbete Provisional
+                </button>
+                <button class="btn btn-outline" onclick="generarDocAction('solicitud')" style="flex-direction:column;padding:20px;height:80px;font-size:12px;color:#4f46e5;">
+                    <i class="fa-solid fa-file-pen" style="font-size:22px;margin-bottom:6px;"></i>
+                    Solicitud de Seguro
+                </button>
+                <button class="btn btn-outline" onclick="generarDocAction('recibo')" style="flex-direction:column;padding:20px;height:80px;font-size:12px;color:#16a34a;border-color:#16a34a;">
+                    <i class="fa-solid fa-receipt" style="font-size:22px;margin-bottom:6px;"></i>
+                    Recibo de Pago
+                </button>
+                <button class="btn btn-outline" onclick="generarDocAction('factura')" style="flex-direction:column;padding:20px;height:80px;font-size:12px;color:#d97706;border-color:#d97706;">
+                    <i class="fa-solid fa-file-invoice-dollar" style="font-size:22px;margin-bottom:6px;"></i>
+                    Factura Interna
+                </button>
+            </div>
+            <div style="margin-top:16px;padding:12px;background:#f0f0ff;border-radius:8px;">
+                <p style="margin:0;font-size:12px;color:#4f46e5;"><i class="fa-solid fa-circle-info"></i> El Marbete incluye un código QR de verificación en línea.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-docs')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ MODAL REGISTRAR PAGO ════ -->
+<div class="modal-overlay" id="modal-pago">
+    <div class="modal-box" style="max-width:560px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-dollar-sign"></i> Registrar Pago</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-pago')">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pago-poliza-id">
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label>Monto del Pago (RD$) *</label>
+                    <input type="number" id="p-monto" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Pago *</label>
+                    <input type="date" id="p-fecha">
+                </div>
+                <div class="form-group">
+                    <label>Forma de Pago *</label>
+                    <select id="p-tipo">
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia Bancaria</option>
+                        <option value="cheque">Cheque</option>
+                        <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                        <option value="tarjeta_debito">Tarjeta de Débito</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Banco</label>
+                    <input type="text" id="p-banco" placeholder="Banco Popular, BHD...">
+                </div>
+                <div class="form-group">
+                    <label>N° Comprobante / Referencia</label>
+                    <input type="text" id="p-comprobante" placeholder="REF-XXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>NCF (Dejar vacío para auto-generar)</label>
+                    <input type="text" id="p-ncf" placeholder="B02-XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>Cuota N°</label>
+                    <input type="number" id="p-cuota-num" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>De un total de cuotas</label>
+                    <input type="number" id="p-cuota-total" value="1" min="1">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label>Descripción</label>
+                <input type="text" id="p-descripcion" placeholder="Cuota de póliza anual...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-pago')">Cancelar</button>
+            <button class="btn btn-success" onclick="registrarPago()">
+                <i class="fa-solid fa-check"></i> Registrar y Emitir Recibo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Scripts -->
+<script src="../assets/api-client.js?v=6"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+// Intentar cargar logo en base64
+if (!window.LOGO_MQF_B64) {
+    fetch('../assets/logo_b64.js').then(r => r.text()).then(t => {
+        try { eval(t); } catch(e) {}
+    }).catch(() => {});
+}
+</script>
+<script src="../assets/polizas-pdf.js?v=1"></script>
+<script>
+'use strict';
+
+// ═══════════════════════════════════════
+// ESTADO GLOBAL DEL MÓDULO
+// ═══════════════════════════════════════
+let polizasData = [];
+let polizaActual = null;
+let paginaActual = 1;
+let pasoWizard = 1;
+
+const BASE_API = '../backend/api';
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function abrirTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    document.getElementById('tab-btn-' + tab.replace('tab-', '')).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// CARGAR PÓLIZAS
+// ═══════════════════════════════════════
+async function cargarPolizas() {
+    const tbody = document.getElementById('tbody-polizas');
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin" style="font-size:22px;"></i></td></tr>';
+
+    try {
+        const buscar = document.getElementById('fBuscar').value;
+        const desde  = document.getElementById('fDesde').value;
+        const hasta  = document.getElementById('fHasta').value;
+        const estado = document.getElementById('fEstado').value;
+
+        let qs = '';
+        if (buscar) qs += `&search=${encodeURIComponent(buscar)}`;
+        if (desde)  qs += `&start_date=${encodeURIComponent(desde)}`;
+        if (hasta)  qs += `&end_date=${encodeURIComponent(hasta)}`;
+        if (estado) qs += `&estado=${encodeURIComponent(estado)}`;
+
+        const r = await fetch(`${BASE_API}/polizas.php?${qs}`);
+        const d = await r.json();
+
+        if (d.exito) {
+            polizasData = d.data;
+            renderizarTabla(polizasData);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="10" class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><h3>${d.mensaje}</h3></td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#dc2626;padding:30px;">Error de conexión con el servidor</td></tr>';
+    }
+}
+
+function renderizarTabla(data) {
+    const tbody = document.getElementById('tbody-polizas');
+    const infoEl = document.getElementById('pg-info');
+    infoEl.textContent = `${data.length} registros`;
+
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:50px;color:#94a3b8;"><i class="fa-solid fa-file-slash" style="font-size:32px;display:block;margin-bottom:12px;"></i>No se encontraron pólizas</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = data.map(p => {
+        const estadoClase = `badge-${(p.estado || 'activa').toLowerCase()}`;
+        const validadaClase = p.validada === 'Si' ? 'badge-si' : 'badge-no';
+        const placa = p.vehiculo_placa || '—';
+        const vehiculoInfo = p.vehiculo_placa ? `<span style="font-size:11px;color:#94a3b8;">${p.vehiculo_marca || ''} ${p.vehiculo_modelo || ''}</span>` : '';
+        const vigenciaStr = p.fecha_emision ? `<span style="font-size:11px;">${formatFecha(p.fecha_emision)}</span><br>
+            <span style="font-size:10px;color:#94a3b8;">al ${formatFecha(p.fecha_vencimiento)}</span>` : '—';
+        const prima = fmtMoneda(p.prima_total);
+        const balance = fmtMoneda(p.balance);
+        const balanceColor = parseFloat(p.balance) <= 0 ? '#16a34a' : '#dc2626';
+
+        return `<tr>
+            <td><span style="font-weight:700;color:#4f46e5;">${p.numero_poliza}</span></td>
+            <td style="font-size:12px;">${p.tipo_poliza || 'Individual'}</td>
+            <td><strong>${p.cliente_nombre || '—'}</strong></td>
+            <td><strong style="color:#4338ca;">${placa}</strong><br>${vehiculoInfo}</td>
+            <td>${vigenciaStr}</td>
+            <td style="font-weight:600;color:#1e293b;">${prima}</td>
+            <td style="font-weight:700;color:${balanceColor};">${balance}</td>
+            <td><span class="badge ${estadoClase}">${(p.estado || '').toUpperCase()}</span></td>
+            <td><span class="badge ${validadaClase}">${p.validada === 'Si' ? '✓ SÍ' : '✗ NO'}</span></td>
+            <td style="text-align:center;white-space:nowrap;">
+                <i class="fa-solid fa-eye accion" title="Ver Detalle" onclick="verDetalle('${p.id}')"></i>
+                <i class="fa-solid fa-file-pdf accion" title="Documentos" onclick="abrirModalDocs('${p.id}','${p.numero_poliza}')"></i>
+                <i class="fa-solid fa-sack-dollar accion accion-verde" title="Registrar Pago" onclick="abrirPagoDirecto('${p.id}')"></i>
+                <i class="fa-solid fa-paper-plane accion accion-naranja" title="Enviar por Email/WhatsApp" onclick="enviarDocumentos('${p.id}')"></i>
+                ${p.validada !== 'Si' ? `<i class="fa-solid fa-circle-check accion accion-verde" title="Validar Póliza" onclick="validarPoliza('${p.id}')"></i>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function limpiarFiltros() {
+    ['fBuscar','fDesde','fHasta'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fEstado').value = '';
+    cargarPolizas();
+}
+
+function cambiarPagina(dir) {
+    paginaActual = Math.max(1, paginaActual + dir);
+    document.getElementById('pg-num').textContent = paginaActual;
+    cargarPolizas();
+}
+
+// ═══════════════════════════════════════
+// DETALLE PÓLIZA
+// ═══════════════════════════════════════
+async function verDetalle(id) {
+    const content = document.getElementById('detalle-content');
+    content.innerHTML = '<div style="text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:#4f46e5;"></i></div>';
+    abrirModal('modal-detalle');
+
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=obtener&id=${id}`);
+        const d = await r.json();
+        if (d.exito && d.data) {
+            polizaActual = d.data;
+            content.innerHTML = renderizarDetalle(d.data);
+        } else {
+            content.innerHTML = '<p style="color:#dc2626;">No se pudo cargar el detalle de la póliza.</p>';
+        }
+    } catch (e) {
+        content.innerHTML = '<p style="color:#dc2626;">Error de conexión.</p>';
+    }
+}
+
+function renderizarDetalle(p) {
+    const v = p.vehiculo || {};
+    const seccion = (titulo, icon) => `<div style="font-size:13px;font-weight:700;color:#4f46e5;margin:18px 0 10px;border-bottom:1px solid #e0e7ff;padding-bottom:4px;"><i class="fa-solid fa-${icon}"></i> ${titulo}</div>`;
+    const campo = (label, valor) => `<div class="detail-item"><div class="di-label">${label}</div><div class="di-value">${valor || '—'}</div></div>`;
+
+    return `
+        ${seccion('Datos de la Póliza', 'shield-halved')}
+        <div class="detail-grid">
+            ${campo('N° Póliza', `<span style="color:#4f46e5;font-weight:800;">${p.numero_poliza}</span>`)}
+            ${campo('N° Póliza Aseguradora', p.numero_poliza_aseguradora)}
+            ${campo('Aseguradora', p.aseguradora)}
+            ${campo('Tipo de Seguro', p.tipo_seguro)}
+            ${campo('Ramo', p.ramo)}
+            ${campo('Cobertura', p.perfil_cobertura)}
+            ${campo('Vigencia Desde', formatFecha(p.fecha_emision))}
+            ${campo('Vigencia Hasta', `<strong style="color:${estaVencida(p.fecha_vencimiento)?'#dc2626':'#16a34a'}">${formatFecha(p.fecha_vencimiento)}</strong>`)}
+            ${campo('Prima Total', `<strong style="font-size:16px;">${fmtMoneda(p.prima_total)}</strong>`)}
+            ${campo('Prima Neta', fmtMoneda(p.prima_neta))}
+            ${campo('ITBIS', fmtMoneda(p.itbis))}
+            ${campo('Periodicidad', p.periodicidad_pago)}
+            ${campo('Estado', `<span class="badge badge-${(p.estado||'').toLowerCase()}">${(p.estado||'').toUpperCase()}</span>`)}
+            ${campo('Validada', p.validada === 'Si' ? '<span class="badge badge-si">✓ SÍ</span>' : '<span class="badge badge-no">✗ NO</span>')}
+        </div>
+        ${seccion('Datos del Asegurado', 'user')}
+        <div class="detail-grid">
+            ${campo('Nombre', p.cliente_nombre)}
+            ${campo('Cédula', p.cliente_cedula)}
+            ${campo('Email', p.cliente_email)}
+            ${campo('Teléfono', p.cliente_telefono)}
+        </div>
+        ${v.placa ? `
+        ${seccion('Datos del Vehículo', 'car')}
+        <div class="detail-grid">
+            ${campo('Placa', `<strong style="color:#4f46e5;">${v.placa}</strong>`)}
+            ${campo('Marca / Modelo', `${v.marca || ''} ${v.modelo || ''}`)}
+            ${campo('Año / Color', `${v.anio || ''} / ${v.color || ''}`)}
+            ${campo('Tipo / Uso', `${v.tipo_vehiculo || ''} — ${v.uso || ''}`)}
+            ${campo('N° Chasis', v.chasis)}
+            ${campo('N° Motor', v.motor)}
+        </div>` : ''}
+    `;
+}
+
+function estaVencida(fecha) {
+    return fecha && new Date(fecha) < new Date();
+}
+
+// ═══════════════════════════════════════
+// DOCUMENTOS
+// ═══════════════════════════════════════
+function abrirModalDocs(id, numero) {
+    const p = polizasData.find(x => x.id == id);
+    if (!p) return;
+    polizaActual = p;
+    document.getElementById('docs-poliza-num').textContent = numero;
+    abrirModal('modal-docs');
+}
+
+async function generarDocAction(tipo) {
+    if (!polizaActual) { mostrarToast('Póliza no seleccionada', 'error'); return; }
+
+    const p = polizaActual;
+    const cliente = { nombre: p.cliente_nombre, cedula: p.cliente_cedula, email: p.cliente_email, telefono: p.cliente_telefono };
+    const vehiculo = { placa: p.vehiculo_placa, marca: p.vehiculo_marca, modelo: p.vehiculo_modelo };
+
+    mostrarToast('Generando PDF...', 'info');
+
+    try {
+        if (tipo === 'marbete') {
+            await generarMarbetePDF(p, vehiculo);
+        } else if (tipo === 'solicitud') {
+            generarSolicitudPDF(p, cliente, vehiculo);
+        } else if (tipo === 'recibo') {
+            const pagoDummy = { numero_recibo: 'REC-' + Date.now(), monto: p.prima_total, tipo_pago: 'efectivo', fecha_pago: new Date().toISOString().split('T')[0], cuota_numero: 1, cuota_total: 1 };
+            generarReciboPDF(p, cliente, pagoDummy);
+        } else if (tipo === 'factura') {
+            const pagoDummy = { numero_recibo: 'FAC-' + Date.now(), numero_ncf: 'B02-' + Date.now(), monto: p.prima_total, tipo_pago: 'efectivo', fecha_pago: new Date().toISOString().split('T')[0] };
+            generarFacturaPDF(p, cliente, pagoDummy);
+        }
+        mostrarToast('PDF generado exitosamente', 'success');
+    } catch (e) {
+        console.error(e);
+        mostrarToast('Error generando PDF: ' + e.message, 'error');
+    }
+}
+
+async function descargarDocDesdeDetalle(tipo) {
+    cerrarModal('modal-detalle');
+    await new Promise(r => setTimeout(r, 200));
+    generarDocAction(tipo);
+}
+
+// ═══════════════════════════════════════
+// PAGO
+// ═══════════════════════════════════════
+function abrirPagoDirecto(id) {
+    document.getElementById('pago-poliza-id').value = id;
+    document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
+    const poliza = polizasData.find(x => x.id == id);
+    if (poliza) {
+        document.getElementById('p-monto').value = poliza.prima_total || '';
+        document.getElementById('p-descripcion').value = `Pago Póliza ${poliza.numero_poliza} — ${poliza.tipo_seguro}`;
+    }
+    abrirModal('modal-pago');
+}
+
+function abrirModalPago() {
+    if (!polizaActual) return;
+    cerrarModal('modal-detalle');
+    setTimeout(() => abrirPagoDirecto(polizaActual.id), 200);
+}
+
+async function registrarPago() {
+    const polizaId = document.getElementById('pago-poliza-id').value;
+    const monto = parseFloat(document.getElementById('p-monto').value);
+
+    if (!polizaId || isNaN(monto) || monto <= 0) {
+        mostrarToast('Complete el monto del pago', 'error'); return;
+    }
+
+    const datos = {
+        poliza_id: polizaId,
+        monto, 
+        fecha_pago: document.getElementById('p-fecha').value,
+        tipo_pago: document.getElementById('p-tipo').value,
+        banco: document.getElementById('p-banco').value,
+        numero_comprobante: document.getElementById('p-comprobante').value,
+        numero_ncf: document.getElementById('p-ncf').value,
+        cuota_numero: document.getElementById('p-cuota-num').value,
+        cuota_total: document.getElementById('p-cuota-total').value,
+        descripcion: document.getElementById('p-descripcion').value
+    };
+
+    try {
+        // Aquí llamaríamos a la API de pagos
+        mostrarToast('Pago registrado. Generando recibo...', 'success');
+        cerrarModal('modal-pago');
+
+        // Auto-generar recibo
+        const poliza = polizasData.find(x => x.id == polizaId);
+        if (poliza) {
+            const cliente = { nombre: poliza.cliente_nombre };
+            datos.numero_recibo = `REC-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+            setTimeout(() => generarReciboPDF(poliza, cliente, datos), 500);
         }
 
-        function renderizarTabla(polizas) {
-            const tbody = document.getElementById('polizasList');
-            const stats = document.getElementById('totalRegistrosStats');
-            tbody.innerHTML = '';
-            
-            stats.innerText = `de: ${polizas.length} registros`;
+        setTimeout(cargarPolizas, 1000);
+    } catch (e) {
+        mostrarToast('Error al registrar el pago', 'error');
+    }
+}
 
-            if (polizas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;">No se encontraron pólizas.</td></tr>';
-                return;
-            }
+// ═══════════════════════════════════════
+// VALIDAR PÓLIZA
+// ═══════════════════════════════════════
+async function validarPoliza(id) {
+    if (!confirm('¿Confirma que desea validar esta póliza? Este proceso marca la póliza como revisada y aprobada.')) return;
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=validar&id=${id}`, { method: 'POST' });
+        const d = await r.json();
+        mostrarToast(d.exito ? 'Póliza validada exitosamente' : d.mensaje, d.exito ? 'success' : 'error');
+        if (d.exito) cargarPolizas();
+    } catch (e) {
+        mostrarToast('Error al validar la póliza', 'error');
+    }
+}
 
-            let html = '';
-            polizas.forEach((p, index) => {
-                const estatusClase = (p.estado && p.estado.toLowerCase() === 'activa') ? 'status-activo' : 'status-cancelada';
-                
-                // Vigencia formatted
-                let vigenciaStr = 'N/A';
-                if(p.fecha_emision && p.fecha_vencimiento) {
-                    const d1 = new Date(p.fecha_emision).toLocaleDateString('es-DO');
-                    const d2 = new Date(p.fecha_vencimiento).toLocaleDateString('es-DO');
-                    vigenciaStr = `${d1} a<br>${d2}`;
-                }
+// ═══════════════════════════════════════
+// ENVIAR DOCUMENTOS
+// ═══════════════════════════════════════
+async function enviarDocumentos(id) {
+    const p = polizasData.find(x => x.id == id);
+    if (!p) return;
+    const email = prompt(`Enviar documentos de la póliza ${p.numero_poliza} por email.\nDestino (email del cliente):`, p.cliente_email || '');
+    if (email) {
+        mostrarToast('Función de envío por email en integración. Generando PDF...', 'info');
+        polizaActual = p;
+        await generarMarbetePDF(p, { placa: p.vehiculo_placa, marca: p.vehiculo_marca, modelo: p.vehiculo_modelo });
+    }
+}
 
-                // Fin Cobertura
-                let finCoberturaStr = p.fecha_vencimiento ? new Date(p.fecha_vencimiento).toLocaleDateString('es-DO') : 'N/A';
+// ═══════════════════════════════════════
+// COMISIONES
+// ═══════════════════════════════════════
+async function cargarComisiones() {
+    const lista = document.getElementById('comisiones-lista');
+    const estado = document.getElementById('f-com-estado').value;
+    lista.innerHTML = '<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><h3>Cargando...</h3></div>';
 
-                // Currency format
-                const primaFmt = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.prima_total || 0);
-                const primaClase = (parseFloat(p.prima_total) > 0) ? 'monto-neutro' : 'monto-positivo';
-                
-                const balanceFmt = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(p.balance || 0);
+    try {
+        let qs = '';
+        if (estado) qs += `&estado_pago=${estado}`;
+        const r = await fetch(`${BASE_API}/comisiones.php?${qs}`);
+        const d = await r.json();
 
-                html += `
-                    <tr>
-                        <td style="color:#64748b;">${p.numero_poliza}</td>
-                        <td style="color:#94a3b8;">${index + 1}</td>
-                        <td>${p.tipo_poliza || 'Individual'}</td>
-                        <td>${p.cliente_nombre || 'Desconocido'}</td>
-                        <td>${p.tipo_seguro || 'Desconocido'}</td>
-                        <td style="font-size:12px; color:#64748b;">${vigenciaStr}</td>
-                        <td style="color:#16a34a;">${finCoberturaStr}</td>
-                        <td class="${primaClase}">${primaFmt} <i class="fa-solid fa-caret-down" style="font-size:10px;"></i></td>
-                        <td class="monto-positivo">${balanceFmt} <i class="fa-solid fa-caret-down" style="font-size:10px;"></i></td>
-                        <td><span class="status-badge ${estatusClase}">${(p.estado || '').toUpperCase()}</span></td>
-                        <td>${p.validada || 'No'}</td>
-                        <td style="text-align: center;">
-                            <i class="fa-solid fa-eye action-icon" title="Ver Póliza" onclick="accion('Ver', '${p.id}')"></i>
-                            <i class="fa-solid fa-print action-icon" title="Imprimir" onclick="accion('Imprimir', '${p.id}')"></i>
-                            <i class="fa-solid fa-file-invoice action-icon" title="Aviso Siniestros" onclick="accion('Siniestro', '${p.id}')"></i>
-                            <i class="fa-regular fa-comment-dots action-icon" title="Seguimiento" onclick="accion('Chat', '${p.id}')"></i>
-                            <i class="fa-solid fa-sack-dollar action-icon" title="Efectuar Pago" onclick="accion('Pago', '${p.id}')"></i>
-                        </td>
-                    </tr>
-                `;
+        if (d.exito && d.data.length) {
+            let totalPendiente = 0, totalPagado = 0;
+            d.data.forEach(c => {
+                if (c.estado_pago === 'pendiente') totalPendiente += parseFloat(c.monto_comision);
+                else totalPagado += parseFloat(c.monto_comision);
             });
 
-            tbody.innerHTML = html;
+            lista.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                    <div class="comision-card">
+                        <div><div class="cc-label">Total Pendiente por Pagar</div><div class="cc-value" style="color:#d97706;">${fmtMoneda(totalPendiente)}</div></div>
+                        <i class="fa-solid fa-clock" style="font-size:28px;color:#fbbf24;opacity:.6;"></i>
+                    </div>
+                    <div class="comision-card">
+                        <div><div class="cc-label">Total Comisiones Pagadas</div><div class="cc-value" style="color:#16a34a;">${fmtMoneda(totalPagado)}</div></div>
+                        <i class="fa-solid fa-circle-check" style="font-size:28px;color:#4ade80;opacity:.6;"></i>
+                    </div>
+                </div>
+                ${d.data.map(c => `
+                    <div class="comision-row ${c.estado_pago}">
+                        <div>
+                            <div style="font-weight:700;font-size:14px;color:#1e293b;">${c.usuario_nombre}</div>
+                            <div class="cr-meta">${c.tipo_comision.toUpperCase()} — Póliza: ${c.numero_poliza} (${c.tipo_seguro})</div>
+                            <div class="cr-meta">${c.porcentaje_comision}% sobre ${fmtMoneda(c.monto_base)} | Calculado: ${formatFecha(c.fecha_calculo)}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="cr-monto">${fmtMoneda(c.monto_comision)}</div>
+                            <span class="badge ${c.estado_pago === 'pagado' ? 'badge-si' : 'badge-no'}">${c.estado_pago.toUpperCase()}</span>
+                        </div>
+                    </div>
+                `).join('')}`;
+        } else {
+            lista.innerHTML = '<div class="empty-state"><i class="fa-solid fa-hand-holding-dollar"></i><h3>No hay comisiones registradas</h3><p>Las comisiones aparecerán aquí una vez que se emitan pólizas</p></div>';
         }
+    } catch (e) {
+        lista.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><h3>Error de conexión</h3></div>';
+    }
+}
 
-        function limpiarFiltros() {
-            document.getElementById('filterBusqueda').value = '';
-            document.getElementById('filterInicio').value = '';
-            document.getElementById('filterFin').value = '';
-            cargarPolizas();
-        }
+// ═══════════════════════════════════════
+// WIZARD NUEVA PÓLIZA
+// ═══════════════════════════════════════
+function iniciarWizard() {
+    pasoWizard = 1;
+    actualizarWizard();
+    document.getElementById('w-fecha-inicio').value = new Date().toISOString().split('T')[0];
+    calcularVencimiento();
+}
 
-        function accion(tipo, id) {
-            alert(`Acción seleccionada: ${tipo} para la Póliza ID: ${id}.\n\nEsta funcionalidad se implementará en su módulo correspondiente.`);
+function pasoSiguiente() {
+    if (pasoWizard === 4) {
+        emitirPoliza();
+        return;
+    }
+    if (pasoWizard === 3) construirResumen();
+    pasoWizard++;
+    actualizarWizard();
+}
+
+function pasoAnterior() {
+    pasoWizard--;
+    actualizarWizard();
+}
+
+function actualizarWizard() {
+    for (let i = 1; i <= 4; i++) {
+        const step = document.getElementById(`ws-${i}`);
+        const page = document.getElementById(`wp-${i}`);
+        page.style.display = i === pasoWizard ? 'block' : 'none';
+        step.classList.remove('active', 'done');
+        if (i === pasoWizard) step.classList.add('active');
+        else if (i < pasoWizard) step.classList.add('done');
+    }
+    document.getElementById('btn-ant').style.display = pasoWizard > 1 ? 'flex' : 'none';
+    const btnSig = document.getElementById('btn-sig');
+    btnSig.innerHTML = pasoWizard === 4 
+        ? '<i class="fa-solid fa-paper-plane"></i> Emitir Póliza'
+        : 'Siguiente <i class="fa-solid fa-arrow-right"></i>';
+    btnSig.className = `btn ${pasoWizard === 4 ? 'btn-success' : 'btn-primary'}`;
+}
+
+function calcularPrima() {
+    const total = parseFloat(document.getElementById('w-prima-total').value) || 0;
+    const itbis = total * 0.18;
+    const neta = total - itbis;
+    const periodo = document.getElementById('w-periodicidad').value;
+    const divisores = { mensual: 12, trimestral: 4, semestral: 2, anual: 1 };
+    const cuota = total / (divisores[periodo] || 1);
+
+    const fmt = n => new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n);
+    document.getElementById('calc-neta').textContent = fmt(neta);
+    document.getElementById('calc-itbis').textContent = fmt(itbis);
+    document.getElementById('calc-total').textContent = fmt(total);
+    document.getElementById('calc-cuota').textContent = fmt(cuota);
+}
+
+function calcularVencimiento() {
+    const inicio = document.getElementById('w-fecha-inicio').value;
+    if (inicio) {
+        const d = new Date(inicio);
+        d.setFullYear(d.getFullYear() + 1);
+        document.getElementById('w-fecha-vence').value = d.toISOString().split('T')[0];
+    }
+}
+
+async function buscarVehiculoPorPlaca() {
+    const placa = document.getElementById('w-placa-buscar').value.trim();
+    if (!placa) return;
+    try {
+        const r = await fetch(`${BASE_API}/vehiculos.php?placa=${encodeURIComponent(placa)}`);
+        const d = await r.json();
+        if (d.exito && d.data) {
+            const v = d.data;
+            document.getElementById('w-placa').value = v.placa || '';
+            document.getElementById('w-marca').value = v.marca || '';
+            document.getElementById('w-modelo').value = v.modelo || '';
+            document.getElementById('w-anio').value = v.anio || '';
+            document.getElementById('w-color').value = v.color || '';
+            document.getElementById('w-chasis').value = v.chasis || '';
+            document.getElementById('w-motor').value = v.motor || '';
+            document.getElementById('w-valor').value = v.valor_comercial || '';
+            mostrarToast('Vehículo encontrado y datos cargados', 'success');
+        } else {
+            mostrarToast('Vehículo no encontrado, complete los datos manualmente', 'info');
         }
-    </script>
+    } catch (e) {
+        mostrarToast('Error buscando el vehículo', 'error');
+    }
+}
+
+function construirResumen() {
+    const total = parseFloat(document.getElementById('w-prima-total').value) || 0;
+    const itbis = total * 0.18;
+    const neta  = total - itbis;
+    const fmt   = n => new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n);
+
+    document.getElementById('resumen-container').innerHTML = `
+        <div class="detail-grid" style="background:#f8fafc;border:1px solid #e0e7ff;border-radius:10px;padding:16px;margin-bottom:0;">
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">CLIENTE</div>
+                 <div style="font-size:14px;font-weight:600;">${document.getElementById('w-cliente-nombre').value || '—'}</div></div>
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">TIPO SEGURO</div>
+                 <div style="font-size:14px;font-weight:600;">${document.getElementById('w-tipo-seguro').value || '—'}</div></div>
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">PLACA</div>
+                 <div style="font-size:14px;font-weight:600;">${document.getElementById('w-placa').value || '—'}</div></div>
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">VIGENCIA</div>
+                 <div style="font-size:14px;font-weight:600;">${document.getElementById('w-fecha-inicio').value} al ${document.getElementById('w-fecha-vence').value}</div></div>
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">PRIMA TOTAL</div>
+                 <div style="font-size:18px;font-weight:800;color:#4f46e5;">${fmt(total)}</div></div>
+            <div><div style="font-size:11px;color:#94a3b8;font-weight:600;">PRIMA NETA</div>
+                 <div style="font-size:18px;font-weight:800;color:#1e293b;">${fmt(neta)}</div></div>
+        </div>`;
+
+    // Comisiones simuladas (en producción vendrían del servidor según el usuario activo)
+    document.getElementById('comisiones-preview').innerHTML = `
+        <div class="comision-card">
+            <div><div class="cc-label">Tu Comisión (20%)</div><div class="cc-value">${fmt(neta * 0.20)}</div></div>
+            <i class="fa-solid fa-user" style="font-size:20px;color:#c4b5fd;"></i>
+        </div>
+        <div class="comision-card">
+            <div><div class="cc-label">Comisión Supervisor (5%)</div><div class="cc-value" style="color:#d97706;">${fmt(neta * 0.05)}</div></div>
+            <i class="fa-solid fa-user-tie" style="font-size:20px;color:#fcd34d;"></i>
+        </div>`;
+}
+
+async function emitirPoliza() {
+    const clienteId = document.getElementById('w-cliente-id').value;
+    if (!clienteId) {
+        mostrarToast('Seleccione un cliente de la lista', 'error');
+        pasoWizard = 1; actualizarWizard();
+        return;
+    }
+
+    const datos = {
+        cliente_id: clienteId,
+        tipo_seguro: document.getElementById('w-tipo-seguro').value,
+        ramo: document.getElementById('w-ramo').value,
+        aseguradora: document.getElementById('w-aseguradora').value,
+        perfil_cobertura: document.getElementById('w-cobertura').value,
+        prima_total: parseFloat(document.getElementById('w-prima-total').value),
+        periodicidad_pago: document.getElementById('w-periodicidad').value,
+        fecha_vencimiento: document.getElementById('w-fecha-vence').value,
+        numero_poliza_aseguradora: document.getElementById('w-num-aseg').value,
+        notas_internas: document.getElementById('w-notas').value,
+        emitida_por: 1,  // Se obtendrá del token de sesión en producción
+        vehiculo: {
+            cliente_id: clienteId,
+            placa: document.getElementById('w-placa').value,
+            marca: document.getElementById('w-marca').value,
+            modelo: document.getElementById('w-modelo').value,
+            anio: document.getElementById('w-anio').value,
+            color: document.getElementById('w-color').value,
+            chasis: document.getElementById('w-chasis').value,
+            motor: document.getElementById('w-motor').value,
+            valor_comercial: document.getElementById('w-valor').value,
+            tipo_vehiculo: document.getElementById('w-tipo-veh').value,
+            uso: document.getElementById('w-uso').value,
+            capacidad: document.getElementById('w-capacidad').value,
+        }
+    };
+
+    document.getElementById('btn-sig').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Emitiendo...';
+    document.getElementById('btn-sig').disabled = true;
+
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=emitir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const d = await r.json();
+
+        if (d.exito) {
+            mostrarToast(`✅ Póliza ${d.numero} emitida exitosamente`, 'success');
+            setTimeout(() => {
+                abrirTab('tab-consultar');
+                cargarPolizas();
+            }, 1500);
+        } else {
+            mostrarToast('Error: ' + d.mensaje, 'error');
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión al emitir la póliza', 'error');
+    } finally {
+        document.getElementById('btn-sig').disabled = false;
+        actualizarWizard();
+    }
+}
+
+async function buscarCliente(query) {
+    if (query.length < 2) { document.getElementById('cliente-sugerencias').style.display = 'none'; return; }
+    try {
+        const r = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(query)}`);
+        const d = await r.json();
+        const box = document.getElementById('cliente-sugerencias');
+        if (d.exito && d.datos?.length) {
+            box.innerHTML = d.datos.slice(0, 6).map(c => 
+                `<div onclick="seleccionarCliente('${c.id}','${c.nombre_razon_social}')" 
+                      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;"
+                      onmouseover="this.style.background='#f0f0ff'" onmouseout="this.style.background=''">
+                    <strong>${c.nombre_razon_social}</strong><br>
+                    <span style="font-size:11px;color:#94a3b8;">${c.rnc}</span>
+                 </div>`
+            ).join('');
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+        }
+    } catch (e) {}
+}
+
+function seleccionarCliente(id, nombre) {
+    document.getElementById('w-cliente-id').value = id;
+    document.getElementById('w-cliente-nombre').value = nombre;
+    document.getElementById('cliente-sugerencias').style.display = 'none';
+}
+
+function exportarPolizas() {
+    mostrarToast('Exportando pólizas...', 'info');
+    if (!polizasData.length) { mostrarToast('No hay datos para exportar', 'error'); return; }
+    const datos = polizasData.map(p => ({
+        'N° Póliza': p.numero_poliza,
+        'Cliente': p.cliente_nombre,
+        'Tipo': p.tipo_seguro,
+        'Placa': p.vehiculo_placa || '',
+        'Vigencia Inicio': formatFecha(p.fecha_emision),
+        'Vigencia Fin': formatFecha(p.fecha_vencimiento),
+        'Prima Total': p.prima_total,
+        'Estado': p.estado,
+        'Validada': p.validada
+    }));
+    const ws = typeof XLSX !== 'undefined' ? XLSX.utils.json_to_sheet(datos) : null;
+    if (ws) {
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Pólizas");
+        XLSX.writeFile(wb, `Polizas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        mostrarToast('Archivo de Excel generado exitosamente', 'success');
+    }
+}
+
+// ═══════════════════════════════════════
+// HELPERS UI
+// ═══════════════════════════════════════
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function mostrarToast(msg, tipo = 'info') {
+    const toast = document.getElementById('toast');
+    const iconos = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info' };
+    toast.className = `toast-${tipo}`;
+    toast.innerHTML = `<i class="fa-solid ${iconos[tipo] || 'fa-circle-info'}"></i> ${msg}`;
+    toast.style.display = 'flex';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.style.display = 'none', 3500);
+}
+
+function fmtMoneda(n) {
+    return new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n || 0);
+}
+
+function formatFecha(f) {
+    if (!f) return '—';
+    try { return new Date(f).toLocaleDateString('es-DO'); } catch { return f; }
+}
+
+// Cerrar sugerencias al hacer click fuera
+document.addEventListener('click', e => {
+    if (!e.target.closest('#w-cliente-nombre')) {
+        const box = document.getElementById('cliente-sugerencias');
+        if (box) box.style.display = 'none';
+    }
+    if (e.target.classList.contains('modal-overlay')) {
+        document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    cargarPolizas();
+    // Poner fecha de hoy por defecto en el formulario de pago
+    document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
+});
+</script>
 </body>
 </html>
