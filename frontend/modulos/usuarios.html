@@ -383,13 +383,28 @@ document.getElementById('usuarioForm').addEventListener('submit', async function
 });
 
 async function resetPassword(id) {
-    if (!confirm('Restablecer la contrasena de este usuario?')) return;
+    var usuario = window.usuariosData.find(function(u){ return u.id == id; }) || {};
+    var nombre = (usuario.nombre || '') + ' ' + (usuario.apellido || '');
+    var email  = usuario.email || '(sin email registrado)';
+    if (!confirm('Restablecer la contraseña de:\n\n👤 ' + nombre.trim() + '\n📧 ' + email + '\n\n✉️ Se enviará un correo al usuario con la nueva contraseña temporal.\n\n¿Confirmar?')) return;
     try {
         var res = await api.solicitud('/usuarios.php/restablecer-password/' + id, 'POST');
-        if (res.exito) alert('Contrasena restablecida.\nNueva clave temporal: ' + res.password_temporal);
-        else alert('Error: ' + res.mensaje);
+        if (res.exito) {
+            var msg = '✅ ' + res.mensaje + '\n\n';
+            msg += '👤 Usuario: ' + (res.nombre_usuario || nombre.trim()) + '\n';
+            msg += '📧 Correo destinatario: ' + (res.email_destino || email) + '\n';
+            msg += '🔑 Contraseña temporal: ' + res.password_temporal + '\n\n';
+            msg += res.correo_enviado
+                ? '📨 El correo fue enviado exitosamente.'
+                : '⚠️ No se pudo enviar el correo. Entregue la clave temporal de forma manual.';
+            alert(msg);
+            cargarUsuarios(paginaActual);
+        } else {
+            alert('Error: ' + res.mensaje);
+        }
     } catch(e) { alert('Error de conexion.'); }
 }
+
 
 async function bloquearUsuario(id) {
     var razon = prompt('Motivo del bloqueo:', 'Bloqueo administrativo');

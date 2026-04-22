@@ -118,6 +118,27 @@ class Dashboard {
             });
         }
 
+        // Mi Perfil
+        const miPerfilBtn = document.getElementById('miPerfilBtn');
+        if (miPerfilBtn) {
+            miPerfilBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+                abrirMiPerfil();
+            });
+        }
+
+        // Cambiar Contraseña
+        const cambiarPasswordBtn = document.getElementById('cambiarPasswordBtn');
+        if (cambiarPasswordBtn) {
+            cambiarPasswordBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (userDropdownMenu) userDropdownMenu.style.display = 'none';
+                abrirCambiarPassword();
+            });
+        }
+
+
         // Acciones rápidas del dashboard → navegar al módulo correspondiente
         document.querySelectorAll('[data-action]').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -137,6 +158,27 @@ class Dashboard {
                 }
             });
         });
+
+        // Eventos para tarjetas de estadísticas del Dashboard
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const titulo = card.querySelector('h3').textContent;
+                const valor = card.querySelector('.stat-number').textContent;
+                const icono = card.querySelector('.stat-icon').textContent;
+                this.abrirDetalleGlobal('estadistica', null, { titulo, valor, icono });
+            });
+        });
+
+        // Eventos para actividad reciente (Delegación)
+        const activityList = document.getElementById('recentActivityList');
+        if (activityList) {
+            activityList.addEventListener('click', (e) => {
+                const item = e.target.closest('.activity-item');
+                if (item && item.dataset.id) {
+                    this.abrirDetalleGlobal('actividad', item.dataset.id);
+                }
+            });
+        }
 
 
         // Tabs del módulo de usuarios
@@ -232,9 +274,9 @@ class Dashboard {
         }
         
         try {
-            await this.cargarUsuarios();
+            await this.cargarActividadReciente();
         } catch (error) {
-            console.error('[Dashboard] Error en cargarUsuarios:', error);
+            console.error('[Dashboard] Error en cargarActividadReciente:', error);
         }
         
         console.log('[Dashboard] cargarDatos completado');
@@ -243,7 +285,7 @@ class Dashboard {
     async cargarEstadisticas() {
         // 1. Total Clientes
         try {
-            const respuesta = await api.solicitud('/clientes');
+            const respuesta = await api.listarClientes();
             if (respuesta.exito && respuesta.datos) {
                 document.getElementById('totalClientes').textContent = respuesta.datos.length;
             }
@@ -251,23 +293,98 @@ class Dashboard {
             console.error('Error cargando total de clientes:', error);
         }
 
-        // 2. Fianzas Activas & Pólizas (desde MySQL)
+        // 2. Cotizaciones (Fianzas & Seguros de Ley)
         try {
             const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=listar&limite=500');
             const data = await resp.json();
             if (data.exito && Array.isArray(data.datos)) {
                 const hist = data.datos;
-                document.getElementById('fianzasActivas').textContent = hist.filter(c => c.tipo === 'FIANZA').length;
-                document.getElementById('totalPolizas').textContent = hist.filter(c => c.tipo !== 'FIANZA').length;
+                
+                // Conteo por lógica de negocio
+                const total = hist.length;
+                const fianzas = hist.filter(c => c.tipo === 'FIANZA').length;
+                const seguros = hist.filter(c => c.tipo !== 'FIANZA').length;
+
+                // Actualizar interfaz
+                document.getElementById('totalCotizaciones').textContent = total;
+                document.getElementById('cotizacionesFianzas').textContent = fianzas;
+                document.getElementById('cotizacionesSeguros').textContent = seguros;
+
             } else {
-                // Fallback localStorage
+                // Fallback localStorage (compatibilidad con versiones previas)
                 const hist = JSON.parse(localStorage.getItem('cotHistorial') || '[]');
-                document.getElementById('fianzasActivas').textContent = hist.filter(c => c.tipo === 'FIANZA' || c.subtipo).length;
-                document.getElementById('totalPolizas').textContent = hist.filter(c => c.tipo !== 'FIANZA' && !c.subtipo).length;
+                document.getElementById('totalCotizaciones').textContent = hist.length;
+                document.getElementById('cotizacionesFianzas').textContent = hist.filter(c => c.tipo === 'FIANZA' || c.subtipo).length;
+                document.getElementById('cotizacionesSeguros').textContent = hist.filter(c => c.tipo !== 'FIANZA' && !c.subtipo).length;
             }
         } catch(error) {
             console.error('Error cargando historial de cotizaciones para dashboard:', error);
         }
+    }
+
+    async cargarActividadReciente() {
+        const listContainer = document.getElementById('recentActivityList');
+        if (!listContainer) return;
+
+        try {
+            const respuesta = await api.listarActividadReciente();
+            if (respuesta.exito && Array.isArray(respuesta.datos)) {
+                if (respuesta.datos.length === 0) {
+                    listContainer.innerHTML = '<p class="empty-state">No hay actividades recientes</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = respuesta.datos.map(act => {
+                    const fecha = new Date(act.fecha_evento);
+                    const tiempo = this.formatearTiempoRelativo(fecha);
+                    const icono = this.obtenerIconoActividad(act.tipo_evento, act.modulo_accedido);
+                    
+                    return `
+                        <div class="activity-item" data-id="${act.id}">
+                            <div class="activity-icon">${icono}</div>
+                            <div class="activity-info">
+                                <p class="activity-text">${act.descripcion_evento}</p>
+                                <span class="activity-time">${tiempo}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        } catch (error) {
+            console.error('Error cargando actividad reciente:', error);
+        }
+    }
+
+    obtenerIconoActividad(tipo, modulo) {
+        if (tipo === 'login') return '🔑';
+        if (tipo === 'logout') return '🚪';
+        
+        const iconosModulo = {
+            'dashboard':    '🏠',
+            'clientes':     '👥',
+            'cotizaciones': '📈',
+            'usuarios':     '👤',
+            'seguridad':    '🛡️',
+            'configuracion':'⚙️',
+            'reportes':     '📊'
+        };
+        
+        return iconosModulo[modulo] || '📝';
+    }
+
+    formatearTiempoRelativo(fecha) {
+        const ahora = new Date();
+        const difSegundos = Math.floor((ahora - fecha) / 1000);
+        
+        if (difSegundos < 60) return 'Hace un momento';
+        
+        const difMinutos = Math.floor(difSegundos / 60);
+        if (difMinutos < 60) return `Hace ${difMinutos} min`;
+        
+        const difHoras = Math.floor(difMinutos / 60);
+        if (difHoras < 24) return `Hace ${difHoras} horas`;
+        
+        return fecha.toLocaleDateString();
     }
 
     cambiarModulo(modulo) {
@@ -284,10 +401,15 @@ class Dashboard {
 
         // Si es cotizaciones, forzar carga del iframe con versión para evitar caché
         if (modulo === 'cotizaciones') {
+            console.log('Loading cotizaciones module...');
             const iframe = document.getElementById('cotizador-iframe');
-            if (iframe && !iframe.dataset.loaded) {
+            if (iframe) {
+                // Always reload to avoid caching issues
                 iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/cotizaciones.html?t=' + Date.now();
                 iframe.dataset.loaded = 'true';
+                console.log('Iframe src set to:', iframe.src);
+            } else {
+                console.error('Iframe cotizador-iframe not found!');
             }
         }
 
@@ -329,6 +451,16 @@ class Dashboard {
 
         if (titulo) {
             titulo.textContent = titulos[modulo] || 'MÓDULO';
+        }
+
+        // Registrar actividad si el módulo cambió
+        if (this.moduloActual !== modulo) {
+            api.registrarActividad(modulo, `Consultó el módulo ${titulos[modulo] || modulo}`);
+            
+            // Si volvemos al dashboard, refrescar la lista de actividad
+            if (modulo === 'dashboard') {
+                setTimeout(() => this.cargarActividadReciente(), 500);
+            }
         }
 
         this.moduloActual = modulo;
@@ -691,6 +823,135 @@ class Dashboard {
             window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
         }
     }
+
+    // --- SISTEMA DE CONSULTA GLOBAL ---
+
+    async abrirDetalleGlobal(categoria, id, datosAdicionales = {}) {
+        const modal = document.getElementById('globalQueryModal');
+        const title = document.getElementById('globalModalTitle');
+        const body = document.getElementById('globalModalBody');
+        
+        if (!modal || !body) return;
+
+        // Reset y mostrar cargando
+        body.innerHTML = '<div class="empty-state">Generando ficha de consulta...</div>';
+        modal.classList.add('active');
+
+        try {
+            let contenidoHTML = '';
+            
+            if (categoria === 'actividad') {
+                title.innerHTML = '🔍 Ficha de Auditoría de Actividad';
+                const detalle = await api.obtenerDetalleActividad(id);
+                if (detalle.exito) {
+                    contenidoHTML = this.renderizarFichaActividad(detalle.datos);
+                } else {
+                    contenidoHTML = `<p class="error">No se pudo cargar el detalle: ${detalle.mensaje}</p>`;
+                }
+            } 
+            else if (categoria === 'estadistica') {
+                title.innerHTML = `📊 Desglose: ${datosAdicionales.titulo}`;
+                contenidoHTML = this.renderizarFichaEstadistica(datosAdicionales);
+            }
+
+            body.innerHTML = contenidoHTML;
+
+        } catch (error) {
+            console.error('Error al abrir detalle global:', error);
+            body.innerHTML = '<p class="error">Ocurrío un error al procesar la solicitud.</p>';
+        }
+    }
+
+    renderizarFichaActividad(data) {
+        return `
+            <div class="detail-sheet">
+                <div class="detail-header">
+                    <div class="detail-logo">
+                        <img src="assets/mqf-logo-sidebar.ico" alt="MQF">
+                        <span style="font-weight:bold; color:var(--primary-color);">MAS QUE FIANZAS</span>
+                    </div>
+                    <div class="detail-title">
+                        <h1>FICHA DE AUDITORÍA</h1>
+                        <p>ID Transacción: #ACT-${data.id.toString().padStart(5, '0')}</p>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Fecha y Hora</div>
+                        <div class="detail-value">${new Date(data.fecha_evento).toLocaleString()}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Usuario Responsable</div>
+                        <div class="detail-value">${data.usuario_nombre || 'Desconocido'} (@${data.username || 'n/a'})</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Módulo Accedido</div>
+                        <div class="detail-value" style="text-transform: uppercase;">${data.modulo_accedido}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Tipo de Evento</div>
+                        <div class="detail-value">${data.tipo_evento}</div>
+                    </div>
+                    <div class="detail-item" style="grid-column: 1 / -1;">
+                        <div class="detail-label">Descripción del Suceso</div>
+                        <div class="detail-value" style="background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #e2e8f0;">
+                            ${data.descripcion_evento}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; font-size:12px; color:#94a3b8; border-top:1px dashed #e2e8f0; padding-top:10px;">
+                    <p>Documento generado dinámicamente para fines de auditoría interna y seguridad de la información.</p>
+                </div>
+            </div>
+        `;
+    }
+
+    renderizarFichaEstadistica(data) {
+        // En un caso real, aquí se llamaría a un endpoint para traer el desglose.
+        // Simulamos un desglose corporativo premium.
+        return `
+            <div class="detail-sheet">
+                <div class="detail-header">
+                    <div class="detail-logo">
+                        <img src="assets/mqf-logo-sidebar.ico" alt="MQF">
+                        <span style="font-weight:bold; color:var(--primary-color);">MAS QUE FIANZAS</span>
+                    </div>
+                    <div class="detail-title">
+                        <h1>DESGLOSE ESTADÍSTICO</h1>
+                        <p>${new Date().toLocaleDateString()}</p>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-bottom:30px; padding:20px; background:#f0f9ff; border-radius:12px;">
+                    <div style="font-size:48px; margin-bottom:10px;">${data.icono}</div>
+                    <div style="font-size:32px; font-weight:bold; color:var(--primary-color);">${data.valor}</div>
+                    <div style="font-size:14px; color:#64748b; text-transform:uppercase; letter-spacing:1px;">${data.titulo}</div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Período Actual</div>
+                        <div class="detail-value">${new Date().toLocaleString('es-ES', {month: 'long', year: 'numeric'})}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Estado de Sincronización</div>
+                        <div class="detail-value text-success">● En Tiempo Real</div>
+                    </div>
+                </div>
+
+                <p style="color:#64748b; font-size:13px; font-style:italic;">
+                    * Este reporte muestra un resumen consolidado de la categoría seleccionada. Para un análisis más exhaustivo, diríjase al módulo de <strong>Reportes Avanzados</strong>.
+                </p>
+            </div>
+        `;
+    }
+}
+
+// Funciones globales de ayuda (si no están en la clase)
+function imprimirDetalleModal() {
+    window.print();
 }
 
 // Funciones globales para modales
@@ -706,3 +967,200 @@ let dashboard;
 document.addEventListener('DOMContentLoaded', function() {
     dashboard = new Dashboard();
 });
+
+// =====================================================
+// MI PERFIL — funciones globales
+// =====================================================
+async function abrirMiPerfil() {
+    const status = document.getElementById('perfilGuardarStatus');
+    if (status) { status.textContent = ''; status.style.color = ''; }
+
+    // Pre-llenar inmediatamente con datos del localStorage
+    const usuarioLocal = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+    // Separar nombre/apellido si vienen como nombre_completo
+    let nomLocal = usuarioLocal.nombre || '';
+    let apLocal  = usuarioLocal.apellido || '';
+    if (!nomLocal && usuarioLocal.nombre_completo) {
+        const parts = usuarioLocal.nombre_completo.trim().split(' ');
+        nomLocal = parts[0] || '';
+        apLocal  = parts.slice(1).join(' ') || '';
+    }
+    document.getElementById('perfilNombreEdit').value   = nomLocal;
+    document.getElementById('perfilApellidoEdit').value = apLocal;
+    document.getElementById('perfilTelefonoEdit').value = usuarioLocal.telefono || '';
+    document.getElementById('perfilEmailEdit').value    = usuarioLocal.email || '';
+    document.getElementById('perfilUsernameEdit').value = usuarioLocal.username || '';
+    document.getElementById('perfilRolEdit').value      = usuarioLocal.perfil || usuarioLocal.nombre_perfil || '';
+    document.getElementById('perfilFotoStatus').textContent = '';
+
+    // Abrir modal ya con datos previos
+    document.getElementById('modalMiPerfil').classList.add('active');
+
+    // Luego buscar datos completos desde el backend (foto_perfil, teléfono, etc.)
+    try {
+        const token = localStorage.getItem('token_sesion') || '';
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+            credentials: 'include',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data.exito && data.datos) {
+            const d = data.datos;
+            document.getElementById('perfilNombreEdit').value   = d.nombre || '';
+            document.getElementById('perfilApellidoEdit').value = d.apellido || '';
+            document.getElementById('perfilTelefonoEdit').value = d.telefono || '';
+            document.getElementById('perfilEmailEdit').value    = d.email || '';
+            document.getElementById('perfilUsernameEdit').value = d.username || '';
+            document.getElementById('perfilRolEdit').value      = d.nombre_perfil || '';
+            const foto = document.getElementById('perfilFotoPreview');
+            foto.src = d.foto_perfil ? d.foto_perfil + '?t=' + Date.now() : '';
+        }
+    } catch(e) { console.warn('No se pudo cargar perfil del backend:', e); }
+}
+
+
+function previewFotoPerfil(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('perfilFotoPreview').src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+    document.getElementById('perfilFotoStatus').textContent = 'Foto seleccionada. Guarda para subirla.';
+    // Subir inmediatamente
+    subirFotoPerfil(input.files[0]);
+}
+
+async function subirFotoPerfil(file) {
+    const statusEl = document.getElementById('perfilFotoStatus');
+    statusEl.textContent = 'Subiendo foto...';
+    statusEl.style.color = '#6366f1';
+    const formData = new FormData();
+    formData.append('foto', file);
+    try {
+        const token = localStorage.getItem('token_sesion') || '';
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: formData
+        });
+        const data = await resp.json();
+        if (data.exito) {
+            statusEl.textContent = '✅ Foto actualizada.';
+            statusEl.style.color = '#16a34a';
+            const avatarHeader = document.querySelector('.user-avatar');
+            if (avatarHeader && data.datos && data.datos.foto_url) {
+                avatarHeader.src = data.datos.foto_url + '?t=' + Date.now();
+            }
+        } else {
+            statusEl.textContent = '❌ ' + (data.mensaje || 'Error al subir foto.');
+            statusEl.style.color = '#ef4444';
+        }
+    } catch(e) {
+        statusEl.textContent = '❌ Error de conexión.';
+        statusEl.style.color = '#ef4444';
+    }
+}
+
+async function guardarMiPerfil() {
+    const nombre   = document.getElementById('perfilNombreEdit').value.trim();
+    const apellido = document.getElementById('perfilApellidoEdit').value.trim();
+    const telefono = document.getElementById('perfilTelefonoEdit').value.trim();
+    const statusEl = document.getElementById('perfilGuardarStatus');
+
+    if (!nombre || !apellido) {
+        statusEl.textContent = '⚠️ Nombre y apellido son requeridos.';
+        statusEl.style.color = '#f59e0b';
+        return;
+    }
+    statusEl.textContent = 'Guardando...';
+    statusEl.style.color = '#6366f1';
+    try {
+        const token = localStorage.getItem('token_sesion') || '';
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ nombre, apellido, telefono })
+        });
+        const data = await resp.json();
+        if (data.exito) {
+            statusEl.textContent = '✅ Perfil actualizado exitosamente.';
+            statusEl.style.color = '#16a34a';
+            const userName = document.getElementById('userName');
+            if (userName) userName.textContent = nombre + ' ' + apellido;
+            // Actualizar localStorage
+            const usr = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+            usr.nombre = nombre; usr.apellido = apellido; usr.nombre_completo = nombre + ' ' + apellido;
+            localStorage.setItem('usuario_actual', JSON.stringify(usr));
+            setTimeout(() => cerrarModal('modalMiPerfil'), 1500);
+        } else {
+            statusEl.textContent = '❌ ' + (data.mensaje || 'Error al guardar.');
+            statusEl.style.color = '#ef4444';
+        }
+    } catch(e) {
+        statusEl.textContent = '❌ Error de conexión.';
+        statusEl.style.color = '#ef4444';
+    }
+}
+
+
+// =====================================================
+// CAMBIAR CONTRASEÑA — funciones globales
+// =====================================================
+function abrirCambiarPassword() {
+    ['passActual','passNueva','passConfirmar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const status = document.getElementById('passStatus');
+    if (status) { status.textContent = ''; }
+    document.getElementById('modalCambiarPassword').classList.add('active');
+}
+
+async function confirmarCambioPassword() {
+    const actual    = document.getElementById('passActual').value;
+    const nueva     = document.getElementById('passNueva').value;
+    const confirmar = document.getElementById('passConfirmar').value;
+    const statusEl  = document.getElementById('passStatus');
+    const btn       = document.getElementById('btnGuardarPass');
+
+    if (!actual || !nueva || !confirmar) {
+        statusEl.textContent = '⚠️ Todos los campos son requeridos.';
+        statusEl.style.color = '#f59e0b'; return;
+    }
+    if (nueva !== confirmar) {
+        statusEl.textContent = '⚠️ Las contraseñas nuevas no coinciden.';
+        statusEl.style.color = '#f59e0b'; return;
+    }
+    if (nueva.length < 8) {
+        statusEl.textContent = '⚠️ La nueva contraseña debe tener al menos 8 caracteres.';
+        statusEl.style.color = '#f59e0b'; return;
+    }
+    btn.disabled = true;
+    statusEl.textContent = 'Actualizando contraseña...';
+    statusEl.style.color = '#6366f1';
+    try {
+        // Usar el método del api-client que ya maneja el Bearer token
+        const resp = await api.cambiarPassword(actual, nueva, confirmar);
+        if (resp.exito) {
+            statusEl.textContent = '✅ Contraseña actualizada exitosamente.';
+            statusEl.style.color = '#16a34a';
+            setTimeout(() => cerrarModal('modalCambiarPassword'), 1800);
+        } else {
+            statusEl.textContent = '❌ ' + (resp.mensaje || 'Error al actualizar.');
+            statusEl.style.color = '#ef4444';
+        }
+    } catch(e) {
+        statusEl.textContent = '❌ Error de conexión con el servidor.';
+        statusEl.style.color = '#ef4444';
+    } finally {
+        btn.disabled = false;
+    }
+}
+

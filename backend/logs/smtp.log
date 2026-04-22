@@ -1,0 +1,3 @@
+[2026-04-14 13:55:23] [INFO] Preparando conexión a mail.masquefianzas.com:465 (Modo: ssl)...
+[2026-04-14 13:55:23] [INFO] Destino: ahenriquezmarte@gmail.com | Asunto: Prueba de Conexión SMTP - MAS QUE FIANZAS
+[2026-04-14 13:55:27] [SUCCESS] Correo enviado exitosamente a ahenriquezmarte@gmail.com

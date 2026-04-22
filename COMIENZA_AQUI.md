@@ -1,419 +1,377 @@
-# 🧭 GUÍA DE ORIENTACIÓN - ¿POR DÓNDE EMPEZAR?
+# 🧭 GUÍA DE ORIENTACIÓN — ¿POR DÓNDE EMPEZAR?
+
+> **Versión:** 2.1.0 | **Actualizado:** 22 de Abril de 2026
+
+---
 
 ## 👋 Bienvenido a MAS QUE FIANZAS
 
-Has recibido una plataforma completa y lista para usar. Este documento te guía sobre **qué leer primero** según tu rol.
+Has recibido una plataforma completa en evolución activa. Este documento te guía sobre **qué leer primero** según tu rol.
 
-### 🌟 Novedades Recientes (Actualización Abril 2026)
-La plataforma ha sido enriquecida con las siguientes funcionalidades:
-- **Integración de Módulos Core**: Cotizaciones, Clientes y Seguros operan al 100% de manera nativa e integrada en el Dashboard.
-- **Sistema Avanzado de Gestión de Usuarios**: Nueva nomenclatura jerárquica de IDs (RED-XXX, DIR-XXX, PDV-XXX, VEN-XXX), sistema de referidos en árbol y soporte para cálculo automático de comisiones individuales y vinculadas a la red de ventas.
-- **Personalización de Marca**: Actualización dinámica del logo de la plataforma en la interfaz web y documentos PDF directamente desde el Dashboard.
-- **Nuevo Perfil Comercial**: Integración del "Socio Comercial (PDV)" con accesos adaptados para el uso del cotizador y la visualización de rendimiento.
+---
+
+## 🌟 NOVEDADES — Versión 2.1.0 (Abril 2026)
+
+La plataforma ha sido significativamente enriquecida con las siguientes funcionalidades:
+
+| Funcionalidad | Estado |
+|--------------|--------|
+| **Recuperación de contraseña por email** (token + SMTP) | ✅ Nuevo |
+| **Panel SMTP configurable** desde el Dashboard sin código | ✅ Nuevo |
+| **Visor de logs SMTP** en tiempo real | ✅ Nuevo |
+| **Jerarquía de IDs de usuarios** (RED-XXX, DIR-XXX, PDV-XXX, VEN-XXX) | ✅ Nuevo |
+| **Sistema de referidos en árbol** con comisiones de red | ✅ Nuevo |
+| **Nuevo perfil "Socio Comercial PDV"** con menú adaptado | ✅ Nuevo |
+| **PDF corporativo** con logo MQF real en todas las cotizaciones | ✅ Mejorado |
+| **Cotizador Seguros de Ley** con 13 tipos, precios reales MULTISEGUROS | ✅ v2 |
+| **Cotizador Fianzas** profesional con 7 tipos y coberturas | ✅ v2 |
+| **Historial de cotizaciones** exportable en PDF, Excel, CSV, JSON, ZIP | ✅ Mejorado |
+| **Módulo Clientes** activo con CRUD completo | ✅ Activo |
+| **Módulo Pólizas** activo con base funcional | ✅ Activo |
+| **Dashboard con actividad reciente** clickeable con modal de detalle | ✅ Mejorado |
+| **Estadísticas en tiempo real**: Clientes, Cotizaciones, Fianzas, Seguros | ✅ Mejorado |
 
 ---
 
 ## 🎯 ELIGE TU PERFIL
 
-### Soy ADMINISTRADOR del Sistema
-**Tiempo: 1 hora**
+### 👑 Soy ADMINISTRADOR del Sistema
+**Tiempo estimado: 1 hora**
 
 1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)
-   - Entender qué se ha entregado
+   - Entender qué se ha entregado en v2.1.0
 
 2. **[10 min]** Leer: [INSTALACION_RAPIDA.md](INSTALACION_RAPIDA.md)
-   - Pasos exactos para instalar
+   - Pasos exactos para instalar o actualizar
 
-3. **[20 min]** Hacer: Instalar el sistema
-   - Copiar archivos a WAMP
-   - Crear BD e importar SQL
-   - Acceder a http://localhost/PLATAFORMA_INTEGRADA
+3. **[20 min]** Instalar y acceder:
+   ```
+   http://localhost/PLATAFORMA_INTEGRADA
+   Usuario: admin / Contraseña: Demo@123
+   ```
 
-4. **[15 min]** Leer: [README.md](README.md) - Sección "Usuarios y Roles"
-   - Entender cómo funcionan los permisos
+4. **[15 min]** Configurar SMTP:
+   - Dashboard → módulo Seguridad/Configuración → SMTP
+   - Ingresar servidor, puerto, usuario y contraseña de correo
+   - Clic en "Probar conexión" para verificar
 
-5. **[10 min]** Ejecutar: Crear usuarios en Dashboard
-   - Dashboard → Usuarios → "+ Nuevo usuario"
+5. **[10 min]** Crear usuarios desde Dashboard:
+   - Dashboard → Usuarios → "+ Crear Usuario"
+   - Asignar perfil jerárquico (Director, PDV, Vendedor, etc.)
+   - El código (RED-XXX / DIR-XXX / etc.) se asigna automáticamente
 
-**Resultado esperado:** Sistema funcionando con usuario admin logeado
-
----
-
-### Soy GERENTE / líder de equipo
-**Tiempo: 30 minutos**
-
-1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)
-   - Visión general del proyecto
-
-2. **[15 min]** Leer: [ESPECIFICACIONES.md](ESPECIFICACIONES.md) - Sección "Malla de Permisos"
-   - Entender roles disponibles
-   - Saber qué puede hacer cada rol
-
-3. **[10 min]** Revisar: [INTEGRACION_COTIZADOR.md](INTEGRACION_COTIZADOR.md)
-   - Entender módulo de cotizaciones
-
-**Resultado esperado:** Conocer estructura de control de acceso
+**Resultado esperado:** Sistema con SMTP funcionando y primer usuario de equipo creado ✅
 
 ---
 
-### Soy USUARIO final
-**Tiempo: 15 minutos**
+### 📊 Soy GERENTE / Director de Red
+**Tiempo estimado: 30 minutos**
 
-1. **[5 min]** Leer: [INSTALACION_RAPIDA.md](INSTALACION_RAPIDA.md) - Sección "Acceso"
-   - URL de acceso
+1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md) - Sección "Nuevas funcionalidades"
 
-2. **[5 min]** Acceder: Abrir http://localhost/PLATAFORMA_INTEGRADA
-   - Usuario: admin / Contraseña: Demo@123
+2. **[10 min]** Entender jerarquía de IDs de usuarios:
+   - RED-XXX: Directores de Red (máximo nivel comercial)
+   - DIR-XXX: Directores de área
+   - PDV-XXX: Socios Comerciales con punto de venta
+   - VEN-XXX: Vendedores de campo
 
-3. **[5 min]** Navegar: Explorar el Dashboard
-   - Ver módulos disponibles
-   - Cambiar contraseña si es necesario
+3. **[10 min]** Revisar módulo de usuarios:
+   - Dashboard → Usuarios → ver columna "Código"
+   - Crear un PDV y asignar referente (árbol de comisiones)
 
-**Resultado esperado:** Saber acceder al sistema y navegar
+4. **[5 min]** Revisar estadísticas del Dashboard:
+   - Cotizaciones totales, por tipo Fianza vs Seguro
 
----
-
-### Soy DESARROLLADOR / Técnico
-**Tiempo: 2 horas**
-
-1. **[15 min]** Leer: [INDICE_MAESTRO.md](INDICE_MAESTRO.md)
-   - Entender estructura general
-
-2. **[30 min]** Leer: [ESPECIFICACIONES.md](ESPECIFICACIONES.md)
-   - Componentes técnicos
-   - Tablas de BD
-   - Endpoints API
-
-3. **[30 min]** Revisar código:
-   - `backend/config.php` - Configuración central
-   - `backend/UsuarioManager.php` - Patrón de clase
-   - `frontend/assets/api-client.js` - Cliente HTTP
-
-4. **[15 min]** Leer: [README.md](README.md) - Sección "API"
-   - Ejemplos de endpoints
-   - Formatos de request/response
-
-5. **[30 min]** Hacer: Crear una extensión simple
-   - Agregar nuevo rol en BD
-   - Asignar permisos
-   - Probar desde frontend
-
-**Resultado esperado:** Entender arquitectura, poder extender
+**Resultado esperado:** Entender estructura de comisiones y árbol de referidos ✅
 
 ---
 
-### Soy AUDITOR / Compliance
-**Tiempo: 45 minutos**
+### 🏪 Soy SOCIO COMERCIAL (PDV)
+**Tiempo estimado: 15 minutos**
 
-1. **[10 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md) - Sección "Seguridad"
-   - Medidas implementadas
+1. **[2 min]** Acceder con tus credenciales proporcionadas por el administrador
+   ```
+   http://localhost/PLATAFORMA_INTEGRADA
+   ```
 
-2. **[15 min]** Leer: [ESPECIFICACIONES.md](ESPECIFICACIONES.md) - Sección "Características de Seguridad"
-   - Detalles técnicos de seguridad
-   - Auditoría integrada
+2. **[5 min]** Explorar el Dashboard:
+   - Verás solo los módulos que tienes disponibles
+   - Cotizaciones, Clientes, Pólizas, Reportes
 
-3. **[10 min]** Revisar: `backend/Autenticacion.php`
-   - Entender validación de permisos
+3. **[5 min]** Hacer una cotización de prueba:
+   - Dashboard → Cotizaciones → Tab "Seguros de Ley"
+   - Seleccionar: Tipo vehículo → Uso → Capacidad
+   - Ver precio y cobertura automática
+   - Descargar PDF corporativo
 
-4. **[10 min]** Acceder: Dashboard → Usuarios → Tab "Auditoría"
-   - Ver registro de accesos
+4. **[3 min]** Cambiar tu contraseña inicial:
+   - Clic en tu nombre (arriba derecha) → Cambiar Contraseña
 
-**Resultado esperado:** Entender controles de seguridad y auditabilidad
+**Resultado esperado:** Saber cotizar y descargar PDF para clientes ✅
+
+---
+
+### 👤 Soy USUARIO final (Empleado)
+**Tiempo estimado: 10 minutos**
+
+1. **[2 min]** Acceder:
+   ```
+   http://localhost/PLATAFORMA_INTEGRADA
+   ```
+
+2. **[5 min]** Navegar el Dashboard según tu perfil
+
+3. **[3 min]** Cambiar tu contraseña:
+   - Click en nombre de usuario → "Cambiar Contraseña"
+
+> ⚠️ Si olvidaste tu contraseña: en la pantalla de login click en "¿Olvidaste tu contraseña?" y recibirás un email con instrucciones.
+
+**Resultado esperado:** Saber acceder y navegar ✅
+
+---
+
+### 🧑‍💻 Soy DESARROLLADOR / Técnico
+**Tiempo estimado: 2-3 horas**
+
+1. **[15 min]** Revisar estructura del proyecto:
+   - `backend/config.php` — configuración central de BD
+   - `backend/config/smtp.json` — configuración SMTP (editable sin código)
+   - `backend/Mailer.php` — motor de envío de correos
+   - `backend/UsuarioManager.php` — patrón de clase principal
+
+2. **[20 min]** Explorar APIs REST:
+   - `backend/api/auth.php` — login, logout, sesión
+   - `backend/api/actividad.php` — registro de actividad por módulo
+   - `backend/api/cotizaciones.php` — guardar/listar cotizaciones
+   - `backend/api/config_smtp.php` — leer/guardar config SMTP
+   - `backend/api/test_smtp.php` — prueba de correo
+   - `backend/api/logs_smtp.php` — visor de logs SMTP
+   - `backend/api/mi_perfil.php` — datos del usuario actual
+   - `backend/api/alter_recuperacion.php` — recuperación de contraseña
+
+3. **[20 min]** Revisar frontend:
+   - `frontend/assets/api-client.js` — cliente HTTP (todas las llamadas)
+   - `frontend/assets/dashboard.js` — lógica principal del Dashboard
+   - `frontend/assets/data-export.js` — motor PDF/Excel/CSV/ZIP
+   - `frontend/modulos/cotizaciones.html` — cotizador React integrado
+
+4. **[15 min]** Entender el flujo de autenticación:
+   - Login → sesión en BD → token → API headers
+   - Recuperación: solicitud → token BD → email → validación → nueva contraseña
+
+5. **[30 min]** Extensión de ejemplo:
+   - Agregar nuevo tipo de fianza en `cotizaciones.html` (TASAS object)
+   - Crear nuevo endpoint en `backend/api/`
+   - Registrar actividad con `api.registrarActividad(modulo, descripcion)`
+
+**Resultado esperado:** Dominar arquitectura y poder extender ✅
+
+---
+
+### 🔎 Soy AUDITOR / Compliance
+**Tiempo estimado: 45 minutos**
+
+1. **[10 min]** Revisar: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md) - Sección "Seguridad"
+
+2. **[15 min]** Dashboard → Usuarios → Tab "Auditoría":
+   - Todos los eventos: login, logout, cambios de datos, acceso a módulos
+   - Filtros por usuario, fecha, tipo de evento
+
+3. **[10 min]** Dashboard → Seguridad → "Logs SMTP":
+   - Ver intentos de envío de correo y resultados
+
+4. **[10 min]** Revisar backend/logs/:
+   - `error.log` — errores del sistema PHP
+   - `smtp.log` — actividad de correo electrónico
+
+**Resultado esperado:** Entender controles de seguridad y auditabilidad ✅
 
 ---
 
 ## 📚 DOCUMENTOS EN ORDEN DE LECTURA
 
-### Recomendado para TODOS
 ```
-1. RESUMEN_EJECUTIVO.md       ← Comienza aquí
-   ├─ Entender qué se entregó
-   └─ Tiempo: 10 min
-```
+Para TODOS:
+  1. RESUMEN_EJECUTIVO.md       ← Comienza aquí (versión 2.1.0)
+     └─ 10 min
 
-### Siguiente paso (elige uno)
-```
-2a. INSTALACION_RAPIDA.md     ← Si necesitas instalar
-    └─ Tiempo: 10 min
+Para INSTALAR:
+  2. INSTALACION_RAPIDA.md      ← Pasos exactos
+     └─ 15 min
 
-2b. ESPECIFICACIONES.md       ← Si quieres entender técnica
-    └─ Tiempo: 20 min
+Para ENTENDER TÉCNICA:
+  3. ESPECIFICACIONES.md        ← Componentes, APIs, BD
+     └─ 20 min
 
-2c. INTEGRACION_COTIZADOR.md ← Si usarás cotizador
-    └─ Tiempo: 15 min
-```
+Para el COTIZADOR:
+  4. INTEGRACION_COTIZADOR.md   ← Módulo de cotizaciones
+     └─ 15 min
 
-### Luego (según rol)
-```
-3a. README.md                 ← Para referencia API
-    └─ Tiempo: 30 min
+Para NAVEGAR EL PROYECTO:
+  5. INDICE_MAESTRO.md          ← Mapa del proyecto
+     └─ 20 min
 
-3b. INDICE_MAESTRO.md         ← Para navegar proyecto
-    └─ Tiempo: 20 min
-
-3c. VERIFICACION_FINAL.md     ← Para checklist de archivos
-    └─ Tiempo: 15 min
+Para VERIFICAR INSTALACIÓN:
+  6. VERIFICACION_FINAL.md      ← Checklist de archivos
+     └─ 15 min
 ```
 
 ---
 
-## 🔗 MAPA MENTAL DEL PROYECTO
+## 🔗 MAPA DEL PROYECTO
 
 ```
-┌─────────────────────────────────────┐
-│   PLATAFORMA MAS QUE FIANZAS 1.0    │
-└─────────────────────────────────────┘
-           ↓↓↓
-┌──────────────────────────────────────────────┐
-│           ¿QUÉ QUIERO HACER?                 │
-└──────────────────────────────────────────────┘
-     │          │           │          │
-     ↓          ↓           ↓          ↓
-  INSTALAR   ENTENDER    USAR       EXTENDER
-     │          │           │          │
-     ↓          ↓           ↓          ↓
-  RÁPIDA    ESPECIF.     INDICES    README
-     │          │           │          │
-     ↓          ↓           ↓          ↓
-  →LEER     →REVISAR     →NAVEGAR   →ANALIZAR
-     │          │           │          │
-     ↓          ↓           ↓          ↓
-  CONFIG     DIAGRAMA     MOVER      CÓDIGO
+┌──────────────────────────────────────────────────┐
+│       PLATAFORMA MAS QUE FIANZAS v2.1.0          │
+│                                                  │
+│  LOGIN ──→ DASHBOARD ──→ MÓDULOS                 │
+│              │                                   │
+│       ┌──────┴──────────────────────────┐        │
+│       ↓         ↓          ↓            ↓        │
+│  COTIZACIONES CLIENTES  USUARIOS  SEGURIDAD       │
+│  (Seguros+    (CRUD)    (Jerarquía  (SMTP+        │
+│   Fianzas)              +Comisiones) Logs)        │
+│       ↓                                          │
+│  PDF CORPORATIVO (logo MQF)                      │
+│  Excel/CSV/ZIP/JSON                              │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## ⏰ TIEMPOS SUGERIDOS
 
-| Actividad | Tiempo | Documento |
-|-----------|--------|-----------|
-| Visión general | 10 min | RESUMEN_EJECUTIVO |
-| Instalación | 15 min | INSTALACION_RAPIDA |
-| Primera sesión | 5 min | README (Inicio) |
-| Entender permisos | 20 min | ESPECIFICACIONES |
-| Usar cotizador | 10 min | INTEGRACION_COTIZADOR |
-| Explorar código | 30 min | README (Técnica) |
-| Administrar usuarios | 20 min | README (Admin) |
-| **TOTAL** | **~110 min** | **Familiarización completa** |
+| Actividad | Tiempo | Documento/Acción |
+|-----------|--------|-----------------|
+| Visión general v2.1.0 | 10 min | RESUMEN_EJECUTIVO |
+| Instalación / actualización | 15 min | INSTALACION_RAPIDA |
+| Configurar SMTP | 10 min | Dashboard → Seguridad |
+| Primera cotización PDF | 5 min | Dashboard → Cotizaciones |
+| Crear usuario con jerarquía | 10 min | Dashboard → Usuarios |
+| Entender APIs | 30 min | ESPECIFICACIONES + código |
+| Administrar árbol de referidos | 20 min | Dashboard → Usuarios |
+| **TOTAL admin** | **~100 min** | **Dominio completo** |
 
 ---
 
-## 🎯 FLUJO RECOMENDADO
+## 📞 PREGUNTAS FRECUENTES
 
-### Día 1: Instalación y Primer Acceso
-```
-Mañana:
-  1. Leer RESUMEN_EJECUTIVO (10 min)
-  2. Leer INSTALACION_RAPIDA (10 min)
-  3. Instalar sistema (15 min)
-  4. Loguearse como admin (5 min)
-  
-Tarde:
-  5. Explorar Dashboard (10 min)
-  6. Crear usuario de prueba (5 min)
-  7. Verificar que todo funciona (5 min)
+### "¿Cómo configuro el correo del sistema?"
+**Respuesta:** Dashboard → módulo Seguridad → pestaña "Configuración SMTP" → llenar datos → Guardar → Probar
 
-RESULTADO: Sistema funcionando ✅
-```
+### "¿Cómo recupero una contraseña olvidada?"
+**Respuesta:** En la pantalla de login → "¿Olvidaste tu contraseña?" → ingresar email → revisar bandeja → seguir el enlace (válido 30 minutos)
 
-### Día 2: Entender Administración
-```
-Mañana:
-  1. Leer ESPECIFICACIONES - Sección Permisos (15 min)
-  2. Leer README - Sección Usuarios (15 min)
-  
-Tarde:
-  3. Crear usuarios adicionales (20 min)
-  4. Asignar roles diferentes (20 min)
-  5. Probar acceso con diferentes roles (15 min)
+### "¿Qué significa el código RED-001, DIR-002, etc.?"
+**Respuesta:** Es la nomenclatura jerárquica de usuarios:
+- `RED-XXX` = Director de Red (máximo nivel)
+- `DIR-XXX` = Director de área
+- `PDV-XXX` = Socio Comercial (Punto de Venta)
+- `VEN-XXX` = Vendedor de campo
 
-RESULTADO: Entender sistema de roles ✅
-```
+### "¿Cómo genero una cotización con PDF?"
+**Respuesta:** Dashboard → Cotizaciones → Tab "Seguros de Ley" o "Fianzas" → llenar datos → "Guardar y Descargar PDF"
 
-### Día 3: Profundizar
-```
-Mañana:
-  1. Leer README - Sección API (20 min)
-  2. Revisar código backend (30 min)
-  
-Tarde:
-  3. Revisar código frontend (30 min)
-  4. Entender flujos (20 min)
+### "¿Cómo exporto el historial de cotizaciones?"
+**Respuesta:** Dashboard → Cotizaciones → Tab "Historial" → botón "Exportar" → elegir formato (PDF, Excel, CSV, JSON, ZIP)
 
-RESULTADO: Dominar arquitectura técnica ✅
-```
+### "¿Cómo creo un usuario con comisiones?"
+**Respuesta:** Dashboard → Usuarios → "+ Crear Usuario" → activar checkbox "¿Tiene comisión?" → ingresar porcentaje individual y de red → seleccionar referente
+
+### "¿Qué módulos ve un PDV (Socio Comercial)?"
+**Respuesta:** Solo ve: Dashboard, Cotizaciones, Clientes, Pólizas, Reportes y Mi Perfil. Los módulos administrativos están ocultos automáticamente.
+
+### "¿Dónde veo los logs del sistema?"
+**Respuesta:** 
+- Actividad de usuarios: Dashboard → Usuarios → Tab "Auditoría"
+- Logs SMTP: Dashboard → Seguridad → "Logs de Correo"
+- Logs técnicos: `backend/logs/error.log` y `backend/logs/smtp.log`
 
 ---
 
-## 📞 PREGUNTAS FRECUENTES INICIALES
+## ✅ CHECKLIST DE INICIO
 
-### "¿Dónde comienzo?"
-**Respuesta:** Lee **INSTALACION_RAPIDA.md** primero
-
-### "¿Cómo instalo el sistema?"
-**Respuesta:** Sigue pasos en **INSTALACION_RAPIDA.md**
-
-### "¿Cuál es la contraseña del admin?"
-**Respuesta:** `admin / Demo@123` (ver **INSTALACION_RAPIDA.md**)
-
-### "¿Cómo creo usuarios nuevos?"
-**Respuesta:** Dashboard → Usuarios → "+ Nuevo usuario" (ver **README.md**)
-
-### "¿Cómo cambio los permisos de un usuario?"
-**Respuesta:** Dashboard → Usuarios → seleccionar usuario → editar rol (ver **ESPECIFICACIONES.md**)
-
-### "¿Dónde veo quién hizo qué?"
-**Respuesta:** Dashboard → Usuarios → Tab "Auditoría" (ver **README.md**)
-
-### "¿Cómo integro mi módulo nuevo?"
-**Respuesta:** Ver **README.md** sección "Extensibilidad"
-
-### "¿Qué hacer si algo no funciona?"
-**Respuesta:** Ver **README.md** sección "Troubleshooting"
-
----
-
-## 🚦 INDICADORES DE PROGRESO
-
-### ✅ Instalación correcta
+### Instalación (una sola vez)
 - [ ] Sistema accesible en http://localhost/PLATAFORMA_INTEGRADA
 - [ ] Login funciona con admin/Demo@123
-- [ ] Dashboard muestra todos los módulos
-- [ ] Puedes crear un usuario nuevo
+- [ ] Dashboard muestra estadísticas (aunque sean en 0)
+- [ ] SMTP configurado y probado → "Prueba exitosa"
 
-### ✅ Entendimiento básico
-- [ ] Sabes qué es RBAC
-- [ ] Entiendes los 8 roles disponibles
-- [ ] Sabes qué permiso controla qué
-- [ ] Puedes asignar roles a usuarios
+### Configuración inicial
+- [ ] Crear usuarios reales con sus roles apropiados
+- [ ] Asignar árbol de referidos si aplica
+- [ ] Configurar comisiones por usuario si aplica
+- [ ] Cambiar contraseña del admin por una más segura
 
-### ✅ Operación normal
-- [ ] Usuarios logeados normalmente
-- [ ] Permisos funcionan correctamente
-- [ ] Auditoría registra acciones
-- [ ] Cotizador genera cotizaciones
+### Verificación operativa
+- [ ] Cotizador Seguros de Ley genera precio y PDF
+- [ ] Cotizador Fianzas calcula prima y genera PDF
+- [ ] Historial de cotizaciones carga desde la BD
+- [ ] Recuperación de contraseña envía email correctamente
+- [ ] Auditoría registra los eventos de login
 
----
-
-## 📊 ÁRBOL DE DECISIÓN
-
-```
-                    ¿YO QUIERO?
-                        │
-              ┌─────────┼─────────┐
-              ↓         ↓         ↓
-          INSTALAR  ENTENDER   USAR
-              │         │         │
-              ↓         ↓         ↓
-            RÁPIDA  ESPECIF.   INDICE
-```
+**Si todas están marcadas:** ¡La plataforma está lista para operar! ✅
 
 ---
 
-## 🎓 RECURSOS DISPONIBLES
+## 🎯 PRÓXIMAS ACCIONES RECOMENDADAS
 
-| Tipo | Ubicación | Propósito |
-|------|-----------|----------|
-| Instalación | INSTALACION_RAPIDA.md | Paso a paso |
-| Referencia | README.md | Técnica completa |
-| Especificaciones | ESPECIFICACIONES.md | Detalles |
-| Decisiones | INDICE_MAESTRO.md | Navegación |
-| Validación | VERIFICACION_FINAL.md | Checklist |
-| Resumen | RESUMEN_EJECUTIVO.md | Visión general |
+### Hoy (Día 1)
+1. ✅ Instalar/verificar sistema
+2. ✅ Configurar SMTP con datos reales de correo
+3. ✅ Crear usuarios del equipo comercial
+4. ✅ Probar flujo completo: cotizar → PDF → historial
 
----
+### Esta semana
+1. ✅ Asignar roles y árbol de referidos al equipo
+2. ✅ Capacitar a PDVs en el uso del cotizador
+3. ✅ Probar recuperación de contraseña
 
-## ✅ CHECKLIST INICIAL
-
-- [ ] He leído RESUMEN_EJECUTIVO.md
-- [ ] He leído INSTALACION_RAPIDA.md
-- [ ] He instalado el sistema en WAMP
-- [ ] He accedido a http://localhost/PLATAFORMA_INTEGRADA
-- [ ] He logueado con admin/Demo@123
-- [ ] He visto el Dashboard completo
-- [ ] He creado un usuario de prueba
-- [ ] He explorado los módulos disponibles
-
-**Si todas están marcadas:** ¡Listo para usar! ✅
-
----
-
-## 🎯 PRÓXIMAS ACCIONES
-
-### Inmediatas (Hoy)
-1. ✅ Instalar sistema
-2. ✅ Loguearse como admin
-3. ✅ Explorar dashboard
-
-### Corto plazo (Esta semana)
-1. ✅ Crear usuarios reales
-2. ✅ Asignar roles apropiados
-3. ✅ Capacitar equipo
-
-### Mediano plazo (Este mes)
-1. ✅ Usar cotizador activamente
+### Este mes
+1. ✅ Usar cotizador activamente con clientes reales
 2. ✅ Revisar auditoría regularmente
-3. ✅ Realizar backups
+3. ✅ Revisar historial y estadísticas del Dashboard
+4. ✅ Realizar backups de la base de datos
 
 ---
 
-## 💡 TIPS INICIALES
+## 💡 TIPS IMPORTANTES
 
-🎯 **Empieza simple:** No intentes hacerlo todo el primer día
-
-📚 **Lee en orden:** No saltes documentos
-
-🧪 **Prueba con usuario de prueba:** No uses admin para todo
-
-🔒 **Entiende permisos:** Es clave para seguridad
-
-📝 **Toma notas:** Documenta tus cambios
-
-🆘 **Cuando dudes:** Revisa README.md
+🎯 **PDFs del cotizador incluyen el logo MQF** — impresiona a tus clientes  
+📧 **El SMTP se configura sin código** — solo llena el formulario del Dashboard  
+🔑 **Los usuarios pueden recuperar su contraseña solos** — vía email  
+👥 **Los códigos de usuarios son automáticos** — el backend los genera según el perfil  
+📊 **Las estadísticas del Dashboard son en tiempo real** — se cargan desde la API  
+🔒 **El menú se adapta al rol** — un PDV nunca verá el módulo de usuarios
 
 ---
 
 ## 🏁 ¡COMIENZA AQUÍ!
 
-### Paso 0: Dónde estoy
 ```
-Acabo de recibir la plataforma
-```
+Paso 1: Lee RESUMEN_EJECUTIVO.md (10 min)
+         → Entiende qué cambió en v2.1.0
 
-### Paso 1: Qué hago
-```
-Lee: RESUMEN_EJECUTIVO.md (5 min)
-```
+Paso 2: Lee INSTALACION_RAPIDA.md (10 min)
+         → Sigue los pasos exactos
 
-### Paso 2: Cómo instalo
-```
-Lee: INSTALACION_RAPIDA.md (10 min)
-```
+Paso 3: Instala y entra (15 min)
+         → http://localhost/PLATAFORMA_INTEGRADA
 
-### Paso 3: Instalar
-```
-Sigue los pasos (15 min)
-```
+Paso 4: Configura SMTP (10 min)
+         → Dashboard → Seguridad → Configuración SMTP
 
-### Paso 4: Probar
-```
-Intenta acceder (5 min)
-```
+Paso 5: Crea usuarios del equipo (10 min)
+         → Dashboard → Usuarios → + Crear Usuario
 
-### ✅ Listo
-```
-Si todo funciona → Continúa explorando
-Si hay error → Ver README.md → Troubleshooting
+¡LISTO! → El sistema está operativo ✅
 ```
 
 ---
 
-**Tiempo total hasta tener el sistema funcionando: ~45 minutos**
-
-**¡Comienza ahora leyendo RESUMEN_EJECUTIVO.md!**
+**Tiempo total hasta tener el sistema plenamente configurado: ~55 minutos**
 
 ---
 
-*Documento de orientación creado para guiarte en tu recorrido por la plataforma.*
-
-*Actualizado: 8 de Abril de 2026*
+*Documento de orientación actualizado para la versión 2.1.0 de la plataforma.*  
+*Actualizado: 22 de Abril de 2026*

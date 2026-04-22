@@ -101,6 +101,16 @@ class APIClient {
     }
 
     /**
+     * Cambiar contraseña forzado (tras reset administrativo)
+     */
+    async cambiarPasswordForzado(passwordNueva, passwordConfirmacion) {
+        return await this.solicitud('/auth/cambiar-password-forzado', 'POST', {
+            password_nueva: passwordNueva,
+            password_confirmacion: passwordConfirmacion
+        });
+    }
+
+    /**
      * Validar sesión
      */
     async validarSesion() {
@@ -185,6 +195,24 @@ class APIClient {
 
     async listarClientes() {
         return await this.solicitud('/clientes.php/listar', 'GET');
+    }
+
+    // ==================== GESTIÓN DE ACTIVIDAD ====================
+
+    async listarActividadReciente() {
+        return await this.solicitud('/actividad.php', 'GET');
+    }
+
+    async obtenerDetalleActividad(id) {
+        return await this.solicitud(`/actividad.php?id=${id}`, 'GET');
+    }
+
+    async registrarActividad(modulo, descripcion, tipo = 'navegacion') {
+        return await this.solicitud('/actividad.php', 'POST', {
+            tipo,
+            modulo,
+            descripcion
+        });
     }
 
     // ==================== SESIÓN Y UTILIDADES ====================

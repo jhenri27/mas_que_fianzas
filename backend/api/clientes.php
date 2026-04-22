@@ -63,7 +63,7 @@ try {
         $resultado = $manager->editarCliente($id, $datos);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
-    } elseif (strpos($ruta, '/listar') !== false && $metodo === 'GET') {
+    } elseif ($metodo === 'GET' && (strpos($ruta, '/listar') !== false || substr($ruta, -12) === 'clientes.php')) {
         $clientes = $manager->listarClientes();
         respuestaJSON(true, 'Clientes obtenidos', $clientes, 200);
 

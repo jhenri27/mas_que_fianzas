@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="assets/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-circle" style="background:transparent; box-shadow:none; border:none; margin-bottom:8px;">
+                    <img src="assets/logo_mqf.png" alt="MAS QUE FIANZAS" style="width:130px; display:block; margin:0 auto;">
+                </div>
+                <h1>Recuperación de Acceso</h1>
+                <p id="subtituloUi">Ingresa tu correo o usuario registrado</p>
+            </div>
+
+            <!-- Paso 1: Solicitar Enlace -->
+            <form id="requestForm" class="login-form">
+                <div class="form-group">
+                    <label for="identificador">Usuario o Correo Electrónico</label>
+                    <input type="text" id="identificador" class="form-control" placeholder="ej. usuario.ventas / email@empresa.com" required autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login" id="btnRequest">
+                    <span class="btn-text">Enviar Enlace de Recuperación</span>
+                </button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="index.html" style="color: #2980b9; text-decoration: none; font-size: 0.9em;">Volver al inicio de sesión</a>
+                </div>
+            </form>
+
+            <!-- Paso 2: Cambiar Contraseña (se muestra si hay token en URL) -->
+            <form id="resetForm" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label for="new_password">Nueva Contraseña</label>
+                    <input type="password" id="new_password" class="form-control" placeholder="Mínimo 8 caracteres" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirmar Contraseña</label>
+                    <input type="password" id="confirm_password" class="form-control" placeholder="Repite la contraseña" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login" id="btnReset">
+                    <span class="btn-text">Guardar y Restaurar</span>
+                </button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="index.html" style="color: #2980b9; text-decoration: none; font-size: 0.9em;">Cancelar y Volver</a>
+                </div>
+            </form>
+
+            <div id="alertaContainer"></div>
+        </div>
+
+        <div class="login-side">
+            <div class="login-side-content">
+                <h2>Restablecimiento Seguro</h2>
+                <p>Protegemos tu cuenta de accesos no autorizados mediante validación por token temporal.</p>
+                
+                <div class="features">
+                    <div class="feature">
+                        <span class="feature-icon">✉️</span>
+                        <span>Envío Inmediato</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">⏱️</span>
+                        <span>Tokén Válido por 1 hora</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/recuperar.js"></script>
+</body>
+</html>

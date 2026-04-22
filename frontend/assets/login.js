@@ -49,7 +49,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }, 1500);
             } else {
-                mostrarAlerta(resultado.mensaje || 'Error en el login', 'danger');
+                let mensajeError = resultado.mensaje || 'Error en el login';
+                let isBlockError = mensajeError.toLowerCase().includes('bloqueada') || mensajeError.toLowerCase().includes('bloqueado');
+                
+                if (isBlockError) {
+                    mensajeError += `<div style="margin-top: 15px;"><button type="button" id="btnDesbloqueo" class="btn" style="background-color: #f39c12; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; width: 100%; border: none; cursor: pointer;">📬 Solicitar Desbloqueo a Soporte</button></div>`;
+                }
+
+                mostrarAlerta(mensajeError, 'danger');
+
+                if (isBlockError) {
+                    setTimeout(() => {
+                        const btnD = document.getElementById('btnDesbloqueo');
+                        if (btnD) {
+                            btnD.addEventListener('click', async function() {
+                                btnD.innerHTML = 'Enviando alerta... <i class="fa-solid fa-spinner fa-spin"></i>';
+                                btnD.disabled = true;
+                                btnD.style.opacity = '0.7';
+                                try {
+                                    const req = await fetch('http://localhost/PLATAFORMA_INTEGRADA/backend/api/auth.php/solicitar-desbloqueo', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ username: usernameInput.value.trim() })
+                                    });
+                                    const res = await req.json();
+                                    if(res.exito) {
+                                        mostrarAlerta(res.mensaje, 'success');
+                                    } else {
+                                        mostrarAlerta('Error: ' + res.mensaje, 'danger');
+                                    }
+                                } catch(err) {
+                                    mostrarAlerta('Error de red al solicitar desbloqueo.', 'danger');
+                                }
+                            });
+                        }
+                    }, 100);
+                }
+
                 loginBtn.disabled = false;
                 document.querySelector('.btn-text').style.display = 'inline';
                 document.querySelector('.btn-loader').style.display = 'none';
@@ -90,11 +126,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         alertaContainer.appendChild(alerta);
 
-        // Auto-remover después de 5 segundos si no es éxito
-        if (tipo !== 'success') {
+        // Auto-remover después de 5 segundos si no es éxito o si no contiene el botón
+        if (tipo !== 'success' && !mensaje.includes('btnDesbloqueo')) {
             setTimeout(() => {
                 alerta.remove();
-            }, 5000);
+            }, 6000);
         }
     }
 });

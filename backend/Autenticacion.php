@@ -51,6 +51,7 @@ class Autenticacion {
 
             // 2. Validar que el usuario no esté bloqueado
             if ($usuario['estado'] === 'bloqueado') {
+                $this->logSmtp("[AUTH] Login BLOQUEADO - cuenta bloqueada | username: {$usuario['username']} | ID: {$usuario['id']} | intentos acumulados: {$usuario['intentos_fallidos']}", 'WARNING');
                 logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Intento de acceso a cuenta bloqueada", 'fallido', 'Usuario bloqueado', null, null, null, null);
                 return ['exito' => false, 'mensaje' => 'Tu cuenta ha sido bloqueada. Contacta al administrador.'];
             }
@@ -76,6 +77,7 @@ class Autenticacion {
                     $stmt_bloqueo->execute();
                     $stmt_bloqueo->close();
 
+                    $this->logSmtp("[AUTH] Cuenta BLOQUEADA automáticamente | username: {$usuario['username']} | ID: {$usuario['id']} | {$intentos_nuevos} intentos fallidos superaron el máximo permitido (".MAX_LOGIN_ATTEMPTS.")", 'WARNING');
                     logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Cuenta bloqueada por múltiples intentos fallidos", 'fallido', 'Demasiados intentos', null, null, null, null);
                     return ['exito' => false, 'mensaje' => "Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente."];
                 } else {
@@ -85,6 +87,7 @@ class Autenticacion {
                     $stmt_intento->execute();
                     $stmt_intento->close();
 
+                    $this->logSmtp("[AUTH] Contraseña incorrecta | username: {$usuario['username']} | ID: {$usuario['id']} | intento {$intentos_nuevos} de ".MAX_LOGIN_ATTEMPTS, 'WARNING');
                     logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Intento de login fallido (contraseña incorrecta)", 'fallido', "Intento {$intentos_nuevos} de " . MAX_LOGIN_ATTEMPTS, null, null, null, null);
                     return ['exito' => false, 'mensaje' => 'Usuario o contraseña incorrectos'];
                 }
@@ -305,6 +308,190 @@ class Autenticacion {
      */
     private function generarTokenSesion() {
         return hash('sha256', uniqid() . time() . random_bytes(16));
+    }
+
+    /**
+     * Escribe un evento de autenticación/recuperación en smtp.log
+     * para que aparezca en el log viewer del módulo de seguridad.
+     */
+    private function logSmtp($mensaje, $nivel = 'INFO') {
+        $logFile = dirname(__FILE__) . '/logs/smtp.log';
+        if (!is_dir(dirname($logFile))) {
+            mkdir(dirname($logFile), 0777, true);
+        }
+        $fecha = date('Y-m-d H:i:s');
+        file_put_contents($logFile, "[{$fecha}] [{$nivel}] {$mensaje}\n", FILE_APPEND);
+    }
+
+    /**
+     * Solicitar recuperación de contraseña (envía token por correo)
+     */
+    public function solicitarRecuperacion($identificador) {
+        $sql = "SELECT id, email, username FROM usuarios WHERE (email = ? OR username = ?) AND estado != 'inactivo'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("ss", $identificador, $identificador);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        
+        if ($res->num_rows === 0) {
+            $this->logSmtp("[RECOVERY] Solicitud de recuperación para identificador NO ENCONTRADO: '{$identificador}'", 'WARNING');
+            return ['exito' => true, 'mensaje' => 'Si el correo o usuario existe, se ha enviado un enlace de recuperación.'];
+        }
+        
+        $usuario = $res->fetch_assoc();
+        $stmt->close();
+        
+        $token = bin2hex(random_bytes(32));
+        $hashToken = hash('sha256', $token);
+        $expiracion = date('Y-m-d H:i:s', strtotime('+1 hour'));
+        
+        $sql = "UPDATE usuarios SET reset_token = ?, reset_token_expires = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("ssi", $hashToken, $expiracion, $usuario['id']);
+        $stmt->execute();
+        $stmt->close();
+
+        $this->logSmtp("[RECOVERY] Token de recuperación generado | usuario ID: {$usuario['id']} | username: {$usuario['username']} | email destino: {$usuario['email']} | expira: {$expiracion}", 'INFO');
+        
+        require_once dirname(__FILE__) . '/Mailer.php';
+        $mailer = new Mailer();
+        $link = "http://localhost/PLATAFORMA_INTEGRADA/frontend/recuperar.html?token=" . $token;
+        $mensaje = "<h3>Recuperación de Contraseña</h3><p>Hola {$usuario['username']},</p><p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace para crear una nueva (válido por 1 hora):</p><p><a href='{$link}'>{$link}</a></p><p>Si no fuiste tú, ignora este correo.</p>";
+        
+        $mailer->enviar($usuario['email'], "Recuperacion de Contrasena - MAS QUE FIANZAS", $mensaje);
+        
+        return ['exito' => true, 'mensaje' => 'Si el correo o usuario existe, se ha enviado un enlace de recuperación.'];
+    }
+
+    /**
+     * Restablecer la contraseña a través de un token de recuperación válido
+     */
+    public function restablecerConToken($token, $nuevaPassword, $confirmacion) {
+        if ($nuevaPassword !== $confirmacion) {
+            return ['exito' => false, 'mensaje' => 'Las contraseñas no coinciden'];
+        }
+        if (strlen($nuevaPassword) < 8) {
+            return ['exito' => false, 'mensaje' => 'La contraseña debe tener al menos 8 caracteres'];
+        }
+        
+        $hashToken = hash('sha256', $token);
+
+        // Buscar token (válido o no) para diagnóstico y para el flujo principal
+        $sql = "SELECT id, username, reset_token_expires, (reset_token_expires > NOW()) as vigente 
+                FROM usuarios WHERE reset_token = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("s", $hashToken);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res->num_rows === 0) {
+            $this->logSmtp("[RECOVERY] Token recibido INVÁLIDO — no existe en base de datos", 'ERROR');
+            $stmt->close();
+            return ['exito' => false, 'mensaje' => 'El enlace de recuperación es inválido o ha expirado'];
+        }
+
+        $usuario = $res->fetch_assoc();
+        $stmt->close();
+
+        if (!$usuario['vigente']) {
+            $this->logSmtp("[RECOVERY] Token EXPIRADO | usuario ID: {$usuario['id']} | username: {$usuario['username']} | expiró: {$usuario['reset_token_expires']}", 'ERROR');
+            return ['exito' => false, 'mensaje' => 'El enlace de recuperación es inválido o ha expirado'];
+        }
+        
+        // Token válido — continuar con el reset
+        $this->logSmtp("[RECOVERY] Token válido recibido | usuario ID: {$usuario['id']} | username: {$usuario['username']} — procesando reset de contraseña", 'INFO');
+
+        
+        $passwordHash = password_hash($nuevaPassword, HASH_ALGORITHM, ['cost' => HASH_COST]);
+        
+        // Al restablecer por token: limpiar token, resetear intentos, desbloquear y registrar fecha de cambio
+        $sql = "UPDATE usuarios 
+                SET password_hash = ?, 
+                    reset_token = NULL, 
+                    reset_token_expires = NULL,
+                    intentos_fallidos = 0,
+                    bloqueado_hasta = NULL,
+                    estado = 'activo',
+                    requiere_cambio_password = 0,
+                    ultimo_cambio_password = NOW()
+                WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("si", $passwordHash, $usuario['id']);
+        $stmt->execute();
+        $stmt->close();
+        
+        // Log auditing
+        $sql_historial = "INSERT INTO historial_password (usuario_id, password_anterior_hash, motivo, cambiado_por) VALUES (?, 'reset_vía_token', 'Recuperación token', ?)";
+        $stmt = $this->db->prepare($sql_historial);
+        $stmt->bind_param("ii", $usuario['id'], $usuario['id']);
+        $stmt->execute();
+        $stmt->close();
+        
+        $this->logSmtp("[RECOVERY] Contraseña restablecida EXITOSAMENTE vía token | usuario ID: {$usuario['id']} | username: {$usuario['username']} | cuenta desbloqueada, intentos reseteados", 'SUCCESS');
+        logAudit($usuario['id'], 'cambio_password', 'usuarios', 'CAMBIO_PASSWORD', "Contraseña recuperada vía token", 'exitoso', null, null, null, null, null);
+        return ['exito' => true, 'mensaje' => 'Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión.'];
+    }
+
+    /**
+     * Solicitar el desbloqueo de cuenta enviando una alerta al admin
+     */
+    public function solicitarDesbloqueo($username) {
+        $sql = "UPDATE usuarios SET solicita_desbloqueo = 1 WHERE username = ? AND estado = 'bloqueado'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $afectados = $stmt->affected_rows;
+        $stmt->close();
+        
+        if ($afectados > 0 || true) { // Permitir fallback de correo mas no exponer info
+            require_once dirname(__FILE__) . '/Mailer.php';
+            $mailer = new Mailer();
+            $mensaje = "<h3>Solicitud de Desbloqueo</h3><p>El usuario <b>{$username}</b> ha solicitado el desbloqueo de su cuenta porque superó los intentos permitidos o está inhabilitada.</p><p>Revisa el portal de usuarios para rehabilitarlo.</p>";
+            $mailer->enviar('ventas@masquefianzas.com', "Alerta Administrativa: Desbloqueo Solicitado", $mensaje);
+            return ['exito' => true, 'mensaje' => 'Solicitud enviada. Un administrador revisará tu cuenta pronto.'];
+        }
+        return ['exito' => false, 'mensaje' => 'No se pudo procesar la solicitud (usuario no encontrado o no está bloqueado).'];
+    }
+
+    /**
+     * Cambiar contraseña obligatoria (cuando el admin la resetea)
+     * No requiere la actual ya que el usuario entra con una temporal o flag de reset
+     */
+    public function cambiarPasswordForzado($usuario_id, $password_nueva, $password_confirmacion) {
+        try {
+            if ($password_nueva !== $password_confirmacion) {
+                return ['exito' => false, 'mensaje' => 'Las contraseñas no coinciden'];
+            }
+            if (strlen($password_nueva) < 8) {
+                return ['exito' => false, 'mensaje' => 'La contraseña debe tener al menos 8 caracteres'];
+            }
+
+            // Actualizar contraseña y limpiar flag
+            $password_hash = password_hash($password_nueva, HASH_ALGORITHM, ['cost' => HASH_COST]);
+            $sql = "UPDATE usuarios 
+                    SET password_hash = ?, 
+                        requiere_cambio_password = 0,
+                        ultimo_cambio_password = NOW(),
+                        intentos_fallidos = 0,
+                        bloqueado_hasta = NULL,
+                        estado = 'activo'
+                    WHERE id = ?";
+            
+            $stmt = $this->db->prepare($sql);
+            $stmt->bind_param("si", $password_hash, $usuario_id);
+
+            if (!$stmt->execute()) {
+                return ['exito' => false, 'mensaje' => 'Error al actualizar contraseña'];
+            }
+            $stmt->close();
+
+            logAudit($usuario_id, 'cambio_password_forzado', 'usuarios', 'CAMBIO_PASSWORD', "Contraseña actualizada tras reset administrativo", 'exitoso');
+
+            return ['exito' => true, 'mensaje' => 'Contraseña actualizada correctamente'];
+
+        } catch (Exception $e) {
+            return ['exito' => false, 'mensaje' => 'Error: ' . $e->getMessage()];
+        }
     }
 }
 

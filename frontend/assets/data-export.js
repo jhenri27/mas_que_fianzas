@@ -152,8 +152,11 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.rect(14, 80, 182, 8, 'F');
     doc.setFont(undefined, 'bold'); doc.setTextColor(...primaryColor);
     doc.text(`Producto: ${c.subtipo || c.tipo || 'FIANZA'}`, 16, 85.5);
-    const labelMonto = (!c.tipo || c.tipo.toUpperCase().includes('FIANZA')) ? 'Monto a Afianzar' : 'Suma Asegurada';
-    doc.text(`${labelMonto}: ${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 95, 85.5);
+    // Para Seguro de Ley mostrar "Aseguradora" y "Prima Anual"; para Fianza mostrar "Monto a Afianzar"
+    const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
+    const labelMonto = esSeguroLey ? 'Aseguradora' : 'Monto a Afianzar';
+    const valorMonto = esSeguroLey ? (c.aseguradora || 'MULTISEGUROS') : fmt(c.monto_afianzado || c.suma_asegurada || 0);
+    doc.text(`${labelMonto}: ${valorMonto}`, 95, 85.5);
     doc.text(`Prima: ${fmt(c.total || c.prima_total || 0)}`, 196, 85.5, {align: 'right'});
 
     // Coberturas Header
@@ -187,11 +190,20 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
             doc.text('0.00', 196, yRow, {align: 'right'});
             yRow += 6;
         });
-        if (c.servicios_opcionales) {
-            Object.keys(c.servicios_opcionales).forEach(k => {
-                if(c.servicios_opcionales[k]) {
+        // ==== FIX: Parsear servicios_opcionales si es string (evita bug de +0, +1, +2) ====
+        let serviciosOpc = c.servicios_opcionales;
+        if (typeof serviciosOpc === 'string') {
+            try { serviciosOpc = JSON.parse(serviciosOpc); } catch(e) { serviciosOpc = {}; }
+        }
+        // Si no es un objeto plano válido, ignorar
+        if (!serviciosOpc || typeof serviciosOpc !== 'object' || Array.isArray(serviciosOpc)) {
+            serviciosOpc = {};
+        }
+        if (Object.keys(serviciosOpc).length > 0) {
+            Object.keys(serviciosOpc).forEach(k => {
+                if (serviciosOpc[k]) {
                     doc.text(`+ ${OPTIONAL_LABELS[k] || k}`, 14, yRow);
-                    doc.text(`Incluido`, 160, yRow, {align: 'right'});
+                    doc.text('Incluido', 160, yRow, {align: 'right'});
                     doc.text('0.00', 196, yRow, {align: 'right'});
                     yRow += 6;
                 }
@@ -212,12 +224,30 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.setFillColor(...lightColor);
     doc.rect(110, yTotales, 86, 25, 'F');
     doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
-    doc.text(labelMonto, 115, yTotales + 6); doc.text(`${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 192, yTotales + 6, {align: 'right'});
-    doc.setFont(undefined, 'normal');
-    doc.text('Prima Neta', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || c.total || c.prima_total || 0)}`, 192, yTotales + 12, {align: 'right'});
-    doc.text('Impuestos (ISC)', 115, yTotales + 17); doc.text(`${fmt(c.impuesto || 0)}`, 192, yTotales + 17, {align: 'right'});
-    doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
-    doc.text('Prima Bruta', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
+    if (esSeguroLey) {
+        // SEGURO DE LEY: mostrar Prima Base y Prima Total Anual
+        doc.text('Cobertura', 115, yTotales + 6); doc.text(c.cobertura || 'N/A', 192, yTotales + 6, {align: 'right'});
+        doc.setFont(undefined, 'normal');
+        doc.text('Prima Base', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || 0)}`, 192, yTotales + 12, {align: 'right'});
+        doc.text('Servicios Opcionales', 115, yTotales + 17); 
+        // Calcular suma de servicios opcionales
+        const OPTIONAL_PRICES = { ASIST_VIAL_LIV: 2600, ASIST_VIAL_PES: 4600, CASA_CONDUCTOR: 1020, CENTRO_AUTOMOVILISTA: 1020 };
+        let serviciosOpc2 = c.servicios_opcionales;
+        if (typeof serviciosOpc2 === 'string') { try { serviciosOpc2 = JSON.parse(serviciosOpc2); } catch(e) { serviciosOpc2 = {}; } }
+        if (!serviciosOpc2 || typeof serviciosOpc2 !== 'object' || Array.isArray(serviciosOpc2)) serviciosOpc2 = {};
+        const sumOpc = Object.keys(serviciosOpc2).reduce((acc, k) => acc + (serviciosOpc2[k] ? (OPTIONAL_PRICES[k] || 0) : 0), 0);
+        doc.text(`${fmt(sumOpc)}`, 192, yTotales + 17, {align: 'right'});
+        doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
+        doc.text('Prima Total Anual', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
+    } else {
+        // FIANZA: mostrar Monto Afianzado, Prima Neta, Impuestos, Prima Bruta
+        doc.text('Monto a Afianzar', 115, yTotales + 6); doc.text(`${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 192, yTotales + 6, {align: 'right'});
+        doc.setFont(undefined, 'normal');
+        doc.text('Prima Neta', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || c.total || c.prima_total || 0)}`, 192, yTotales + 12, {align: 'right'});
+        doc.text('Impuestos (ISC)', 115, yTotales + 17); doc.text(`${fmt(c.impuesto || 0)}`, 192, yTotales + 17, {align: 'right'});
+        doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
+        doc.text('Prima Bruta', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
+    }
 
     // Observaciones
     doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');

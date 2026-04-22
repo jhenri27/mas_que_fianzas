@@ -120,8 +120,22 @@
                         <div class="stat-card">
                             <div class="stat-icon">📊</div>
                             <div class="stat-content">
-                                <h3>Total Pólizas</h3>
-                                <p class="stat-number" id="totalPolizas">0</p>
+                                <h3>Total Cotizaciones</h3>
+                                <p class="stat-number" id="totalCotizaciones">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🛡️</div>
+                            <div class="stat-content">
+                                <h3>Cotizaciones: Fianzas</h3>
+                                <p class="stat-number" id="cotizacionesFianzas">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📜</div>
+                            <div class="stat-content">
+                                <h3>COTIZACIONES: SEGUROS DE LEY</h3>
+                                <p class="stat-number" id="cotizacionesSeguros">0</p>
                             </div>
                         </div>
                         <div class="stat-card">
@@ -129,20 +143,6 @@
                             <div class="stat-content">
                                 <h3>Total Clientes</h3>
                                 <p class="stat-number" id="totalClientes">0</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">💰</div>
-                            <div class="stat-content">
-                                <h3>Pagos Pendientes</h3>
-                                <p class="stat-number" id="pagosPendientes">0</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🛡️</div>
-                            <div class="stat-content">
-                                <h3>Fianzas Activas</h3>
-                                <p class="stat-number" id="fianzasActivas">0</p>
                             </div>
                         </div>
                     </div>
@@ -269,27 +269,275 @@
                     <div class="module-header">
                         <h2>Configuración del Sistema</h2>
                     </div>
-                    <div class="opciones-configuracion" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
-                        <!-- Cambiar Logo -->
-                        <div class="config-card" style="background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05); border:1px solid #edf2f7;">
-                            <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Cambiar Logo de la Plataforma</h3>
-                            <p style="font-size:13px; color:#718096; margin-bottom:15px;">Este logo se actualizará en las pantallas (login y menús) y en los documentos PDF (Cotizaciones, etc.). Se prefiere formato PNG con fondo transparente.</p>
+                    
+                    <div class="config-layout">
+                        <!-- Sidebar de Configuración -->
+                        <div class="config-sidebar">
+                            <button class="config-nav-btn active" data-target="config-generales">
+                                <span>🌐</span> Generales
+                            </button>
+                            <button class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp();">
+                                <span>🔐</span> Seguridad y Accesos
+                            </button>
+                        </div>
+                        
+                        <!-- Paneles de Configuración -->
+                        <div class="config-content-panels">
                             
-                            <img id="previewLogo" src="assets/logo_mqf.png?v=latest" alt="Logo Actual" style="max-width:180px; max-height:80px; object-fit:contain; background:#f8fafc; padding:10px; border-radius:4px; margin-bottom:15px; display:block;">
-                            
-                            <form id="formLogoUpload" enctype="multipart/form-data">
-                                <input type="file" id="inputLogoImg" accept="image/png, image/jpeg, image/x-icon" style="display:none;" onchange="document.getElementById('fileNameLogo').textContent = this.files[0] ? this.files[0].name : '';">
-                                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                                    <button type="button" class="btn" style="background:#e2e8f0; color:#4a5568;" onclick="document.getElementById('inputLogoImg').click();">Seleccionar Archivo</button>
-                                    <span id="fileNameLogo" style="font-size:13px; color:#4a5568; align-self:center;"></span>
+                            <!-- Panel Generales -->
+                            <div id="config-generales" class="config-panel active">
+                                <div class="opciones-configuracion">
+                                    <!-- Cambiar Logo -->
+                                    <div class="config-card">
+                                        <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Cambiar Logo de la Plataforma</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Este logo se actualizará en las pantallas (login y menús) y en los documentos PDF (Cotizaciones, etc.). Se prefiere formato PNG con fondo transparente.</p>
+                                        
+                                        <img id="previewLogo" src="assets/logo_mqf.png?v=latest" alt="Logo Actual" style="max-width:180px; max-height:80px; object-fit:contain; background:#f8fafc; padding:10px; border-radius:4px; margin-bottom:15px; display:block;">
+                                        
+                                        <form id="formLogoUpload" enctype="multipart/form-data">
+                                            <input type="file" id="inputLogoImg" accept="image/png, image/jpeg, image/x-icon" style="display:none;" onchange="document.getElementById('fileNameLogo').textContent = this.files[0] ? this.files[0].name : '';">
+                                            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                                                <button type="button" class="btn" style="background:#e2e8f0; color:#4a5568;" onclick="document.getElementById('inputLogoImg').click();">Seleccionar Archivo</button>
+                                                <span id="fileNameLogo" style="font-size:13px; color:#4a5568; align-self:center;"></span>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" onclick="subirLogo()">Subir y Guardar Logo</button>
+                                        </form>
+                                        <div id="logoUploadStatus" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+                                    </div>
                                 </div>
-                                <button type="button" class="btn btn-primary" onclick="subirLogo()">Subir y Guardar Logo</button>
-                            </form>
-                            <div id="logoUploadStatus" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+                            </div>
+                            
+                            <!-- Panel Seguridad -->
+                            <div id="config-seguridad" class="config-panel">
+                                <div class="opciones-configuracion" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    
+                                    <!-- SMTP Config -->
+                                    <div class="config-card" style="grid-column: 1 / -1;">
+                                        <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Servidor de Correo (SMTP)</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Configura las credenciales necesarias para el envío de correos (ej. funciones de recuperación de acceso).</p>
+                                        
+                                        <form id="formSmtpConfig" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" onsubmit="guardarConfigSmtp(event)">
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Servidor (Host)</label>
+                                                <input type="text" id="smtpServer" class="form-control" required placeholder="mail.midominio.com">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Puerto</label>
+                                                <input type="number" id="smtpPort" class="form-control" required placeholder="465">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Usuario (Correo)</label>
+                                                <input type="text" id="smtpUser" class="form-control" required placeholder="info@midominio.com">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Contraseña</label>
+                                                <input type="password" id="smtpPass" class="form-control" required placeholder="******">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Encriptación</label>
+                                                <select id="smtpEncryption" class="form-control">
+                                                    <option value="ssl">SSL</option>
+                                                    <option value="tls">TLS</option>
+                                                    <option value="">Ninguna</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Timeout (seg)</label>
+                                                <input type="number" id="smtpTimeout" class="form-control" value="10">
+                                            </div>
+                                            
+                                            <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:10px;">
+                                                <button type="submit" class="btn btn-primary">Guardar SMTP</button>
+                                                <button type="button" class="btn btn-secondary" id="btnTestSmtp" onclick="probarConexionSmtp()">Probar Conexión</button>
+                                            </div>
+                                            <div id="smtpStatus" style="grid-column: 1 / -1; font-size:13px; font-weight:bold;"></div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- SMTP Logs -->
+                                    <div class="config-card" style="grid-column: 1 / -1;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                            <h3 style="margin:0; color:#2c3e50; font-size:16px;">Logs de Envíos de Correo</h3>
+                                            <div>
+                                                <button type="button" class="btn btn-secondary" style="font-size:12px; padding: 4px 10px;" onclick="cargarLogsSmtp()">Recargar</button>
+                                                <button type="button" class="btn" style="background:#fed7d7; color:#c53030; font-size:12px; padding: 4px 10px;" onclick="limpiarLogsSmtp()">Limpiar</button>
+                                            </div>
+                                        </div>
+                                        <div class="log-viewer">
+                                            <pre id="smtpLogContent">Cargando logs...</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
                     </div>
                     
                     <script>
+                        // Funcionalidad de tabs
+                        document.querySelectorAll('.config-nav-btn').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                document.querySelectorAll('.config-nav-btn').forEach(b => b.classList.remove('active'));
+                                document.querySelectorAll('.config-panel').forEach(p => p.classList.remove('active'));
+                                
+                                btn.classList.add('active');
+                                document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+                            });
+                        });
+                        
+                        // Carga y guardado de Configuración SMTP
+                        async function cargarConfigSmtp() {
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_smtp.php');
+                                const result = await response.json();
+                                if(result.exito && result.data) {
+                                    document.getElementById('smtpServer').value = result.data.server || '';
+                                    document.getElementById('smtpPort').value = result.data.port || 465;
+                                    document.getElementById('smtpUser').value = result.data.username || '';
+                                    document.getElementById('smtpPass').value = result.data.password ? '******' : '';
+                                    document.getElementById('smtpEncryption').value = result.data.encryption || 'ssl';
+                                    document.getElementById('smtpTimeout').value = result.data.timeout || 10;
+                                }
+                            } catch(e) {
+                                console.error('Error cargando config SMTP:', e);
+                            }
+                        }
+                        
+                        async function guardarConfigSmtp(e) {
+                            e.preventDefault();
+                            const statusDiv = document.getElementById('smtpStatus');
+                            statusDiv.style.color = 'blue';
+                            statusDiv.innerText = 'Guardando...';
+                            
+                            const data = {
+                                server: document.getElementById('smtpServer').value,
+                                port: parseInt(document.getElementById('smtpPort').value),
+                                username: document.getElementById('smtpUser').value,
+                                password: document.getElementById('smtpPass').value,
+                                encryption: document.getElementById('smtpEncryption').value,
+                                timeout: parseInt(document.getElementById('smtpTimeout').value)
+                            };
+                            
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_smtp.php', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify(data)
+                                });
+                                const result = await response.json();
+                                
+                                if(result.exito) {
+                                    statusDiv.style.color = 'green';
+                                    statusDiv.innerText = '✅ ' + result.mensaje;
+                                    setTimeout(() => statusDiv.innerText = '', 3000);
+                                } else {
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ ' + result.mensaje;
+                                }
+                            } catch(err) {
+                                statusDiv.style.color = 'red';
+                                statusDiv.innerText = '❌ Error de red';
+                            }
+                        }
+
+                        async function probarConexionSmtp() {
+                            const emailDestino = prompt("Ingresa un correo electrónico para recibir el mensaje de prueba:");
+                            if (!emailDestino || !emailDestino.includes('@')) {
+                                if (emailDestino !== null) alert("Por favor, ingresa un correo válido.");
+                                return;
+                            }
+
+                            const statusDiv = document.getElementById('smtpStatus');
+                            statusDiv.style.color = '#3182ce';
+                            statusDiv.innerText = '⏳ Intentando conectar y enviar prueba...';
+
+                            const config = {
+                                server: document.getElementById('smtpServer').value,
+                                port: parseInt(document.getElementById('smtpPort').value),
+                                username: document.getElementById('smtpUser').value,
+                                password: document.getElementById('smtpPass').value,
+                                encryption: document.getElementById('smtpEncryption').value,
+                                timeout: parseInt(document.getElementById('smtpTimeout').value)
+                            };
+
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/test_smtp.php', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({
+                                        to: emailDestino,
+                                        config: config
+                                    })
+                                });
+                                
+                                const contentType = response.headers.get('content-type');
+                                if (!contentType || !contentType.includes('application/json')) {
+                                    const text = await response.text();
+                                    console.error('Respuesta no-JSON del servidor:', text);
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ Fallo de Conexión: El servidor devolvió una respuesta inválida.';
+                                    cargarLogsSmtp();
+                                    return;
+                                }
+                                
+                                const result = await response.json();
+
+                                if (result.exito) {
+                                    statusDiv.style.color = 'green';
+                                    statusDiv.innerText = '✅ ' + result.mensaje;
+                                    cargarLogsSmtp();
+                                } else {
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ ' + result.mensaje;
+                                    cargarLogsSmtp();
+                                }
+                            } catch (err) {
+                                statusDiv.style.color = 'red';
+                                statusDiv.innerText = '❌ Error de red: ' + err.message;
+                            }
+                        }
+                        
+                        async function cargarLogsSmtp() {
+                            const pre = document.getElementById('smtpLogContent');
+                            pre.innerText = 'Cargando logs...';
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/logs_smtp.php');
+                                const contentType = response.headers.get('content-type');
+                                if (!contentType || !contentType.includes('application/json')) {
+                                    const text = await response.text();
+                                    console.error('Respuesta no-JSON:', text);
+                                    pre.innerText = 'Error: El servidor devolvió una respuesta inválida.';
+                                    return;
+                                }
+                                const result = await response.json();
+                                if(result.exito) {
+                                    pre.innerText = result.data || 'El archivo de logs está vacío.';
+                                    pre.scrollTop = pre.scrollHeight;
+                                } else {
+                                    pre.innerText = 'Error: ' + (result.error || result.mensaje || 'Error desconocido.');
+                                }
+                            } catch(e) {
+                                pre.innerText = 'Error de red: ' + e.message;
+                            }
+                        }
+                        
+                        async function limpiarLogsSmtp() {
+                            if(!confirm('¿Estás seguro de limpiar los logs?')) return;
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/logs_smtp.php', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({action: 'clear'})
+                                });
+                                const result = await response.json();
+                                if(result.exito) {
+                                    cargarLogsSmtp();
+                                }
+                            } catch(e) {
+                                alert('Error al limpiar logs');
+                            }
+                        }
+
                         async function subirLogo() {
                             const fileInput = document.getElementById('inputLogoImg');
                             const statusDiv = document.getElementById('logoUploadStatus');
@@ -427,6 +675,110 @@
                     <button type="submit" class="btn btn-primary">Guardar Perfil</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: MI PERFIL ===== -->
+    <div id="modalMiPerfil" class="modal" style="z-index:2000;">
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header" style="background:#1e293b;">
+                <h3 style="color:#fff;margin:0;">👤 Mi Perfil</h3>
+                <button class="modal-close" onclick="cerrarModal('modalMiPerfil')">×</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <!-- Foto de perfil -->
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="position:relative;display:inline-block;">
+                        <img id="perfilFotoPreview" src="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Ccircle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%236366f1\'/%3E%3Ccircle cx=\'50\' cy=\'35\' r=\'15\' fill=\'white\'/%3E%3Cpath d=\'M25,75 Q25,57 50,57 Q75,57 75,75\' fill=\'white\'/%3E%3C/svg%3E'" alt="Foto" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #6366f1;">
+                        <label for="perfilFotoInput" style="position:absolute;bottom:0;right:0;background:#6366f1;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;" title="Cambiar foto">📷</label>
+                        <input type="file" id="perfilFotoInput" accept="image/*" style="display:none;" onchange="previewFotoPerfil(this)">
+                    </div>
+                    <div id="perfilFotoStatus" style="font-size:12px;margin-top:6px;color:#64748b;"></div>
+                </div>
+                <!-- Campos -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Nombre *</label>
+                        <input type="text" id="perfilNombreEdit" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Apellido *</label>
+                        <input type="text" id="perfilApellidoEdit" class="form-control" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Teléfono</label>
+                        <input type="tel" id="perfilTelefonoEdit" class="form-control">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Email <small style="color:#94a3b8;">(solo lectura)</small></label>
+                        <input type="email" id="perfilEmailEdit" class="form-control" readonly style="background:#f8fafc;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Usuario</label>
+                        <input type="text" id="perfilUsernameEdit" class="form-control" readonly style="background:#f8fafc;font-family:monospace;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Perfil</label>
+                        <input type="text" id="perfilRolEdit" class="form-control" readonly style="background:#f8fafc;">
+                    </div>
+                </div>
+                <div id="perfilGuardarStatus" style="margin-top:12px;font-size:13px;font-weight:600;"></div>
+            </div>
+            <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalMiPerfil')">Cancelar</button>
+                <button class="btn btn-primary" onclick="guardarMiPerfil()">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: CAMBIAR CONTRASEÑA ===== -->
+    <div id="modalCambiarPassword" class="modal" style="z-index:2000;">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header" style="background:#1e293b;">
+                <h3 style="color:#fff;margin:0;">🔐 Cambiar Contraseña</h3>
+                <button class="modal-close" onclick="cerrarModal('modalCambiarPassword')">×</button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <div class="form-group">
+                    <label>Contraseña Actual *</label>
+                    <input type="password" id="passActual" class="form-control" placeholder="Ingresa tu contraseña actual" autocomplete="current-password">
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                    <label>Nueva Contraseña *</label>
+                    <input type="password" id="passNueva" class="form-control" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                    <label>Confirmar Nueva Contraseña *</label>
+                    <input type="password" id="passConfirmar" class="form-control" placeholder="Repite la nueva contraseña" autocomplete="new-password">
+                </div>
+                <div id="passStatus" style="margin-top:12px;font-size:13px;font-weight:600;"></div>
+            </div>
+            <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn btn-secondary" onclick="cerrarModal('modalCambiarPassword')">Cancelar</button>
+                <button class="btn btn-primary" id="btnGuardarPass" onclick="confirmarCambioPassword()">🔑 Actualizar Contraseña</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Global de Consulta Detallada -->
+    <div id="globalQueryModal" class="global-modal">
+        <div class="global-modal-content">
+            <div class="global-modal-header">
+                <h2 id="globalModalTitle">Detalle de Consulta</h2>
+                <button class="modal-close" onclick="cerrarModal('globalQueryModal')">&times;</button>
+            </div>
+            <div id="globalModalBody" class="global-modal-body">
+                <!-- Contenido dinámico -->
+                <div class="detail-sheet">
+                    <div class="empty-state">Cargando detalles...</div>
+                </div>
+            </div>
+            <div class="global-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('globalQueryModal')">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirDetalleModal()">
+                    <span>🖨️</span> Imprimir / PDF
+                </button>
+            </div>
         </div>
     </div>
 

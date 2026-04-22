@@ -1,0 +1,8 @@
+{
+    "server": "mail.masquefianzas.com",
+    "port": 465,
+    "username": "info@masquefianzas.com",
+    "password": "M4sq53F14nz4s",
+    "encryption": "ssl",
+    "timeout": 10
+}

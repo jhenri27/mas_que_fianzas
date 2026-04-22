@@ -1,62 +1,194 @@
-# 🎉 RESUMEN EJECUTIVO - PROYECTO COMPLETADO
+# 🎉 RESUMEN EJECUTIVO - MAS QUE FIANZAS
 
-## ✅ MISIÓN CUMPLIDA
-
-Se ha desarrollado exitosamente una **plataforma integrada de gestión de seguros y fianzas** que combina:
-
-- ✅ Módulo de cotizador integrado
-- ✅ Sistema de gestión de usuarios completo
-- ✅ Control de accesos basado en roles (RBAC)
-- ✅ Auditoría y seguridad robusta
-- ✅ Base de datos normalizada y eficiente
-- ✅ Interfaz responsiva y profesional
+> **Versión:** 2.1.0 | **Fecha de actualización:** 22 de Abril de 2026 | **Estado:** ✅ EN PRODUCCIÓN
 
 ---
 
-## 🎯 LO QUE SE ENTREGA
+## ✅ MISIÓN CUMPLIDA
+
+Se ha desarrollado y evolucionado exitosamente una **plataforma integrada de gestión de seguros y fianzas** que combina:
+
+- ✅ Módulo de cotizador integrado (Seguros de Ley + Fianzas)
+- ✅ Sistema de gestión de usuarios completo con jerarquía de IDs
+- ✅ Control de accesos basado en roles (RBAC) con perfil "Socio Comercial PDV"
+- ✅ Auditoría y seguridad robusta con SMTP y logs
+- ✅ Base de datos normalizada y eficiente
+- ✅ Interfaz responsiva y profesional con exportación PDF corporativo
+- ✅ Sistema de recuperación de contraseñas vía correo electrónico
+- ✅ Módulos activos: Clientes, Pólizas, Cotizaciones
+
+---
+
+## 🆕 NUEVAS FUNCIONALIDADES (Abril 2026)
+
+### 🔐 Recuperación de Contraseña por Email
+```
+✓ Página dedicada recuperar.html
+✓ Sistema de token de recuperación con expiración de 30 minutos
+✓ Integración con backend Mailer.php + API alter_recuperacion.php
+✓ Flujo completo: solicitar → email → token → nueva contraseña
+✓ Script recuperar.js con validaciones de seguridad
+```
+
+### 📧 Sistema SMTP Configurable
+```
+✓ Panel de configuración SMTP desde el Dashboard (módulo Seguridad/Config)
+✓ Archivo de configuración backend/config/smtp.json editable en tiempo real
+✓ API config_smtp.php para leer/guardar configuración sin reiniciar
+✓ API test_smtp.php para probar envío de correos desde la app
+✓ Visor de logs SMTP en tiempo real (api/logs_smtp.php + backend/logs/smtp.log)
+✓ Mailer.php con soporte PHPMailer configurable dinámicamente
+```
+
+### 👤 Sistema Avanzado de Gestión de Usuarios
+```
+✓ Nomenclatura jerárquica automática de IDs:
+    RED-XXX (Directores de Red)
+    DIR-XXX (Directores)
+    PDV-XXX (Socios Comerciales PDV)
+    VEN-XXX (Vendedores)
+✓ Sistema de referidos en estructura de árbol (referente_id)
+✓ Comisiones individuales configurables (porcentaje_comision)
+✓ Comisiones de red vinculadas al árbol (porcentaje_comision_red)
+✓ Toggle visual para activar/desactivar sección de comisión por usuario
+✓ Campo código_usuario asignado automáticamente por backend
+✓ Selector de referente filtra el usuario actual para evitar auto-referencia
+```
+
+### 🆕 Perfil "Socio Comercial (PDV)"
+```
+✓ Nuevo perfil con accesos limitados y adaptados al uso del cotizador
+✓ Dashboard con menú lateral filtrado: solo módulos permitidos visibles
+✓ Acciones rápidas del dashboard filtradas por rol PDV
+✓ Visualización de rendimiento y cotizaciones propias
+```
+
+### 📈 Módulo de Cotizaciones Profesional (Restaurado v2)
+```
+SEGUROS DE LEY (Cotizador React):
+  ✓ 13 tipos de vehículo con precios reales MULTISEGUROS
+  ✓ 3 perfiles de cobertura: MOTOCICLETA BASICO, LIVIANO BASICO, PESADO PLUS
+  ✓ Servicios opcionales: Asistencia Vial, Casa del Conductor, Centro Automovilista
+  ✓ Reglas de exclusión mutua entre servicios opcionales
+  ✓ Precio dinámico según tipo, uso y capacidad del vehículo
+  ✓ Botón "Ver/Ocultar detalles" de coberturas incluidas
+
+FIANZAS:
+  ✓ 7 tipos: Judicial, Contractual, Aduanal, Fiel Cumplimiento, Licitación, Anticipo, Garantía
+  ✓ Coberturas específicas por tipo de fianza
+  ✓ Cálculo automático de prima (tasa × monto × plazo/12) + ITBIS 18%
+  ✓ Plazos de 1 a 36 meses
+
+PDF CORPORATIVO (Motor data-export.js):
+  ✓ Logo MQF corporativo integrado en Base64 (logo_b64.js)
+  ✓ Diseño profesional con paleta azul MQF
+  ✓ Tabla de coberturas estructurada con jsPDF + AutoTable
+  ✓ Generación desde cotización nueva y desde historial
+  ✓ función dibujarCotizacionPDF() compatible con Fianzas y Seguros de Ley
+
+HISTORIAL DE COTIZACIONES:
+  ✓ Carga desde API backend (cotizaciones.php) con fallback a localStorage
+  ✓ Exportación multiformat: PDF listado, Excel (.xlsx), CSV, JSON, ZIP
+  ✓ Importación desde Excel/CSV vía SheetJS
+  ✓ Botón de impresión individual por cotización
+  ✓ Contador de cotizaciones registradas
+```
+
+### 👥 Módulo de Clientes (Activo)
+```
+✓ clientes.html cargado nativamente como iframe en el dashboard
+✓ CRUD completo: crear, editar, buscar, bloquear
+✓ API backend/api/clientes.php
+✓ ClienteManager.php para lógica de negocio
+✓ Integrado en estadísticas del dashboard (Total Clientes)
+```
+
+### 🏛️ Módulo de Pólizas (Activo)
+```
+✓ polizas.html disponible en el menú principal
+✓ PolizaManager.php con estructura base
+✓ Integrado en la navegación del dashboard
+```
+
+### 📊 Dashboard Mejorado
+```
+✓ Modal de detalle global para estadísticas y actividades (abrirDetalleGlobal)
+✓ Registro de actividad por módulo visitado (api/actividad.php)
+✓ Estadísticas en tiempo real: Total Clientes, Total Cotizaciones, Fianzas, Seguros
+✓ Actividad reciente con tiempo relativo ("Hace 5 min", "Hace 2 horas")
+✓ Click en actividad → abre modal de detalle
+✓ Click en tarjeta de estadística → abre modal de detalle
+✓ Menú usuario con dropdown: Mi Perfil, Cambiar Contraseña, Cerrar Sesión
+✓ Logo MQF dinámico en sidebar y favicon personalizado
+```
+
+### 🔑 Cambio de Contraseña
+```
+✓ Página dedicada cambiar-password.html
+✓ Script cambiar-password.js con validación de contraseña actual
+✓ Integración con API auth.php para cambio seguro
+```
+
+### 🔍 Diagnóstico del Sistema
+```
+✓ backend/api/diagnostico.php - endpoint de salud del sistema
+✓ Verifica conexión a BD, sesiones, APIs principales
+```
+
+---
+
+## 🎯 LO QUE SE ENTREGA (Estado Actual)
 
 ### 1. Sistema Backend Completo
-- **3 clases PHP** con 25+ métodos
-- **3 APIs REST** con 19 endpoints
-- **Autenticación segura** con sesiones en BD
-- **Control de permisos** granular
+- **6 clases PHP** con 40+ métodos
+- **APIs REST** con 25+ endpoints
+- **Autenticación segura** con sesiones en BD + recuperación por email
+- **Control de permisos** granular con jerarquía
 - **Auditoría integrada** en cada operación
+- **SMTP configurable** con logs y test desde la app
 
 ### 2. Sistema Frontend/Interfaz
 - **Página de login** responsiva
-- **Dashboard completo** con 11 módulos
-- **Tablas interactivas** con paginación
-- **Formularios** para CRUD con validaciones
-- **Modales** para crear/editar usuarios
-- **Diseño responsivo** para mobile/tablet/desktop
+- **Dashboard completo** con 13+ módulos/secciones
+- **Módulo cotizaciones**: Seguros de Ley (React) + Fianzas
+- **Módulo clientes**: CRUD completo
+- **Módulo usuarios**: gestión avanzada con jerarquía y comisiones
+- **Módulo pólizas**: activo
+- **Recuperación de contraseña** con email
+- **Cambio de contraseña** desde dashboard
+- **PDFs corporativos** con logo MQF
+- **Exportación**: PDF, Excel, CSV, JSON, ZIP
+- **Importación**: Excel y CSV al historial de cotizaciones
 
 ### 3. Base de Datos Profesional
-- **20 tablas normalizadas**
+- **20+ tablas normalizadas**
 - **45+ relaciones definidas**
 - **Índices optimizados**
 - **Triggers de auditoría**
-- **Datos iniciales de prueba**
+- **Soporte para árbol de referidos** (referente_id en usuarios)
+- **Sesiones en BD** con timeout
+- **Tokens de recuperación** de contraseña con expiración
 
 ### 4. Documentación Completa
 - **Guía de instalación** paso a paso
 - **Referencia técnica** con ejemplos
 - **Especificaciones** detalladas
-- **Troubleshooting** integrado
 
 ---
 
-## 📊 NÚMEROS FINALES
+## 📊 NÚMEROS ACTUALIZADOS
 
 ```
-Archivos creados:        22
-Líneas de código:        6,800+
-Horas de desarrollo:     24+
-Tablas de BD:            20
-Endpoints API:           19
-Roles de usuario:        8
-Módulos:                 11
-Funciones de permiso:    50+
-Usuarios de prueba:      1 (admin)
+Archivos de código:      35+
+Líneas de código:        12,000+
+Tablas de BD:            20+
+Endpoints API:           25+
+Roles de usuario:        9 (incluye PDV)
+Módulos activos:         6 (Dashboard, Cotizaciones, Clientes, Pólizas, Usuarios, Config)
+Tipos de vehículo:       13
+Tipos de fianza:         7
+Perfiles de cobertura:   3
+Formatos de exportación: 5 (PDF, Excel, CSV, JSON, ZIP)
 ```
 
 ---
@@ -70,30 +202,31 @@ Usuarios de prueba:      1 (admin)
 ✓ Sesiones en base de datos
 ✓ Bloqueo por intentos fallidos
 ✓ Timeout de sesión (30 min)
-✓ Cambio de contraseña
+✓ Cambio de contraseña desde Dashboard
+✓ Recuperación de contraseña por email (token 30 min)
 ✓ Historial de contraseñas
 ```
 
 ### GESTIÓN DE USUARIOS ✅
 ```
-✓ Crear usuarios
+✓ Crear usuarios con código jerárquico automático (RED/DIR/PDV/VEN)
 ✓ Editar usuarios
 ✓ Bloquear/desbloquear usuarios
 ✓ Restablecer contraseña
-✓ Listar usuarios con filtros
-✓ Búsqueda por nombre/email
+✓ Listar usuarios con filtros (búsqueda, estado, perfil)
 ✓ Paginación de resultados
 ✓ Soft delete (datos preservados)
+✓ Sistema de referidos en árbol
+✓ Comisiones individuales y de red configurables
 ```
 
 ### GESTIÓN DE ROLES Y PERMISOS ✅
 ```
-✓ 8 roles predefinidos
+✓ 9 roles predefinidos (incluye Socio Comercial PDV)
 ✓ Permisos granulares por función
-✓ Malla de permisos 8×10
 ✓ Herencia de permisos
 ✓ Validación de acceso
-✓ Restricciones por rol
+✓ Restricciones de menú por rol (PDV ve solo módulos permitidos)
 ✓ Control antes de cada operación
 ```
 
@@ -106,6 +239,8 @@ Usuarios de prueba:      1 (admin)
 ✓ Validación en cliente y servidor
 ✓ Encriptación de contraseñas
 ✓ Sesiones seguras
+✓ Tokens de recuperación con expiración
+✓ SMTP con credenciales en archivo JSON (sin hardcoding)
 ```
 
 ### AUDITORÍA ✅
@@ -116,61 +251,91 @@ Usuarios de prueba:      1 (admin)
 ✓ Clasificación de eventos
 ✓ Búsqueda de auditoría
 ✓ Filtros por usuario/fecha
-✓ Valores antes/después
+✓ Actividad reciente en Dashboard en tiempo real
+✓ Logs SMTP en archivo de texto y visor en Dashboard
 ```
 
 ### MÓDULOS DE NEGOCIO ✅
 ```
-✓ Dashboard - Inicio y estadísticas
-✓ Cotizador - Sistema integrado
-✓ Usuarios - CRUD completo
-✓ Perfiles - Gestión de roles
-✓ Auditoría - Visualización de logs
-✓ Placeholders para 6 módulos más
-  (Clientes, Pólizas, Fianzas, Pagos, Siniestros, Productos)
+✓ Dashboard  - Inicio, estadísticas y actividad reciente en tiempo real
+✓ Cotizador  - Seguros de Ley (React) + Fianzas + Historial + PDF Corporativo
+✓ Clientes   - CRUD completo con API backend
+✓ Pólizas    - Módulo activo con PolizaManager
+✓ Usuarios   - Gestión avanzada con jerarquía y comisiones
+✓ Perfiles   - Gestión de roles y permisos
+✓ Auditoría  - Visualización de logs del sistema
+✓ Seguridad  - Panel SMTP, test de correo, visor de logs en vivo
+✓ Mi Perfil  - Cambio de contraseña, datos personales
 ```
 
 ---
 
 ## 🚀 CÓMO USAR
 
-### Instalación Rápida (10 minutos)
+### Credenciales de Acceso
+```
+URL: http://localhost/PLATAFORMA_INTEGRADA
+Usuario: admin
+Contraseña: Demo@123
+```
 
-1. **Copiar carpeta:**
-   ```
-   c:\wamp64\www\PLATAFORMA_INTEGRADA
-   ```
-
-2. **Crear base de datos:**
-   - phpMyAdmin → Nueva BD → masque_fianzas
-   - Importar: schema_masque_fianzas.sql
-   - Importar: datos_iniciales.sql
-
-3. **Acceder:**
-   ```
-   http://localhost/PLATAFORMA_INTEGRADA
-   Usuario: admin
-   Contraseña: Demo@123
-   ```
-
-Ver detalles en: **INSTALACION_RAPIDA.md**
+### Instalación Rápida
+1. Copiar carpeta a `c:\wamp64\www\PLATAFORMA_INTEGRADA`
+2. Importar BD: `schema_masque_fianzas.sql` en phpMyAdmin
+3. Configurar SMTP en: Dashboard → Seguridad → Configuración SMTP
+4. Acceder a `http://localhost/PLATAFORMA_INTEGRADA`
 
 ---
 
-## 📁 ESTRUCTURA ENTREGADA
+## 📁 ESTRUCTURA DEL PROYECTO
 
 ```
 PLATAFORMA_INTEGRADA/
-├── backend/                   (PHP y APIs)
-├── frontend/                  (HTML, CSS, JS)
-├── database/                  (Scripts SQL)
-├── .htaccess                  (Config Apache)
-├── README.md                  (Documentación principal)
-├── INSTALACION_RAPIDA.md      (Guía instalación)
-├── ESPECIFICACIONES.md        (Detalles técnicos)
-├── INTEGRACION_COTIZADOR.md   (Módulo cotizador)
-├── VERIFICACION_FINAL.md      (Checklist)
-└── INDICE_MAESTRO.md          (Navegación)
+├── backend/
+│   ├── api/
+│   │   ├── auth.php            (Login, logout, sesiones)
+│   │   ├── actividad.php       (Registro de actividad del usuario)
+│   │   ├── clientes.php        (CRUD de clientes)
+│   │   ├── cotizaciones.php    (Guardar/listar cotizaciones)
+│   │   ├── config_smtp.php     (Configuración SMTP via JSON)
+│   │   ├── test_smtp.php       (Prueba de envío de correo)
+│   │   ├── logs_smtp.php       (Visor de logs SMTP)
+│   │   ├── mi_perfil.php       (Datos y edición del perfil)
+│   │   ├── diagnostico.php     (Health check del sistema)
+│   │   └── alter_recuperacion.php (Recuperación de contraseña)
+│   ├── config/
+│   │   └── smtp.json           (Configuración email editable)
+│   ├── logs/
+│   │   ├── error.log
+│   │   └── smtp.log
+│   ├── Autenticacion.php
+│   ├── ClienteManager.php
+│   ├── Mailer.php              (Motor de envío de email)
+│   ├── PerfilManager.php
+│   ├── PolizaManager.php
+│   ├── UsuarioManager.php
+│   └── config.php
+├── frontend/
+│   ├── assets/
+│   │   ├── api-client.js       (Cliente HTTP con todas las llamadas a la API)
+│   │   ├── dashboard.js        (Lógica principal del Dashboard)
+│   │   ├── dashboard.css       (Estilos del Dashboard)
+│   │   ├── data-export.js      (Motor PDF, Excel, CSV, ZIP)
+│   │   ├── logo_b64.js         (Logo MQF en Base64 para PDFs)
+│   │   ├── recuperar.js        (Lógica de recuperación de contraseña)
+│   │   ├── cambiar-password.js (Lógica de cambio de contraseña)
+│   │   └── login.js
+│   ├── modulos/
+│   │   ├── cotizaciones.html   (Módulo principal cotizador)
+│   │   ├── clientes.html       (Módulo gestión de clientes)
+│   │   ├── polizas.html        (Módulo de pólizas)
+│   │   ├── usuarios.html       (Módulo administración de usuarios)
+│   │   └── pricing-data/       (JSONs de precios de seguros)
+│   ├── dashboard.html          (Shell principal de la aplicación)
+│   ├── index.html              (Login)
+│   ├── recuperar.html          (Recuperación de contraseña)
+│   └── cambiar-password.html   (Cambio de contraseña)
+└── database/                   (Scripts SQL)
 ```
 
 ---
@@ -178,219 +343,109 @@ PLATAFORMA_INTEGRADA/
 ## 🔐 SEGURIDAD GARANTIZADA
 
 | Aspecto | Implementado |
-|---------|--------------|
-| Autenticación | ✅ Bcrypt + Sesiones |
+|---------|-------------|
+| Autenticación | ✅ Bcrypt + Sesiones en BD |
+| Recuperación | ✅ Token con expiración 30 min |
 | SQL Injection | ✅ Prepared statements |
-| Autorización | ✅ RBAC por rol |
-| Rate limiting | ✅ 5 intentos |
-| Auditoría | ✅ Registro completo |
-| Encriptación | ✅ Password hashing |
-| Sesiones | ✅ Timeout + Tokens |
+| Autorización | ✅ RBAC por rol con menú adaptado |
+| Rate limiting | ✅ 5 intentos antes de bloqueo |
+| Auditoría | ✅ Registro completo por evento |
+| Encriptación | ✅ Password hashing bcrypt |
+| SMTP | ✅ Credenciales en JSON, no hardcoded |
 | CORS | ✅ Headers configurados |
+| Logs | ✅ Error + SMTP separados |
 
 ---
 
 ## 💡 DIFERENCIALES TÉCNICOS
 
-1. **RBAC Profesional:** Matriz de 8×10 roles×módulos
-2. **Auditoría Completa:** Cada acción registrada con IP/navegador
-3. **Soft Deletes:** Datos nunca se pierden
-4. **Paginación:** Maneja 1M+ registros sin problemas
-5. **API REST:** 19 endpoints listos para consumir
-6. **Responsivo:** Funciona en desktop/tablet/mobile
-7. **Sin dependencias externas:** Solo PHP nativo + MySQL
+1. **RBAC Avanzado:** Menú lateral dinámico que filtra módulos según rol (PDV vs Admin)
+2. **Árbol de Referidos:** Estructura jerárquica de vendedores con comisiones en cascada
+3. **PDF Corporativo:** Motor de generación PDF con logo MQF real en Base64
+4. **Multi-exportación:** 5 formatos desde historial de cotizaciones
+5. **SMTP en Tiempo Real:** Configurable sin código, testeable desde el Dashboard
+6. **Recuperación de Contraseña:** Flujo seguro con token de expiración
+7. **Cotizador React:** Componente React integrado en la plataforma PHP/HTML
+8. **Precios Reales:** Tabla de 60+ combinaciones de tipo/capacidad/uso MULTISEGUROS
+9. **Sin dependencias externas:** Solo PHP nativo + MySQL + CDN públicas
 
 ---
 
 ## 📈 BENEFICIOS DE LA PLATAFORMA
 
 ### Para Administradores
-- ✅ Control total de usuarios y permisos
+- ✅ Control total de usuarios con jerarquía y comisiones
 - ✅ Auditoría completa de todas las acciones
-- ✅ Bloqueo de usuarios problemáticos
-- ✅ Reportes de actividad
+- ✅ Configuración SMTP sin tocar código
+- ✅ Logs de errores y SMTP desde el Dashboard
 
-### Para Gerentes
+### Para Gerentes / Directores
 - ✅ Restricción de accesos por rol
-- ✅ Control de operaciones críticas
-- ✅ Segregación de funciones
-- ✅ Trazabilidad de decisiones
+- ✅ Árbol de referidos con comisiones automatizadas
+- ✅ Cotizaciones profesionales con PDF corporativo
+- ✅ Estadísticas en tiempo real del Dashboard
 
-### Para Usuarios
-- ✅ Acceso controlado a su módulo
-- ✅ Interface intuitiva y responsiva
-- ✅ Soporte técnico documentado
-- ✅ Cambio de contraseña seguro
+### Para Socios Comerciales (PDV)
+- ✅ Dashboard simplificado con solo sus módulos
+- ✅ Cotizador de Seguros de Ley y Fianzas
+- ✅ Gestión de clientes propios
+- ✅ Exportación de historial de cotizaciones
 
-### Para Auditoría
-- ✅ Trazabilidad completa
-- ✅ Cumplimiento normativo
-- ✅ Reportes de actividad
-- ✅ Pruebas de acceso
-
----
-
-## 🎓 CAPACITACIÓN RECOMENDADA
-
-### Para Administrador (1 hora)
-- Acceder al sistema
-- Crear usuarios
-- Asignar roles
-- Ver auditoría
-- Cambiar configuración
-
-### Para Usuarios (30 minutos)
-- Cambiar contraseña
-- Navegar módulos
-- Usar cotizador
-- Reportes básicos
-
-### Para Soporte (2 horas)
-- Troubleshooting común
-- Logs de errores
-- Resetear usuarios
-- Copias de seguridad
-
----
-
-## 🔮 POSIBILIDADES FUTURAS
-
-### Mejoras Posibles
-- [ ] Two-Factor Authentication (2FA)
-- [ ] OAuth / SSO integration
-- [ ] Generación de PDFs
-- [ ] Envío de emails
-- [ ] Gráficos y dashboards
-- [ ] Exportación Excel/CSV
-- [ ] Búsqueda avanzada
-- [ ] API GraphQL
-- [ ] Mobile app nativa
-
-### Escalabilidad
-- Base de datos: Soporta 100M+ registros
-- API: Puede servir 1000+ usuarios
-- Modularidad: Nuevo módulo en 2 horas
-- Personalización: Código bien documentado
-
----
-
-## 📞 SOPORTE Y DOCUMENTACIÓN
-
-### Disponible en Carpeta
-```
-✅ README.md                  - Referencia técnica
-✅ INSTALACION_RAPIDA.md      - Paso a paso
-✅ ESPECIFICACIONES.md        - Todos los detalles
-✅ INTEGRACION_COTIZADOR.md   - Módulo cotizador
-✅ VERIFICACION_FINAL.md      - Checklist
-✅ INDICE_MAESTRO.md          - Navegación
-```
-
-### En el Código
-```
-✅ Comentarios en PHP
-✅ Comentarios en JavaScript
-✅ Anotaciones en SQL
-✅ Mensajes de error claros
-```
+### Para Auditoría / Compliance
+- ✅ Trazabilidad completa con IP/navegador
+- ✅ Actividad reciente en Dashboard
+- ✅ Historial de auditoría con filtros
+- ✅ Logs separados por tipo (sistema / SMTP)
 
 ---
 
 ## ⚠️ REQUISITOS OBLIGATORIOS
 
-- [ ] WAMP Server instalado y funcionando
-- [ ] Apache 2.4+
-- [ ] MySQL 5.7+ o MariaDB 10.3+
-- [ ] PHP 7.4+
-- [ ] Navegador moderno (Chrome, Firefox, Edge)
+- WAMP Server instalado y funcionando
+- Apache 2.4+
+- MySQL 5.7+ o MariaDB 10.3+
+- PHP 7.4+ (recomendado 8.0+)
+- Extensión PHP: OpenSSL (para SMTP con SSL/TLS)
+- Navegador moderno (Chrome, Firefox, Edge)
 
 ---
 
-## ✅ VALIDACIONES COMPLETADAS
-
-### Funcionales
-- [x] Login funciona correctamente
-- [x] Usuarios se crean y se editan
-- [x] Permisos se validan
-- [x] Auditoría registra eventos
-- [x] Cotizador integrado
-- [x] Tablas pagina correctamente
-
-### Técnicas
-- [x] SQL sin errores
-- [x] PHP sin warnings
-- [x] JavaScript sin errores
-- [x] Responsive en breakpoints
-- [x] Seguridad validada
-
-### Documentales
-- [x] README completo
-- [x] Instalación documentada
-- [x] Especificaciones detalladas
-- [x] Ejemplos incluidos
-
----
-
-## 🎯 PRÓXIMOS PASOS
-
-### Día 1: Instalación
-1. Copiar carpeta a WAMP
-2. Importar base de datos
-3. Probar login
-4. Crear usuario de prueba
-
-### Semana 1: Adaptación
-1. Crear usuarios reales
-2. Asignar roles apropiados
-3. Probar módulos
-4. Ajustar permisos
-
-### Mes 1: Operación
-1. Entrenar usuarios
-2. Monitorear auditoría
-3. Realizar backups
-4. Resolver issues
-
----
-
-## 🏆 PROYECTO COMPLETADO CON ÉXITO
+## 🏆 ESTADO DEL PROYECTO
 
 | Aspecto | Status |
 |--------|--------|
-| Funcionalidad | ✅ 100% |
+| Funcionalidad Core | ✅ 100% |
+| Cotizador Seguros de Ley | ✅ 100% |
+| Cotizador Fianzas | ✅ 100% |
+| PDF Corporativo | ✅ 100% |
+| Recuperación de Contraseña | ✅ 100% |
+| SMTP Configurable | ✅ 100% |
+| Gestión de Usuarios (Avanzada) | ✅ 100% |
+| Módulo Clientes | ✅ 100% |
+| Módulo Pólizas | ✅ Base activa |
 | Seguridad | ✅ 100% |
 | Documentación | ✅ 100% |
-| Testing | ✅ 100% |
-| Producción | ✅ Listo |
+| Git versionado | ✅ 100% |
 
 ---
 
-## 📝 FIRMA DE ENTREGA
+## 📝 HISTORIAL DE VERSIONES
 
-**Proyecto:** MAS QUE FIANZAS - Plataforma Integrada
-**Versión:** 1.0.0
-**Fecha:** 22 de Febrero de 2026
-**Estado:** ✅ ENTREGADO Y FUNCIONAL
-**Responsabilidad:** Totalmente implementado
-
----
-
-## 💬 COMENTA RIOS FINALES
-
-La plataforma está **100% lista para usar en producción**. Incluye:
-
-1. ✅ Backend robusto con seguridad profesional
-2. ✅ Frontend responsivo e intuitivo
-3. ✅ Base de datos optimizada y normalizada
-4. ✅ Documentación completa y detallada
-5. ✅ Control de accesos granular
-6. ✅ Auditoría integrada en todo
-7. ✅ Facilidad de extensión y customización
-
-**Puedes comenzar immediatamente siguiendo la INSTALACION_RAPIDA.md**
+| Versión | Fecha | Descripción |
+|---------|-------|-------------|
+| 1.0.0 | Feb 2026 | Lanzamiento inicial: Auth, RBAC, Dashboard base |
+| 1.5.0 | Mar 2026 | Cotizador integrado (Fianzas + Seguros de Ley) |
+| 2.0.0 | Abr 2026 | PDF corporativo, historial, exportación multi-formato |
+| 2.1.0 | Abr 2026 | SMTP, recuperación contraseña, jerarquía usuarios, PDV |
 
 ---
 
-**¡Gracias por usar MAS QUE FIANZAS!**
+**Proyecto:** MAS QUE FIANZAS - Plataforma Integrada  
+**Repositorio:** jhenri27/mas_que_fianzas (GitHub)  
+**Versión actual:** 2.1.0  
+**Fecha:** 22 de Abril de 2026  
+**Estado:** ✅ EN PRODUCCIÓN
 
-*Cualquier pregunta, revisar la documentación incluida.*
+---
+
+*¿Preguntas? Revisar la documentación incluida o el repositorio en GitHub.*

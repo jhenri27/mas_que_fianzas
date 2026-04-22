@@ -104,6 +104,47 @@ try {
         $resultado = $auth->validarSesion($token);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado['sesion'] ?? null, $resultado['exito'] ? 200 : 401);
 
+    } elseif (strpos($ruta, '/cambiar-password-forzado') !== false && $metodo === 'POST') {
+        // CAMBIAR CONTRASEÑA FORZADO (TRAS RESET ADMIN)
+        if (!Autenticacion::sesionValida()) {
+            respuestaJSON(false, 'Sesión no válida', null, 401);
+        }
+
+        $datos = json_decode(file_get_contents('php://input'), true);
+        $usuario_id = $_SESSION['usuario_id'];
+
+        $resultado = $auth->cambiarPasswordForzado(
+            $usuario_id,
+            $datos['password_nueva'] ?? '',
+            $datos['password_confirmacion'] ?? ''
+        );
+
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
+
+    } elseif (strpos($ruta, '/recuperar-password') !== false && $metodo === 'POST') {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        if (empty($datos['identificador'])) {
+            respuestaJSON(false, 'Correo o usuario requerido', null, 400);
+        }
+        $resultado = $auth->solicitarRecuperacion($datos['identificador']);
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, 200);
+
+    } elseif (strpos($ruta, '/reset-password') !== false && $metodo === 'POST') {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        if (empty($datos['token']) || empty($datos['password_nueva']) || empty($datos['password_confirmacion'])) {
+            respuestaJSON(false, 'Datos incompletos', null, 400);
+        }
+        $resultado = $auth->restablecerConToken($datos['token'], $datos['password_nueva'], $datos['password_confirmacion']);
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
+
+    } elseif (strpos($ruta, '/solicitar-desbloqueo') !== false && $metodo === 'POST') {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        if (empty($datos['username'])) {
+            respuestaJSON(false, 'Usuario requerido', null, 400);
+        }
+        $resultado = $auth->solicitarDesbloqueo($datos['username']);
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, 200);
+
     } else {
         respuestaJSON(false, 'Endpoint no encontrado', null, 404);
     }

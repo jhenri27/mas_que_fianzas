@@ -351,10 +351,14 @@ class UsuarioManager {
             $stmt->execute();
             $stmt->close();
 
-            // Actualizar contraseña
+            // Actualizar contraseña y desbloquear cuenta
             $sql = "UPDATE usuarios 
                     SET password_hash = ?, 
                         requiere_cambio_password = 1,
+                        intentos_fallidos = 0,
+                        bloqueado_hasta = NULL,
+                        estado = 'activo',
+                        ultimo_cambio_password = NOW(),
                         modificado_por = ?,
                         fecha_modificacion = NOW() 
                     WHERE id = ?";
@@ -365,22 +369,59 @@ class UsuarioManager {
             if (!$stmt->execute()) {
                 return ['exito' => false, 'mensaje' => 'Error al restablecer contraseña'];
             }
-
             $stmt->close();
 
-            logAudit($usuario_resetea, 'cambio_password', 'usuarios', 'USU_PASS_RESET', "Contraseña restablecida para: {$usuario['username']}", 'exitoso', null, 'usuarios', $usuario_id);
+            // Enviar correo al usuario con su nueva contraseña temporal
+            $correo_enviado = false;
+            if (!empty($usuario['email'])) {
+                try {
+                    require_once dirname(__FILE__) . '/Mailer.php';
+                    $mailer = new Mailer();
+                    $link_login = "http://localhost/PLATAFORMA_INTEGRADA/frontend/";
+                    $cuerpo = "
+                        <div style='font-family:Arial,sans-serif;max-width:500px;margin:0 auto;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;'>
+                            <div style='background:#1e293b;padding:20px;text-align:center;'>
+                                <h2 style='color:#fff;margin:0;font-size:18px;'>MAS QUE FIANZAS</h2>
+                            </div>
+                            <div style='padding:28px;'>
+                                <h3 style='color:#1e293b;margin-top:0;'>Contraseña Restablecida</h3>
+                                <p>Hola <strong>{$usuario['nombre']} {$usuario['apellido']}</strong>,</p>
+                                <p>Un administrador ha restablecido tu contraseña de acceso al sistema.</p>
+                                <div style='background:#f0f4ff;border:1px solid #c7d2fe;border-radius:8px;padding:16px;margin:20px 0;text-align:center;'>
+                                    <p style='margin:0 0 6px;color:#475569;font-size:13px;'>Tu nueva contraseña temporal es:</p>
+                                    <p style='margin:0;font-size:22px;font-weight:700;color:#4f46e5;letter-spacing:2px;font-family:monospace;'>{$password_temporal}</p>
+                                </div>
+                                <p style='color:#ef4444;font-size:13px;'>⚠️ Por seguridad, deberás cambiar esta contraseña la próxima vez que inicies sesión.</p>
+                                <a href='{$link_login}' style='display:inline-block;margin-top:10px;padding:10px 24px;background:#4f46e5;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;'>Iniciar Sesión</a>
+                            </div>
+                            <div style='background:#f8fafc;padding:12px 28px;font-size:12px;color:#94a3b8;'>
+                                Si no solicitaste este cambio, contacta al administrador del sistema.
+                            </div>
+                        </div>
+                    ";
+                    $correo_enviado = $mailer->enviar($usuario['email'], "Tu contraseña ha sido restablecida - MAS QUE FIANZAS", $cuerpo);
+                } catch (Exception $e) {
+                    // Si falla el correo, el reset igual fue exitoso — loguear pero no fallar
+                    error_log("Error enviando correo de reset: " . $e->getMessage());
+                }
+            }
+
+            logAudit($usuario_resetea, 'cambio_password', 'usuarios', 'USU_PASS_RESET', "Contraseña restablecida para: {$usuario['username']} | Correo enviado: " . ($correo_enviado ? 'Sí' : 'No'), 'exitoso', null, 'usuarios', $usuario_id);
 
             return [
-                'exito' => true,
-                'mensaje' => 'Contraseña restablecida exitosamente',
+                'exito'             => true,
+                'mensaje'           => 'Contraseña restablecida exitosamente' . ($correo_enviado ? '. Se envió un correo al usuario con la nueva clave.' : '. No se pudo enviar correo (verifique configuración SMTP).'),
                 'password_temporal' => $password_temporal,
-                'debe_enviar_email' => true
+                'email_destino'     => $usuario['email'],
+                'correo_enviado'    => $correo_enviado,
+                'nombre_usuario'    => $usuario['nombre'] . ' ' . $usuario['apellido'],
             ];
 
         } catch (Exception $e) {
             return ['exito' => false, 'mensaje' => 'Error: ' . $e->getMessage()];
         }
     }
+
 
     /**
      * Eliminar usuario
