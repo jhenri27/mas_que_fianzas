@@ -64,7 +64,26 @@ try {
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
     } elseif ($metodo === 'GET' && (strpos($ruta, '/listar') !== false || substr($ruta, -12) === 'clientes.php')) {
-        $clientes = $manager->listarClientes();
+        // Soporte de búsqueda por parámetro ?search=
+        if (!empty($_GET['search'])) {
+            $q = '%' . $_GET['search'] . '%';
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare(
+                "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                        telefono, email,
+                        IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                        estado as estatus
+                 FROM clientes 
+                 WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
+                   AND estado = 'activo'
+                 ORDER BY nombre LIMIT 15"
+            );
+            $stmt->bind_param('sss', $q, $q, $q);
+            $stmt->execute();
+            $clientes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        } else {
+            $clientes = $manager->listarClientes();
+        }
         respuestaJSON(true, 'Clientes obtenidos', $clientes, 200);
 
     } else {

@@ -61,6 +61,8 @@
     .export-menu button:hover { background:#f5f3ff; color:#4f46e5; }
     .btn-print-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#1e40af; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
     .btn-print-row:hover { background:#1d4ed8; }
+    .btn-edit-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#f59e0b; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; margin-right:5px; }
+    .btn-edit-row:hover { background:#d97706; }
     .hist-count { font-size:13px; color:#6b7280; margin-left:auto; }
   </style>
 </head>
@@ -148,7 +150,10 @@
           <i class="fa-solid fa-file-import"></i> Importar
           <input type="file" accept=".xlsx,.csv" style="display:none;" onchange="importarCotizaciones(event)">
         </label>
-        <span class="hist-count" id="hist-count-label"></span>
+        <div class="form-group" style="flex:1; min-width:250px; margin-bottom:0; position:relative;">
+          <input type="text" id="hist-search" placeholder="🔍 Buscar por N°, Cliente o Tipo..." oninput="filtrarHistorial()" style="padding:10px 15px; border-radius:10px; border:1.5px solid #e5e7eb; width:100%;">
+        </div>
+        <span class="hist-count" id="hist-count-label" style="background:#f3f4f6; padding:6px 12px; border-radius:20px; font-weight:600; color:#4b5563;"></span>
       </div>
 
       <div id="historial-body" style="min-height:200px;">
@@ -228,7 +233,7 @@
       const prima = monto * tasa * (plazo / 12);
       const impuesto = prima * 0.18;
       const total = prima + impuesto;
-      const numCot = 'F-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
+      const numCot = window._editingFianzaNum || ('F-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
       
       // Mostrar coberturas
       const coberturas = FIANZA_COBERTURAS[tipo] || [];
@@ -250,7 +255,11 @@
         coberturaHTML +
         '<div class="result-row" style="border-top:2px solid #c7d2fe;margin-top:8px;padding-top:12px;"><span class="label" style="font-weight:600;">Total</span><span class="amount">' + fmt(total) + '</span></div>';
 
-      window.currentCot = { numero: numCot, tipo: TIPO_LABELS[tipo], monto, plazo, prima, impuesto, total, coberturas: coberturas };
+      window.currentCot = { 
+        numero: numCot, 
+        tipo: TIPO_LABELS[tipo], 
+        monto, plazo, prima, impuesto, total, coberturas: coberturas 
+      };
     }
 
     async function guardarCotizacion() {
@@ -291,23 +300,49 @@
         fecha: new Date().toISOString()
       };
 
+      const action = window._editingFianzaId ? 'actualizar' : 'guardar';
+      if (window._editingFianzaId) data.id = window._editingFianzaId;
+
       try {
-        const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=guardar', {
+        const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=${action}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         }).then(r => r.json());
 
         if (res.exito) {
-          alert('Cotización guardada: ' + cot.numero);
-          // Usar PDF profesional con logo corporativo MQF
+          console.log("Guardado exitoso:", res);
+          localToast(window._editingFianzaId ? '✅ Fianza actualizada correctamente' : '✅ Cotización guardada: ' + cot.numero, 'success');
+          
+          // Presentar PDF
           generarPDFFianzaProfesional(data);
-          showTab('historial');
+          
+          window._editingFianzaId = null;
+          window._editingFianzaNum = null;
+          
+          // Recargar historial después de un breve delay
+          setTimeout(() => {
+            cargarHistorial();
+            showTab('historial');
+          }, 1000);
         } else {
-          alert('Error: ' + res.mensaje);
+          console.error("Error API:", res);
+          alert('Error al guardar: ' + (res.mensaje || 'Respuesta inválida del servidor'));
         }
       } catch (e) {
-        alert('Error de conexión: ' + e.message);
+        console.error("Error de conexión:", e);
+        alert('Error de conexión con el servidor: ' + e.message);
+      }
+    }
+
+    // Helper para feedback visual (si no existe mostrarToast, usar alert)
+    function localToast(msg, type) {
+      // Intentar llamar a la función del dashboard padre si existe, 
+      // verificando que NO sea esta misma función local para evitar recursión.
+      if (window.parent && typeof window.parent.mostrarToast === 'function') {
+        window.parent.mostrarToast(msg, type);
+      } else {
+        alert(msg);
       }
     }
 
@@ -341,35 +376,7 @@
             const countLabel = document.getElementById('hist-count-label');
             if (countLabel) countLabel.textContent = res.datos.length + ' cotizaciones registradas';
 
-            let html = '<table><thead><tr>' +
-              '<th>N°</th><th>Tipo</th><th>Cliente</th>' +
-              '<th style="text-align:right;">Total</th>' +
-              '<th>Fecha</th>' +
-              '<th style="text-align:center;">Acciones</th>' +
-              '</tr></thead><tbody>';
-
-            res.datos.forEach((c, idx) => {
-              // Parsear servicios_opcionales si viene como string JSON
-              if (typeof c.servicios_opcionales === 'string') {
-                try { c.servicios_opcionales = JSON.parse(c.servicios_opcionales); } catch(e) { c.servicios_opcionales = {}; }
-              }
-              const fila = '<tr>' +
-                '<td><strong>' + (c.numero || '-') + '</strong></td>' +
-                '<td><span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span></td>' +
-                '<td>' + (c.cliente || 'N/A') + '</td>' +
-                '<td style="text-align:right;font-weight:bold;color:#1e40af;">' + fmt(c.total || 0) + '</td>' +
-                '<td>' + (c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO') : '-') + '</td>' +
-                '<td style="text-align:center;">' +
-                  '<button class="btn-print-row" onclick="imprimirCotizacion(' + idx + ')" title="Imprimir PDF">' +
-                    '<i class="fa-solid fa-print"></i> PDF' +
-                  '</button>' +
-                '</td>' +
-              '</tr>';
-              html += fila;
-            });
-
-            html += '</tbody></table>';
-            body.innerHTML = html;
+            renderizarTablaHistorial(window.cotizacionesData);
           } else {
             window.cotizacionesData = [];
             body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;">No hay cotizaciones guardadas aún.</p>';
@@ -380,18 +387,125 @@
         });
     }
 
-    // Imprimir una cotización individual del historial
-    function imprimirCotizacion(idx) {
-      if (!window.cotizacionesData || !window.cotizacionesData[idx]) {
-        alert('No se encontró la cotización'); return;
+    function filtrarHistorial() {
+      const input = document.getElementById('hist-search');
+      if (!input) return;
+      // Limpiar espacios, guiones especiales y caracteres invisibles
+      const query = input.value.toLowerCase().trim().replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/–|—/g, "-");
+      const body = document.getElementById('historial-body');
+      
+      if (!window.cotizacionesData || window.cotizacionesData.length === 0) return;
+
+      if (query === "") {
+        renderizarTablaHistorial(window.cotizacionesData);
+        return;
       }
-      const c = window.cotizacionesData[idx];
+
+      const filtered = window.cotizacionesData.filter(c => {
+        // Búsqueda global definitiva: convierte todo el registro a texto y busca coincidencias
+        // Esto ignora nombres de campos y detecta valores en cualquier propiedad
+        try {
+          return JSON.stringify(c).toLowerCase().includes(query);
+        } catch (e) {
+          // Fallback por si hay referencias circulares (poco probable aquí)
+          return Object.values(c).join(" ").toLowerCase().includes(query);
+        }
+      });
+
+      if (filtered.length === 0) {
+        body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;">No se encontraron coincidencias para "<strong>' + input.value + '</strong>".</p>';
+        return;
+      }
+
+      renderizarTablaHistorial(filtered);
+    }
+
+    function renderizarTablaHistorial(datos) {
+      const body = document.getElementById('historial-body');
+      let html = '<table><thead><tr>' +
+        '<th>N°</th><th>Tipo</th><th>Cliente</th>' +
+        '<th style="text-align:right;">Total</th>' +
+        '<th>Fecha</th>' +
+        '<th style="text-align:center;">Acciones</th>' +
+        '</tr></thead><tbody>';
+
+      datos.forEach((c) => {
+        // Pasar el ID como string entre comillas para evitar errores de evaluación
+        const qId = c.id;
+        const htmlFila = '<tr>' +
+          '<td><strong>' + (c.numero || '-') + '</strong></td>' +
+          '<td><span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span></td>' +
+          '<td>' + (c.cliente || 'N/A') + '</td>' +
+          '<td style="text-align:right;font-weight:bold;color:#1e40af;">' + fmt(c.total || 0) + '</td>' +
+          '<td>' + (c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO') : '-') + '</td>' +
+          '<td style="text-align:center;">' +
+            '<button class="btn-edit-row" onclick="editarCotizacion(\'' + qId + '\')" title="Editar">' +
+              '<i class="fa-solid fa-pen"></i> Editar' +
+            '</button>' +
+            '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="Imprimir PDF">' +
+              '<i class="fa-solid fa-print"></i> PDF' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+        html += htmlFila;
+      });
+
+      html += '</tbody></table>';
+      body.innerHTML = html;
+    }
+
+    // Imprimir una cotización individual del historial
+    function imprimirCotizacion(id) {
+      if (!window.cotizacionesData) return;
+      const c = window.cotizacionesData.find(item => item.id == id);
+      if (!c) {
+        alert('No se encontró la cotización ID: ' + id); return;
+      }
       if (typeof dibujarCotizacionPDF === 'function') {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
       } else {
         alert('Motor PDF no disponible. Recarga la página.');
+      }
+    }
+
+    // Cargar para editar
+    function editarCotizacion(id) {
+      console.log("Iniciando edición para ID:", id);
+      if (!window.cotizacionesData) { console.error("No hay datos cargados"); return; }
+      
+      const c = window.cotizacionesData.find(item => String(item.id) === String(id));
+      if (!c) {
+        console.error("Cotización no encontrada para ID:", id, window.cotizacionesData);
+        alert('No se encontró la cotización ID: ' + id); return;
+      }
+      console.log("Registro encontrado:", c);
+
+      // Detección robusta: por tipo, por prefijo SL o por mención de Automóviles
+      const esSeguro = (c.tipo || '').toUpperCase().includes('SEGURO') || 
+                       (c.numero || '').toUpperCase().startsWith('SL-') ||
+                       (c.subtipo || '').toUpperCase().includes('AUTOMOVIL');
+
+      if (esSeguro) {
+        window.dispatchEvent(new CustomEvent('edit-cotizacion', { detail: c }));
+        showTab('seguros');
+      } else {
+        // Fianzas: cargar directamente en el form
+        window._editingFianzaId = c.id;
+        window._editingFianzaNum = c.numero; // Preservar numero
+        document.getElementById('f_nombre').value = c.cliente || '';
+        document.getElementById('f_cedula').value = c.cedula || '';
+        document.getElementById('f_telefono').value = c.telefono || '';
+        document.getElementById('f_email').value = c.email || '';
+        // Mapear el tipo de fianza (subtipo) al valor del select
+        const labelToValue = Object.entries(TIPO_LABELS).find(([v, l]) => l === c.subtipo);
+        if (labelToValue) document.getElementById('f_tipo').value = labelToValue[0];
+        document.getElementById('f_plazo').value = c.plazo || 12;
+        document.getElementById('f_monto').value = c.monto_afianzado || 0;
+        
+        calcularFianza();
+        showTab('fianzas');
       }
     }
 
@@ -423,9 +537,54 @@
       const [capacidad, setCapacidad] = React.useState('');
       const [insurer, setInsurer] = React.useState('');
       const [price, setPrice] = React.useState(0);
+      const [cliente, setCliente] = React.useState('');
+      const [cedula, setCedula] = React.useState('');
+      const [editingId, setEditingId] = React.useState(null);
+      const [editingNum, setEditingNum] = React.useState(null);
       const [errors, setErrors] = React.useState({});
       const [selectedCoverage, setSelectedCoverage] = React.useState('');
       const [showCoverageDetails, setShowCoverageDetails] = React.useState(false);
+      const [optionalSelected, setOptionalSelected] = React.useState({});
+      
+      const OPTIONAL_SERVICES = React.useMemo(() => [
+        { id: 'ASIST_VIAL_LIV', label: 'ASISTENCIA VIAL (VEHICULO LIVIANO)', price: 2600 },
+        { id: 'ASIST_VIAL_PES', label: 'ASISTENCIA VIAL (VEHICULOS PESADOS)', price: 4600 },
+        { id: 'CASA_CONDUCTOR', label: 'CASA DEL CONDUCTOR', price: 1020 },
+        { id: 'CENTRO_AUTOMOVILISTA', label: 'CENTRO DE AUTOMOVILISTA', price: 1020 }
+      ], []);
+
+      React.useEffect(() => {
+        const handleEdit = (e) => {
+          const c = e.detail;
+          console.log("Editando Seguros:", c);
+          
+          setEditingId(c.id);
+          setEditingNum(c.numero);
+          
+          // Sincronizar estados de selección
+          setType(c.subtipo || '');
+          setUso(c.uso || '');
+          setCapacidad(c.capacidad || '');
+          setInsurer(c.aseguradora || '');
+          setPrice(c.prima_base || 0);
+          setCliente(c.cliente || '');
+          setCedula(c.cedula || '');
+          setSelectedCoverage(c.cobertura || '');
+          
+          // Asegurar que servicios_opcionales sea un objeto
+          let sOpc = c.servicios_opcionales || {};
+          if (typeof sOpc === 'string') {
+            try { sOpc = JSON.parse(sOpc); } catch(err) { sOpc = {}; }
+          }
+          setOptionalSelected(sOpc);
+          
+          // Feedback visual
+          setErrors({});
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.addEventListener('edit-cotizacion', handleEdit);
+        return () => window.removeEventListener('edit-cotizacion', handleEdit);
+      }, []);
 
       React.useEffect(()=>{
         fetch(OPTIONS_JSON_PATH).then(r=>r.json()).then(j=> setOptionsRows(j.rows || [])).catch(()=>{});
@@ -580,28 +739,6 @@
         }
       }, [type, capacidad]);
 
-      const OPTIONAL_SERVICES = [
-        { id: 'ASIST_VIAL_LIV', label: 'ASISTENCIA VIAL (VEHICULO LIVIANO)', price: 2600 },
-        { id: 'ASIST_VIAL_PES', label: 'ASISTENCIA VIAL (VEHICULOS PESADOS)', price: 4600 },
-        { id: 'CASA_CONDUCTOR', label: 'CASA DEL CONDUCTOR', price: 1020 },
-        { id: 'CENTRO_AUTOMOVILISTA', label: 'CENTRO DE AUTOMOVILISTA', price: 1020 }
-      ];
-      const [optionalSelected, setOptionalSelected] = React.useState({});
-
-      // Aplicar reglas de exclusión mutua
-      React.useEffect(()=>{
-        if(optionalSelected.CASA_CONDUCTOR){
-          if(optionalSelected.CENTRO_AUTOMOVILISTA){
-            setOptionalSelected(prev=>({ ...prev, CENTRO_AUTOMOVILISTA: false }));
-          }
-        }
-        if(optionalSelected.CENTRO_AUTOMOVILISTA){
-          if(optionalSelected.CASA_CONDUCTOR){
-            setOptionalSelected(prev=>({ ...prev, CASA_CONDUCTOR: false }));
-          }
-        }
-      }, [optionalSelected]);
-
       // Limpiar selecciones cuando cambia la cobertura
       React.useEffect(()=>{
         if(!selectedCoverage) return;
@@ -685,13 +822,16 @@
           alert('Complete todos los campos del formulario');
           return;
         }
-        const numCot = 'SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
+
+        const isEdit = !!editingId;
+        const numCot = isEdit ? editingNum : ('SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
+        
         const data = {
           tipo: 'SEGURO DE LEY',
           subtipo: type,
           numero: numCot,
-          cliente: '',
-          cedula: '',
+          cliente: cliente,
+          cedula: cedula,
           uso: uso,
           capacidad: capacidad,
           aseguradora: insurer,
@@ -705,15 +845,19 @@
           fecha: new Date().toISOString()
         };
         
-        fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=guardar', {
+        if (isEdit) data.id = editingId;
+        const action = isEdit ? 'actualizar' : 'guardar';
+        
+        fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=' + action, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         }).then(r=>r.json()).then(res=>{
           if(res.exito){
-            alert('Cotización guardada: ' + numCot);
-            // Usar motor PDF profesional con logo MQF corporativo
+            alert('Cotización ' + (isEdit ? 'actualizada' : 'guardada') + ': ' + numCot);
             generarPDFSeguroProfesional(data);
+            setEditingId(null);
+            setEditingNum(null);
             window.parent.postMessage({ type: 'cotizacion-guardada', data: data }, '*');
           } else {
             alert('Error: ' + res.mensaje);
@@ -789,7 +933,7 @@
                     </div>
                     {showCoverageDetails && (
                       <div className="mt-3 space-y-2">
-                        {(COVERAGE_PROFILES[selectedCoverage]||[]).map((c,idx)=> (
+                        {(COVERAGE_PROFILES[String(selectedCoverage).trim()]||[]).map((c,idx)=> (
                           <div key={idx} className="flex justify-between text-sm">
                             <div>{c.label}</div>
                             <div className="font-medium">{currency(c.amount)}</div>
@@ -856,11 +1000,47 @@
                 <div className="mt-6 flex gap-3">
                   <button onClick={()=>{
                     if(!validate()) return;
-                    const q = { tipo:type, uso:uso, capacidad:capacidad, aseguradora:insurer, prima_base:price, cobertura:selectedCoverage, servicios_opcionales: optionalSelected, prima_total: totalPrice };
-                    try{ localStorage.setItem('quoteDraft', JSON.stringify(q)); }catch(e){}
-                    guardarCotizacionSeguro();
-                  }} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">Guardar y Descargar PDF</button>
-                  <button onClick={()=>{ setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); }} className="px-4 py-2 border rounded">Restablecer</button>
+                    const q = { 
+                      id: editingId,
+                      tipo: 'SEGURO DE LEY', 
+                      subtipo: type,
+                      numero: editingNum,
+                      uso: uso, 
+                      capacidad: capacidad, 
+                      aseguradora: insurer, 
+                      prima_base: price, 
+                      cobertura: selectedCoverage, 
+                      servicios_opcionales: optionalSelected, 
+                      total: totalPrice 
+                    };
+                    
+                    const action = editingId ? 'actualizar' : 'guardar';
+                    
+                    fetch(`/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=${action}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(q)
+                    }).then(r=>r.json()).then(res=>{
+                      if(res.exito){
+                        alert(editingId ? 'Cotización actualizada' : 'Cotización guardada');
+                        generarPDFSeguroProfesional(Object.assign({}, q, { numero: editingNum || res.numero || 'EDIT' }));
+                        setEditingId(null);
+                        setEditingNum(null);
+                        cargarHistorial();
+                      } else {
+                        alert('Error: ' + res.mensaje);
+                      }
+                    }).catch(e=> alert('Error: ' + e.message));
+                  }} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">
+                    {editingId ? 'Guardar Cambios' : 'Guardar y Descargar PDF'}
+                  </button>
+                  <button onClick={()=>{ 
+                    setEditingId(null);
+                    setEditingNum(null);
+                    setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); 
+                  }} className="px-4 py-2 border rounded">
+                    {editingId ? 'Cancelar Edición' : 'Restablecer'}
+                  </button>
                 </div>
 
               </div>

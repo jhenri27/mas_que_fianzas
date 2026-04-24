@@ -51,122 +51,166 @@ async function generarQRDataURL(texto) {
 //    Fondo: Azul Navy, texto: blanco/dorado
 //    QR: Apunta a verificar-poliza?n={numero}
 // ==========================================
+// ==========================================
+/**
+ * MS-LS v1.0 (Marbete Standard Layout Specification)
+ * --------------------------------------------------
+ * Formato: A6 Landscape (148mm x 105mm)
+ * Rejilla Corporativa MultiSeguros:
+ * - MARGENES: 5mm (L/R/T)
+ * - ENCABEZADO: 
+ *   - Zona Título: X=5mm
+ *   - Zona Logo: X=38mm (Width: 28mm)
+ *   - Zona Asistencia: X=90-143mm (Align: Right)
+ * - CUERPO (GRILLA DATOS):
+ *   - Columna 1: Label X=5mm, Valor X=30mm
+ *   - Columna 2: Label X=48mm, Valor X=68mm
+ * - SEPARADORES:
+ *   - Línea Horizontal: Y=17mm
+ *   - Línea Vertical (Divisor): X=92mm
+ * - BLOQUE ASISTENCIA DERECHO: X=94mm (Max Width: 49mm)
+ * - TIPOGRAFIA: Helvetica (Bold para etiquetas, Normal para datos)
+ */
 async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-    const { COLORES, EMPRESA } = POLIZA_DOCS;
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
+        const { COLORES, EMPRESA } = POLIZA_DOCS;
+        const W = 148, H = 105;
 
-    const W = 148, H = 105;
+        // -- BORDE PUNTEADO --
+        doc.setDrawColor(200);
+        doc.setLineDash([1, 1], 0);
+        doc.rect(2, 2, W - 4, H - 4);
+        doc.setLineDash([], 0);
 
-    // -- FONDO PRINCIPAL --
-    doc.setFillColor(...COLORES.navy);
-    doc.rect(0, 0, W, H, 'F');
-
-    // -- FRANJA DORADA SUPERIOR --
-    doc.setFillColor(...COLORES.dorado);
-    doc.rect(0, 0, W, 3, 'F');
-    doc.rect(0, H - 3, W, 3, 'F');
-
-    // -- LOGO MQF (si disponible) --
-    if (window.LOGO_MQF_B64) {
-        doc.addImage(window.LOGO_MQF_B64, 'PNG', 4, 5, 32, 13);
-    } else {
-        doc.setTextColor(...COLORES.dorado);
-        doc.setFontSize(9);
+        // -- ENCABEZADO (ZONAS: 5-45 | 45-80 | 80-143) --
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text('MAS QUE FIANZAS', 4, 13);
-    }
+        doc.setTextColor(0);
+        doc.text('MARBETE SEGURO\nAUTOMOVIL', 5, 9);
 
-    // -- TÍTULO CENTRAL --
-    doc.setTextColor(...COLORES.dorado);
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text('MARBETE PROVISIONAL', W / 2, 11, { align: 'center' });
+        // LOGO (Centrado-ish)
+        const logoX = 48;
+        const logoY = 4;
+        const logoW = 28;
+        const logoH = 9;
+        if (window.LOGO_MULTISEGUROS_B64) {
+            doc.addImage(window.LOGO_MULTISEGUROS_B64, 'PNG', logoX, logoY, logoW, logoH);
+        } else {
+            doc.setTextColor(0, 51, 153);
+            doc.setFontSize(12);
+            doc.text('MultiSeguros', logoX + logoW/2, 9, { align: 'center' });
+            doc.setFontSize(5);
+            doc.setFont('helvetica', 'italic');
+            doc.text('Somos Su Alternativa', logoX + logoW/2, 12, { align: 'center' });
+        }
 
-    doc.setTextColor(...COLORES.blanco);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('SEGURO DE RESPONSABILIDAD CIVIL — VEHÍCULOS DE MOTOR', W / 2, 16, { align: 'center' });
+        // ASISTENCIA CABECERA (Derecha)
+        doc.setFontSize(5);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        const xRight = W - 5;
+        doc.text('EN CASO DE ACCIDENTE PARA LEVANTAMIENTO DE ACTA POLICIAL FAVOR', xRight, 7.5, { align: 'right' });
+        doc.text('DIRIJASE A LA CASA ASISTENCIAL CONTRATADA', xRight, 10, { align: 'right' });
+        doc.setFontSize(6.5);
+        doc.text('003349 +QF (Autos)            RD-0004', xRight, 14, { align: 'right' });
 
-    // -- LÍNEA SEPARADORA --
-    doc.setDrawColor(...COLORES.dorado);
-    doc.setLineWidth(0.4);
-    doc.line(4, 19, W - 4, 19);
+        // LINEAS DIVISORIAS
+        doc.setLineWidth(0.3);
+        doc.setDrawColor(0);
+        doc.line(5, 17, W - 5, 17); // Horizontal
+        doc.line(95, 17, 95, 80);    // Vertical divisoria
 
-    // -- ASEGURADORA ARRIBA DERECHA --
-    doc.setTextColor(180, 210, 255);
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Aseguradora:', 90, 9);
-    doc.setTextColor(...COLORES.blanco);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.text(poliza.aseguradora || 'MULTISEGUROS', 90, 14);
+        // -- GRID DE DATOS --
+        const yIni = 23;
+        const filaH = 6.2;
+        const xV1 = 25; // X para valores Col 1
+        const xL2 = 52; // X para etiquetas Col 2
+        const xV2 = 68; // X para valores Col 2
 
-    // -- DATOS EN 2 COLUMNAS --
-    const col1 = 4, col2 = 78;
-    const LABEL_COLOR = [140, 180, 230];
-    const VAL_COLOR = [255, 255, 255];
-    const BOLD_COLOR = [255, 230, 100];
+        doc.setFontSize(8.5);
+        const drawField = (label, val, x, y, valX, boldVal = false) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, x, y);
+            doc.setFont('helvetica', boldVal ? 'bold' : 'normal');
+            doc.text(String(val || 'N/A'), valX, y);
+        };
 
-    const campos = [
-        [['Nombre Asegurado:', poliza.cliente_nombre, true], ['N° Póliza:', poliza.numero_poliza, true]],
-        [['Cédula:', poliza.cliente_cedula || 'N/A', false], ['Tipo Seguro:', poliza.tipo_seguro || 'Seguro de Ley', false]],
-        [['Placa:', vehiculo?.placa || 'N/A', true], ['Vigencia Desde:', fmtFecha(poliza.fecha_emision), false]],
-        [['Marca / Modelo:', `${vehiculo?.marca || ''} ${vehiculo?.modelo || ''}`.trim() || 'N/A', false], ['Vigencia Hasta:', fmtFecha(poliza.fecha_vencimiento), true]],
-        [['Año / Color:', `${vehiculo?.anio || ''} / ${vehiculo?.color || ''}`.trim() || 'N/A', false], ['Cobertura:', poliza.perfil_cobertura || 'Ley', false]],
-        [['Tipo Vehículo:', vehiculo?.tipo_vehiculo || 'N/A', false], ['Prima Total:', fmtDOP(poliza.prima_total), true]],
-    ];
+        // Fila 1: Póliza y Fechas
+        drawField('Póliza:', poliza.numero_poliza, 5, yIni, xV1, true);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Del: ${fmtFecha(poliza.fecha_emision)}`, xL2, yIni);
+        doc.text(`al: ${fmtFecha(poliza.fecha_vencimiento)}`, xV2 + 8, yIni);
 
-    let y = 25;
-    campos.forEach(([izq, der]) => {
-        // Columna izquierda
-        doc.setTextColor(...LABEL_COLOR);
-        doc.setFontSize(5.8);
+        // Fila 2: Año y Deducible
+        drawField('Año Vehículo:', vehiculo?.anio, 5, yIni + filaH, xV1);
+        drawField('Deduc. Min:', poliza.deduccion || 'N/A', xL2, yIni + filaH, xV2);
+        const horaStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        doc.setFontSize(7.5);
+        doc.text(horaStr, xV2 + 15, yIni + filaH);
+        doc.setFontSize(8.5);
+
+        // Fila 3: Registro y Uso
+        drawField('Registro:', vehiculo?.placa, 5, yIni + filaH * 2, xV1);
+        drawField('Uso:', vehiculo?.uso || 'PRIVADO', xL2, yIni + filaH * 2, xV2 - 2);
+
+        // Fila 4: Marca y Modelo
+        drawField('Marca:', vehiculo?.marca, 5, yIni + filaH * 3, xV1);
+        doc.setFont('helvetica', 'bold');
+        doc.text(vehiculo?.modelo || '', xV2 - 2, yIni + filaH * 3);
+
+        // Fila 5: Chasis
+        drawField('Chasis:', vehiculo?.chasis, 5, yIni + filaH * 4, xV1);
+
+        // Fila 6: Tipo y Fianza
+        drawField('Tipo:', vehiculo?.tipo_vehiculo || 'AUTOMOVIL', 5, yIni + filaH * 5, xV1);
+        drawField('Fianza Judicial:', fmtDOP(poliza.fianza_judicial || 50000), xL2, yIni + filaH * 5, xV2 + 5);
+
+        // Fila 7: Casa Contratada (Larga)
+        drawField('Casa Contratada:', poliza.casa_contratada || 'CENTRO DEL AUTOMOVILISTA', 5, yIni + filaH * 6.5, xV1 + 8);
+
+        // Fila 8: Asistencia Vial
+        drawField('Asistencia Vial:', poliza.asistencia_vial || 'PREMIUM', 5, yIni + filaH * 7.5, xV1 + 8);
+
+        // -- BLOQUE ASISTENCIA DERECHO --
+        const xAssistance = 97;
+        const yAssistance = 22;
+        doc.setFontSize(4.3);
         doc.setFont('helvetica', 'normal');
-        doc.text(izq[0], col1, y);
-        doc.setTextColor(...(izq[2] ? BOLD_COLOR : VAL_COLOR));
-        doc.setFontSize(izq[2] ? 7 : 6.5);
-        doc.setFont('helvetica', izq[2] ? 'bold' : 'normal');
-        doc.text(String(izq[1]), col1, y + 4.5);
+        const infoLines = [
+            "LA CASA DEL CONDUCTOR(CMA): Av. Simón Bolivar Num. 183, Ens. La Julia, Santo Domingo 10109, D. N.",
+            "N.Telefono:(809)381.2424 / Santiago, Telefono:(809)241.4848 Solicitud de Apertura y gestión de Reclamos",
+            "CENTRO ASISTENCIAL DEL AUTOMOLISTA(CAA): Av. 27 de Febrero num.452, casi Esq Ave. Nuñez de Caceres, Santo Domingo, D. N. / Telefono.(809)565.8222 / Santiago Telefono.(809)565.8222",
+            "EN CASO DE INCONVENIENTE CON SU VEHICULO (Grua, Recarga de Bateria, Gasolina, Gomas Pinchadas) COMUNICARSE CON SU ASISTENCIA VIAL: Teléfono (809)273.2021",
+            "EN CASO DE ROBO DE SU VEHICULO, Notifiquelo inmediatamente a la policia. MULTISEGUROS SU, S.A. Teléfonos:(809)378.1784 / (829)826-5848 Av. Bolivar No. 952, Ensanche. La Julia, Santo Domingo, D.N."
+        ];
+        let curY = yAssistance;
+        infoLines.forEach(text => {
+            const splitLines = doc.splitTextToSize(text, 46);
+            doc.text(splitLines, xAssistance, curY);
+            curY += (splitLines.length * 2.2) + 0.8;
+        });
 
-        // Columna derecha
-        doc.setTextColor(...LABEL_COLOR);
-        doc.setFontSize(5.8);
+        // -- CONDICIONES PARTICULARES --
+        const yCond = 86;
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('1. CONDICIONES PARTICULARES:', 5, yCond);
         doc.setFont('helvetica', 'normal');
-        doc.text(der[0], col2, y);
-        doc.setTextColor(...(der[2] ? BOLD_COLOR : VAL_COLOR));
-        doc.setFontSize(der[2] ? 7 : 6.5);
-        doc.setFont('helvetica', der[2] ? 'bold' : 'normal');
-        doc.text(String(der[1]), col2, y + 4.5);
+        const textCond = "El cliente debe presentar al momento de un siniestro sus documentos vigentes, como: cédula de identidad, matrícula del vehículo a su nombre, o en su defecto acto de venta, y licencia de conducir al día. MultiSeguros SU se reserva el derecho de amparar pérdidas por la falta de alguno de estos documentos. Es aceptable la licencia de conducir expedida en el extranjero que se encuentre en vigencia. No otorgar seguros a extranjeros que no tengan todos sus documentos al día.";
+        doc.setFontSize(7.5);
+        doc.text(textCond, 5, yCond + 4, { maxWidth: W - 10, align: 'justify' });
 
-        y += 11;
-    });
-
-    // -- QR CODE --
-    const urlVerificacion = `${EMPRESA.base_url}/frontend/verificar-poliza.html?n=${encodeURIComponent(poliza.numero_poliza)}`;
-    const qrData = await generarQRDataURL(urlVerificacion);
-    if (qrData) {
-        doc.addImage(qrData, 'PNG', W - 30, 20, 27, 27);
-        doc.setTextColor(140, 180, 230);
-        doc.setFontSize(4.5);
-        doc.text('Escanee para', W - 17, 50, { align: 'center' });
-        doc.text('verificar vigencia', W - 17, 53.5, { align: 'center' });
+        if (!opts.returnDoc) {
+            const safeNum = String(poliza.numero_poliza || 'PROVISIONAL').replace(/[^a-z0-9]/gi, '_');
+            doc.save(`Marbete_${safeNum}.pdf`);
+        }
+        return doc;
+    } catch (err) {
+        console.error("Error en generarMarbetePDF:", err);
+        throw err;
     }
-
-    // -- PIE LEGAL --
-    doc.setFillColor(0, 35, 75);
-    doc.rect(0, H - 12, W, 9, 'F');
-    doc.setTextColor(140, 180, 230);
-    doc.setFontSize(4.8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('☑ Este documento es válido hasta la emisión del Marbete Definitivo por la Dirección General de Impuestos Internos (DGII)', W / 2, H - 8, { align: 'center' });
-    doc.text(`${EMPRESA.nombre} | ${EMPRESA.telefono} | ${EMPRESA.email}`, W / 2, H - 4.5, { align: 'center' });
-
-    if (!opts.returnDoc) {
-        doc.save(`Marbete-${poliza.numero_poliza}.pdf`);
-    }
-    return doc;
 }
 
 // ==========================================

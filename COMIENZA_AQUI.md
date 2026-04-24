@@ -1,6 +1,6 @@
 # 🧭 GUÍA DE ORIENTACIÓN — ¿POR DÓNDE EMPEZAR?
 
-> **Versión:** 2.1.0 | **Actualizado:** 22 de Abril de 2026
+> **Versión:** 3.2.0 | **Actualizado:** 23 de Abril de 2026
 
 ---
 
@@ -30,6 +30,7 @@ La plataforma ha sido significativamente enriquecida con las siguientes funciona
 | **Módulo Pólizas** activo con base funcional | ✅ Activo |
 | **Dashboard con actividad reciente** clickeable con modal de detalle | ✅ Mejorado |
 | **Estadísticas en tiempo real**: Clientes, Cotizaciones, Fianzas, Seguros | ✅ Mejorado |
+| **Estándar MS-LS v1.0**: Grilla técnica para PDFs corporativos (Marbete) | ✅ Nuevo |
 
 ---
 
@@ -164,7 +165,12 @@ La plataforma ha sido significativamente enriquecida con las siguientes funciona
    - Crear nuevo endpoint en `backend/api/`
    - Registrar actividad con `api.registrarActividad(modulo, descripcion)`
 
-**Resultado esperado:** Dominar arquitectura y poder extender ✅
+6. **[10 min] Estándar de Documentos (MS-LS v1.0)**:
+   - Los PDFs corporativos siguen una grilla técnica estricta.
+   - Ver especificaciones en `frontend/assets/polizas-pdf.js` (JSDoc).
+   - **Regla de oro**: Respetar coordenadas X para evitar solapamientos.
+
+**Resultado esperado:** Dominar arquitectura y poder extender siguiendo el estándar corporativo ✅
 
 ---
 

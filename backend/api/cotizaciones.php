@@ -92,7 +92,18 @@ try {
     // LISTAR
     if ($action === 'listar' && $metodo === 'GET') {
         $limite = intval($_GET['limite'] ?? 200);
-        $result = $db->query("SELECT * FROM cotizaciones ORDER BY fecha DESC LIMIT $limite");
+        $numero = $_GET['numero'] ?? '';
+        
+        $sql = "SELECT * FROM cotizaciones";
+        if (!empty($numero)) {
+            $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? LIMIT 1");
+            $stmt->bind_param('s', $numero);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        } else {
+            $result = $db->query("SELECT * FROM cotizaciones ORDER BY fecha DESC LIMIT $limite");
+        }
+        
         $rows = [];
         while ($row = $result->fetch_assoc()) {
             if (!empty($row['servicios_opcionales'])) {
@@ -111,6 +122,42 @@ try {
         }
         insertar_cotizacion($db, $datos);
         respuestaJSON(true, 'Cotizacion guardada en base de datos', ['numero' => $datos['numero']], 201);
+
+    // ACTUALIZAR (por ID)
+    } elseif ($action === 'actualizar' && $metodo === 'POST') {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        if (empty($datos['id'])) {
+            respuestaJSON(false, 'ID de cotización requerido para actualizar', null, 400);
+        }
+
+        $id = intval($datos['id']);
+        $sql = "UPDATE cotizaciones SET 
+                tipo = ?, subtipo = ?, cliente = ?, cedula = ?, uso = ?, 
+                capacidad = ?, aseguradora = ?, cobertura = ?, 
+                monto_afianzado = ?, plazo = ?, prima_base = ?, 
+                impuesto = ?, total = ?, servicios_opcionales = ?
+                WHERE id = ?";
+        
+        $stmt = $db->prepare($sql);
+        $servicios = isset($datos['servicios_opcionales']) ? 
+                    (is_array($datos['servicios_opcionales']) ? json_encode($datos['servicios_opcionales']) : $datos['servicios_opcionales']) 
+                    : '';
+        $cobertura = isset($datos['cobertura']) ? 
+                    (is_array($datos['cobertura']) ? json_encode($datos['cobertura']) : $datos['cobertura']) 
+                    : ($datos['cobertura'] ?? '');
+
+        $stmt->bind_param('ssssssssdidddsi',
+            $datos['tipo'], $datos['subtipo'], $datos['cliente'], $datos['cedula'], $datos['uso'],
+            $datos['capacidad'], $datos['aseguradora'], $cobertura,
+            $datos['monto_afianzado'], $datos['plazo'], $datos['prima_base'],
+            $datos['impuesto'], $datos['total'], $servicios, $id
+        );
+
+        if ($stmt->execute()) {
+            respuestaJSON(true, 'Cotizacion actualizada correctamente', ['id' => $id], 200);
+        } else {
+            respuestaJSON(false, 'Error al actualizar cotización: ' . $db->error, null, 500);
+        }
 
     // IMPORTAR MASIVO (desde localStorage via JSON)
     } elseif ($action === 'importar' && $metodo === 'POST') {

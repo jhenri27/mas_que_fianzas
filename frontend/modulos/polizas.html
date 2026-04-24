@@ -335,16 +335,27 @@
                 <div class="form-grid form-grid-2">
                     <div class="form-group">
                         <label>Número de Cotización de Origen</label>
-                        <input type="text" id="w-cotizacion-num" placeholder="F-2026-XXXX-001"
-                               oninput="buscarCotizacion(this.value)">
-                        <span class="hint">Ingrese el número para auto-completar los datos</span>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="w-cotizacion-num" placeholder="F-2026-XXXX-001" style="flex:1;">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="buscarCotizacion()" style="white-space:nowrap;">
+                                <i class="fa-solid fa-search"></i> Cargar
+                            </button>
+                        </div>
+                        <span class="hint">Carga automáticamente tipo, cobertura y prima</span>
+                        <div id="cotizacion-info" style="display:none;margin-top:8px;padding:8px 12px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#166534;"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="position:relative;">
                         <label>Cliente <span style="color:#dc2626;">*</span></label>
-                        <input type="text" id="w-cliente-nombre" placeholder="Buscar cliente..." 
-                               oninput="buscarCliente(this.value)">
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="w-cliente-nombre" placeholder="Buscar por nombre o cédula..." 
+                                   oninput="buscarCliente(this.value)" autocomplete="off" style="flex:1;">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="abrirCrearCliente()" title="Crear cliente nuevo" style="white-space:nowrap;">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </button>
+                        </div>
                         <input type="hidden" id="w-cliente-id">
-                        <div id="cliente-sugerencias" style="display:none;position:absolute;background:#fff;border:1px solid #e0e7ff;border-radius:8px;z-index:100;min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,.1);"></div>
+                        <div id="cliente-sugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e0e7ff;border-radius:8px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;"></div>
+                        <span class="hint" id="cliente-seleccionado-info" style="color:#16a34a;display:none;"><i class="fa-solid fa-circle-check"></i> Cliente seleccionado</span>
                     </div>
                     <div class="form-group">
                         <label>Tipo de Seguro <span style="color:#dc2626;">*</span></label>
@@ -472,15 +483,15 @@
                 <div class="form-grid form-grid-2">
                     <div class="form-group">
                         <label>Prima Total (RD$) <span style="color:#dc2626;">*</span></label>
-                        <input type="number" id="w-prima-total" placeholder="0.00" step="0.01" onchange="calcularPrima()">
+                        <input type="number" id="w-prima-total" placeholder="0.00" step="0.01" onchange="calcularPrima()" oninput="calcularPrima()">
                     </div>
                     <div class="form-group">
                         <label>Periodicidad de Pago</label>
-                        <select id="w-periodicidad">
-                            <option value="mensual">Mensual</option>
-                            <option value="trimestral">Trimestral</option>
-                            <option value="semestral">Semestral</option>
-                            <option value="anual" selected>Anual</option>
+                        <select id="w-periodicidad" onchange="calcularPrima()">
+                            <option value="mensual">Mensual (12 cuotas)</option>
+                            <option value="trimestral">Trimestral (4 cuotas)</option>
+                            <option value="semestral">Semestral (2 cuotas)</option>
+                            <option value="anual" selected>Anual (1 pago)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -689,6 +700,54 @@
     </div>
 </div>
 
+<!-- ════ MODAL CREAR CLIENTE RÁPIDO ════ -->
+<div class="modal-overlay" id="modal-crear-cliente">
+    <div class="modal-box" style="max-width:580px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-user-plus"></i> Nuevo Cliente</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-crear-cliente')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:#64748b;margin-bottom:18px;">Complete los datos básicos. Podrá editar el perfil completo desde el módulo de Clientes.</p>
+            <div class="form-grid form-grid-2">
+                <div class="form-group">
+                    <label>Nombre Completo / Razón Social <span style="color:#dc2626;">*</span></label>
+                    <input type="text" id="nc-nombre" placeholder="Juan Pérez S.R.L.">
+                </div>
+                <div class="form-group">
+                    <label>Cédula / RNC <span style="color:#dc2626;">*</span></label>
+                    <input type="text" id="nc-cedula" placeholder="001-1234567-8">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="nc-telefono" placeholder="809-000-0000">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="nc-email" placeholder="cliente@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Persona</label>
+                    <select id="nc-tipo">
+                        <option value="Fisica">Física (Persona Natural)</option>
+                        <option value="Juridica">Jurídica (Empresa)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" id="nc-direccion" placeholder="Av. Principal, Santo Domingo">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-crear-cliente')">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarClienteRapido()">
+                <i class="fa-solid fa-check"></i> Guardar y Seleccionar
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -718,7 +777,8 @@ let polizaActual = null;
 let paginaActual = 1;
 let pasoWizard = 1;
 
-const BASE_API = '../backend/api';
+// Estandarización de rutas de API (Absolutas desde la raíz del proyecto)
+const BASE_API = '/PLATAFORMA_INTEGRADA/backend/api';
 
 // ═══════════════════════════════════════
 // TABS
@@ -939,8 +999,11 @@ function abrirPagoDirecto(id) {
     document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
     const poliza = polizasData.find(x => x.id == id);
     if (poliza) {
-        document.getElementById('p-monto').value = poliza.prima_total || '';
-        document.getElementById('p-descripcion').value = `Pago Póliza ${poliza.numero_poliza} — ${poliza.tipo_seguro}`;
+        const cuotas = parseInt(poliza.cuota_total) || 1;
+        const total = parseFloat(poliza.prima_total) || 0;
+        document.getElementById('p-cuota-total').value = cuotas;
+        document.getElementById('p-monto').value = (total / cuotas).toFixed(2);
+        document.getElementById('p-descripcion').value = `Pago Póliza ${poliza.numero_poliza} — Cuota de ${poliza.tipo_seguro}`;
     }
     abrirModal('modal-pago');
 }
@@ -1121,13 +1184,17 @@ function calcularPrima() {
     const neta = total - itbis;
     const periodo = document.getElementById('w-periodicidad').value;
     const divisores = { mensual: 12, trimestral: 4, semestral: 2, anual: 1 };
-    const cuota = total / (divisores[periodo] || 1);
+    const numCuotas = divisores[periodo] || 1;
+    const cuota = total / numCuotas;
+
+    // Guardar en estado global para usarlo al emitir
+    window._wizardCuotaTotal = numCuotas;
 
     const fmt = n => new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n);
     document.getElementById('calc-neta').textContent = fmt(neta);
     document.getElementById('calc-itbis').textContent = fmt(itbis);
     document.getElementById('calc-total').textContent = fmt(total);
-    document.getElementById('calc-cuota').textContent = fmt(cuota);
+    document.getElementById('calc-cuota').textContent = `${fmt(cuota)} × ${numCuotas} cuota${numCuotas > 1 ? 's' : ''}`;
 }
 
 function calcularVencimiento() {
@@ -1200,24 +1267,34 @@ function construirResumen() {
 
 async function emitirPoliza() {
     const clienteId = document.getElementById('w-cliente-id').value;
-    if (!clienteId) {
-        mostrarToast('Seleccione un cliente de la lista', 'error');
+    const clienteNombre = document.getElementById('w-cliente-nombre').value.trim();
+
+    if (!clienteId || !clienteNombre) {
+        mostrarToast('Debe seleccionar un cliente de la lista desplegable', 'error');
         pasoWizard = 1; actualizarWizard();
+        document.getElementById('w-cliente-nombre').focus();
         return;
     }
 
+    const periodoDivisores = { mensual: 12, trimestral: 4, semestral: 2, anual: 1 };
+    const periodo = document.getElementById('w-periodicidad').value;
+    const cuotaTotal = window._wizardCuotaTotal || periodoDivisores[periodo] || 1;
+
     const datos = {
+        cotizacion_id: window._wizardCotId || null,
         cliente_id: clienteId,
         tipo_seguro: document.getElementById('w-tipo-seguro').value,
+        tipo_poliza: 'Individual',
         ramo: document.getElementById('w-ramo').value,
         aseguradora: document.getElementById('w-aseguradora').value,
         perfil_cobertura: document.getElementById('w-cobertura').value,
         prima_total: parseFloat(document.getElementById('w-prima-total').value),
-        periodicidad_pago: document.getElementById('w-periodicidad').value,
+        periodicidad_pago: periodo,
+        cuota_total: cuotaTotal,
         fecha_vencimiento: document.getElementById('w-fecha-vence').value,
         numero_poliza_aseguradora: document.getElementById('w-num-aseg').value,
         notas_internas: document.getElementById('w-notas').value,
-        emitida_por: 1,  // Se obtendrá del token de sesión en producción
+        emitida_por: 1,
         vehiculo: {
             cliente_id: clienteId,
             placa: document.getElementById('w-placa').value,
@@ -1262,32 +1339,210 @@ async function emitirPoliza() {
     }
 }
 
+// BUG FIX 1: buscarCotizacion implementada (antes no existia)
+async function buscarCotizacion() {
+    const num = document.getElementById('w-cotizacion-num').value.trim();
+    if (!num) { mostrarToast('Ingrese un número de cotización', 'info'); return; }
+
+    const infoEl = document.getElementById('cotizacion-info');
+    infoEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...';
+    infoEl.style.display = 'block';
+
+    try {
+        // Optimización Arquitectónica: Búsqueda directa en base de datos por número
+        const r = await fetch(`${BASE_API}/cotizaciones.php?action=listar&numero=${encodeURIComponent(num)}`);
+        const d = await r.json();
+
+        // La respuesta del helper respuestaJSON viene en d.datos
+        const lista = d.datos || d.data || [];
+        const cot = (lista.length > 0) ? lista[0] : null;
+
+        if (!cot) {
+            infoEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Cotización "' + num + '" no encontrada. Verifique el número o complete manualmente.';
+            infoEl.style.background = '#fef9c3'; infoEl.style.borderColor = '#fde047'; infoEl.style.color = '#713f12';
+            return;
+        }
+
+        // AUTO-RELLENAR campos del wizard desde la cotización
+        const tipoMap = {
+            'SEGURO DE LEY': 'Seguro de Ley - Vehículo Liviano',
+            'FIANZA': 'Fianza Judicial'
+        };
+        const tipoSeg = tipoMap[cot.tipo] || cot.tipo || '';
+        document.getElementById('w-tipo-seguro').value = tipoSeg;
+
+        // Cobertura
+        if (cot.cobertura) document.getElementById('w-cobertura').value = cot.cobertura;
+        if (cot.aseguradora) document.getElementById('w-aseguradora').value = cot.aseguradora;
+
+        // Prima total
+        const prima = parseFloat(cot.total || cot.prima_total || 0);
+        if (prima > 0) {
+            document.getElementById('w-prima-total').value = prima.toFixed(2);
+            calcularPrima();
+        }
+
+        // Cliente: pre-cargar si viene en la cotización
+        if (cot.cliente) {
+            document.getElementById('w-cliente-nombre').value = cot.cliente;
+            // Intentar buscar el cliente automáticamente
+            const rc = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(cot.cliente)}`);
+            const dc = await rc.json();
+            const lista2 = dc.datos || dc.data || [];
+            if (lista2.length === 1) {
+                seleccionarCliente(lista2[0].id, lista2[0].nombre_razon_social);
+            } else if (lista2.length > 1) {
+                // Mostrar sugerencias si hay varios
+                buscarCliente(cot.cliente);
+            }
+        }
+
+        window._wizardCotId = cot.id;
+        infoEl.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <div style="flex:1;">
+                    <i class="fa-solid fa-circle-check"></i> Cotización cargada: <strong>${cot.tipo || ''} ${cot.cobertura || ''}</strong> — Prima: <strong>${fmtMoneda(prima)}</strong>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="actualizarCotizacionWizard()" style="padding:4px 10px; font-size:11px; white-space:nowrap; background:#fff; border-color:#86efac; color:#166534;">
+                    <i class="fa-solid fa-rotate"></i> Guardar Cambios en Cotización
+                </button>
+            </div>`;
+        infoEl.style.background = '#f0fdf4'; infoEl.style.borderColor = '#86efac'; infoEl.style.color = '#166534';
+        mostrarToast('Datos de cotización cargados exitosamente', 'success');
+
+    } catch (e) {
+        console.error('Error buscando cotización:', e);
+        infoEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al conectar con la API. Complete los campos manualmente.';
+        infoEl.style.background = '#fef2f2'; infoEl.style.borderColor = '#fca5a5'; infoEl.style.color = '#991b1b';
+    }
+}
+
+async function actualizarCotizacionWizard() {
+    const id = window._wizardCotId;
+    if (!id) { mostrarToast('Debe cargar una cotización primero', 'error'); return; }
+
+    const datos = {
+        id: id,
+        tipo: document.getElementById('w-tipo-seguro').value.toUpperCase().includes('FIANZA') ? 'FIANZA' : 'SEGURO DE LEY',
+        subtipo: document.getElementById('w-tipo-seguro').value,
+        cliente: document.getElementById('w-cliente-nombre').value,
+        aseguradora: document.getElementById('w-aseguradora').value,
+        cobertura: document.getElementById('w-cobertura').value,
+        total: parseFloat(document.getElementById('w-prima-total').value) || 0
+    };
+
+    try {
+        const r = await fetch(`${BASE_API}/cotizaciones.php?action=actualizar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const d = await r.json();
+        if (d.exito) {
+            mostrarToast('✅ Registro de cotización actualizado correctamente', 'success');
+        } else {
+            mostrarToast('Error al actualizar: ' + d.mensaje, 'error');
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión', 'error');
+    }
+}
+
+// BUG FIX 3: buscarCliente corregido — usa d.datos (campo correcto de la API)
 async function buscarCliente(query) {
-    if (query.length < 2) { document.getElementById('cliente-sugerencias').style.display = 'none'; return; }
+    if (!query || query.length < 2) {
+        document.getElementById('cliente-sugerencias').style.display = 'none';
+        return;
+    }
     try {
         const r = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(query)}`);
         const d = await r.json();
         const box = document.getElementById('cliente-sugerencias');
-        if (d.exito && d.datos?.length) {
-            box.innerHTML = d.datos.slice(0, 6).map(c => 
-                `<div onclick="seleccionarCliente('${c.id}','${c.nombre_razon_social}')" 
+        // La API usa respuestaJSON que guarda la lista en 'datos'
+        const lista = d.datos || d.data || [];
+        if (lista.length > 0) {
+            box.innerHTML = lista.slice(0, 8).map(c =>
+                `<div onclick="seleccionarCliente('${c.id}','${(c.nombre_razon_social || '').replace(/'/g, "&apos;")}')" 
                       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;"
                       onmouseover="this.style.background='#f0f0ff'" onmouseout="this.style.background=''">
-                    <strong>${c.nombre_razon_social}</strong><br>
-                    <span style="font-size:11px;color:#94a3b8;">${c.rnc}</span>
+                    <i class="fa-solid fa-user" style="color:#a5b4fc;margin-right:6px;"></i>
+                    <strong>${c.nombre_razon_social || '—'}</strong>
+                    <span style="float:right;font-size:11px;color:#94a3b8;">${c.rnc || ''}</span><br>
+                    <span style="font-size:11px;color:#94a3b8;margin-left:18px;">${c.tipo_persona || ''} ${c.telefono ? '· ' + c.telefono : ''}</span>
                  </div>`
-            ).join('');
+            ).join('') +
+            `<div onclick="abrirCrearCliente()" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:1px solid #e0e7ff;">
+                <i class="fa-solid fa-user-plus"></i> Crear cliente "${query}"
+            </div>`;
             box.style.display = 'block';
         } else {
-            box.style.display = 'none';
+            box.innerHTML = `<div style="padding:12px 14px;font-size:13px;color:#64748b;">Sin resultados para "${query}"</div>
+                <div onclick="abrirCrearCliente()" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:1px solid #e0e7ff;">
+                    <i class="fa-solid fa-user-plus"></i> Crear nuevo cliente
+                </div>`;
+            box.style.display = 'block';
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('Error buscando cliente:', e);
+    }
 }
 
 function seleccionarCliente(id, nombre) {
     document.getElementById('w-cliente-id').value = id;
     document.getElementById('w-cliente-nombre').value = nombre;
     document.getElementById('cliente-sugerencias').style.display = 'none';
+    // Mostrar confirmación
+    const info = document.getElementById('cliente-seleccionado-info');
+    if (info) info.style.display = 'inline';
+}
+
+// Crear cliente rápido desde el wizard
+function abrirCrearCliente() {
+    document.getElementById('cliente-sugerencias').style.display = 'none';
+    // Pre-cargar el nombre si ya escribió algo
+    const query = document.getElementById('w-cliente-nombre').value.trim();
+    if (query) document.getElementById('nc-nombre').value = query;
+    abrirModal('modal-crear-cliente');
+}
+
+async function guardarClienteRapido() {
+    const nombre = document.getElementById('nc-nombre').value.trim();
+    const cedula = document.getElementById('nc-cedula').value.trim();
+    if (!nombre || !cedula) {
+        mostrarToast('Nombre y Cédula/RNC son obligatorios', 'error'); return;
+    }
+
+    const datos = {
+        nombre_razon_social: nombre,
+        rnc: cedula,
+        tipo_persona: document.getElementById('nc-tipo').value,
+        telefono: document.getElementById('nc-telefono').value,
+        correo: document.getElementById('nc-email').value,
+        direccion: document.getElementById('nc-direccion').value,
+        estatus: 'activo'
+    };
+
+    try {
+        const r = await fetch(`${BASE_API}/clientes/crear`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const d = await r.json();
+        if (d.exito) {
+            seleccionarCliente(d.datos?.id || d.id, nombre);
+            cerrarModal('modal-crear-cliente');
+            mostrarToast(`Cliente "${nombre}" creado y seleccionado`, 'success');
+            // Limpiar modal
+            ['nc-nombre','nc-cedula','nc-telefono','nc-email','nc-direccion'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        } else {
+            mostrarToast('Error: ' + (d.mensaje || 'No se pudo crear el cliente'), 'error');
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión al crear el cliente', 'error');
+    }
 }
 
 function exportarPolizas() {

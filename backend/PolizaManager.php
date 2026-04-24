@@ -131,8 +131,8 @@ class PolizaManager {
                         numero_poliza, numero_poliza_aseguradora, cotizacion_id, cliente_id, vehiculo_id,
                         tipo_seguro, tipo_poliza, ramo, aseguradora, perfil_cobertura,
                         prima_total, prima_neta, itbis, otros_cargos,
-                        periodicidad_pago, fecha_vencimiento, estado, emitida_por, fecha_emision
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa', ?, ?)";
+                        periodicidad_pago, cuota_total, fecha_vencimiento, estado, emitida_por, fecha_emision
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa', ?, ?)";
             
             $stmt = $this->db->prepare($sql);
             if (!$stmt) throw new Exception($this->db->error);
@@ -151,15 +151,16 @@ class PolizaManager {
             $neta = $total - $itbis;
             $otros = 0;
             $periodo = $datos['periodicidad_pago'] ?? 'anual';
+            $cuota_total = intval($datos['cuota_total'] ?? 1); 
             $vence = $datos['fecha_vencimiento'];
             $emitida_por = $datos['emitida_por'];
             $fecha_em = date('Y-m-d');
 
-            $stmt->bind_param("ssiiisssssddddssis", 
+            $stmt->bind_param("ssiiisssssddddd s i s", 
                 $num, $num_aseg, $cot_id, $cli_id, $vehiculoId,
                 $tipo_seguro, $tipo_poliza, $ramo, $aseguradora, $perfil,
                 $total, $neta, $itbis, $otros,
-                $periodo, $vence, $emitida_por, $fecha_em
+                $periodo, $cuota_total, $vence, $emitida_por, $fecha_em
             );
             
             if (!$stmt->execute()) throw new Exception($stmt->error);
