@@ -756,16 +756,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="../assets/logo_b64.js"></script>
+<script src="../assets/logos_aseguradoras.js"></script>
 <script>
-// Intentar cargar logo en base64
-if (!window.LOGO_MQF_B64) {
-    fetch('../assets/logo_b64.js').then(r => r.text()).then(t => {
-        try { eval(t); } catch(e) {}
-    }).catch(() => {});
-}
+// Inicializar window.LOGOS si no existe (debería venir de logos_aseguradoras.js)
+if (typeof window.LOGOS === 'undefined') window.LOGOS = {};
+console.log('Logos Cargados:', Object.keys(window.LOGOS));
 </script>
-<script src="../assets/polizas-pdf.js?v=1"></script>
+<script src="../assets/polizas-pdf.js?v=6"></script>
 <script>
 'use strict';
 
@@ -962,7 +960,15 @@ async function generarDocAction(tipo) {
 
     const p = polizaActual;
     const cliente = { nombre: p.cliente_nombre, cedula: p.cliente_cedula, email: p.cliente_email, telefono: p.cliente_telefono };
-    const vehiculo = { placa: p.vehiculo_placa, marca: p.vehiculo_marca, modelo: p.vehiculo_modelo };
+    const vehiculo = { 
+        placa: p.vehiculo_placa, 
+        marca: p.vehiculo_marca, 
+        modelo: p.vehiculo_modelo,
+        anio: p.vehiculo_anio || '',
+        chasis: p.vehiculo_chasis || '',
+        uso: p.vehiculo_uso || 'PRIVADO',
+        tipo_vehiculo: p.vehiculo_tipo_vehiculo || 'AUTOMOVIL'
+    };
 
     mostrarToast('Generando PDF...', 'info');
 

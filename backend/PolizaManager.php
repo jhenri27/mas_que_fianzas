@@ -57,8 +57,9 @@ class PolizaManager {
         }
 
         $sql = "SELECT p.*, 
-                       c.nombre as cliente_nombre, c.cedula as cliente_cedula,
+                       c.nombre as cliente_nombre, c.cedula as cliente_cedula, c.email as cliente_email, c.telefono as cliente_telefono,
                        v.placa as vehiculo_placa, v.marca as vehiculo_marca, v.modelo as vehiculo_modelo,
+                       v.anio as vehiculo_anio, v.chasis as vehiculo_chasis, v.uso as vehiculo_uso, v.tipo_vehiculo as vehiculo_tipo_vehiculo,
                        (SELECT SUM(monto) FROM pagos WHERE poliza_id = p.id AND estado_pago = 'procesado') as total_pagado
                 FROM polizas p 
                 LEFT JOIN clientes c ON p.cliente_id = c.id 
@@ -90,9 +91,13 @@ class PolizaManager {
      * Obtiene el detalle completo de una póliza específica
      */
     public function obtenerPolizaDetalle($id) {
-        $sql = "SELECT p.*, c.nombre as cliente_nombre, c.email as cliente_email, c.telefono as cliente_telefono 
+        $sql = "SELECT p.*, 
+                       c.nombre as cliente_nombre, c.cedula as cliente_cedula, c.email as cliente_email, c.telefono as cliente_telefono,
+                       v.placa as vehiculo_placa, v.marca as vehiculo_marca, v.modelo as vehiculo_modelo,
+                       v.anio as vehiculo_anio, v.chasis as vehiculo_chasis, v.uso as vehiculo_uso, v.tipo_vehiculo as vehiculo_tipo_vehiculo
                 FROM polizas p 
-                JOIN clientes c ON p.cliente_id = c.id 
+                JOIN clientes c ON p.cliente_id = c.id
+                LEFT JOIN vehiculos v ON p.vehiculo_id = v.id
                 WHERE p.id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $id);

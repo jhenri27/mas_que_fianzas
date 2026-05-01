@@ -1,0 +1,18 @@
+﻿# Logs del servidor
+backend/logs/
+*.log
+
+# Uploads de usuarios (no subir archivos binarios al repo)
+uploads/
+
+# Archivos de entorno y configuracion local
+.env
+config.local.php
+
+# Archivos de sistema Windows/Mac
+Thumbs.db
+.DS_Store
+
+# Editores
+.vscode/
+.idea/

@@ -32,184 +32,242 @@ const POLIZA_DOCS = {
 const fmtDOP = (n) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(n || 0);
 const fmtFecha = (f) => f ? new Date(f).toLocaleDateString('es-DO') : 'N/A';
 
-/** Genera un QR Code como dataURL usando el texto dado */
+/** Genera QR como dataURL usando api.qrserver.com (no requiere librería) */
 async function generarQRDataURL(texto) {
-    if (typeof QRCode === 'undefined') return null;
-    const canvas = document.createElement('canvas');
     try {
-        await QRCode.toCanvas(canvas, texto, { width: 120, margin: 1, color: { dark: '#003366', light: '#ffffff' } });
-        return canvas.toDataURL('image/png');
-    } catch (e) {
-        console.warn('QR error:', e);
+        const url = 'https://api.qrserver.com/v1/create-qr-code/?size=130x130&format=png&data=' + encodeURIComponent(texto);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('QR API error: ' + res.status);
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch(e) {
+        console.warn('QR fetch error:', e.message);
+        // Fallback: usar qrcodejs si está disponible
+        if (typeof QRCode !== 'undefined') {
+            return new Promise((resolve) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+                document.body.appendChild(div);
+                try {
+                    new QRCode(div, { text: texto, width: 128, height: 128 });
+                    setTimeout(() => {
+                        const c = div.querySelector('canvas');
+                        resolve(c ? c.toDataURL('image/png') : null);
+                        document.body.removeChild(div);
+                    }, 200);
+                } catch(e2) { document.body.removeChild(div); resolve(null); }
+            });
+        }
         return null;
     }
 }
 
-// ==========================================
-// 1. MARBETE PROVISIONAL
-//    Formato: A6 horizontal (148×105mm)
-//    Fondo: Azul Navy, texto: blanco/dorado
-//    QR: Apunta a verificar-poliza?n={numero}
-// ==========================================
-// ==========================================
 /**
- * MS-LS v1.0 (Marbete Standard Layout Specification)
- * --------------------------------------------------
- * Formato: A6 Landscape (148mm x 105mm)
- * Rejilla Corporativa MultiSeguros:
- * - MARGENES: 5mm (L/R/T)
- * - ENCABEZADO: 
- *   - Zona Título: X=5mm
- *   - Zona Logo: X=38mm (Width: 28mm)
- *   - Zona Asistencia: X=90-143mm (Align: Right)
- * - CUERPO (GRILLA DATOS):
- *   - Columna 1: Label X=5mm, Valor X=30mm
- *   - Columna 2: Label X=48mm, Valor X=68mm
- * - SEPARADORES:
- *   - Línea Horizontal: Y=17mm
- *   - Línea Vertical (Divisor): X=92mm
- * - BLOQUE ASISTENCIA DERECHO: X=94mm (Max Width: 49mm)
- * - TIPOGRAFIA: Helvetica (Bold para etiquetas, Normal para datos)
+ * generarMarbetePDF — Marbete Provisional Multiseguros
+ * Formato: A4 Portrait (210×297mm) — igual al original RD-0004
  */
 async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
     try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-        const { COLORES, EMPRESA } = POLIZA_DOCS;
-        const W = 148, H = 105;
-
-        // -- BORDE PUNTEADO --
-        doc.setDrawColor(200);
-        doc.setLineDash([1, 1], 0);
-        doc.rect(2, 2, W - 4, H - 4);
-        doc.setLineDash([], 0);
-
-        // -- ENCABEZADO (ZONAS: 5-45 | 45-80 | 80-143) --
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0);
-        doc.text('MARBETE SEGURO\nAUTOMOVIL', 5, 9);
-
-        // LOGO (Centrado-ish)
-        const logoX = 48;
-        const logoY = 4;
-        const logoW = 28;
-        const logoH = 9;
-        if (window.LOGO_MULTISEGUROS_B64) {
-            doc.addImage(window.LOGO_MULTISEGUROS_B64, 'PNG', logoX, logoY, logoW, logoH);
-        } else {
-            doc.setTextColor(0, 51, 153);
-            doc.setFontSize(12);
-            doc.text('MultiSeguros', logoX + logoW/2, 9, { align: 'center' });
-            doc.setFontSize(5);
-            doc.setFont('helvetica', 'italic');
-            doc.text('Somos Su Alternativa', logoX + logoW/2, 12, { align: 'center' });
+        // Intercepción dinámica (plantilla subida en Modelador)
+        const asegNombre = (poliza.aseguradora || '').toUpperCase().trim();
+        if (asegNombre) {
+            try {
+                const rP = await fetch('/PLATAFORMA_INTEGRADA/backend/api/pdf_plantillas.php');
+                const jP = await rP.json();
+                if (jP.exito && jP.data) {
+                    const ref = jP.data.find(p => p.aseguradora_nombre && p.aseguradora_nombre.toUpperCase().trim() === asegNombre);
+                    if (ref) {
+                        const rF = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/pdf_plantillas.php?id=${ref.id}`);
+                        const jF = await rF.json();
+                        if (jF.exito && jF.data) {
+                            const ctx = {
+                                poliza: { numero_poliza: poliza.numero_poliza||'', fecha_emision: fmtFecha(poliza.fecha_emision), fecha_vencimiento: fmtFecha(poliza.fecha_vencimiento), fianza_judicial: fmtDOP(poliza.fianza_judicial||50000), casa_contratada: poliza.casa_contratada||'CENTRO DEL AUTOMOVILISTA', asistencia_vial: poliza.asistencia_vial||'PREMIUM', deduccion: poliza.deduccion||'N/A' },
+                                vehiculo: { marca: vehiculo?.marca||'', anio: vehiculo?.anio||'', chasis: vehiculo?.chasis||'', placa: vehiculo?.placa||'', uso: vehiculo?.uso||'PRIVADO', tipo_vehiculo: (vehiculo?.tipo_vehiculo||'AUTOMOVIL').toUpperCase() },
+                                cliente: { nombre: poliza.cliente_nombre||'', cedula: poliza.cliente_cedula||'' },
+                                general: { hora_emision: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) }
+                            };
+                            return await generarDocumentoDinamicoPDF(jF.data, ctx);
+                        }
+                    }
+                }
+            } catch(e) { console.warn('[Marbete] Fallback jsPDF:', e.message); }
         }
 
-        // ASISTENCIA CABECERA (Derecha)
-        doc.setFontSize(5);
-        doc.setTextColor(0);
-        doc.setFont('helvetica', 'bold');
-        const xRight = W - 5;
-        doc.text('EN CASO DE ACCIDENTE PARA LEVANTAMIENTO DE ACTA POLICIAL FAVOR', xRight, 7.5, { align: 'right' });
-        doc.text('DIRIJASE A LA CASA ASISTENCIAL CONTRATADA', xRight, 10, { align: 'right' });
-        doc.setFontSize(6.5);
-        doc.text('003349 +QF (Autos)            RD-0004', xRight, 14, { align: 'right' });
+        // ── FALLBACK jsPDF ────────────────────────────────────────────────
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-        // LINEAS DIVISORIAS
-        doc.setLineWidth(0.3);
-        doc.setDrawColor(0);
-        doc.line(5, 17, W - 5, 17); // Horizontal
-        doc.line(95, 17, 95, 80);    // Vertical divisoria
+        // ── LAYOUT (medidas del original RD-0004) ─────────────────────────
+        const MX   = 22;          // margen izq de la caja
+        const MY   = 14;          // margen sup de la caja
+        const BW   = 166;         // ancho de la caja (MX+BW = 188mm)
+        const BH   = 106;         // alto de la caja
+        const BX2  = MX + BW;     // borde derecho = 188mm
+        const XDIV = MX + 80;     // divisor vertical = 102mm (≈48% del ancho)
 
-        // -- GRID DE DATOS --
-        const yIni = 23;
-        const filaH = 6.2;
-        const xV1 = 25; // X para valores Col 1
-        const xL2 = 52; // X para etiquetas Col 2
-        const xV2 = 68; // X para valores Col 2
-
-        doc.setFontSize(8.5);
-        const drawField = (label, val, x, y, valX, boldVal = false) => {
-            doc.setFont('helvetica', 'bold');
-            doc.text(label, x, y);
-            doc.setFont('helvetica', boldVal ? 'bold' : 'normal');
-            doc.text(String(val || 'N/A'), valX, y);
+        // helper de fuente
+        const T = (sz, st='normal', r=0,g=0,b=0) => {
+            doc.setFontSize(sz); doc.setFont('helvetica', st); doc.setTextColor(r,g,b);
         };
 
-        // Fila 1: Póliza y Fechas
-        drawField('Póliza:', poliza.numero_poliza, 5, yIni, xV1, true);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Del: ${fmtFecha(poliza.fecha_emision)}`, xL2, yIni);
-        doc.text(`al: ${fmtFecha(poliza.fecha_vencimiento)}`, xV2 + 8, yIni);
+        // ── CAJA (borde punteado) ─────────────────────────────────────────
+        doc.setDrawColor(100); doc.setLineWidth(0.3);
+        doc.setLineDash([1.5, 1], 0);
+        doc.rect(MX, MY, BW, BH);
+        doc.setLineDash([], 0);
 
-        // Fila 2: Año y Deducible
-        drawField('Año Vehículo:', vehiculo?.anio, 5, yIni + filaH, xV1);
-        drawField('Deduc. Min:', poliza.deduccion || 'N/A', xL2, yIni + filaH, xV2);
-        const horaStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        doc.setFontSize(7.5);
-        doc.text(horaStr, xV2 + 15, yIni + filaH);
-        doc.setFontSize(8.5);
+        // ── HEADER ───────────────────────────────────────────────────────
+        // Zona A: título (izquierda)
+        T(9, 'bold');
+        doc.text('MARBETE SEGURO', MX+2, MY+7);
+        doc.text('AUTOMOVIL', MX+2, MY+13);
 
-        // Fila 3: Registro y Uso
-        drawField('Registro:', vehiculo?.placa, 5, yIni + filaH * 2, xV1);
-        drawField('Uso:', vehiculo?.uso || 'PRIVADO', xL2, yIni + filaH * 2, xV2 - 2);
+        // Zona B: Logo (centro)
+        const LX=MX+38, LW=42, LH=14;
+        const logoB64 = (window.LOGOS && window.LOGOS[asegNombre]) || (asegNombre === 'MULTISEGUROS' ? window.LOGO_MULTISEGUROS_B64 : null);
+        
+        console.log(`[Marbete] Logo for ${asegNombre}:`, logoB64 ? 'Found (Length: ' + logoB64.length + ')' : 'Not Found');
 
-        // Fila 4: Marca y Modelo
-        drawField('Marca:', vehiculo?.marca, 5, yIni + filaH * 3, xV1);
-        doc.setFont('helvetica', 'bold');
-        doc.text(vehiculo?.modelo || '', xV2 - 2, yIni + filaH * 3);
+        if (logoB64) {
+            try {
+                doc.addImage(logoB64,'PNG',LX,MY+2,LW,LH);
+            } catch(e) {
+                console.warn('Error adding logo image:', e);
+                T(14,'bold',0,51,153); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
+            }
+        } else {
+            T(14,'bold',0,51,153); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
+            if(asegNombre === 'MULTISEGUROS') {
+                T(5.5,'italic',0,51,153); doc.text('Somos Su Alternativa',LX+LW/2,MY+14,{align:'center'});
+            }
+        }
 
-        // Fila 5: Chasis
-        drawField('Chasis:', vehiculo?.chasis, 5, yIni + filaH * 4, xV1);
+        // Zona C: texto asistencia (derecha, alineado al borde)
+        T(5,'bold');
+        doc.text('EN CASO DE ACCIDENTE PARA LEVANTAMIENTO DE ACTA POLICIAL FAVOR', BX2-1, MY+5, {align:'right'});
+        doc.text('DIRIJASE A LA CASA ASISTENCIAL CONTRATADA', BX2-1, MY+9, {align:'right'});
+        T(7.5,'bold');
+        doc.text('003349 +QF (Autos)            RD-0004', BX2-1, MY+15, {align:'right'});
 
-        // Fila 6: Tipo y Fianza
-        drawField('Tipo:', vehiculo?.tipo_vehiculo || 'AUTOMOVIL', 5, yIni + filaH * 5, xV1);
-        drawField('Fianza Judicial:', fmtDOP(poliza.fianza_judicial || 50000), xL2, yIni + filaH * 5, xV2 + 5);
+        // ── DIVISORES ────────────────────────────────────────────────────
+        const Y_HDR = MY+22;      // línea horizontal bajo header
+        doc.setLineWidth(0.4); doc.setDrawColor(0);
+        doc.line(MX, Y_HDR, BX2, Y_HDR);                   // horizontal
+        // vertical: desde Y_HDR hasta antes de Casa Contratada
+        const Y_DIVEND = MY + BH - 22;
+        doc.line(XDIV, Y_HDR, XDIV, Y_DIVEND);
 
-        // Fila 7: Casa Contratada (Larga)
-        drawField('Casa Contratada:', poliza.casa_contratada || 'CENTRO DEL AUTOMOVILISTA', 5, yIni + filaH * 6.5, xV1 + 8);
+        // posiciones X — todo dentro del half izquierdo (MX=22 a XDIV=102, ancho=80mm)
+        const XE1 = MX+2;       // etiqueta col-1  (24mm)
+        const XV1 = MX+26;      // valor col-1     (48mm) — deja espacio a "Fianza Judicial:"
+        const XE2 = MX+46;     // label col-2  (68mm) — empieza después de valores col-1
+        const XV2 = MX+64;     // valor col-2  (86mm) — después de "Deduc. Min:" (~18mm label)
 
-        // Fila 8: Asistencia Vial
-        drawField('Asistencia Vial:', poliza.asistencia_vial || 'PREMIUM', 5, yIni + filaH * 7.5, xV1 + 8);
+        const Y0 = Y_HDR + 8;  // primera fila
+        const DY = 8;          // interlineado
 
-        // -- BLOQUE ASISTENCIA DERECHO --
-        const xAssistance = 97;
-        const yAssistance = 22;
-        doc.setFontSize(4.3);
-        doc.setFont('helvetica', 'normal');
-        const infoLines = [
-            "LA CASA DEL CONDUCTOR(CMA): Av. Simón Bolivar Num. 183, Ens. La Julia, Santo Domingo 10109, D. N.",
-            "N.Telefono:(809)381.2424 / Santiago, Telefono:(809)241.4848 Solicitud de Apertura y gestión de Reclamos",
-            "CENTRO ASISTENCIAL DEL AUTOMOLISTA(CAA): Av. 27 de Febrero num.452, casi Esq Ave. Nuñez de Caceres, Santo Domingo, D. N. / Telefono.(809)565.8222 / Santiago Telefono.(809)565.8222",
-            "EN CASO DE INCONVENIENTE CON SU VEHICULO (Grua, Recarga de Bateria, Gasolina, Gomas Pinchadas) COMUNICARSE CON SU ASISTENCIA VIAL: Teléfono (809)273.2021",
-            "EN CASO DE ROBO DE SU VEHICULO, Notifiquelo inmediatamente a la policia. MULTISEGUROS SU, S.A. Teléfonos:(809)378.1784 / (829)826-5848 Av. Bolivar No. 952, Ensanche. La Julia, Santo Domingo, D.N."
-        ];
-        let curY = yAssistance;
-        infoLines.forEach(text => {
-            const splitLines = doc.splitTextToSize(text, 46);
-            doc.text(splitLines, xAssistance, curY);
-            curY += (splitLines.length * 2.2) + 0.8;
+        // helper campo
+        const DF = (lbl, val, xe, xv, y, fs=8) => {
+            T(8,'bold'); doc.text(lbl, xe, y);
+            T(fs,'normal'); doc.text(String(val??'N/A'), xv, y);
+        };
+
+        // Fecha compacta dd/mm/aa para evitar desborde
+        const fmtC = (f) => {
+            if (!f) return 'N/A';
+            const d = new Date(f);
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
+        };
+
+        // F1: Póliza (7.5pt → ~20mm → termina en 68mm) | Del/al fechas (desde 68mm)
+        T(8,'bold'); doc.text('Póliza:', XE1, Y0);
+        T(7.5,'bold'); doc.text(poliza.numero_poliza||'N/A', XV1, Y0);
+        T(6.5,'bold');   doc.text('Del:', XE2, Y0);
+        T(6.5,'normal'); doc.text(fmtC(poliza.fecha_emision), XE2+7, Y0);
+        T(6.5,'bold');   doc.text('al:', XE2+20, Y0);
+        T(6.5,'normal'); doc.text(fmtC(poliza.fecha_vencimiento), XE2+25, Y0);
+
+        // F2: Año Vehículo | Deduc.Min (label 16mm → valor desde 86mm)
+        DF('Año Vehículo:', vehiculo?.anio||'N/A', XE1, XV1, Y0+DY);
+        T(6.5,'bold');   doc.text('Deduc. Min:', XE2, Y0+DY);
+        T(6.5,'normal'); doc.text(String(poliza.deduccion||'N/A'), XV2, Y0+DY);
+
+        // F3: Registro | Uso
+        DF('Registro:', vehiculo?.placa||'N/A', XE1, XV1, Y0+DY*2);
+        DF('Uso:', (vehiculo?.uso||'PRIVADO').toUpperCase(), XE2, XV2, Y0+DY*2);
+
+
+        // F4: Marca
+        DF('Marca:', vehiculo?.marca||'N/A', XE1, XV1, Y0+DY*3);
+
+        // F5: Chasis
+        DF('Chasis:', vehiculo?.chasis||'N/A', XE1, XV1, Y0+DY*4);
+
+        // F6: Tipo (fila completa)
+        DF('Tipo:', (vehiculo?.tipo_vehiculo||'AUTOMOVIL').toUpperCase(), XE1, XV1, Y0+DY*5);
+
+        // F7: Fianza Judicial (fila completa)
+        DF('Fianza Judicial:', fmtDOP(poliza.fianza_judicial||50000), XE1, XV1, Y0+DY*6);
+
+        // línea fina separadora antes de las filas full-width
+        doc.setLineWidth(0.2); doc.setDrawColor(140);
+        doc.line(MX+1, Y_DIVEND+1, BX2-1, Y_DIVEND+1);
+        doc.setDrawColor(0);
+
+        // F8: Casa Contratada (full-width)
+        DF('Casa Contratada:', poliza.casa_contratada||'CENTRO DEL AUTOMOVILISTA', XE1, XV1+3, Y0+DY*7+1);
+
+        // F9: Asistencia Vial (full-width)
+        DF('Asistencia Vial:', poliza.asistencia_vial||'PREMIUM', XE1, XV1+3, Y0+DY*8+1);
+
+        // ── BLOQUE ASISTENCIA DERECHO ────────────────────────────────────
+        const XBL  = XDIV + 3;
+        const BWR  = BX2 - XBL - 2;   // ≈ 83mm
+        let bY = Y_HDR + 5;
+        T(5, 'normal');
+        [
+            'LA CASA DEL CONDUCTOR(CMA): Av. Simón Bolivar Num. 183, Ens. La Julia, Santo Domingo 10109, D. N.',
+            'N.Telefono:(809)381.2424 / Santiago,Telefono:(809)241.4848 Solicitud de Apertura y gestión de Reclamos',
+            'CENTRO ASISTENCIAL DEL AUTOMOVILISTA(CAA): Av. 27 de Febrero num.452, casi Esq Ave. Nuñez de Caceres,Santo Domingo, D. N. /Telefono.(809)565.8222 / Santiago Telefono.(809)565.8222',
+            'EN CASO DE INCONVENIENTE CON SU VEHICULO (Grua,Recarga de Bateria,Gasolina,Gomas Pinchadas)COMUNICARSE CON SU ASISTENCIA VIAL: Teléfono (809)273.2021',
+            'EN CASO DE ROBO DE SU VEHICULO, Notifiquelo inmediatamente a la policia. MULTISEGUROS SU, S.A. Teléfonos:(809)378.1784 / (829)826-5848 Av. Bolivar No. 952, Ensanche. La Julia, Santo Domingo, D.N.'
+        ].forEach(txt => {
+            const lines = doc.splitTextToSize(txt, BWR);
+            doc.text(lines, XBL, bY);
+            bY += lines.length * 1.8 + 1.0;
         });
 
-        // -- CONDICIONES PARTICULARES --
-        const yCond = 86;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text('1. CONDICIONES PARTICULARES:', 5, yCond);
-        doc.setFont('helvetica', 'normal');
-        const textCond = "El cliente debe presentar al momento de un siniestro sus documentos vigentes, como: cédula de identidad, matrícula del vehículo a su nombre, o en su defecto acto de venta, y licencia de conducir al día. MultiSeguros SU se reserva el derecho de amparar pérdidas por la falta de alguno de estos documentos. Es aceptable la licencia de conducir expedida en el extranjero que se encuentre en vigencia. No otorgar seguros a extranjeros que no tengan todos sus documentos al día.";
-        doc.setFontSize(7.5);
-        doc.text(textCond, 5, yCond + 4, { maxWidth: W - 10, align: 'justify' });
+        // ── CONDICIONES PARTICULARES ─────────────────────────────────────
+        const YCP = MY + BH + 8;
+        doc.setLineWidth(0.3); doc.line(MX, YCP-2, BX2, YCP-2);
+        T(9,'bold');
+        doc.text('1. CONDICIONES PARTICULARES:', MX, YCP+3);
+        T(8.5,'normal');
+        const cLines = doc.splitTextToSize('El cliente debe presentar al momento de un siniestro sus documentos vigentes, como: cédula de identidad, matrícula del vehículo a su nombre, o en su defecto acto de venta, y licencia de conducir al día. MultiSeguros SU se reserva el derecho de amparar pérdidas por la falta de alguno de estos documentos. Es aceptable la licencia de conducir expedida en el extranjero que se encuentre en vigencia. No otorgar seguros a extranjeros que no tengan todos sus documentos al día.', BW - 30);
+        doc.text(cLines, MX, YCP+9);
+
+        // ── QR CODE (Online Verification) ────────────────────────────────
+        const qrUrl = `${POLIZA_DOCS.EMPRESA.base_url}/frontend/verificar-poliza.html?n=${poliza.numero_poliza}`;
+        const qrImg = await generarQRDataURL(qrUrl);
+        if (qrImg) {
+            const QR_SIZE = 25;
+            doc.addImage(qrImg, 'PNG', BX2 - QR_SIZE - 2, YCP + 2, QR_SIZE, QR_SIZE);
+            T(5.5, 'bold', 0, 51, 153);
+            doc.text('VERIFICACIÓN', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 5, { align: 'center' });
+            doc.text('EN LÍNEA', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 7, { align: 'center' });
+        }
 
         if (!opts.returnDoc) {
-            const safeNum = String(poliza.numero_poliza || 'PROVISIONAL').replace(/[^a-z0-9]/gi, '_');
-            doc.save(`Marbete_${safeNum}.pdf`);
+            doc.save(`Marbete_${String(poliza.numero_poliza||'PROVISIONAL').replace(/[^a-z0-9]/gi,'_')}.pdf`);
         }
         return doc;
-    } catch (err) {
-        console.error("Error en generarMarbetePDF:", err);
-        throw err;
+    } catch(err) {
+        console.error('[Marbete] Error:', err); throw err;
     }
 }
 
@@ -494,10 +552,159 @@ function generarFacturaPDF(poliza, cliente, pago, opts = {}) {
 }
 
 // ==========================================
+// 5. GENERADOR DINÁMICO (MODELADOR PDF-DOCS)
+// ==========================================
+/**
+ * Motor de PDF Dinámico (estilo JotForm PDF Editor)
+ * Recibe el objeto plantilla completo (con sus campos ya cargados) y el contexto de datos.
+ * Carga el archivo base (PDF/imagen), estampa cada campo en la posición guardada
+ * y descarga el documento resultante.
+ *
+ * @param {Object} plantilla  - Objeto de plantilla con { id, nombre, archivo_base, tipo_archivo, ancho_mm, alto_mm, campos[] }
+ * @param {Object} data       - Contexto de datos { cliente:{}, poliza:{}, vehiculo:{}, general:{} }
+ */
+async function generarDocumentoDinamicoPDF(plantilla, data) {
+    // Cargar pdf-lib dinámicamente si no está disponible
+    if (typeof PDFLib === 'undefined') {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('No se pudo cargar pdf-lib'));
+            document.head.appendChild(script);
+        });
+    }
+
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+    try {
+        const fileUrl = `/PLATAFORMA_INTEGRADA/backend/uploads/plantillas_pdf/${plantilla.archivo_base}`;
+        const fileRes = await fetch(fileUrl);
+        if (!fileRes.ok) throw new Error(`Archivo de plantilla no encontrado: ${plantilla.archivo_base}`);
+        const fileBuffer = await fileRes.arrayBuffer();
+
+        let pdfDoc;
+
+        if (plantilla.tipo_archivo === 'pdf') {
+            pdfDoc = await PDFDocument.load(fileBuffer);
+        } else {
+            // Es imagen (PNG / JPG)
+            const ptW = parseFloat(plantilla.ancho_mm) * 2.83465;
+            const ptH = parseFloat(plantilla.alto_mm) * 2.83465;
+            pdfDoc = await PDFDocument.create();
+            const page = pdfDoc.addPage([ptW, ptH]);
+            const image = plantilla.tipo_archivo === 'png'
+                ? await pdfDoc.embedPng(fileBuffer)
+                : await pdfDoc.embedJpg(fileBuffer);
+            page.drawImage(image, { x: 0, y: 0, width: ptW, height: ptH });
+        }
+
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+        const pageHeight = firstPage.getHeight();
+        const pageWidth  = firstPage.getWidth();
+
+        // Fuentes embebidas
+        const fontRegular  = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const fontBold     = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+        // ── HELPER: dataURI a Uint8Array ──────────────────────────────────
+        const dataURItoBytes = (uri) => {
+            const b64 = uri.split(',')[1];
+            const bin = atob(b64);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            return arr;
+        };
+
+        // ── LOGO ──────────────────────────────────────────────────────────
+        const asegKey = (plantilla.aseguradora_nombre || '').toUpperCase().trim();
+        const logoURI = (window.LOGOS && window.LOGOS[asegKey]) ||
+                        (asegKey === 'MULTISEGUROS' ? window.LOGO_MULTISEGUROS_B64 : null);
+        console.log('[PDF] Logo:', asegKey, logoURI ? 'OK len='+logoURI.length : 'NO');
+        if (logoURI) {
+            try {
+                const logoBytes = dataURItoBytes(logoURI);
+                const isJpg = logoURI.startsWith('data:image/jpeg') || logoURI.startsWith('data:image/jpg');
+                const logoImg = isJpg ? await pdfDoc.embedJpg(logoBytes) : await pdfDoc.embedPng(logoBytes);
+                const logoW = 100, logoH = 38;
+                firstPage.drawImage(logoImg, { x: 100, y: pageHeight - 58, width: logoW, height: logoH });
+                console.log('[PDF] Logo incrustado OK');
+            } catch(e) { console.warn('[PDF] Error logo:', e.message); }
+        }
+
+        // ── QR ────────────────────────────────────────────────────────────
+        const nroPol = (data.poliza && data.poliza.numero_poliza) || '';
+        if (nroPol) {
+            try {
+                const qrUrl = window.location.origin + '/PLATAFORMA_INTEGRADA/frontend/verificar-poliza.html?n=' + encodeURIComponent(nroPol);
+                const qrDataURI = await generarQRDataURL(qrUrl);
+                if (qrDataURI) {
+                    const qrBytes = dataURItoBytes(qrDataURI);
+                    const qrImg = await pdfDoc.embedPng(qrBytes);
+                    const QS = 65;
+                    firstPage.drawImage(qrImg, { x: pageWidth - QS - 12, y: 12, width: QS, height: QS });
+                    firstPage.drawText('Escanear para verificar', { x: pageWidth - QS - 10, y: 9, size: 5.5, font: fontBold, color: rgb(0, 0.2, 0.6) });
+                    console.log('[PDF] QR incrustado OK');
+                }
+            } catch(e) { console.warn('[PDF] Error QR:', e.message); }
+        }
+
+        // Resolver variables de la plantilla desde el contexto
+        const resolveVar = (path) => {
+            if (!path) return '';
+            const val = path.split('.').reduce((obj, key) => {
+                return (obj && obj[key] !== undefined) ? obj[key] : '';
+            }, data);
+            return String(val || '');
+        };
+
+        if (plantilla.campos && plantilla.campos.length > 0) {
+            plantilla.campos.forEach(c => {
+                const valor = resolveVar(c.variable);
+                const fontSize = parseFloat(c.font_size) || 9;
+                const posX    = parseFloat(c.pos_x);
+                // Invertir Y: pdf-lib tiene (0,0) en la esquina inferior izquierda
+                const posY    = pageHeight - parseFloat(c.pos_y) - fontSize;
+                const isBold  = c.negrita == 1 || c.negrita === true || c.negrita === '1' || c.font_weight === 'bold';
+
+                firstPage.drawText(valor, {
+                    x: posX,
+                    y: posY,
+                    size: fontSize,
+                    font: isBold ? fontBold : fontRegular,
+                    color: rgb(0, 0, 0)
+                });
+            });
+        }
+
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url  = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${plantilla.nombre || 'Documento'}_Generado.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log(`PDF dinámico generado: ${plantilla.nombre}`);
+
+    } catch (e) {
+        console.error('Error en generarDocumentoDinamicoPDF:', e);
+        // Lanzar error para que el caller pueda hacer fallback
+        throw e;
+    }
+}
+
+// ==========================================
 // EXPORTAR AL GLOBAL
 // ==========================================
 window.generarMarbetePDF = generarMarbetePDF;
 window.generarSolicitudPDF = generarSolicitudPDF;
 window.generarReciboPDF = generarReciboPDF;
 window.generarFacturaPDF = generarFacturaPDF;
+window.generarDocumentoDinamicoPDF = generarDocumentoDinamicoPDF;
 window.generarQRDataURL = generarQRDataURL;

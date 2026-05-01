@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes y Modelador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/modulos.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-light: #f4f6fb;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* === HEADER Y TABS (Estilo Cotizaciones) === */
+        .cot-header { 
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
+            padding: 20px 28px 0; /* padding inferior 0 para que las pestañas peguen */
+            margin-bottom: 20px;
+        }
+        .cot-header h1 { 
+            color: #fff; 
+            font-size: 22px; 
+            font-weight: 700; 
+            margin: 0 0 4px; 
+        }
+        .cot-header p { 
+            color: rgba(255,255,255,0.75); 
+            font-size: 13px; 
+            margin: 0 0 16px; 
+        }
+        .cot-tabs { 
+            display: flex; 
+            gap: 4px; 
+        }
+        .cot-tab { 
+            padding: 10px 22px; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 10px 10px 0 0; 
+            font-size: 14px; 
+            font-weight: 600; 
+            background: rgba(255,255,255,0.15); 
+            color: rgba(255,255,255,0.8); 
+            transition: all 0.2s ease;
+        }
+        .cot-tab:hover { background: rgba(255,255,255,0.25); color: #fff; }
+        .cot-tab.active { background: var(--bg-light); color: var(--primary); }
+        
+        .cot-panel { display: none; }
+        .cot-panel.active { display: block; }
+
+        .modelador-container { 
+            display: flex; 
+            gap: 25px; 
+            height: calc(100vh - 165px); 
+        }
+        
+        .sidebar { 
+            width: 320px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            overflow-y: auto; 
+            border: 1px solid var(--border);
+        }
+
+        .sidebar h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .workspace { 
+            flex: 1; 
+            background: #eef2f6; 
+            border-radius: 12px; 
+            overflow: auto; 
+            position: relative; 
+            padding: 30px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .pdf-canvas-container { 
+            position: relative; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+            background: white; 
+            border-radius: 4px;
+        }
+        
+        .pdf-canvas { display: block; border-radius: 4px; }
+        
+        .draggable-field {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.15);
+            outline: 1px dashed var(--primary);
+            color: var(--text-dark);
+            padding: 0;
+            cursor: grab;
+            user-select: none;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            font-weight: 600;
+            line-height: 1;
+        }
+        .draggable-field:hover { background: rgba(102, 126, 234, 0.25); }
+        .draggable-field:active { cursor: grabbing; }
+        .draggable-field.selected { 
+            outline: 2px solid var(--danger); 
+            background: rgba(239, 68, 68, 0.15); 
+            z-index: 10;
+        }
+        
+        .var-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        
+        .var-item { 
+            padding: 10px 12px; 
+            background: #f8fafc; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 500; 
+            color: #475569;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        .var-item::before {
+            content: '+';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-right: 10px;
+            color: #64748b;
+            font-weight: bold;
+        }
+        .var-item:hover { 
+            background: white; 
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+        }
+        .var-item:hover::before {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn { 
+            padding: 10px 16px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-1px); }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-control { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="cot-header">
+        <h1><i class="fa-solid fa-chart-pie"></i> Módulo de Reportes</h1>
+        <p>Generación de análisis, reportes corporativos y modelador de documentos</p>
+        <div class="cot-tabs">
+            <button class="cot-tab active" onclick="showTab('modelador')" id="tab-modelador"><i class="fa-solid fa-file-pdf"></i> Modelador PDF-DOCS</button>
+            <button class="cot-tab" onclick="showTab('futuros')" id="tab-futuros"><i class="fa-solid fa-chart-bar"></i> Reportes Generales</button>
+        </div>
+    </div>
+
+    <!-- PESTAÑA: MODELADOR -->
+    <div class="cot-panel active" id="panel-modelador">
+        <div style="padding: 0 20px;">
+            <div class="modelador-container">
+                <!-- Sidebar: Controles -->
+                <div class="sidebar">
+                    <h3>1. Subir Plantilla (PDF/PNG/JPG)</h3>
+                    <div class="form-group">
+                        <select id="aseguradoraPlantilla" class="form-control">
+                            <option value="">Asignar Aseguradora...</option>
+                            <option value="UNIVERSAL">UNIVERSAL</option>
+                            <option value="RESERVAS">RESERVAS</option>
+                            <option value="HUMANO">HUMANO</option>
+                            <option value="MAPFRE">MAPFRE</option>
+                            <option value="SURA">SURA</option>
+                            <option value="COLONIAL">COLONIAL</option>
+                            <option value="PATRIA">PATRIA</option>
+                            <option value="PEPIN">PEPÍN</option>
+                            <option value="APS">APS</option>
+                            <option value="MULTISEGUROS">MULTISEGUROS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="nombrePlantilla" class="form-control" placeholder="Nombre (Ej: Marbete Aseguradora X)">
+                    </div>
+                    <div class="form-group">
+                        <input type="file" id="filePlantilla" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="subirPlantilla()"><i class="fa-solid fa-upload"></i> Subir y Cargar</button>
+                    
+                    <button class="btn btn-success" style="width: 100%; margin-top: 10px; background: #8b5cf6;" onclick="window.open('../config_logos.php', '_blank')"><i class="fa-solid fa-image"></i> Gestionar Logos</button>
+                    
+                    <hr>
+
+                    <h3>2. Plantillas Existentes</h3>
+                    <select id="listaPlantillas" class="form-control" onchange="cargarPlantilla()">
+                        <option value="">Selecciona una plantilla...</option>
+                    </select>
+
+                    <hr>
+
+                    <h3>3. Variables Disponibles</h3>
+                    <p style="font-size: 11px; color: #666; margin-bottom: 10px;">Haz clic para añadir al documento, luego arrastra a la posición deseada.</p>
+                    <div class="var-list" id="variablesDisponibles">
+                        <!-- Clientes -->
+                        <div class="var-item" onclick="agregarCampo('cliente.nombre')">Nombre Completo</div>
+                        <div class="var-item" onclick="agregarCampo('cliente.cedula')">Cédula/RNC</div>
+                        <div class="var-item" onclick="agregarCampo('cliente.telefono')">Teléfono</div>
+                        <!-- Póliza -->
+                        <div class="var-item" onclick="agregarCampo('poliza.numero_poliza')">N° Póliza</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.fecha_emision')">Vigencia Desde</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.fecha_vencimiento')">Vigencia Hasta</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.prima_total')">Prima Total</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.fianza_judicial')">Fianza Judicial</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.casa_contratada')">Casa Contratada</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.asistencia_vial')">Asistencia Vial</div>
+                        <div class="var-item" onclick="agregarCampo('poliza.deduccion')">Deducible (Deduc. Min)</div>
+                        <!-- Vehículo -->
+                        <div class="var-item" onclick="agregarCampo('vehiculo.marca')">Marca Vehículo</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.modelo')">Modelo Vehículo</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.anio')">Año Vehículo</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.chasis')">Chasis</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.placa')">Placa</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.uso')">Uso</div>
+                        <div class="var-item" onclick="agregarCampo('vehiculo.tipo_vehiculo')">Tipo de Vehículo</div>
+                        <!-- General -->
+                        <div class="var-item" onclick="agregarCampo('general.hora_emision')">Hora de Emisión</div>
+                    </div>
+
+                    <hr>
+                    
+                    <div id="opcionesCampo" style="display: none; background: #fef2f2; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #fecaca;">
+                        <h4 style="margin-top:0; margin-bottom:10px; color:#991b1b; font-size: 13px;">Editar Campo</h4>
+                        Tamaño (px): <input type="number" id="campoSize" class="form-control" style="width:70px; display:inline-block; padding: 4px 8px;" value="10" onchange="actualizarCampoActivo()">
+                        <br>
+                        <label style="margin-top: 8px; display: inline-block; font-size: 13px; font-weight: 500;">
+                            <input type="checkbox" id="campoBold" onchange="actualizarCampoActivo()"> Negrita
+                        </label>
+                        <br>
+                        <button class="btn btn-success" style="background:#ef4444; color:white; margin-top:10px; padding: 6px 12px; width: 100%;" onclick="eliminarCampoActivo()"><i class="fa-solid fa-trash"></i> Eliminar Campo</button>
+                    </div>
+
+                    <button class="btn btn-success" style="width: 100%; height: 45px; font-size: 15px; margin-bottom: 20px;" onclick="guardarMapeo()"><i class="fa-solid fa-save"></i> Guardar Configuración</button>
+                </div>
+
+                <!-- Workspace: Visualizador -->
+                <div class="workspace" id="workspace">
+                    <div style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                        <div style="width: 100%; max-width: 900px; display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                            <button id="btnPreview" class="btn btn-outline" style="background: white; border-color: #667eea; color: #667eea;" onclick="togglePreview()">
+                                <i class="fa-solid fa-eye-slash"></i> Vista Previa (Inactiva)
+                            </button>
+                        </div>
+                        <div class="pdf-canvas-container" id="pdfContainer">
+                            <canvas id="pdfCanvas" class="pdf-canvas"></canvas>
+                            <!-- Los campos arrastrables se inyectarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA: REPORTES GENERALES -->
+    <div class="cot-panel" id="panel-futuros">
+        <div style="padding: 40px; text-align: center; color: #6b7280;">
+            <i class="fa-solid fa-chart-column" style="font-size: 48px; color: #cbd5e1; margin-bottom: 20px;"></i>
+            <h2>Reportes y Analíticas</h2>
+            <p>Este espacio está reservado para los futuros reportes gráficos y de datos generados por Pólizas, Clientes y Facturación.</p>
+        </div>
+    </div>
+
+    <!-- Librerías requeridas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        
+        // Cambio de pestañas
+        function showTab(name) {
+            document.querySelectorAll('.cot-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.cot-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+            document.getElementById('tab-' + name).classList.add('active');
+        }
+    </script>
+    <script src="../assets/logo_b64.js"></script>
+    <script src="../assets/logos_aseguradoras.js"></script>
+    <script src="../assets/modelador-pdf.js"></script>
+</body>
+</html>
