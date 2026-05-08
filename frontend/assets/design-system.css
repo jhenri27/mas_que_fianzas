@@ -1,0 +1,232 @@
+/* ============================================================
+   DESIGN SYSTEM — MAS QUE FIANZAS
+   Fuente única de verdad para tokens de diseño.
+   Versión: 1.0 | Mayo 2026
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── TOKENS GLOBALES ──────────────────────────────────────── */
+:root {
+
+  /* BRAND */
+  --mqf-primary:          #4f46e5;
+  --mqf-primary-dark:     #4338ca;
+  --mqf-primary-light:    #eef2ff;
+  --mqf-primary-hover:    rgba(79, 70, 229, 0.08);
+  --mqf-secondary:        #7c3aed;
+  --mqf-gradient:         linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --mqf-gradient-subtle:  linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+
+  /* SEMÁNTICOS */
+  --mqf-success:          #10b981;
+  --mqf-success-dark:     #059669;
+  --mqf-success-light:    #d1fae5;
+  --mqf-success-text:     #065f46;
+  --mqf-danger:           #ef4444;
+  --mqf-danger-dark:      #dc2626;
+  --mqf-danger-light:     #fee2e2;
+  --mqf-danger-text:      #991b1b;
+  --mqf-warning:          #f59e0b;
+  --mqf-warning-dark:     #d97706;
+  --mqf-warning-light:    #fef3c7;
+  --mqf-warning-text:     #92400e;
+  --mqf-info:             #3b82f6;
+  --mqf-info-dark:        #2563eb;
+  --mqf-info-light:       #dbeafe;
+  --mqf-info-text:        #1e40af;
+
+  /* NEUTRALES */
+  --mqf-bg:               #f4f6fb;
+  --mqf-surface:          #ffffff;
+  --mqf-surface-2:        #f8fafc;
+  --mqf-border:           #e5e7eb;
+  --mqf-border-strong:    #d1d5db;
+  --mqf-text:             #1f2937;
+  --mqf-text-secondary:   #374151;
+  --mqf-text-muted:       #6b7280;
+  --mqf-text-light:       #9ca3af;
+  --mqf-text-inverse:     #ffffff;
+
+  /* SOMBRAS */
+  --mqf-shadow-xs:        0 1px 2px rgba(0,0,0,.05);
+  --mqf-shadow-sm:        0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --mqf-shadow:           0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --mqf-shadow-md:        0 8px 15px rgba(0,0,0,.08), 0 3px 6px rgba(0,0,0,.05);
+  --mqf-shadow-lg:        0 15px 25px rgba(0,0,0,.10), 0 5px 10px rgba(0,0,0,.05);
+  --mqf-shadow-xl:        0 25px 50px rgba(0,0,0,.12), 0 10px 20px rgba(0,0,0,.07);
+  --mqf-shadow-primary:   0 8px 20px rgba(79,70,229,.25);
+
+  /* TIPOGRAFÍA */
+  --mqf-font:             'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mqf-font-mono:        'JetBrains Mono', 'Courier New', monospace;
+
+  /* ESCALA TIPOGRÁFICA */
+  --mqf-text-xs:          11px;
+  --mqf-text-sm:          13px;
+  --mqf-text-base:        14px;
+  --mqf-text-md:          16px;
+  --mqf-text-lg:          18px;
+  --mqf-text-xl:          22px;
+  --mqf-text-2xl:         28px;
+  --mqf-text-3xl:         36px;
+
+  /* ESPACIADO (escala 4px) */
+  --mqf-space-1:          4px;
+  --mqf-space-2:          8px;
+  --mqf-space-3:          12px;
+  --mqf-space-4:          16px;
+  --mqf-space-5:          20px;
+  --mqf-space-6:          24px;
+  --mqf-space-8:          32px;
+  --mqf-space-10:         40px;
+  --mqf-space-12:         48px;
+  --mqf-space-16:         64px;
+
+  /* RADIOS */
+  --mqf-radius-xs:        4px;
+  --mqf-radius-sm:        6px;
+  --mqf-radius:           10px;
+  --mqf-radius-lg:        14px;
+  --mqf-radius-xl:        20px;
+  --mqf-radius-2xl:       28px;
+  --mqf-radius-full:      9999px;
+
+  /* TRANSICIONES */
+  --mqf-transition-fast:  all 0.15s ease;
+  --mqf-transition:       all 0.2s ease;
+  --mqf-transition-slow:  all 0.35s ease;
+
+  /* Z-INDEX */
+  --mqf-z-dropdown:       100;
+  --mqf-z-sticky:         150;
+  --mqf-z-modal-bg:       200;
+  --mqf-z-modal:          210;
+  --mqf-z-toast:          300;
+  --mqf-z-tooltip:        400;
+
+  /* COMPATIBILIDAD con nombres anteriores (no romper módulos existentes) */
+  --primary-color:        var(--mqf-primary);
+  --primary-dark:         var(--mqf-primary-dark);
+  --secondary-color:      var(--mqf-secondary);
+  --success-color:        var(--mqf-success);
+  --danger-color:         var(--mqf-danger);
+  --warning-color:        var(--mqf-warning);
+  --light-gray:           var(--mqf-bg);
+  --dark-gray:            var(--mqf-text);
+  --border-color:         var(--mqf-border);
+  --text-color:           var(--mqf-text-secondary);
+  --shadow:               var(--mqf-shadow-sm);
+  --shadow-md:            var(--mqf-shadow);
+  --shadow-lg:            var(--mqf-shadow-lg);
+  --transition:           var(--mqf-transition);
+  --primary:              var(--mqf-primary);
+  --success:              var(--mqf-success);
+  --danger:               var(--mqf-danger);
+  --bg-light:             var(--mqf-bg);
+  --text-dark:            var(--mqf-text);
+  --text-muted:           var(--mqf-text-muted);
+  --border:               var(--mqf-border);
+}
+
+/* ── RESET BASE ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--mqf-font);
+  background: var(--mqf-bg);
+  color: var(--mqf-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── TIPOGRAFÍA BASE ──────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--mqf-font);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--mqf-text);
+}
+
+p { color: var(--mqf-text-secondary); line-height: 1.6; }
+a { color: var(--mqf-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+small { font-size: var(--mqf-text-xs); color: var(--mqf-text-muted); }
+strong { font-weight: 600; }
+
+/* ── SCROLLBAR ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--mqf-surface-2); }
+::-webkit-scrollbar-thumb { background: var(--mqf-border-strong); border-radius: var(--mqf-radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--mqf-text-light); }
+
+/* ── FOCUS ────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--mqf-primary);
+  outline-offset: 2px;
+  border-radius: var(--mqf-radius-xs);
+}
+
+/* ── UTILIDADES DE LAYOUT ─────────────────────────────────── */
+.mqf-flex        { display: flex; }
+.mqf-flex-col    { display: flex; flex-direction: column; }
+.mqf-grid        { display: grid; }
+.mqf-hidden      { display: none !important; }
+.mqf-center      { display: flex; align-items: center; justify-content: center; }
+.mqf-between     { display: flex; align-items: center; justify-content: space-between; }
+.mqf-gap-1       { gap: var(--mqf-space-1); }
+.mqf-gap-2       { gap: var(--mqf-space-2); }
+.mqf-gap-3       { gap: var(--mqf-space-3); }
+.mqf-gap-4       { gap: var(--mqf-space-4); }
+.mqf-gap-5       { gap: var(--mqf-space-5); }
+
+/* ── UTILIDADES DE TEXTO ──────────────────────────────────── */
+.mqf-text-xs     { font-size: var(--mqf-text-xs); }
+.mqf-text-sm     { font-size: var(--mqf-text-sm); }
+.mqf-text-base   { font-size: var(--mqf-text-base); }
+.mqf-text-lg     { font-size: var(--mqf-text-lg); }
+.mqf-text-xl     { font-size: var(--mqf-text-xl); }
+.mqf-text-muted  { color: var(--mqf-text-muted); }
+.mqf-text-center { text-align: center; }
+.mqf-font-600    { font-weight: 600; }
+.mqf-font-700    { font-weight: 700; }
+
+/* ── ANIMACIONES BASE ─────────────────────────────────────── */
+@keyframes mqf-fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes mqf-fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes mqf-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes mqf-slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes mqf-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ── PRINT ────────────────────────────────────────────────── */
+@media print {
+  .sidebar, .top-header, .mqf-no-print,
+  .btn, .mqf-btn, .notification-btn { display: none !important; }
+  body { background: white; }
+  .content, .mqf-content { padding: 0 !important; }
+}

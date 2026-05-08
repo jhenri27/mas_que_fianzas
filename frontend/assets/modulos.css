@@ -1,6 +1,9 @@
 /* ========================================
-   ESTILOS ADICIONALES PARA MÓDULOS
+   ESTILOS ADICIONALES PARA MÓDULOS — v2.0
+   Tokens centralizados en design-system.css
    ======================================== */
+@import url('design-system.css');
+@import url('components.css');
 
 /* Cotizador */
 .cotizador-container {
