@@ -5,7 +5,8 @@
     <title>Reportes y Modelador</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">`n  <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/modulos.css">
     <style>
@@ -30,8 +31,8 @@
 
         /* === HEADER Y TABS (Estilo Cotizaciones) === */
         .cot-header { 
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
-            padding: 20px 28px 0; /* padding inferior 0 para que las pestañas peguen */
+            background: var(--mqf-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)); 
+            padding: 20px 28px 0;
             margin-bottom: 20px;
         }
         .cot-header h1 { 
@@ -61,7 +62,7 @@
             transition: all 0.2s ease;
         }
         .cot-tab:hover { background: rgba(255,255,255,0.25); color: #fff; }
-        .cot-tab.active { background: var(--bg-light); color: var(--primary); }
+        .cot-tab.active { background: var(--mqf-bg, #f4f6fb); color: var(--mqf-primary, #4f46e5); }
         
         .cot-panel { display: none; }
         .cot-panel.active { display: block; }
@@ -352,6 +353,14 @@
     <script src="../assets/logos_aseguradoras.js"></script>
     <script src="../assets/modelador-pdf.js"></script>
 
+<script>
+  /* ── UX-SKINS boot: aplicar skin desde localStorage al cargar ── */
+  (function(){
+    var s = localStorage.getItem('mqf-skin') || 'indigo';
+    document.body.setAttribute('data-skin', s);
+    document.documentElement.setAttribute('data-skin', s);
+  })();
+</script>
 <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 </body>
 </html>

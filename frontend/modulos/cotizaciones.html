@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cotizaciones - MAS QUE FIANZAS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/design-system.css">`n  <link rel="stylesheet" href="../assets/skin-engine.css">
+  <link rel="stylesheet" href="../assets/design-system.css">
+  <link rel="stylesheet" href="../assets/skin-engine.css">
   <link rel="stylesheet" href="../assets/components.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF + AutoTable -->
@@ -26,13 +27,13 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
-    .cot-header { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 20px 28px 10px; }
+    .cot-header { background: var(--mqf-gradient, linear-gradient(135deg,#4f46e5,#7c3aed)); padding: 20px 28px 10px; }
     .cot-header h1 { color: #fff; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
     .cot-header p { color: rgba(255,255,255,0.75); font-size: 13px; margin: 0 0 16px; }
     .cot-tabs { display: flex; gap: 4px; }
     .cot-tab { padding: 10px 22px; border: none; cursor: pointer; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
     .cot-tab:hover { background: rgba(255,255,255,0.25); color: #fff; }
-    .cot-tab.active { background: #fff; color: #4f46e5; }
+    .cot-tab.active { background: #fff; color: var(--mqf-primary, #4f46e5); }
     .cot-panel { display: none; padding: 24px; }
     .cot-panel.active { display: block; }
     .section-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
@@ -1055,5 +1056,19 @@
 
     ReactDOM.createRoot(document.getElementById('root-seguros')).render(<App />);
   </script>
+<script>
+  /* ── UX-SKINS: aplicar skin al cargar + escuchar mensajes del dashboard ── */
+  (function(){
+    var s = localStorage.getItem('mqf-skin') || 'indigo';
+    document.body.setAttribute('data-skin', s);
+    document.documentElement.setAttribute('data-skin', s);
+  })();
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.type === 'mqf-skin-set'){
+      document.body.setAttribute('data-skin', e.data.skin);
+      document.documentElement.setAttribute('data-skin', e.data.skin);
+    }
+  });
+</script>
 </body>
 </html>
