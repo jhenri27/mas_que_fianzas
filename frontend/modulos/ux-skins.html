@@ -376,35 +376,61 @@ function seleccionarFuenteUI(font) {
   if (prev) prev.style.fontFamily = font;
 }
 
-// ── GUARDAR ───────────────────────────────────────────────────────────────────
-async function aplicarEmpresa() {
-  MQF.btnLoading('btn-guardar-empresa', true, 'Aplicando...');
+// ── GUARDAR (localStorage primero — API en segundo plano silenciosa) ──────────
+async function apiPost(endpoint, datos) {
+  const token = localStorage.getItem('token_sesion') || '';
   try {
-    const res = await api.solicitud('/skins.php/guardar_empresa', 'POST', { skin: skinActual });
-    if (res.exito) {
-      MQF.toast(res.mensaje, 'success');
-      localStorage.setItem('mqf-skin', skinActual);
-      if (skinActual === 'custom') await guardarCustomTokens();
-      notificarPadre(skinActual);
-    } else {
-      MQF.toast(res.mensaje, 'error');
-    }
-  } catch { MQF.toast('Error de conexión', 'error'); }
-  finally  { MQF.btnLoading('btn-guardar-empresa', false); }
+    const r = await fetch('/PLATAFORMA_INTEGRADA/backend/api' + endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+      },
+      body: JSON.stringify(datos)
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function aplicarEmpresa() {
+  // 1. Aplicar y guardar localmente de inmediato
+  localStorage.setItem('mqf-skin', skinActual);
+  notificarPadre(skinActual);
+  aplicarSkinLocalmente(skinActual);
+
+  const btn = document.getElementById('btn-guardar-empresa');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  // 2. Intentar persistir en BD (silencioso si falla)
+  const res = await apiPost('/skins.php/guardar_empresa', { skin: skinActual });
+  if (skinActual === 'custom') await guardarCustomTokens();
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-building"></i> Aplicar a toda la empresa'; }
+
+  if (res && res.exito) {
+    MQF.toast('✅ Tema "' + (SKIN_LABELS[skinActual]||skinActual) + '" aplicado a toda la empresa.', 'success');
+  } else {
+    // Guardado local aunque la BD no respondió
+    MQF.toast('✅ Tema aplicado localmente. (La BD no está disponible en este momento)', 'info');
+  }
 }
 
 async function aplicarSoloParaMi() {
-  try {
-    const res = await api.solicitud('/skins.php/guardar_usuario', 'POST', { skin: skinActual });
-    if (res.exito) {
-      MQF.toast(res.mensaje, 'success');
-      localStorage.setItem('mqf-skin', skinActual);
-      if (skinActual === 'custom') await guardarCustomTokens();
-      notificarPadre(skinActual);
-    } else {
-      MQF.toast(res.mensaje, 'error');
-    }
-  } catch { MQF.toast('Error de conexión', 'error'); }
+  // 1. Local inmediato
+  localStorage.setItem('mqf-skin', skinActual);
+  notificarPadre(skinActual);
+  aplicarSkinLocalmente(skinActual);
+
+  // 2. BD en segundo plano
+  const res = await apiPost('/skins.php/guardar_usuario', { skin: skinActual });
+  if (skinActual === 'custom') await guardarCustomTokens();
+
+  if (res && res.exito) {
+    MQF.toast('✅ Preferencia personal guardada: ' + (SKIN_LABELS[skinActual]||skinActual), 'success');
+  } else {
+    MQF.toast('✅ Tema aplicado. Se guardó solo en este dispositivo.', 'info');
+  }
 }
 
 async function guardarCustomTokens() {
@@ -412,18 +438,19 @@ async function guardarCustomTokens() {
   COLOR_FIELDS.forEach(f => { tokens[f.key] = document.getElementById('picker-' + f.key)?.value || '#4f46e5'; });
   tokens.brand_nombre_empresa = document.getElementById('brand-nombre')?.value || '';
   tokens.brand_tipografia     = tipoFuente;
-  await api.solicitud('/skins.php/guardar_custom', 'POST', tokens);
+  localStorage.setItem('mqf-custom-tokens', JSON.stringify(tokens));
+  await apiPost('/skins.php/guardar_custom', tokens); // silencioso
 }
 
 async function restablecer() {
-  const ok = await MQF.confirm('¿Restablecer al tema Indigo Corp (default)?', { confirmText: 'Restablecer', type: 'primary' });
-  if (!ok) return;
-  await api.solicitud('/skins.php/guardar_usuario', 'POST', { skin: 'sistema' });
+  if (!confirm('¿Restablecer al tema Indigo Corp (default)?')) return;
   localStorage.setItem('mqf-skin', 'indigo');
   seleccionarSkin('indigo');
   notificarPadre('indigo');
-  MQF.toast('Skin restablecido al default del sistema.', 'info');
+  await apiPost('/skins.php/guardar_usuario', { skin: 'sistema' }); // silencioso
+  MQF.toast('Tema restablecido al default.', 'info');
 }
+
 
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function exportarBrand() {
