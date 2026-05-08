@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧪 Lab — MQF Design System v1.0</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="assets/design-system.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <style>
+    body { padding: 32px; background: var(--mqf-bg); font-family: var(--mqf-font); }
+    .lab-section { background: var(--mqf-surface); border-radius: var(--mqf-radius); border: 1px solid var(--mqf-border); padding: 28px; margin-bottom: 28px; box-shadow: var(--mqf-shadow-sm); }
+    .lab-section h2 { font-size: var(--mqf-text-xl); color: var(--mqf-text); margin-bottom: 4px; border-left: 4px solid var(--mqf-primary); padding-left: 12px; }
+    .lab-section .lab-desc { font-size: var(--mqf-text-sm); color: var(--mqf-text-muted); margin-bottom: 20px; padding-left: 16px; }
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+    .swatch { border-radius: var(--mqf-radius-sm); overflow: hidden; border: 1px solid var(--mqf-border); font-size: var(--mqf-text-xs); }
+    .swatch-color { height: 56px; }
+    .swatch-label { padding: 6px 8px; background: var(--mqf-surface); font-weight: 600; color: var(--mqf-text); }
+    .swatch-var  { padding: 0 8px 6px; color: var(--mqf-text-muted); font-family: monospace; font-size: 10px; }
+    .row-demo { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .before { background: #f8f8f8; border: 2px dashed #ccc; border-radius: 8px; padding: 16px; }
+    .after  { background: var(--mqf-primary-light); border: 2px solid var(--mqf-primary); border-radius: 8px; padding: 16px; }
+    .label-before { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; margin-bottom: 8px; }
+    .label-after  { font-size: 11px; font-weight: 700; color: var(--mqf-primary); text-transform: uppercase; margin-bottom: 8px; }
+    .token-table { width: 100%; border-collapse: collapse; font-size: var(--mqf-text-sm); }
+    .token-table th { background: var(--mqf-primary-light); color: var(--mqf-primary-dark); padding: 10px 14px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--mqf-border); }
+    .token-table td { padding: 9px 14px; border-bottom: 1px solid var(--mqf-border); color: var(--mqf-text-secondary); font-family: monospace; }
+    .token-table tr:hover td { background: var(--mqf-surface-2); }
+    .check { color: var(--mqf-success); font-weight: 700; }
+    .cross { color: var(--mqf-danger); font-weight: 700; }
+    h1.lab-title { font-size: 32px; color: var(--mqf-text); margin-bottom: 4px; }
+    .lab-subtitle { color: var(--mqf-text-muted); margin-bottom: 32px; font-size: var(--mqf-text-md); }
+  </style>
+</head>
+<body>
+
+<h1 class="lab-title">🧪 MQF Design System — Laboratorio v1.0</h1>
+<p class="lab-subtitle">Prueba visual interactiva de todos los cambios de estandarización UI/UX aplicados. Abre en <code>http://localhost/PLATAFORMA_INTEGRADA/frontend/lab.html</code></p>
+
+<!-- ═══ 1. TOKENS CARGADOS ═══ -->
+<div class="lab-section">
+  <h2>1. ✅ Tokens CSS — Cargados Correctamente</h2>
+  <p class="lab-desc">Si ves los colores abajo, <code>design-system.css</code> está cargado y las variables <code>--mqf-*</code> funcionan.</p>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-primary)"></div><div class="swatch-label">Primary</div><div class="swatch-var">--mqf-primary</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-primary-dark)"></div><div class="swatch-label">Primary Dark</div><div class="swatch-var">--mqf-primary-dark</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-primary-light);border:1px solid #e0e0e0;"></div><div class="swatch-label">Primary Light</div><div class="swatch-var">--mqf-primary-light</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-secondary)"></div><div class="swatch-label">Secondary</div><div class="swatch-var">--mqf-secondary</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-success)"></div><div class="swatch-label">Success</div><div class="swatch-var">--mqf-success</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-danger)"></div><div class="swatch-label">Danger</div><div class="swatch-var">--mqf-danger</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-warning)"></div><div class="swatch-label">Warning</div><div class="swatch-var">--mqf-warning</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-info)"></div><div class="swatch-label">Info</div><div class="swatch-var">--mqf-info</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-bg);border:1px solid #e0e0e0"></div><div class="swatch-label">Background</div><div class="swatch-var">--mqf-bg</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-surface);border:1px solid #e0e0e0"></div><div class="swatch-label">Surface</div><div class="swatch-var">--mqf-surface</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-gradient)"></div><div class="swatch-label">Gradient</div><div class="swatch-var">--mqf-gradient</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:var(--mqf-text)"></div><div class="swatch-label">Text</div><div class="swatch-var">--mqf-text</div></div>
+  </div>
+  <div style="margin-top:16px;padding:14px 16px;background:var(--mqf-success-light);border-left:4px solid var(--mqf-success);border-radius:var(--mqf-radius-sm);">
+    <strong style="color:var(--mqf-success-text);">✅ Si ves esta alerta verde — los tokens están funcionando correctamente.</strong>
+  </div>
+</div>
+
+<!-- ═══ 2. ANTES vs DESPUÉS ═══ -->
+<div class="lab-section">
+  <h2>2. 🔄 Antes vs Después — Colores</h2>
+  <p class="lab-desc">Comparación del color anterior (hardcoded) vs el nuevo token unificado.</p>
+  <div class="before-after">
+    <div class="before">
+      <div class="label-before">❌ ANTES (hardcoded)</div>
+      <div style="background:#667eea;color:white;padding:8px 16px;border-radius:6px;font-weight:600;display:inline-block;margin-bottom:8px;">#667eea — Primary viejo</div><br>
+      <div style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block;">activo</div>
+      <div style="background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block;margin-left:4px;">inactivo</div>
+      <p style="margin:10px 0 0;font-size:12px;color:#666;">Cada módulo tenía su propio azul: #667eea, #4f46e5, #6366f1...</p>
+    </div>
+    <div class="after">
+      <div class="label-after">✅ DESPUÉS (token unificado)</div>
+      <div style="background:var(--mqf-primary);color:white;padding:8px 16px;border-radius:var(--mqf-radius-sm);font-weight:600;display:inline-block;margin-bottom:8px;">var(--mqf-primary) — Un solo token</div><br>
+      <span class="mqf-badge mqf-badge--success">activo</span>
+      <span class="mqf-badge mqf-badge--danger" style="margin-left:4px;">inactivo</span>
+      <span class="mqf-badge mqf-badge--warning" style="margin-left:4px;">pendiente</span>
+      <p style="margin:10px 0 0;font-size:12px;color:var(--mqf-text-muted);">Todos los módulos usan el mismo <code>var(--mqf-primary)</code></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 3. BADGES ═══ -->
+<div class="lab-section">
+  <h2>3. 🏷️ Badges Semánticos — .mqf-badge</h2>
+  <p class="lab-desc">Componente estandarizado. Úsalos con <code>&lt;span class="mqf-badge mqf-badge--success"&gt;ACTIVO&lt;/span&gt;</code></p>
+  <div class="row-demo">
+    <span class="mqf-badge mqf-badge--success">ACTIVO</span>
+    <span class="mqf-badge mqf-badge--danger">CANCELADO</span>
+    <span class="mqf-badge mqf-badge--warning">PENDIENTE</span>
+    <span class="mqf-badge mqf-badge--info">EMITIDO</span>
+    <span class="mqf-badge mqf-badge--primary">VIGENTE</span>
+    <span class="mqf-badge mqf-badge--neutral">BORRADOR</span>
+  </div>
+  <div class="mqf-semaforo mqf-semaforo--verde" style="margin-right:16px;display:inline-flex;">45 días</div>
+  <div class="mqf-semaforo mqf-semaforo--amarillo" style="margin-right:16px;display:inline-flex;">18 días</div>
+  <div class="mqf-semaforo mqf-semaforo--rojo" style="display:inline-flex;">5 días</div>
+</div>
+
+<!-- ═══ 4. BOTONES ═══ -->
+<div class="lab-section">
+  <h2>4. 🔘 Botones — .mqf-btn</h2>
+  <p class="lab-desc">Reemplaza los viejos <code>.btn .btn-primary</code> con <code>.mqf-btn .mqf-btn--primary</code></p>
+  <div class="row-demo">
+    <button class="mqf-btn mqf-btn--primary"><i class="fa-solid fa-plus"></i> Primary</button>
+    <button class="mqf-btn mqf-btn--secondary">Secondary</button>
+    <button class="mqf-btn mqf-btn--danger"><i class="fa-solid fa-trash"></i> Danger</button>
+    <button class="mqf-btn mqf-btn--success"><i class="fa-solid fa-check"></i> Success</button>
+    <button class="mqf-btn mqf-btn--ghost">Ghost</button>
+    <button class="mqf-btn mqf-btn--outline-primary">Outline</button>
+  </div>
+  <div class="row-demo">
+    <button class="mqf-btn mqf-btn--primary mqf-btn--lg">Large</button>
+    <button class="mqf-btn mqf-btn--primary">Normal</button>
+    <button class="mqf-btn mqf-btn--primary mqf-btn--sm">Small</button>
+    <button class="mqf-btn mqf-btn--primary mqf-btn--icon"><i class="fa-solid fa-pen"></i></button>
+  </div>
+</div>
+
+<!-- ═══ 5. HEADER DE MÓDULO ═══ -->
+<div class="lab-section">
+  <h2>5. 📋 Header de Módulo — .mqf-module-header</h2>
+  <p class="lab-desc">Este es el nuevo header estándar. Los módulos actuales tienen headers propios que aún NO usan esta clase — eso explica por qué no ves diferencia visual aún.</p>
+  <div class="mqf-module-header" style="border-radius:var(--mqf-radius);margin:0;">
+    <h1 class="mqf-module-header__title"><i class="fa-solid fa-users"></i> Gestión de Clientes</h1>
+    <p class="mqf-module-header__subtitle">Administra los clientes registrados en la plataforma</p>
+    <div class="mqf-module-tabs">
+      <button class="mqf-module-tab active">📋 Directorio</button>
+      <button class="mqf-module-tab">➕ Nuevo Cliente</button>
+      <button class="mqf-module-tab">📊 Estadísticas</button>
+    </div>
+  </div>
+  <p style="margin-top:12px;font-size:var(--mqf-text-sm);color:var(--mqf-text-muted);"><strong>⚠️ Fase 4 pendiente:</strong> Reemplazar los headers inline de cada módulo con esta clase.</p>
+</div>
+
+<!-- ═══ 6. TABLA ═══ -->
+<div class="lab-section">
+  <h2>6. 📊 Tabla Estándar — .mqf-table</h2>
+  <p class="lab-desc">Verifica que el header de tabla usa el azul correcto <code>var(--mqf-primary-light)</code> y no el gris plano anterior.</p>
+  <div class="mqf-table-wrapper">
+    <table class="mqf-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Nombre / Razón Social</th><th>RNC / Cédula</th><th>Tipo</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>7</td><td><strong>José Rodríguez</strong><br><small>jose@email.com</small></td><td>001-4586975-2</td><td>Física</td><td><span class="mqf-badge mqf-badge--success">ACTIVO</span></td><td><button class="mqf-btn mqf-btn--primary mqf-btn--sm mqf-btn--icon"><i class="fa-solid fa-pen"></i></button></td></tr>
+        <tr><td>6</td><td><strong>Loyda Tapia</strong></td><td>001-2635847-6</td><td>Física</td><td><span class="mqf-badge mqf-badge--success">ACTIVO</span></td><td><button class="mqf-btn mqf-btn--primary mqf-btn--sm mqf-btn--icon"><i class="fa-solid fa-pen"></i></button></td></tr>
+        <tr><td>3</td><td><strong>Empresa ABC S.R.L.</strong></td><td>130-12345-6</td><td>Jurídica</td><td><span class="mqf-badge mqf-badge--warning">PENDIENTE</span></td><td><button class="mqf-btn mqf-btn--primary mqf-btn--sm mqf-btn--icon"><i class="fa-solid fa-pen"></i></button></td></tr>
+        <tr><td>1</td><td><strong>Cliente Inactivo</strong></td><td>001-1111111-1</td><td>Física</td><td><span class="mqf-badge mqf-badge--danger">INACTIVO</span></td><td><button class="mqf-btn mqf-btn--danger mqf-btn--sm mqf-btn--icon"><i class="fa-solid fa-trash"></i></button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ 7. KPI CARDS ═══ -->
+<div class="lab-section">
+  <h2>7. 📈 KPI Cards — .mqf-kpi-card</h2>
+  <p class="lab-desc">Componente nuevo — no existía antes de la estandarización.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+    <div class="mqf-kpi-card"><div class="mqf-kpi-icon">📋</div><div><div class="mqf-kpi-label">Cotizaciones</div><div class="mqf-kpi-value">47</div><div class="mqf-kpi-delta mqf-kpi-delta--up">▲ 12% vs mes anterior</div></div></div>
+    <div class="mqf-kpi-card mqf-kpi-card--success"><div class="mqf-kpi-icon">🛡️</div><div><div class="mqf-kpi-label">Pólizas Activas</div><div class="mqf-kpi-value">128</div><div class="mqf-kpi-delta mqf-kpi-delta--up">▲ 5 nuevas</div></div></div>
+    <div class="mqf-kpi-card mqf-kpi-card--warning"><div class="mqf-kpi-icon">⏰</div><div><div class="mqf-kpi-label">Por Vencer (7d)</div><div class="mqf-kpi-value">8</div><div class="mqf-kpi-delta mqf-kpi-delta--down">▼ requieren acción</div></div></div>
+    <div class="mqf-kpi-card mqf-kpi-card--danger"><div class="mqf-kpi-icon">💰</div><div><div class="mqf-kpi-label">Cobros Pendientes</div><div class="mqf-kpi-value">RD$45K</div><div class="mqf-kpi-delta mqf-kpi-delta--down">▼ 3 en mora</div></div></div>
+  </div>
+</div>
+
+<!-- ═══ 8. MODAL + TOAST ═══ -->
+<div class="lab-section">
+  <h2>8. 🪟 Modal y Toast — MQF.modal / MQF.toast</h2>
+  <p class="lab-desc">Reemplaza los <code>alert()</code> y <code>confirm()</code> nativos del navegador.</p>
+  <div class="row-demo">
+    <button class="mqf-btn mqf-btn--primary" onclick="MQF.toast('✅ Guardado exitosamente', 'success')"><i class="fa-solid fa-check"></i> Toast Éxito</button>
+    <button class="mqf-btn mqf-btn--danger"  onclick="MQF.toast('❌ Error al procesar la solicitud', 'error')"><i class="fa-solid fa-xmark"></i> Toast Error</button>
+    <button class="mqf-btn mqf-btn--secondary" onclick="MQF.toast('⚠️ Advertencia: campo requerido', 'warning')">Toast Warning</button>
+    <button class="mqf-btn mqf-btn--ghost" onclick="MQF.toast('ℹ️ Información importante', 'info')">Toast Info</button>
+    <button class="mqf-btn mqf-btn--outline-primary" onclick="MQF.modal.open('lab-modal')"><i class="fa-solid fa-window-maximize"></i> Abrir Modal</button>
+    <button class="mqf-btn mqf-btn--secondary" onclick="testConfirm()"><i class="fa-solid fa-question"></i> MQF.confirm()</button>
+  </div>
+</div>
+
+<!-- ═══ 9. TIPOGRAFÍA ═══ -->
+<div class="lab-section">
+  <h2>9. ✍️ Tipografía — Inter (Google Fonts)</h2>
+  <p class="lab-desc">La fuente unificada <code>var(--mqf-font)</code> = Inter. Antes: Segoe UI en dashboard, Inter en algunos módulos, sin fuente en otros.</p>
+  <div style="font-family:var(--mqf-font);">
+    <div style="font-size:var(--mqf-text-3xl);font-weight:800;color:var(--mqf-text);">Heading XL — 36px 800</div>
+    <div style="font-size:var(--mqf-text-2xl);font-weight:700;color:var(--mqf-text);">Heading 2XL — 28px 700</div>
+    <div style="font-size:var(--mqf-text-xl);font-weight:700;color:var(--mqf-text);">Heading XL — 22px 700</div>
+    <div style="font-size:var(--mqf-text-lg);font-weight:600;color:var(--mqf-text-secondary);">Subtítulo — 18px 600</div>
+    <div style="font-size:var(--mqf-text-base);color:var(--mqf-text-secondary);">Texto base — 14px 400 (cuerpo de tablas, formularios)</div>
+    <div style="font-size:var(--mqf-text-sm);color:var(--mqf-text-muted);">Texto pequeño — 13px (notas, fechas)</div>
+    <div style="font-size:var(--mqf-text-xs);color:var(--mqf-text-light);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">LABEL XS — 11px 700 UPPERCASE (cabeceras de tabla)</div>
+  </div>
+</div>
+
+<!-- ═══ 10. MÓDULOS APLICADOS ═══ -->
+<div class="lab-section">
+  <h2>10. ✔️ Estado de Migración por Módulo</h2>
+  <p class="lab-desc">Qué cambió y qué aún está pendiente (Fase 4).</p>
+  <table class="token-table">
+    <thead><tr><th>Módulo</th><th>DS Importado</th><th>Tokens Tabla</th><th>Tokens Badges</th><th>MQF.toast()</th><th>Header .mqf-module-header</th></tr></thead>
+    <tbody>
+      <tr><td><strong>dashboard.css</strong></td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td>— (no aplica)</td></tr>
+      <tr><td><strong>cotizaciones.html</strong></td><td class="check">✅</td><td>—</td><td>—</td><td>—</td><td class="cross">⏳ Fase 4</td></tr>
+      <tr><td><strong>clientes.html</strong></td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td>—</td><td class="cross">⏳ Fase 4</td></tr>
+      <tr><td><strong>usuarios.html</strong></td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="cross">⏳ Fase 4</td></tr>
+      <tr><td><strong>polizas.html</strong></td><td class="check">✅</td><td class="check">✅</td><td class="check">✅</td><td class="check">✅ (shim)</td><td class="cross">⏳ Fase 4</td></tr>
+      <tr><td><strong>reportes.html</strong></td><td class="check">✅</td><td>—</td><td>—</td><td>—</td><td class="cross">⏳ Fase 4</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:16px;padding:14px 16px;background:var(--mqf-warning-light);border-left:4px solid var(--mqf-warning);border-radius:var(--mqf-radius-sm);">
+    <strong style="color:var(--mqf-warning-text);">⚠️ Por qué no ves diferencia visual en los headers:</strong>
+    <p style="margin:6px 0 0;color:var(--mqf-warning-text);font-size:var(--mqf-text-sm);">
+      Los headers de los módulos (ej: el header azul de Cotizaciones) usan clases propias <code>.cot-header</code> con colores hardcoded. La Fase 4 reemplazará esas clases por <code>.mqf-module-header</code> — ahí verás el cambio de color inmediato.
+    </p>
+  </div>
+</div>
+
+<!-- ═══ MODAL DEMO ═══ -->
+<div class="mqf-modal-backdrop" id="lab-modal">
+  <div class="mqf-modal">
+    <div class="mqf-modal-header">
+      <h3 class="mqf-modal-title"><i class="fa-solid fa-flask"></i> Modal Estándar MQF</h3>
+      <button class="mqf-modal-close" data-mqf-close="lab-modal">✕</button>
+    </div>
+    <div class="mqf-modal-body">
+      <p style="color:var(--mqf-text-secondary);">Este es el modal estándar que reemplaza los <code>alert()</code> nativos del navegador. Tiene:</p>
+      <ul style="margin:12px 0 0 20px;color:var(--mqf-text-secondary);line-height:2;">
+        <li>Header con gradiente <code>--mqf-gradient</code></li>
+        <li>Backdrop con <code>blur(3px)</code></li>
+        <li>Cierre con ESC y click fuera</li>
+        <li>Animación <code>mqf-fadeInScale</code></li>
+      </ul>
+      <div class="mqf-alert mqf-alert--success" style="margin-top:16px;">
+        <i class="fa-solid fa-circle-check"></i> Los tokens funcionan correctamente dentro del modal.
+      </div>
+    </div>
+    <div class="mqf-modal-footer">
+      <button class="mqf-btn mqf-btn--secondary" data-mqf-close="lab-modal">Cerrar</button>
+      <button class="mqf-btn mqf-btn--primary" onclick="MQF.toast('Acción confirmada', 'success'); MQF.modal.close('lab-modal')"><i class="fa-solid fa-check"></i> Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/components.js"></script>
+<script>
+async function testConfirm() {
+  const ok = await MQF.confirm(
+    '¿Eliminar el cliente <strong>José Rodríguez</strong>?<br><small>Esta acción no se puede deshacer.</small>',
+    { title: 'Confirmar Eliminación', confirmText: 'Eliminar', cancelText: 'Cancelar', type: 'danger' }
+  );
+  MQF.toast(ok ? '🗑️ Eliminado (demo)' : '↩️ Cancelado', ok ? 'success' : 'info');
+}
+</script>
+</body>
+</html>

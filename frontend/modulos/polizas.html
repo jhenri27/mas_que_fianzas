@@ -192,37 +192,40 @@
 </head>
 <body class="dashboard-body">
 <main class="main-content">
-<div class="content-area">
+<div class="content-area" style="padding:0!important;">
 
-    <!-- Page Header -->
-    <div class="page-header" style="margin-bottom:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px; font-size:22px; font-weight:800; color:#1e293b;">
-                <i class="fa-solid fa-shield-halved" style="color:#4f46e5;"></i> Gestión de Pólizas
+    <!-- ── Header Estándar MQF con Tabs integrados ── -->
+    <div class="mqf-module-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <h1 class="mqf-module-header__title">
+                    <i class="fa-solid fa-shield-halved"></i> Gestión de Pólizas
+                </h1>
+                <p class="mqf-module-header__subtitle">Seguros de Ley — Emisión, consulta y comisiones</p>
             </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-outline btn-sm" onclick="exportarPolizas()">
+            <div style="display:flex;gap:8px;padding-top:4px;">
+                <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="exportarPolizas()">
                     <i class="fa-solid fa-file-export"></i> Exportar
                 </button>
-                <button class="btn btn-primary btn-sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
+                <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
                     <i class="fa-solid fa-plus"></i> Nueva Póliza
                 </button>
             </div>
         </div>
+        <div class="mqf-module-tabs">
+            <button class="mqf-module-tab active" id="tab-btn-consultar" onclick="abrirTab('tab-consultar')">
+                <i class="fa-solid fa-list"></i> Consultar
+            </button>
+            <button class="mqf-module-tab" id="tab-btn-nueva" onclick="abrirTab('tab-nueva'); iniciarWizard()">
+                <i class="fa-solid fa-file-circle-plus"></i> Nueva Póliza
+            </button>
+            <button class="mqf-module-tab" id="tab-btn-comisiones" onclick="abrirTab('tab-comisiones'); cargarComisiones()">
+                <i class="fa-solid fa-hand-holding-dollar"></i> Comisiones
+            </button>
+        </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs-bar">
-        <button class="tab-btn active" id="tab-btn-consultar" onclick="abrirTab('tab-consultar')">
-            <i class="fa-solid fa-list"></i> Consultar
-        </button>
-        <button class="tab-btn" id="tab-btn-nueva" onclick="abrirTab('tab-nueva'); iniciarWizard()">
-            <i class="fa-solid fa-file-circle-plus"></i> Nueva Póliza
-        </button>
-        <button class="tab-btn" id="tab-btn-comisiones" onclick="abrirTab('tab-comisiones'); cargarComisiones()">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Comisiones
-        </button>
-    </div>
+    <div style="padding:20px;">
 
     <!-- ════════════════════════════════════
          TAB 1: CONSULTAR PÓLIZAS
@@ -564,8 +567,11 @@
         </div>
     </div>
 
+    </div><!-- /padding wrapper -->
+
 </div><!-- /content-area -->
 </main>
+
 
 <!-- ════ MODAL DETALLE PÓLIZA ════ -->
 <div class="modal-overlay" id="modal-detalle">
@@ -782,9 +788,10 @@ const BASE_API = '/PLATAFORMA_INTEGRADA/backend/api';
 // ═══════════════════════════════════════
 function abrirTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mqf-module-tab').forEach(b => b.classList.remove('active'));
     document.getElementById(tab).classList.add('active');
-    document.getElementById('tab-btn-' + tab.replace('tab-', '')).classList.add('active');
+    const btn = document.getElementById('tab-btn-' + tab.replace('tab-', ''));
+    if (btn) btn.classList.add('active');
 }
 
 // ═══════════════════════════════════════
