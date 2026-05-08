@@ -449,7 +449,7 @@
 
                             const statusDiv = document.getElementById('smtpStatus');
                             statusDiv.style.color = '#3182ce';
-                            statusDiv.innerText = '⏳ Intentando conectar y enviar prueba...';
+                            statusDiv.innerHTML = '⏳ Verificando DNS y enviando prueba... (puede tardar ~15 seg)';
 
                             const config = {
                                 server: document.getElementById('smtpServer').value,
@@ -464,33 +464,59 @@
                                 const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/test_smtp.php', {
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify({
-                                        to: emailDestino,
-                                        config: config
-                                    })
+                                    body: JSON.stringify({ to: emailDestino, config: config })
                                 });
                                 
                                 const contentType = response.headers.get('content-type');
                                 if (!contentType || !contentType.includes('application/json')) {
                                     const text = await response.text();
-                                    console.error('Respuesta no-JSON del servidor:', text);
+                                    console.error('Respuesta no-JSON:', text);
                                     statusDiv.style.color = 'red';
-                                    statusDiv.innerText = '❌ Fallo de Conexión: El servidor devolvió una respuesta inválida.';
-                                    cargarLogsSmtp();
+                                    statusDiv.innerText = '❌ El servidor devolvió una respuesta inválida.';
                                     return;
                                 }
                                 
                                 const result = await response.json();
 
-                                if (result.exito) {
-                                    statusDiv.style.color = 'green';
-                                    statusDiv.innerText = '✅ ' + result.mensaje;
-                                    cargarLogsSmtp();
+                                // ── Construir panel de diagnóstico rico ──────────────
+                                let diagHtml = '';
+                                if (result.diagnostico) {
+                                    const d = result.diagnostico;
+                                    const item = (txt) => {
+                                        const icon = txt.startsWith('✔') ? '#22c55e' : txt.startsWith('⚠') ? '#f59e0b' : txt.startsWith('✖') ? '#ef4444' : '#6b7280';
+                                        return `<div style="padding:4px 0;color:${icon};font-size:12px;">${txt}</div>`;
+                                    };
+                                    diagHtml = `
+                                        <div style="margin-top:12px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                                            <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:8px;">🔍 Diagnóstico de DNS y Entregabilidad</div>
+                                            ${item(d.servidor || '')}
+                                            ${item(d.mx || '')}
+                                            ${item(d.spf || '')}
+                                            ${item(d.dkim || '')}
+                                            ${item(d.dmarc || '')}
+                                            ${item(d.hostname_local || '')}
+                                            <div style="margin-top:8px;padding:8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;font-size:11px;color:#78350f;">
+                                                ⚠️ <strong>Si el correo no llega:</strong> Verifica SPF/DKIM en cPanel → "Email Deliverability". 
+                                                Revisa también la carpeta <strong>SPAM/Correo no deseado</strong> del destinatario.
+                                            </div>
+                                        </div>`;
+                                }
+
+                                // ── Mostrar resultado principal ───────────────────────
+                                statusDiv.style.color = result.exito ? '#16a34a' : '#dc2626';
+                                statusDiv.innerHTML = `
+                                    <div style="font-size:14px;font-weight:700;">${result.exito ? '✅' : '❌'} ${result.mensaje}</div>
+                                    ${diagHtml}`;
+
+                                // Actualizar log viewer con la conversación SMTP completa
+                                if (result.smtp_log) {
+                                    const pre = document.getElementById('smtpLogContent');
+                                    pre.innerText = result.smtp_log;
+                                    pre.scrollTop = pre.scrollHeight;
                                 } else {
-                                    statusDiv.style.color = 'red';
-                                    statusDiv.innerText = '❌ ' + result.mensaje;
                                     cargarLogsSmtp();
                                 }
+
                             } catch (err) {
                                 statusDiv.style.color = 'red';
                                 statusDiv.innerText = '❌ Error de red: ' + err.message;

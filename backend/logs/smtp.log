@@ -1,3 +1,82 @@
-[2026-04-14 13:55:23] [INFO] Preparando conexión a mail.masquefianzas.com:465 (Modo: ssl)...
-[2026-04-14 13:55:23] [INFO] Destino: ahenriquezmarte@gmail.com | Asunto: Prueba de Conexión SMTP - MAS QUE FIANZAS
-[2026-04-14 13:55:27] [SUCCESS] Correo enviado exitosamente a ahenriquezmarte@gmail.com
+
+[2026-05-07 22:30:17] [SESSION] === INICIO PRUEBA DIAGNÓSTICO desde panel ===
+[2026-05-07 22:30:17] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-07 22:30:17] [INFO] Iniciando envío → jheni14@gmail.com
+[2026-05-07 22:30:17] [INFO] Servidor: smtp-mail.outlook.com:587 | Cifrado: tls
+[2026-05-07 22:30:17] [INFO] EHLO hostname local: FAMILIA-HB
+[2026-05-07 22:30:17] [SMTP] S ← 220 BN8PR04CA0058.outlook.office365.com Microsoft ESMTP MAIL Service ready at Thu, 7 May 2026 22:30:17 +0000 [08DEABDEB3C186B4]
+[2026-05-07 22:30:17] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-07 22:30:17] [SMTP] S ← 250-BN8PR04CA0058.outlook.office365.com Hello [2001:1308:27a6:d00:24e1:9ede:6191:bd0f]
+[2026-05-07 22:30:17] [SMTP] S ← 250-SIZE 157286400
+[2026-05-07 22:30:17] [SMTP] S ← 250-PIPELINING
+[2026-05-07 22:30:17] [SMTP] S ← 250-DSN
+[2026-05-07 22:30:17] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-07 22:30:17] [SMTP] S ← 250-STARTTLS
+[2026-05-07 22:30:17] [SMTP] S ← 250-8BITMIME
+[2026-05-07 22:30:17] [SMTP] S ← 250-BINARYMIME
+[2026-05-07 22:30:17] [SMTP] S ← 250-CHUNKING
+[2026-05-07 22:30:17] [SMTP] S ← 250 SMTPUTF8
+[2026-05-07 22:30:17] [INFO] Enviando STARTTLS...
+[2026-05-07 22:30:17] [SMTP] C → STARTTLS
+[2026-05-07 22:30:17] [SMTP] S ← 220 2.0.0 SMTP server ready
+[2026-05-07 22:30:18] [SUCCESS] Cifrado TLS establecido.
+[2026-05-07 22:30:18] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-07 22:30:18] [SMTP] S ← 250-BN8PR04CA0058.outlook.office365.com Hello [2001:1308:27a6:d00:24e1:9ede:6191:bd0f]
+[2026-05-07 22:30:18] [SMTP] S ← 250-SIZE 157286400
+[2026-05-07 22:30:18] [SMTP] S ← 250-PIPELINING
+[2026-05-07 22:30:18] [SMTP] S ← 250-DSN
+[2026-05-07 22:30:18] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-07 22:30:18] [SMTP] S ← 250-AUTH LOGIN XOAUTH2
+[2026-05-07 22:30:18] [SMTP] S ← 250-8BITMIME
+[2026-05-07 22:30:18] [SMTP] S ← 250-BINARYMIME
+[2026-05-07 22:30:18] [SMTP] S ← 250-CHUNKING
+[2026-05-07 22:30:18] [SMTP] S ← 250 SMTPUTF8
+[2026-05-07 22:30:18] [SMTP] C → AUTH LOGIN
+[2026-05-07 22:30:18] [SMTP] S ← 334 VXNlcm5hbWU6
+[2026-05-07 22:30:18] [SMTP] C → bm90aWZpY2FjaW9uZXNtcWZAb3V0bG9vay5jb20=
+[2026-05-07 22:30:18] [SMTP] S ← 334 UGFzc3dvcmQ6
+[2026-05-07 22:30:18] [SMTP] C → [PASSWORD OCULTA]
+[2026-05-07 22:30:24] [SMTP] S ← 535 5.7.139 Authentication unsuccessful, SmtpClientAuthentication is disabled for the Mailbox. Visit https://aka.ms/smtp_auth_disabled for more information. [BN8PR04CA0058.namprd04.prod.outlook.com 2026-05-07T22:30:24.399Z 08DEABDEB3C186B4]
+[2026-05-07 22:30:24] [ERROR] Respuesta inesperada en [PASSWORD]: esperaba 235, recibió 535 → 535 5.7.139 Authentication unsuccessful, SmtpClientAuthentication is disabled for the Mailbox. Visit https://aka.ms/smtp_auth_disabled for more information. [BN8PR04CA0058.namprd04.prod.outlook.com 2026-05-07T22:30:24.399Z 08DEABDEB3C186B4]
+[2026-05-07 22:30:24] [HINT] ► CAUSA PROBABLE: Credenciales incorrectas (usuario/contraseña). Verifica en cPanel.
+
+[2026-05-07 22:30:34] [SESSION] === INICIO PRUEBA DIAGNÓSTICO desde panel ===
+[2026-05-07 22:30:34] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-07 22:30:34] [INFO] Iniciando envío → jhenri14@gmail.com
+[2026-05-07 22:30:34] [INFO] Servidor: smtp-mail.outlook.com:587 | Cifrado: tls
+[2026-05-07 22:30:35] [INFO] EHLO hostname local: FAMILIA-HB
+[2026-05-07 22:30:35] [SMTP] S ← 220 BN1PR14CA0003.outlook.office365.com Microsoft ESMTP MAIL Service ready at Thu, 7 May 2026 22:30:34 +0000 [08DEAC01F256AFB1]
+[2026-05-07 22:30:35] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-07 22:30:35] [SMTP] S ← 250-BN1PR14CA0003.outlook.office365.com Hello [2001:1308:27a6:d00:24e1:9ede:6191:bd0f]
+[2026-05-07 22:30:35] [SMTP] S ← 250-SIZE 157286400
+[2026-05-07 22:30:35] [SMTP] S ← 250-PIPELINING
+[2026-05-07 22:30:35] [SMTP] S ← 250-DSN
+[2026-05-07 22:30:35] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-07 22:30:35] [SMTP] S ← 250-STARTTLS
+[2026-05-07 22:30:35] [SMTP] S ← 250-8BITMIME
+[2026-05-07 22:30:35] [SMTP] S ← 250-BINARYMIME
+[2026-05-07 22:30:35] [SMTP] S ← 250-CHUNKING
+[2026-05-07 22:30:35] [SMTP] S ← 250 SMTPUTF8
+[2026-05-07 22:30:35] [INFO] Enviando STARTTLS...
+[2026-05-07 22:30:35] [SMTP] C → STARTTLS
+[2026-05-07 22:30:35] [SMTP] S ← 220 2.0.0 SMTP server ready
+[2026-05-07 22:30:35] [SUCCESS] Cifrado TLS establecido.
+[2026-05-07 22:30:35] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-07 22:30:35] [SMTP] S ← 250-BN1PR14CA0003.outlook.office365.com Hello [2001:1308:27a6:d00:24e1:9ede:6191:bd0f]
+[2026-05-07 22:30:35] [SMTP] S ← 250-SIZE 157286400
+[2026-05-07 22:30:35] [SMTP] S ← 250-PIPELINING
+[2026-05-07 22:30:35] [SMTP] S ← 250-DSN
+[2026-05-07 22:30:35] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-07 22:30:35] [SMTP] S ← 250-AUTH LOGIN XOAUTH2
+[2026-05-07 22:30:35] [SMTP] S ← 250-8BITMIME
+[2026-05-07 22:30:35] [SMTP] S ← 250-BINARYMIME
+[2026-05-07 22:30:35] [SMTP] S ← 250-CHUNKING
+[2026-05-07 22:30:35] [SMTP] S ← 250 SMTPUTF8
+[2026-05-07 22:30:35] [SMTP] C → AUTH LOGIN
+[2026-05-07 22:30:35] [SMTP] S ← 334 VXNlcm5hbWU6
+[2026-05-07 22:30:35] [SMTP] C → bm90aWZpY2FjaW9uZXNtcWZAb3V0bG9vay5jb20=
+[2026-05-07 22:30:35] [SMTP] S ← 334 UGFzc3dvcmQ6
+[2026-05-07 22:30:35] [SMTP] C → [PASSWORD OCULTA]
+[2026-05-07 22:30:41] [SMTP] S ← 535 5.7.139 Authentication unsuccessful, SmtpClientAuthentication is disabled for the Mailbox. Visit https://aka.ms/smtp_auth_disabled for more information. [BN1PR14CA0003.namprd14.prod.outlook.com 2026-05-07T22:30:41.581Z 08DEAC01F256AFB1]
+[2026-05-07 22:30:41] [ERROR] Respuesta inesperada en [PASSWORD]: esperaba 235, recibió 535 → 535 5.7.139 Authentication unsuccessful, SmtpClientAuthentication is disabled for the Mailbox. Visit https://aka.ms/smtp_auth_disabled for more information. [BN1PR14CA0003.namprd14.prod.outlook.com 2026-05-07T22:30:41.581Z 08DEAC01F256AFB1]
+[2026-05-07 22:30:41] [HINT] ► CAUSA PROBABLE: Credenciales incorrectas (usuario/contraseña). Verifica en cPanel.

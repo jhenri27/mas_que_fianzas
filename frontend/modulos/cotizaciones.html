@@ -1000,11 +1000,12 @@
                 <div className="mt-6 flex gap-3">
                   <button onClick={()=>{
                     if(!validate()) return;
+                    const numCot = editingId ? editingNum : ('SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
                     const q = { 
                       id: editingId,
                       tipo: 'SEGURO DE LEY', 
                       subtipo: type,
-                      numero: editingNum,
+                      numero: numCot,
                       uso: uso, 
                       capacidad: capacidad, 
                       aseguradora: insurer, 
@@ -1023,7 +1024,7 @@
                     }).then(r=>r.json()).then(res=>{
                       if(res.exito){
                         alert(editingId ? 'Cotización actualizada' : 'Cotización guardada');
-                        generarPDFSeguroProfesional(Object.assign({}, q, { numero: editingNum || res.numero || 'EDIT' }));
+                        generarPDFSeguroProfesional(Object.assign({}, q, { numero: q.numero }));
                         setEditingId(null);
                         setEditingNum(null);
                         cargarHistorial();
