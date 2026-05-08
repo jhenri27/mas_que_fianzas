@@ -7,16 +7,18 @@
     <title>Usuarios - MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
     <style>
         .sidebar{display:none!important}.top-navbar{display:none!important}.main-content{margin-left:0!important;width:100%!important;padding-top:0!important}.content-area{padding:20px!important;margin-top:0!important;height:100vh;overflow-y:auto;box-sizing:border-box}
-        .badge-activo{background:#dcfce7;color:#166534;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-        .badge-inactivo{background:#fee2e2;color:#991b1b;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-        .badge-bloqueado{background:#fef9c3;color:#854d0e;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-        .badge-com{background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px}
-        .data-table th{padding:11px 13px;background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:700;font-size:12px;text-align:left}
-        .data-table td{padding:11px 13px;border-bottom:1px solid #f1f5f9;color:#334155;font-size:13px;vertical-align:middle}
-        .data-table tr:hover{background:#f8fafc}
+        .badge-activo{background:var(--mqf-success-light);color:var(--mqf-success-text);padding:3px 10px;border-radius:var(--mqf-radius-full);font-size:var(--mqf-text-xs);font-weight:700}
+        .badge-inactivo{background:var(--mqf-danger-light);color:var(--mqf-danger-text);padding:3px 10px;border-radius:var(--mqf-radius-full);font-size:var(--mqf-text-xs);font-weight:700}
+        .badge-bloqueado{background:var(--mqf-warning-light);color:var(--mqf-warning-text);padding:3px 10px;border-radius:var(--mqf-radius-full);font-size:var(--mqf-text-xs);font-weight:700}
+        .badge-com{background:var(--mqf-primary-light);color:var(--mqf-primary-dark);padding:2px 8px;border-radius:var(--mqf-radius-full);font-size:var(--mqf-text-xs);font-weight:700;margin-left:4px}
+        .data-table th{padding:11px 13px;background:var(--mqf-primary-light);border-bottom:2px solid var(--mqf-border);color:var(--mqf-primary-dark);font-weight:700;font-size:var(--mqf-text-xs);text-align:left;text-transform:uppercase;letter-spacing:.5px}
+        .data-table td{padding:11px 13px;border-bottom:1px solid var(--mqf-border);color:var(--mqf-text-secondary);font-size:var(--mqf-text-sm);vertical-align:middle}
+        .data-table tr:hover{background:var(--mqf-surface-2)}
         .codigo-chip{background:#f1f5f9;color:#475569;font-family:monospace;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
         .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center}
         .modal-box{background:#fff;width:95%;max-width:680px;border-radius:12px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.2);max-height:90vh;display:flex;flex-direction:column}
@@ -166,6 +168,7 @@
 </div>
 
 <script src="../assets/api-client.js?v=7"></script>
+<script src="../assets/components.js"></script>
 <script>
 window.usuariosData = [];
 var paginaActual = 1;
@@ -367,15 +370,15 @@ document.getElementById('usuarioForm').addEventListener('submit', async function
         var res      = await api.solicitud(endpoint, method, data);
         if (res.exito) {
             var msg = res.mensaje || 'Usuario guardado exitosamente.';
-            if (!id && res.password_temporal) msg += '\n\nContrasena temporal: ' + res.password_temporal + '\nEl usuario debera cambiarla al primer ingreso.';
-            alert(msg);
+            if (!id && res.password_temporal) msg += '<br><br><strong>Contraseña temporal:</strong> ' + res.password_temporal;
+            MQF.toast(msg, 'success', 6000);
             cerrarModal();
             cargarUsuarios(paginaActual);
         } else {
-            alert('Error: ' + (res.mensaje || 'No se pudo guardar.'));
+            MQF.toast('Error: ' + (res.mensaje || 'No se pudo guardar.'), 'error');
         }
     } catch(e) {
-        alert('Error de conexion con el servidor.');
+        MQF.toast('Error de conexión con el servidor.', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-save" style="margin-right:5px;"></i>Guardar Usuario';
@@ -386,23 +389,19 @@ async function resetPassword(id) {
     var usuario = window.usuariosData.find(function(u){ return u.id == id; }) || {};
     var nombre = (usuario.nombre || '') + ' ' + (usuario.apellido || '');
     var email  = usuario.email || '(sin email registrado)';
-    if (!confirm('Restablecer la contraseña de:\n\n👤 ' + nombre.trim() + '\n📧 ' + email + '\n\n✉️ Se enviará un correo al usuario con la nueva contraseña temporal.\n\n¿Confirmar?')) return;
+    var ok = await MQF.confirm('¿Restablecer la contraseña de <strong>' + nombre.trim() + '</strong>?<br><small>📧 ' + email + '</small><br><br>Se enviará un correo con la nueva contraseña temporal.', { confirmText: 'Restablecer', type: 'primary' });
+    if (!ok) return;
     try {
         var res = await api.solicitud('/usuarios.php/restablecer-password/' + id, 'POST');
         if (res.exito) {
-            var msg = '✅ ' + res.mensaje + '\n\n';
-            msg += '👤 Usuario: ' + (res.nombre_usuario || nombre.trim()) + '\n';
-            msg += '📧 Correo destinatario: ' + (res.email_destino || email) + '\n';
-            msg += '🔑 Contraseña temporal: ' + res.password_temporal + '\n\n';
-            msg += res.correo_enviado
-                ? '📨 El correo fue enviado exitosamente.'
-                : '⚠️ No se pudo enviar el correo. Entregue la clave temporal de forma manual.';
-            alert(msg);
+            var msg = res.mensaje + ' | 🔑 Clave: ' + res.password_temporal;
+            if (!res.correo_enviado) msg += ' ⚠️ Entregue la clave de forma manual.';
+            MQF.toast(msg, 'success', 8000);
             cargarUsuarios(paginaActual);
         } else {
-            alert('Error: ' + res.mensaje);
+            MQF.toast('Error: ' + res.mensaje, 'error');
         }
-    } catch(e) { alert('Error de conexion.'); }
+    } catch(e) { MQF.toast('Error de conexión.', 'error'); }
 }
 
 
@@ -411,28 +410,29 @@ async function bloquearUsuario(id) {
     if (razon === null) return;
     try {
         var res = await api.solicitud('/usuarios.php/bloquear/' + id, 'POST', { razon: razon });
-        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
-        else alert(res.mensaje);
-    } catch(e) { alert('Error de conexion.'); }
+        if (res.exito) { MQF.toast(res.mensaje, 'warning'); cargarUsuarios(paginaActual); }
+        else MQF.toast(res.mensaje, 'error');
+    } catch(e) { MQF.toast('Error de conexión.', 'error'); }
 }
 
 async function desbloquearUsuario(id) {
-    if (!confirm('Desbloquear este usuario?')) return;
+    var ok = await MQF.confirm('¿Desbloquear este usuario?', { confirmText: 'Desbloquear', type: 'success' });
+    if (!ok) return;
     try {
         var res = await api.solicitud('/usuarios.php/desbloquear/' + id, 'POST');
-        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
-        else alert(res.mensaje);
-    } catch(e) { alert('Error de conexion.'); }
+        if (res.exito) { MQF.toast(res.mensaje, 'success'); cargarUsuarios(paginaActual); }
+        else MQF.toast(res.mensaje, 'error');
+    } catch(e) { MQF.toast('Error de conexión.', 'error'); }
 }
 
 async function eliminarUsuario(id) {
-    var password = prompt('Esta seguro de eliminar este usuario? Ingrese su contrasena de Administrador para confirmar:');
+    var password = prompt('Esta seguro de eliminar este usuario? Ingrese su contraseña de Administrador para confirmar:');
     if (!password) return;
     try {
         var res = await api.solicitud('/usuarios.php/eliminar/' + id, 'DELETE', { confirm_password: password });
-        if (res.exito) { alert(res.mensaje); cargarUsuarios(paginaActual); }
-        else alert('Error: ' + res.mensaje);
-    } catch(e) { alert('Error de conexion.'); }
+        if (res.exito) { MQF.toast(res.mensaje, 'success'); cargarUsuarios(paginaActual); }
+        else MQF.toast('Error: ' + res.mensaje, 'error');
+    } catch(e) { MQF.toast('Error de conexión.', 'error'); }
 }
 
 var searchTimeout;

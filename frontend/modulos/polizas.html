@@ -7,6 +7,8 @@
     <title>Pólizas — MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
     <style>
         /* ── Módulo embebido en iframe ── */
@@ -60,18 +62,18 @@
         /* ── Tabla ── */
         .tbl-wrap { background:#fff; border-radius:0 0 10px 10px; overflow-x:auto; box-shadow:0 1px 3px rgba(0,0,0,.08); }
         .data-table { width:100%; border-collapse:collapse; min-width:1100px; }
-        .data-table th { padding:12px 10px; background:#f5f3ff; color:#4338ca; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:2px solid #e0e7ff; white-space:nowrap; }
-        .data-table td { padding:12px 10px; border-bottom:1px solid #f1f5f9; color:#334155; font-size:12.5px; }
-        .data-table tr:hover td { background:#f8fafc; }
+        .data-table th { padding:12px 10px; background:var(--mqf-primary-light); color:var(--mqf-primary-dark); font-weight:700; font-size:var(--mqf-text-xs); text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:2px solid var(--mqf-border); white-space:nowrap; }
+        .data-table td { padding:12px 10px; border-bottom:1px solid var(--mqf-border); color:var(--mqf-text-secondary); font-size:var(--mqf-text-sm); }
+        .data-table tr:hover td { background:var(--mqf-surface-2); }
         .data-table tr:last-child td { border-bottom:none; }
 
-        /* Badges */
-        .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
-        .badge-activa { color:#16a34a; background:rgba(22,163,74,.1); }
-        .badge-cancelada, .badge-vencida { color:#dc2626; background:rgba(220,38,38,.1); }
-        .badge-suspendida { color:#d97706; background:rgba(217,119,6,.1); }
-        .badge-si { color:#4f46e5; background:rgba(79,70,229,.1); }
-        .badge-no { color:#94a3b8; background:#f1f5f9; }
+        /* Badges usando tokens MQF */
+        .badge { display:inline-block; padding:3px 10px; border-radius:var(--mqf-radius-full); font-size:var(--mqf-text-xs); font-weight:700; }
+        .badge-activa    { color:var(--mqf-success-text); background:var(--mqf-success-light); }
+        .badge-cancelada, .badge-vencida { color:var(--mqf-danger-text); background:var(--mqf-danger-light); }
+        .badge-suspendida { color:var(--mqf-warning-text); background:var(--mqf-warning-light); }
+        .badge-si { color:var(--mqf-primary-dark); background:var(--mqf-primary-light); }
+        .badge-no { color:var(--mqf-text-muted); background:var(--mqf-bg); }
 
         /* IDs de acción */
         .accion { cursor:pointer; color:#6366f1; font-size:14px; margin:0 3px; transition:all .2s; }
@@ -185,17 +187,7 @@
         .empty-state h3 { font-size:16px; color:#64748b; margin:0 0 8px; }
         .empty-state p { font-size:13px; margin:0; }
 
-        /* Toast */
-        #toast {
-            position:fixed; bottom:24px; right:24px; padding:12px 20px;
-            border-radius:10px; color:#fff; font-size:13px; font-weight:600;
-            z-index:9999; display:none; align-items:center; gap:8px;
-            box-shadow:0 8px 24px rgba(0,0,0,.15); animation:slideUp .3s ease;
-        }
-        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-        .toast-success { background:#16a34a; }
-        .toast-error { background:#dc2626; }
-        .toast-info { background:#4f46e5; }
+        /* Toast eliminado — se usa MQF.toast() via components.js */
     </style>
 </head>
 <body class="dashboard-body">
@@ -753,6 +745,7 @@
 
 <!-- Scripts -->
 <script src="../assets/api-client.js?v=6"></script>
+<script src="../assets/components.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -766,6 +759,12 @@ console.log('Logos Cargados:', Object.keys(window.LOGOS));
 <script src="../assets/polizas-pdf.js?v=6"></script>
 <script>
 'use strict';
+
+// Shim de compatibilidad: showToast() → MQF.toast()
+function showToast(msg, tipo) {
+    const t = tipo === 'error' ? 'error' : tipo === 'info' ? 'info' : 'success';
+    if (typeof MQF !== 'undefined') MQF.toast(msg, t);
+}
 
 // ═══════════════════════════════════════
 // ESTADO GLOBAL DEL MÓDULO
