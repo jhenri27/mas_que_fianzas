@@ -15,18 +15,28 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
-$usuario = verificarToken();
-if (!$usuario) {
-    http_response_code(401);
-    echo json_encode(['exito' => false, 'mensaje' => 'No autenticado']);
-    exit;
-}
-
-$db     = Database::getInstance()->getConnection();
-$method = $_SERVER['REQUEST_METHOD'];
 $uri    = $_SERVER['REQUEST_URI'];
 $parts  = explode('/', trim(parse_url($uri, PHP_URL_PATH), '/'));
 $action = end($parts);
+
+// El endpoint 'obtener' no requiere auth (es público — solo lee config de empresa)
+$esPublico = ($action === 'obtener' || $action === 'exportar_brand');
+$usuario   = null;
+
+if (!$esPublico) {
+    $usuario = verificarToken();
+    if (!$usuario) {
+        http_response_code(401);
+        echo json_encode(['exito' => false, 'mensaje' => 'No autenticado']);
+        exit;
+    }
+} else {
+    // Intentar obtener usuario si hay token (para preferencias personales)
+    try { $usuario = verificarToken(); } catch (Exception $e) { $usuario = null; }
+}
+
+$db = Database::getInstance()->getConnection();
+$method = $_SERVER['REQUEST_METHOD'];
 
 // ── Asegurar que las tablas existen ──────────────────────────────────────────
 $db->exec("CREATE TABLE IF NOT EXISTS skins_config (
@@ -102,10 +112,13 @@ function accionObtener($db, $usuario) {
     // Config de empresa
     $empresa = $db->query("SELECT * FROM skins_config WHERE empresa_id = 1 LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 
-    // Preferencia personal del usuario
-    $pref = $db->prepare("SELECT skin FROM user_skin_preference WHERE usuario_id = ?");
-    $pref->execute([$usuario['id']]);
-    $prefRow = $pref->fetch(PDO::FETCH_ASSOC);
+    // Preferencia personal del usuario (solo si está autenticado)
+    $prefRow = null;
+    if ($usuario && isset($usuario['id'])) {
+        $pref = $db->prepare("SELECT skin FROM user_skin_preference WHERE usuario_id = ?");
+        $pref->execute([$usuario['id']]);
+        $prefRow = $pref->fetch(PDO::FETCH_ASSOC);
+    }
 
     $skinEfectivo = ($prefRow && $prefRow['skin'] !== 'sistema')
         ? $prefRow['skin']

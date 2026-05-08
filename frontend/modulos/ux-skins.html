@@ -243,25 +243,30 @@ async function init() {
 }
 
 async function cargarConfig() {
+  // Aplicar skin guardado en localStorage inmediatamente (sin esperar API)
+  const localSkin = localStorage.getItem('mqf-skin') || 'indigo';
+  aplicarSkinLocalmente(localSkin);
+
   try {
     const res = await api.solicitud('/skins.php/obtener');
-    if (!res.exito) return;
+    if (!res || !res.exito) return; // fallo silencioso
 
-    skinActual   = res.skin_efectivo || 'indigo';
+    const skinEfectivo = res.skin_efectivo || localSkin;
     customTokens = res.custom_tokens || {};
     tipoFuente   = res.brand_tipografia || 'Inter';
 
     document.getElementById('skin-activo-label').textContent = SKIN_LABELS[res.skin_empresa] || res.skin_empresa;
     document.getElementById('pref-label').textContent = res.skin_usuario === 'sistema' ? 'Sistema' : (SKIN_LABELS[res.skin_usuario] || res.skin_usuario);
-    document.getElementById('brand-nombre').value = res.brand_nombre_empresa || '';
+    if (document.getElementById('brand-nombre'))
+      document.getElementById('brand-nombre').value = res.brand_nombre_empresa || '';
 
-    aplicarSkinLocalmente(skinActual);
+    aplicarSkinLocalmente(skinEfectivo);
     actualizarColorPickers(customTokens);
     seleccionarFuenteUI(tipoFuente);
   } catch (e) {
-    // Fallback: usar skin de localStorage
-    const s = localStorage.getItem('mqf-skin') || 'indigo';
-    aplicarSkinLocalmente(s);
+    // Sin conexión o sin auth — usar localStorage, sin toast de error
+    console.info('[UX-SKINS] API no disponible, usando config local:', localSkin);
+    document.getElementById('skin-activo-label').textContent = SKIN_LABELS[localSkin] || localSkin;
   }
 }
 
