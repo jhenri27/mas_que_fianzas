@@ -8,7 +8,15 @@
     <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
     <link rel="stylesheet" href="assets/dashboard.css">
     <link rel="stylesheet" href="assets/modulos.css">
+    <link rel="stylesheet" href="assets/skin-engine.css">
     <script src="assets/components.js" defer></script>
+    <script>
+      /* ── Aplicar skin ANTES del primer render (evita flash) ── */
+      (function(){
+        const s = localStorage.getItem('mqf-skin') || 'indigo';
+        document.documentElement.setAttribute('data-skin', s);
+      })();
+    </script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -811,5 +819,37 @@
 
     <script src="assets/api-client.js"></script>
     <script src="assets/dashboard.js"></script>
+    <script>
+    /* ── UX-SKINS: aplicar al cargar y escuchar mensajes de iframes ── */
+    (function(){
+      function aplicarSkin(skin){
+        document.body.setAttribute('data-skin', skin);
+        document.documentElement.setAttribute('data-skin', skin);
+        localStorage.setItem('mqf-skin', skin);
+        // Propagar a todos los iframes
+        document.querySelectorAll('iframe').forEach(f=>{
+          try{ f.contentWindow.postMessage({type:'mqf-skin-set',skin},'*'); }catch(e){}
+        });
+      }
+      // Cargar skin guardado
+      const saved = localStorage.getItem('mqf-skin') || 'indigo';
+      aplicarSkin(saved);
+
+      // Escuchar mensajes del módulo ux-skins (preview y apply)
+      window.addEventListener('message', function(e){
+        if(e.data && e.data.type === 'mqf-skin-apply'){
+          aplicarSkin(e.data.skin);
+        } else if(e.data && e.data.type === 'mqf-skin-preview'){
+          // Solo preview local, sin guardar
+          document.body.setAttribute('data-skin', e.data.skin);
+          document.documentElement.setAttribute('data-skin', e.data.skin);
+        }
+      });
+
+      // Exponer globalmente para uso en dashboard.js
+      window.MQF = window.MQF || {};
+      window.MQF.applySkin = aplicarSkin;
+    })();
+    </script>
 </body>
 </html>

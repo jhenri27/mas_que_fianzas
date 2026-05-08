@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UX Apariencia — MAS QUE FIANZAS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/design-system.css">
+  <link rel="stylesheet" href="../assets/skin-engine.css">
+  <link rel="stylesheet" href="../assets/components.css">
+  <style>
+    .sidebar,.top-navbar{display:none!important}
+    .main-content{margin-left:0!important;width:100%!important}
+    .content-area{padding:0!important;height:100vh;overflow-y:auto}
+
+    /* Grid de skins */
+    .skins-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:24px}
+    .skin-card{border:2px solid var(--mqf-border);border-radius:var(--mqf-radius-lg);overflow:hidden;cursor:pointer;transition:var(--mqf-transition);background:var(--mqf-surface)}
+    .skin-card:hover{transform:translateY(-3px);box-shadow:var(--mqf-shadow-md)}
+    .skin-card.selected{border-color:var(--mqf-primary);box-shadow:var(--mqf-shadow-primary)}
+    .skin-preview{height:120px;position:relative;overflow:hidden}
+    .sp-sidebar{position:absolute;left:0;top:0;bottom:0;width:36px}
+    .sp-content{position:absolute;left:36px;right:0;top:0;bottom:0;padding:8px;display:flex;flex-direction:column;gap:6px}
+    .sp-bar{height:8px;border-radius:4px;opacity:.7}
+    .sp-card{height:28px;border-radius:4px;opacity:.5}
+    .sp-btn{height:14px;width:50%;border-radius:4px;margin-top:auto}
+    .skin-info{padding:14px 16px}
+    .skin-name{font-weight:700;font-size:14px;color:var(--mqf-text);display:flex;justify-content:space-between;align-items:center}
+    .skin-desc{font-size:12px;color:var(--mqf-text-muted);margin-top:4px}
+    .skin-badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700}
+    .badge-active{background:var(--mqf-success-light);color:var(--mqf-success-text)}
+    .badge-premium{background:var(--mqf-warning-light);color:var(--mqf-warning-text)}
+
+    /* Custom Editor */
+    .custom-editor{padding:0 24px 24px;display:none}
+    .custom-editor.visible{display:block}
+    .editor-card{background:var(--mqf-surface);border:1px solid var(--mqf-border);border-radius:var(--mqf-radius-lg);padding:24px;box-shadow:var(--mqf-shadow-sm)}
+    .color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:16px}
+    .color-field{display:flex;flex-direction:column;gap:6px}
+    .color-field label{font-size:12px;font-weight:600;color:var(--mqf-text-muted);text-transform:uppercase;letter-spacing:.5px}
+    .color-row{display:flex;align-items:center;gap:8px}
+    .color-row input[type=color]{width:40px;height:36px;border:none;border-radius:6px;cursor:pointer;padding:2px}
+    .color-row input[type=text]{flex:1;padding:8px 10px;border:1.5px solid var(--mqf-border);border-radius:6px;font-size:13px;font-family:monospace}
+    .section-title{font-size:16px;font-weight:700;color:var(--mqf-text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+    .section-sub{font-size:13px;color:var(--mqf-text-muted);margin-bottom:16px}
+    .action-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 24px;background:var(--mqf-surface);border-top:1px solid var(--mqf-border);position:sticky;bottom:0}
+    .font-selector{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .font-opt{padding:8px 16px;border:2px solid var(--mqf-border);border-radius:var(--mqf-radius-sm);cursor:pointer;font-size:13px;transition:var(--mqf-transition);background:var(--mqf-surface);color:var(--mqf-text)}
+    .font-opt.selected,.font-opt:hover{border-color:var(--mqf-primary);background:var(--mqf-primary-light);color:var(--mqf-primary)}
+    .preview-live{background:var(--mqf-surface-2);border:1px solid var(--mqf-border);border-radius:var(--mqf-radius);padding:16px;margin-top:16px;min-height:80px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<div class="content-area">
+
+  <!-- Header -->
+  <div class="mqf-module-header">
+    <h1 class="mqf-module-header__title"><i class="fa-solid fa-palette"></i> UX / Apariencia</h1>
+    <p class="mqf-module-header__subtitle">Personaliza la apariencia de la plataforma. Los cambios se aplican en tiempo real.</p>
+  </div>
+
+  <!-- Info bar -->
+  <div style="padding:16px 24px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <div style="background:var(--mqf-primary-light);border:1px solid var(--mqf-primary);border-radius:var(--mqf-radius-sm);padding:10px 16px;font-size:13px;color:var(--mqf-primary-dark);flex:1;min-width:200px;">
+      <i class="fa-solid fa-circle-info"></i> <strong>Skin activo:</strong> <span id="skin-activo-label">Cargando...</span>
+      &nbsp;|&nbsp; <strong>Preferencia:</strong> <span id="pref-label">Sistema</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="exportarBrand()"><i class="fa-solid fa-file-export"></i> Exportar JSON</button>
+      <label class="mqf-btn mqf-btn--secondary mqf-btn--sm" style="cursor:pointer;"><i class="fa-solid fa-file-import"></i> Importar JSON<input type="file" accept=".json" style="display:none" onchange="importarBrand(event)"></label>
+    </div>
+  </div>
+
+  <!-- Grid de 4 Skins -->
+  <div class="skins-grid" id="skins-grid">
+
+    <!-- SKIN 1: Indigo Corp -->
+    <div class="skin-card selected" id="card-indigo" onclick="seleccionarSkin('indigo')">
+      <div class="skin-preview" style="background:#f4f6fb;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#4f46e5;width:60%"></div>
+          <div class="sp-card" style="background:#fff;border:1px solid #e5e7eb"></div>
+          <div class="sp-card" style="background:#fff;border:1px solid #e5e7eb"></div>
+          <div class="sp-btn" style="background:#4f46e5"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Indigo Corp <span class="skin-badge badge-active" id="badge-indigo">Activo</span></div>
+        <div class="skin-desc">☀️ Corporativo, profesional, confianza financiera</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#4f46e5;" title="#4f46e5"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#7c3aed;" title="#7c3aed"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#f4f6fb;border:1px solid #e5e7eb;" title="#f4f6fb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 2: Obsidian Dark -->
+    <div class="skin-card" id="card-obsidian" onclick="seleccionarSkin('obsidian')">
+      <div class="skin-preview" style="background:#0f172a;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#1e293b,#0f172a);border-right:1px solid #334155;"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#818cf8;width:60%"></div>
+          <div class="sp-card" style="background:#1e293b;border:1px solid #334155"></div>
+          <div class="sp-card" style="background:#1e293b;border:1px solid #334155"></div>
+          <div class="sp-btn" style="background:#818cf8"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Obsidian Dark <span class="skin-badge badge-premium" id="badge-obsidian"></span></div>
+        <div class="skin-desc">🌙 Dark mode elegante, premium, visión nocturna</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#818cf8;" title="#818cf8"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#a78bfa;" title="#a78bfa"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#0f172a;" title="#0f172a"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 3: Coral Finance -->
+    <div class="skin-card" id="card-coral" onclick="seleccionarSkin('coral')">
+      <div class="skin-preview" style="background:#fff8f7;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#f43f5e,#fb923c);"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#f43f5e;width:60%"></div>
+          <div class="sp-card" style="background:#fff;border:1px solid #fce7f3"></div>
+          <div class="sp-card" style="background:#fff;border:1px solid #fce7f3"></div>
+          <div class="sp-btn" style="background:#f43f5e"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Coral Finance <span class="skin-badge badge-premium" id="badge-coral"></span></div>
+        <div class="skin-desc">🐚 Energético, dinámico, ideal para equipos de ventas</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#f43f5e;" title="#f43f5e"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#fb923c;" title="#fb923c"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#fff8f7;border:1px solid #fce7f3;" title="#fff8f7"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 4: Custom Brand -->
+    <div class="skin-card" id="card-custom" onclick="seleccionarSkin('custom')">
+      <div class="skin-preview" style="background:linear-gradient(135deg,#f0f4ff,#faf5ff);display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+          <i class="fa-solid fa-paintbrush" style="font-size:28px;color:#6366f1;opacity:.7;"></i>
+          <div style="font-size:11px;color:#64748b;margin-top:6px;">Tu marca aquí</div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Custom Brand <span class="skin-badge badge-premium" id="badge-custom"><i class="fa-solid fa-pen" style="font-size:9px;"></i></span></div>
+        <div class="skin-desc">🏢 Personalización completa B2B con tus colores y logo</div>
+        <div style="font-size:11px;color:var(--mqf-primary);margin-top:8px;">Haz clic para editar →</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Editor Custom Brand -->
+  <div class="custom-editor" id="custom-editor">
+    <div class="editor-card">
+      <div class="section-title"><i class="fa-solid fa-paintbrush" style="color:var(--mqf-primary)"></i> Editor de Marca Personalizada</div>
+      <div class="section-sub">Solo disponible para Administradores. Los cambios aplican a toda la empresa.</div>
+
+      <!-- Color Pickers -->
+      <div class="color-grid" id="color-grid">
+        <!-- generado por JS -->
+      </div>
+
+      <!-- Tipografía -->
+      <div style="margin-top:24px;">
+        <div class="section-title" style="font-size:14px;"><i class="fa-solid fa-font"></i> Tipografía</div>
+        <div class="font-selector" id="font-selector">
+          <div class="font-opt selected" style="font-family:Inter" data-font="Inter" onclick="seleccionarFuente('Inter', this)">Inter</div>
+          <div class="font-opt" style="font-family:Roboto" data-font="Roboto" onclick="seleccionarFuente('Roboto', this)">Roboto</div>
+          <div class="font-opt" style="font-family:Poppins" data-font="Poppins" onclick="seleccionarFuente('Poppins', this)">Poppins</div>
+          <div class="font-opt" style="font-family:Outfit" data-font="Outfit" onclick="seleccionarFuente('Outfit', this)">Outfit</div>
+        </div>
+        <div class="preview-live" id="font-preview">
+          <span style="font-size:22px;font-weight:700;">Heading 700</span>
+          <span style="font-size:14px;">Texto normal 400 — Gestión de Pólizas RD$1,250.00</span>
+          <span class="mqf-badge mqf-badge--success">ACTIVO</span>
+        </div>
+      </div>
+
+      <!-- Nombre empresa -->
+      <div style="margin-top:20px;">
+        <label style="font-size:12px;font-weight:600;color:var(--mqf-text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Nombre de Empresa (sidebar y PDFs)</label>
+        <input type="text" id="brand-nombre" class="mqf-input" placeholder="MAS QUE FIANZAS" style="max-width:360px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de acciones sticky -->
+  <div class="action-bar">
+    <div style="flex:1;font-size:13px;color:var(--mqf-text-muted);">
+      Vista previa en tiempo real activa. Los cambios se guardan en la base de datos.
+    </div>
+    <button class="mqf-btn mqf-btn--secondary" onclick="aplicarSoloParaMi()">
+      <i class="fa-solid fa-user"></i> Solo para mí
+    </button>
+    <button class="mqf-btn mqf-btn--primary" id="btn-guardar-empresa" onclick="aplicarEmpresa()">
+      <i class="fa-solid fa-building"></i> Aplicar a toda la empresa
+    </button>
+    <button class="mqf-btn mqf-btn--ghost" onclick="restablecer()">
+      <i class="fa-solid fa-rotate-left"></i> Restablecer
+    </button>
+  </div>
+
+</div><!-- /content-area -->
+
+<script src="../assets/api-client.js?v=7"></script>
+<script src="../assets/components.js"></script>
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SKIN_LABELS = {
+  indigo:   'Indigo Corp ☀️',
+  obsidian: 'Obsidian Dark 🌙',
+  coral:    'Coral Finance 🐚',
+  custom:   'Custom Brand 🏢'
+};
+
+const COLOR_FIELDS = [
+  { key: 'brand_primary',        label: 'Color Primario',       css: '--brand-primary' },
+  { key: 'brand_secondary',      label: 'Color Secundario',     css: '--brand-secondary' },
+  { key: 'brand_gradient_start', label: 'Gradiente Inicio',     css: '--brand-gradient-start' },
+  { key: 'brand_gradient_end',   label: 'Gradiente Fin',        css: '--brand-gradient-end' },
+  { key: 'brand_bg',             label: 'Fondo General',        css: '--brand-bg' },
+  { key: 'brand_surface',        label: 'Fondo de Cards',       css: '--brand-surface' },
+  { key: 'brand_text',           label: 'Texto Principal',      css: '--brand-text' },
+  { key: 'brand_text_secondary', label: 'Texto Secundario',     css: '--brand-text-secondary' },
+];
+
+let skinActual    = 'indigo';
+let customTokens  = {};
+let tipoFuente    = 'Inter';
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  construirColorPickers();
+  await cargarConfig();
+}
+
+async function cargarConfig() {
+  try {
+    const res = await api.solicitud('/skins.php/obtener');
+    if (!res.exito) return;
+
+    skinActual   = res.skin_efectivo || 'indigo';
+    customTokens = res.custom_tokens || {};
+    tipoFuente   = res.brand_tipografia || 'Inter';
+
+    document.getElementById('skin-activo-label').textContent = SKIN_LABELS[res.skin_empresa] || res.skin_empresa;
+    document.getElementById('pref-label').textContent = res.skin_usuario === 'sistema' ? 'Sistema' : (SKIN_LABELS[res.skin_usuario] || res.skin_usuario);
+    document.getElementById('brand-nombre').value = res.brand_nombre_empresa || '';
+
+    aplicarSkinLocalmente(skinActual);
+    actualizarColorPickers(customTokens);
+    seleccionarFuenteUI(tipoFuente);
+  } catch (e) {
+    // Fallback: usar skin de localStorage
+    const s = localStorage.getItem('mqf-skin') || 'indigo';
+    aplicarSkinLocalmente(s);
+  }
+}
+
+// ── SKIN SELECTION ────────────────────────────────────────────────────────────
+function seleccionarSkin(skin) {
+  skinActual = skin;
+  document.querySelectorAll('.skin-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + skin).classList.add('selected');
+
+  // Mostrar/ocultar editor custom
+  document.getElementById('custom-editor').classList.toggle('visible', skin === 'custom');
+
+  // Preview inmediato en padre (si está en iframe)
+  aplicarSkinLocalmente(skin);
+
+  // Notificar al padre (dashboard)
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'mqf-skin-preview', skin }, '*');
+  }
+}
+
+function aplicarSkinLocalmente(skin) {
+  document.body.setAttribute('data-skin', skin);
+  // Actualizar badges
+  ['indigo','obsidian','coral','custom'].forEach(s => {
+    const b = document.getElementById('badge-' + s);
+    if (b) { b.textContent = ''; b.className = 'skin-badge'; }
+  });
+  const active = document.getElementById('badge-' + skin);
+  if (active) { active.textContent = 'Activo'; active.className = 'skin-badge badge-active'; }
+
+  if (skin === 'custom') aplicarTokensCustom();
+}
+
+function aplicarTokensCustom() {
+  const root = document.documentElement;
+  COLOR_FIELDS.forEach(f => {
+    const val = document.getElementById('picker-' + f.key)?.value;
+    if (val) root.style.setProperty(f.css, val);
+  });
+}
+
+// ── COLOR PICKERS ─────────────────────────────────────────────────────────────
+function construirColorPickers() {
+  const grid = document.getElementById('color-grid');
+  grid.innerHTML = COLOR_FIELDS.map(f => `
+    <div class="color-field">
+      <label>${f.label}</label>
+      <div class="color-row">
+        <input type="color" id="picker-${f.key}" value="#4f46e5"
+               oninput="actualizarToken('${f.css}', this.value); document.getElementById('text-${f.key}').value = this.value;">
+        <input type="text" id="text-${f.key}" value="#4f46e5" maxlength="7"
+               oninput="if(this.value.match(/^#[0-9a-fA-F]{6}$/)){document.getElementById('picker-${f.key}').value=this.value; actualizarToken('${f.css}',this.value);}">
+      </div>
+    </div>
+  `).join('');
+}
+
+function actualizarColorPickers(tokens) {
+  COLOR_FIELDS.forEach(f => {
+    const val = tokens[f.key] || '#4f46e5';
+    const picker = document.getElementById('picker-' + f.key);
+    const text   = document.getElementById('text-'   + f.key);
+    if (picker) picker.value = val;
+    if (text)   text.value   = val;
+  });
+}
+
+function actualizarToken(cssVar, val) {
+  document.documentElement.style.setProperty(cssVar, val);
+  if (skinActual === 'custom') {
+    // Reflejo en --mqf-* para live preview
+    const map = {
+      '--brand-primary':        '--mqf-primary',
+      '--brand-secondary':      '--mqf-secondary',
+      '--brand-gradient-start': null,
+      '--brand-gradient-end':   null,
+      '--brand-bg':             '--mqf-bg',
+      '--brand-surface':        '--mqf-surface',
+      '--brand-text':           '--mqf-text',
+      '--brand-text-secondary': '--mqf-text-secondary',
+    };
+    if (map[cssVar]) document.documentElement.style.setProperty(map[cssVar], val);
+    // Actualizar gradiente
+    const gs = document.getElementById('picker-brand_gradient_start')?.value || '#4f46e5';
+    const ge = document.getElementById('picker-brand_gradient_end')?.value   || '#7c3aed';
+    document.documentElement.style.setProperty('--mqf-gradient', `linear-gradient(135deg, ${gs} 0%, ${ge} 100%)`);
+  }
+}
+
+// ── FUENTE ────────────────────────────────────────────────────────────────────
+function seleccionarFuente(font, el) {
+  tipoFuente = font;
+  seleccionarFuenteUI(font);
+}
+
+function seleccionarFuenteUI(font) {
+  document.querySelectorAll('.font-opt').forEach(o => {
+    o.classList.toggle('selected', o.dataset.font === font);
+  });
+  const prev = document.getElementById('font-preview');
+  if (prev) prev.style.fontFamily = font;
+}
+
+// ── GUARDAR ───────────────────────────────────────────────────────────────────
+async function aplicarEmpresa() {
+  MQF.btnLoading('btn-guardar-empresa', true, 'Aplicando...');
+  try {
+    const res = await api.solicitud('/skins.php/guardar_empresa', 'POST', { skin: skinActual });
+    if (res.exito) {
+      MQF.toast(res.mensaje, 'success');
+      localStorage.setItem('mqf-skin', skinActual);
+      if (skinActual === 'custom') await guardarCustomTokens();
+      notificarPadre(skinActual);
+    } else {
+      MQF.toast(res.mensaje, 'error');
+    }
+  } catch { MQF.toast('Error de conexión', 'error'); }
+  finally  { MQF.btnLoading('btn-guardar-empresa', false); }
+}
+
+async function aplicarSoloParaMi() {
+  try {
+    const res = await api.solicitud('/skins.php/guardar_usuario', 'POST', { skin: skinActual });
+    if (res.exito) {
+      MQF.toast(res.mensaje, 'success');
+      localStorage.setItem('mqf-skin', skinActual);
+      if (skinActual === 'custom') await guardarCustomTokens();
+      notificarPadre(skinActual);
+    } else {
+      MQF.toast(res.mensaje, 'error');
+    }
+  } catch { MQF.toast('Error de conexión', 'error'); }
+}
+
+async function guardarCustomTokens() {
+  const tokens = {};
+  COLOR_FIELDS.forEach(f => { tokens[f.key] = document.getElementById('picker-' + f.key)?.value || '#4f46e5'; });
+  tokens.brand_nombre_empresa = document.getElementById('brand-nombre')?.value || '';
+  tokens.brand_tipografia     = tipoFuente;
+  await api.solicitud('/skins.php/guardar_custom', 'POST', tokens);
+}
+
+async function restablecer() {
+  const ok = await MQF.confirm('¿Restablecer al tema Indigo Corp (default)?', { confirmText: 'Restablecer', type: 'primary' });
+  if (!ok) return;
+  await api.solicitud('/skins.php/guardar_usuario', 'POST', { skin: 'sistema' });
+  localStorage.setItem('mqf-skin', 'indigo');
+  seleccionarSkin('indigo');
+  notificarPadre('indigo');
+  MQF.toast('Skin restablecido al default del sistema.', 'info');
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
+function exportarBrand() {
+  window.open('/PLATAFORMA_INTEGRADA/backend/api/skins.php/exportar_brand', '_blank');
+}
+
+function importarBrand(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const res  = await api.solicitud('/skins.php/importar_brand', 'POST', data);
+      if (res.exito) { MQF.toast('Configuración importada. Recargando...', 'success'); setTimeout(() => location.reload(), 1500); }
+      else MQF.toast(res.mensaje, 'error');
+    } catch { MQF.toast('Archivo JSON inválido.', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+// ── COMUNICACIÓN CON IFRAME PADRE ─────────────────────────────────────────────
+function notificarPadre(skin) {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: 'mqf-skin-apply', skin }, '*');
+  }
+}
+
+// Escuchar si el padre nos pide actualizar
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'mqf-skin-set') {
+    aplicarSkinLocalmente(e.data.skin);
+  }
+});
+
+init();
+</script>
+</body>
+</html>

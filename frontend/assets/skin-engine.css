@@ -1,0 +1,146 @@
+/* ============================================================
+   SKIN ENGINE — MAS QUE FIANZAS
+   Motor de temas: sobrescribe tokens --mqf-* según [data-skin]
+   Versión: 1.0 | Mayo 2026
+   Uso:  <body data-skin="indigo">   (default)
+         <body data-skin="obsidian"> (dark mode)
+         <body data-skin="coral">    (energético)
+         <body data-skin="custom">   (B2B - tokens via JS)
+   ============================================================ */
+
+/* ── SKIN 1: INDIGO CORP (default, ya definido en design-system.css) ── */
+[data-skin="indigo"] {
+  --mqf-primary:         #4f46e5;
+  --mqf-primary-dark:    #4338ca;
+  --mqf-primary-light:   #eef2ff;
+  --mqf-secondary:       #7c3aed;
+  --mqf-gradient:        linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --mqf-bg:              #f4f6fb;
+  --mqf-surface:         #ffffff;
+  --mqf-surface-2:       #f8fafc;
+  --mqf-border:          #e5e7eb;
+  --mqf-text:            #1f2937;
+  --mqf-text-secondary:  #374151;
+  --mqf-text-muted:      #6b7280;
+  --mqf-text-light:      #9ca3af;
+  --mqf-text-inverse:    #ffffff;
+  --mqf-shadow-primary:  0 8px 20px rgba(79,70,229,.25);
+  color-scheme: light;
+}
+
+/* ── SKIN 2: OBSIDIAN DARK ── */
+[data-skin="obsidian"] {
+  --mqf-primary:         #818cf8;
+  --mqf-primary-dark:    #6366f1;
+  --mqf-primary-light:   #1e1b4b;
+  --mqf-primary-hover:   rgba(129,140,248,.12);
+  --mqf-secondary:       #a78bfa;
+  --mqf-gradient:        linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+
+  --mqf-bg:              #0f172a;
+  --mqf-surface:         #1e293b;
+  --mqf-surface-2:       #334155;
+  --mqf-border:          #334155;
+  --mqf-border-strong:   #475569;
+
+  --mqf-text:            #f1f5f9;
+  --mqf-text-secondary:  #e2e8f0;
+  --mqf-text-muted:      #94a3b8;
+  --mqf-text-light:      #64748b;
+  --mqf-text-inverse:    #0f172a;
+
+  --mqf-success:         #34d399;
+  --mqf-success-light:   #064e3b;
+  --mqf-success-text:    #6ee7b7;
+  --mqf-danger:          #f87171;
+  --mqf-danger-light:    #7f1d1d;
+  --mqf-danger-text:     #fca5a5;
+  --mqf-warning:         #fbbf24;
+  --mqf-warning-light:   #78350f;
+  --mqf-warning-text:    #fde68a;
+  --mqf-info:            #60a5fa;
+  --mqf-info-light:      #1e3a5f;
+  --mqf-info-text:       #93c5fd;
+
+  --mqf-shadow-xs:       0 1px 2px rgba(0,0,0,.4);
+  --mqf-shadow-sm:       0 1px 3px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
+  --mqf-shadow:          0 4px 6px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.3);
+  --mqf-shadow-md:       0 8px 15px rgba(0,0,0,.5), 0 3px 6px rgba(0,0,0,.3);
+  --mqf-shadow-primary:  0 8px 20px rgba(129,140,248,.3);
+
+  color-scheme: dark;
+}
+
+/* Ajustes específicos Obsidian para elementos del dashboard */
+[data-skin="obsidian"] .sidebar             { background: var(--mqf-gradient) !important; }
+[data-skin="obsidian"] .top-navbar          { background: var(--mqf-surface) !important; border-bottom: 1px solid var(--mqf-border); }
+[data-skin="obsidian"] .content-area        { background: var(--mqf-bg); }
+[data-skin="obsidian"] .stat-card,
+[data-skin="obsidian"] .card,
+[data-skin="obsidian"] .mqf-kpi-card        { background: var(--mqf-surface) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .data-table th       { background: var(--mqf-surface-2) !important; color: var(--mqf-primary) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .data-table td       { color: var(--mqf-text-secondary) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .data-table tr:hover td { background: var(--mqf-surface-2) !important; }
+[data-skin="obsidian"] .mqf-module-header   { background: var(--mqf-gradient) !important; }
+[data-skin="obsidian"] .form-input,
+[data-skin="obsidian"] .mqf-input           { background: var(--mqf-surface-2) !important; color: var(--mqf-text) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .mqf-modal           { background: var(--mqf-surface) !important; }
+[data-skin="obsidian"] .mqf-modal-header    { background: var(--mqf-gradient) !important; }
+[data-skin="obsidian"] .page-header         { background: var(--mqf-surface) !important; }
+[data-skin="obsidian"] .dropdown-menu,
+[data-skin="obsidian"] .dropdown-content    { background: var(--mqf-surface) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .dropdown-item       { color: var(--mqf-text-secondary) !important; }
+[data-skin="obsidian"] .dropdown-item:hover { background: var(--mqf-surface-2) !important; }
+[data-skin="obsidian"] input, [data-skin="obsidian"] select, [data-skin="obsidian"] textarea {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-text) !important;
+  border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .tbl-wrap,
+[data-skin="obsidian"] .table-container     { background: var(--mqf-surface) !important; }
+[data-skin="obsidian"] .wizard-body         { background: var(--mqf-surface) !important; border-color: var(--mqf-border) !important; }
+[data-skin="obsidian"] .comision-card       { background: var(--mqf-surface-2) !important; border-color: var(--mqf-border) !important; }
+
+/* ── SKIN 3: CORAL FINANCE ── */
+[data-skin="coral"] {
+  --mqf-primary:         #f43f5e;
+  --mqf-primary-dark:    #e11d48;
+  --mqf-primary-light:   #fff1f2;
+  --mqf-primary-hover:   rgba(244,63,94,.08);
+  --mqf-secondary:       #fb923c;
+  --mqf-gradient:        linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+
+  --mqf-bg:              #fff8f7;
+  --mqf-surface:         #ffffff;
+  --mqf-surface-2:       #fef2f2;
+  --mqf-border:          #fce7f3;
+  --mqf-border-strong:   #fbcfe8;
+
+  --mqf-text:            #18181b;
+  --mqf-text-secondary:  #3f3f46;
+  --mqf-text-muted:      #71717a;
+  --mqf-text-light:      #a1a1aa;
+  --mqf-text-inverse:    #ffffff;
+
+  --mqf-shadow-primary:  0 8px 20px rgba(244,63,94,.25);
+
+  color-scheme: light;
+}
+
+/* ── SKIN 4: CUSTOM BRAND (tokens inyectados via JS) ── */
+[data-skin="custom"] {
+  /* Los valores son inyectados dinámicamente por MQF.applySkin() */
+  --mqf-primary:         var(--brand-primary, #4f46e5);
+  --mqf-primary-dark:    var(--brand-primary-dark, #4338ca);
+  --mqf-primary-light:   var(--brand-primary-light, #eef2ff);
+  --mqf-secondary:       var(--brand-secondary, #7c3aed);
+  --mqf-gradient:        linear-gradient(135deg, var(--brand-gradient-start, #4f46e5) 0%, var(--brand-gradient-end, #7c3aed) 100%);
+  --mqf-bg:              var(--brand-bg, #f4f6fb);
+  --mqf-surface:         var(--brand-surface, #ffffff);
+  --mqf-text:            var(--brand-text, #1f2937);
+  --mqf-text-secondary:  var(--brand-text-secondary, #374151);
+  color-scheme: light;
+}
