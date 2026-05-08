@@ -248,8 +248,13 @@ async function cargarConfig() {
   aplicarSkinLocalmente(localSkin);
 
   try {
-    const res = await api.solicitud('/skins.php/obtener');
-    if (!res || !res.exito) return; // fallo silencioso
+    const token = localStorage.getItem('token_sesion') || '';
+    const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/skins.php/obtener', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    });
+    if (!response.ok) return; // fallo silencioso si no hay auth
+    const res = await response.json();
+    if (!res || !res.exito) return;
 
     const skinEfectivo = res.skin_efectivo || localSkin;
     customTokens = res.custom_tokens || {};

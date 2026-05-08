@@ -288,11 +288,24 @@
                             <button class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp();">
                                 <span>🔐</span> Seguridad y Accesos
                             </button>
+                            <button class="config-nav-btn" data-target="config-ux-skins" onclick="cargarIframeUxSkins()">
+                                <span>🎨</span> UX / Apariencia
+                            </button>
                         </div>
                         
                         <!-- Paneles de Configuración -->
                         <div class="config-content-panels">
-                            
+
+                            <!-- Panel UX / Apariencia -->
+                            <div id="config-ux-skins" class="config-panel" style="padding:0;overflow:hidden;">
+                                <iframe
+                                    id="ux-skins-iframe"
+                                    src=""
+                                    style="width:100%;height:calc(100vh - 130px);border:none;display:block;"
+                                    title="UX / Apariencia">
+                                </iframe>
+                            </div>
+
                             <!-- Panel Generales -->
                             <div id="config-generales" class="config-panel active">
                                 <div class="opciones-configuracion">
@@ -850,6 +863,30 @@
       window.MQF = window.MQF || {};
       window.MQF.applySkin = aplicarSkin;
     })();
+    </script>
+    <script>
+    /* ── UX-SKINS: iframe loader + config panel switcher ── */
+    function cargarIframeUxSkins() {
+      var iframe = document.getElementById('ux-skins-iframe');
+      if (iframe && !iframe.dataset.loaded) {
+        iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/ux-skins.html?v=' + Date.now();
+        iframe.dataset.loaded = 'true';
+      }
+    }
+
+    // Activar el panel correcto al hacer click en config-nav-btn
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.config-nav-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var target = btn.dataset.target;
+          document.querySelectorAll('.config-nav-btn').forEach(function(b){ b.classList.remove('active'); });
+          document.querySelectorAll('.config-panel').forEach(function(p){ p.classList.remove('active'); });
+          btn.classList.add('active');
+          var panel = document.getElementById(target);
+          if (panel) panel.classList.add('active');
+        });
+      });
+    });
     </script>
 </body>
 </html>
