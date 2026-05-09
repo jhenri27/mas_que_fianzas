@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Finance Lab - MQF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/components.css">
+    <style>
+        body { padding: 40px; }
+        .lab-container { max-width: 1000px; margin: 0 auto; }
+        .lab-card { 
+            background: white; border-radius: 16px; border: 1px solid var(--mqf-border); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; overflow: hidden;
+        }
+        .lab-header { padding: 30px; background: var(--mqf-primary); color: white !important; }
+        .lab-header h1, .lab-header p, .lab-header i { color: white !important; }
+        .lab-header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+        .lab-section { padding: 30px; border-bottom: 1px solid var(--mqf-border); }
+        .lab-section:last-child { border-bottom: none; }
+        .lab-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--mqf-primary); }
+        
+        .test-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .result-box { 
+            background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; 
+            padding: 20px; font-family: 'Courier New', Courier, monospace; font-size: 13px;
+            max-height: 300px; overflow-y: auto;
+        }
+        .entry-line { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 5px 0; }
+        .entry-line span:nth-child(2) { color: var(--mqf-success); font-weight: bold; }
+        .entry-line span:nth-child(3) { color: var(--mqf-danger); font-weight: bold; }
+        
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-badge.success { background: #dcfce7; color: #166534; }
+        
+        .toggle-ncf { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body class="mqf-bg-surface">
+
+    <div class="lab-container">
+        
+        <div class="lab-card">
+            <div class="lab-header">
+                <h1><i class="fa-solid fa-flask-vial"></i> Centro Financiero: Laboratorio de Integración</h1>
+                <p style="margin-top:5px; opacity:0.9;">Prueba de Asientos Automáticos y Gestión de NCF v3.0</p>
+            </div>
+
+            <!-- SECCIÓN 1: PRUEBA DE NCF -->
+            <div class="lab-section">
+                <div class="lab-title"><i class="fa-solid fa-receipt"></i> Generador de NCF</div>
+                <div class="test-grid">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-4">Simula la solicitud de un nuevo comprobante fiscal al sistema.</p>
+                        <div class="form-group">
+                            <label>Tipo de Comprobante</label>
+                            <select id="ncf_tipo" class="mqf-input">
+                                <option value="B01">Factura de Crédito Fiscal (B01)</option>
+                                <option value="B02" selected>Factura de Consumo (B02)</option>
+                                <option value="B14">Regímenes Especiales (B14)</option>
+                            </select>
+                        </div>
+                        <div class="toggle-ncf">
+                            <input type="checkbox" id="ncf_usar" checked>
+                            <label for="ncf_usar">Habilitar uso de NCF (Toggle de Emergencia)</label>
+                        </div>
+                        <button onclick="testNCF()" class="mqf-btn mqf-btn--primary mt-4" style="width:100%">
+                            Generar Siguiente NCF
+                        </button>
+                    </div>
+                    <div id="ncf_result" class="result-box">
+                        Esperando acción...
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: PRUEBA DE ASIENTOS -->
+            <div class="lab-section">
+                <div class="lab-title"><i class="fa-solid fa-calculator"></i> Motor de Asientos (Auto-Asientos)</div>
+                <div class="test-grid">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-4">Dispara un evento de negocio para generar su representación contable.</p>
+                        <div class="form-group">
+                            <label>Evento de Negocio</label>
+                            <select id="asiento_evento" class="mqf-input">
+                                <option value="EMISION_POLIZA">Emisión de Póliza (Seguros/Fianzas)</option>
+                                <option value="COBRO_PRIMA">Cobro de Prima (Caja/Bancos)</option>
+                                <option value="PAGO_COMISION_AGENTE">Pago a Agente (Con Retención 10%)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Monto de la Operación (DOP)</label>
+                            <input type="number" id="asiento_monto" class="mqf-input" value="10000">
+                        </div>
+                        <button onclick="testAsiento()" class="mqf-btn mqf-btn--secondary mt-2" style="width:100%">
+                            Disparar Evento Contable
+                        </button>
+                    </div>
+                    <div id="asiento_result" class="result-box">
+                        Esperando evento...
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: CONTROL DE LABORATORIO -->
+            <div class="lab-section" style="background:#fff1f2;">
+                <div class="lab-title" style="color:#be123c;"><i class="fa-solid fa-triangle-exclamation"></i> Control del Entorno</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <p class="text-sm text-gray-700">Elimina todos los asientos generados por este laboratorio para limpiar la base de datos.</p>
+                    <button onclick="limpiarLab()" class="mqf-btn" style="background:#e11d48; color:white; border:none;">Resetear Datos del Lab</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const API = window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/finance_lab.php';
+
+        async function testNCF() {
+            const tipo = document.getElementById('ncf_tipo').value;
+            const usar = document.getElementById('ncf_usar').checked;
+            const resBox = document.getElementById('ncf_result');
+            
+            resBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Solicitando...';
+            
+            try {
+                const response = await fetch(`${API}?action=test_ncf`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({tipo, usar})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error Servidor (Status ${response.status}):<br><small>${errorText}</small></div>`;
+                    return;
+                }
+
+                const res = await response.json();
+
+                if(res.exito) {
+                    let ncfDisplay = res.datos.ncf;
+                    let label = "NCF GENERADO";
+                    let color = "var(--mqf-primary)";
+                    
+                    if (!usar) {
+                        ncfDisplay = "OPCIÓN NCF: OFF";
+                        label = "SISTEMA OPERATIVO";
+                        color = "#64748b";
+                    } else if (!ncfDisplay) {
+                        ncfDisplay = "ERROR: SIN SECUENCIA";
+                        label = "FALLO DE MOTOR";
+                        color = "var(--mqf-danger)";
+                    }
+
+                    resBox.innerHTML = `
+                        <div style="color:${color}; font-weight:bold; margin-bottom:10px;">${label}</div>
+                        <div style="font-size:24px; text-align:center; padding:10px; background:white; border:1px solid #e2e8f0; border-radius:8px; color:${color}">
+                            ${ncfDisplay}
+                        </div>
+                        <div class="mt-4 text-xs">
+                            Status: <span class="status-badge ${res.datos.ncf || !usar ? 'success' : ''}" style="${!res.datos.ncf && usar ? 'background:#fee2e2; color:#b91c1c' : ''}">${res.datos.ncf || !usar ? 'OK' : 'ERROR'}</span><br>
+                            Fecha: ${new Date().toLocaleString()}
+                        </div>
+                    `;
+                } else {
+                    resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error: ${res.mensaje}</div>`;
+                }
+            } catch(e) {
+                resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error de proceso:<br><small>${e.message}</small></div>`;
+            }
+        }
+
+        async function testAsiento() {
+            const evento = document.getElementById('asiento_evento').value;
+            const monto = document.getElementById('asiento_monto').value;
+            const resBox = document.getElementById('asiento_result');
+            
+            resBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando Asiento...';
+
+            try {
+                const response = await fetch(`${API}?action=test_asiento`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({evento, monto})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error Servidor (Status ${response.status}):<br><small>${errorText}</small></div>`;
+                    return;
+                }
+
+                const res = await response.json();
+
+                if(res.exito) {
+                    let lineasHtml = res.datos.lineas.map(l => `
+                        <div class="entry-line">
+                            <span style="width:100px">${l.cuenta}</span>
+                            <span style="width:80px; text-align:right">${parseFloat(l.debe) > 0 ? parseFloat(l.debe).toFixed(2) : ''}</span>
+                            <span style="width:80px; text-align:right">${parseFloat(l.haber) > 0 ? parseFloat(l.haber).toFixed(2) : ''}</span>
+                        </div>
+                    `).join('');
+
+                    resBox.innerHTML = `
+                        <div style="color:var(--mqf-primary); font-weight:bold; margin-bottom:10px;">ASIENTO: ${res.datos.numero}</div>
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; border-bottom:2px solid #334155; margin-bottom:5px; font-size:11px;">
+                            <span>CUENTA</span><span>DEBE</span><span>HABER</span>
+                        </div>
+                        ${lineasHtml}
+                        <div class="mt-4 text-xs">
+                            ID Interno: ${res.datos.asiento_id}<br>
+                            Integridad Partida Doble: <span class="status-badge success">VERIFICADA</span>
+                        </div>
+                    `;
+                } else {
+                    resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error: ${res.mensaje}</div>`;
+                }
+            } catch(e) {
+                resBox.innerHTML = `<div style="color:var(--mqf-danger)">Error de proceso:<br><small>${e.message}</small></div>`;
+            }
+        }
+
+        async function limpiarLab() {
+            if(!confirm('¿Seguro que deseas eliminar los datos de prueba del Lab?')) return;
+            try {
+                const res = await fetch(`${API}?action=limpiar_lab`).then(r=>r.json());
+                alert(res.mensaje);
+                location.reload();
+            } catch(e) { alert('Error al limpiar'); }
+        }
+    </script>
+</body>
+</html>

@@ -120,8 +120,44 @@ try {
         if (empty($datos['numero']) || empty($datos['tipo'])) {
             respuestaJSON(false, 'Numero y tipo son obligatorios', null, 400);
         }
-        insertar_cotizacion($db, $datos);
-        respuestaJSON(true, 'Cotizacion guardada en base de datos', ['numero' => $datos['numero']], 201);
+        
+        if (insertar_cotizacion($db, $datos)) {
+            // --- INTEGRACIÓN CENTRO FINANCIERO (HOOKS) ---
+            try {
+                require_once '../MotorContable.php';
+                require_once '../NCFManager.php';
+
+                // 1. Generar NCF (opcional)
+                $usarNCF = isset($datos['usar_ncf']) ? (bool)$datos['usar_ncf'] : false;
+                $ncfMgr = new \MQF\Finance\NCFManager($db);
+                $ncf = $ncfMgr->generarSiguiente('B02', $usarNCF);
+
+                // 2. Disparar Asiento Automático
+                $payloadContable = array_merge($datos, [
+                    'modulo' => 'COTIZACIONES',
+                    'id' => $db->insert_id,
+                    'ncf' => $ncf,
+                    'comision' => $datos['total'] * 0.10, // Ejemplo: 10% comisión
+                    'itbis' => ($datos['total'] * 0.10) * 0.18, // ITBIS s/comisión
+                    'monto_neto' => $datos['total'] - ($datos['total'] * 0.10)
+                ]);
+
+                \MQF\Finance\MotorContable::disparar('EMISION_POLIZA', $payloadContable);
+
+                respuestaJSON(true, 'Cotizacion guardada y procesada contablemente', [
+                    'numero' => $datos['numero'],
+                    'ncf' => $ncf
+                ], 201);
+
+            } catch (\Exception $e) {
+                // Si falla la contabilidad, el registro principal ya se guardó.
+                // Logueamos pero devolvemos éxito de la venta para no interferir.
+                error_log("Error Contable en Cotizacion: " . $e->getMessage());
+                respuestaJSON(true, 'Cotizacion guardada (Contabilidad pendiente)', ['numero' => $datos['numero']], 201);
+            }
+        } else {
+            respuestaJSON(false, 'Error al guardar cotización', null, 500);
+        }
 
     // ACTUALIZAR (por ID)
     } elseif ($action === 'actualizar' && $metodo === 'POST') {

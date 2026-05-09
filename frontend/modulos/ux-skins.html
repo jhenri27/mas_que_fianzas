@@ -156,6 +156,23 @@
     </div>
 
   </div>
+  
+  <!-- Configuración Avanzada -->
+  <div class="section-card" style="margin-top:28px; padding: 20px; background: white; border-radius: 12px; border: 1px solid var(--mqf-border);">
+    <div class="section-title" style="display:flex; align-items:center; gap:10px; margin-bottom:12px; font-weight:700;">
+      <i class="fa-solid fa-clock" style="color:var(--mqf-primary)"></i> Automatización Horaria
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-weight:600; font-size:14px; color:var(--mqf-text);">Modo Inteligente Día/Noche</div>
+        <div style="font-size:12px; color:var(--mqf-text-muted);">Activa automáticamente el modo Obsidian Dark después de las 19:00 hasta las 07:00.</div>
+      </div>
+      <label class="mqf-switch">
+        <input type="checkbox" id="auto-theme-toggle" onchange="toggleAutoTheme()">
+        <span class="mqf-switch-slider"></span>
+      </label>
+    </div>
+  </div>
 
   <!-- Editor Custom Brand -->
   <div class="custom-editor" id="custom-editor">
@@ -445,11 +462,39 @@ async function guardarCustomTokens() {
 async function restablecer() {
   if (!confirm('¿Restablecer al tema Indigo Corp (default)?')) return;
   localStorage.setItem('mqf-skin', 'indigo');
+  localStorage.setItem('mqf-auto-theme', 'false');
+  const toggle = document.getElementById('auto-theme-toggle');
+  if (toggle) toggle.checked = false;
   seleccionarSkin('indigo');
   notificarPadre('indigo');
   await apiPost('/skins.php/guardar_usuario', { skin: 'sistema' }); // silencioso
   MQF.toast('Tema restablecido al default.', 'info');
 }
+
+function toggleAutoTheme() {
+  const enabled = document.getElementById('auto-theme-toggle').checked;
+  localStorage.setItem('mqf-auto-theme', enabled);
+  if (enabled) {
+    MQF.toast('🌙 Modo Automático activado. Se aplicará según la hora local.', 'info');
+    // Forzar check inmediato
+    const hora = new Date().getHours();
+    if (hora >= 19 || hora < 7) {
+      seleccionarSkin('obsidian');
+    } else {
+      seleccionarSkin('indigo');
+    }
+  } else {
+    MQF.toast('☀️ Modo Automático desactivado.', 'info');
+  }
+}
+
+function initAutoThemeUI() {
+  const enabled = localStorage.getItem('mqf-auto-theme') === 'true';
+  const toggle = document.getElementById('auto-theme-toggle');
+  if (toggle) toggle.checked = enabled;
+}
+
+document.addEventListener('DOMContentLoaded', initAutoThemeUI);
 
 
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────

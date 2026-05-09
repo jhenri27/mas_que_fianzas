@@ -27,13 +27,7 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
-    .cot-header { background: var(--mqf-gradient, linear-gradient(135deg,#4f46e5,#7c3aed)); padding: 20px 28px 10px; }
-    .cot-header h1 { color: #fff; font-size: 22px; font-weight: 700; margin: 0 0 4px; }
-    .cot-header p { color: rgba(255,255,255,0.75); font-size: 13px; margin: 0 0 16px; }
-    .cot-tabs { display: flex; gap: 4px; }
-    .cot-tab { padding: 10px 22px; border: none; cursor: pointer; border-radius: 10px 10px 0 0; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
-    .cot-tab:hover { background: rgba(255,255,255,0.25); color: #fff; }
-    .cot-tab.active { background: #fff; color: var(--mqf-primary, #4f46e5); }
+
     .cot-panel { display: none; padding: 24px; }
     .cot-panel.active { display: block; }
     .section-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
@@ -70,13 +64,13 @@
   </style>
 </head>
 <body>
-  <div class="cot-header">
-    <h1><i class="fa-solid fa-chart-line"></i> Módulo de Cotizaciones</h1>
-    <p>Genera cotizaciones de Seguros de Ley y Fianzas</p>
-    <div class="cot-tabs">
-      <button class="cot-tab active" onclick="showTab('seguros')" id="tab-seguros">🚗 Seguros de Ley</button>
-      <button class="cot-tab" onclick="showTab('fianzas')" id="tab-fianzas">🛡️ Fianzas</button>
-      <button class="cot-tab" onclick="showTab('historial')" id="tab-historial">📜 Historial</button>
+  <div class="mqf-module-header">
+    <h1 class="mqf-module-header__title"><i class="fa-solid fa-chart-line"></i> Módulo de Cotizaciones</h1>
+    <p class="mqf-module-header__subtitle">Genera cotizaciones de Seguros de Ley y Fianzas</p>
+    <div class="mqf-module-tabs">
+      <button class="mqf-module-tab active" onclick="showTab('seguros')" id="tab-seguros">🚗 Seguros de Ley</button>
+      <button class="mqf-module-tab" onclick="showTab('fianzas')" id="tab-fianzas">🛡️ Fianzas</button>
+      <button class="mqf-module-tab" onclick="showTab('historial')" id="tab-historial">📜 Historial</button>
     </div>
   </div>
 
@@ -122,7 +116,11 @@
         <div class="form-group full"><label>Monto Afianzado (DOP) *</label><input type="number" id="f_monto" placeholder="0.00" oninput="calcularFianza()"></div>
         <div class="form-group full"><label>Beneficiario</label><input type="text" id="f_beneficiario" placeholder="Nombre de la entidad"></div>
       </div>
-      <div style="margin-top:16px;"><button class="btn-primary" onclick="guardarCotizacion()"><i class="fa-solid fa-save"></i> Guardar y Descargar PDF</button></div>
+      <div style="margin-top:16px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="f_usar_ncf" checked style="width:auto;"> 
+        <label for="f_usar_ncf" style="font-size:13px; color:#4b5563; cursor:pointer;">Generar NCF (Comprobante Fiscal B02)</label>
+      </div>
+      <div style="margin-top:8px;"><button class="btn-primary" onclick="guardarCotizacion()"><i class="fa-solid fa-save"></i> Guardar y Descargar PDF</button></div>
     </div>
     <div class="result-card">
       <div class="section-title"><i class="fa-solid fa-calculator"></i> Resultado</div>
@@ -169,7 +167,7 @@
     // === TAB SWITCHING ===
     function showTab(name) {
       document.querySelectorAll('.cot-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.cot-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
       document.getElementById('panel-' + name).classList.add('active');
       document.getElementById('tab-' + name).classList.add('active');
       if (name === 'historial') cargarHistorial();
@@ -300,7 +298,8 @@
         total: cot.total,
         cobertura: JSON.stringify(coberturasArr),
         tasa: TASAS[tipo],
-        fecha: new Date().toISOString()
+        fecha: new Date().toISOString(),
+        usar_ncf: document.getElementById('f_usar_ncf').checked
       };
 
       const action = window._editingFianzaId ? 'actualizar' : 'guardar';
@@ -548,6 +547,7 @@
       const [selectedCoverage, setSelectedCoverage] = React.useState('');
       const [showCoverageDetails, setShowCoverageDetails] = React.useState(false);
       const [optionalSelected, setOptionalSelected] = React.useState({});
+      const [usarNCF, setUsarNCF] = React.useState(true);
       
       const OPTIONAL_SERVICES = React.useMemo(() => [
         { id: 'ASIST_VIAL_LIV', label: 'ASISTENCIA VIAL (VEHICULO LIVIANO)', price: 2600 },
@@ -1015,7 +1015,8 @@
                       prima_base: price, 
                       cobertura: selectedCoverage, 
                       servicios_opcionales: optionalSelected, 
-                      total: totalPrice 
+                      total: totalPrice,
+                      usar_ncf: usarNCF
                     };
                     
                     const action = editingId ? 'actualizar' : 'guardar';
@@ -1038,10 +1039,14 @@
                   }} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">
                     {editingId ? 'Guardar Cambios' : 'Guardar y Descargar PDF'}
                   </button>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={usarNCF} onChange={e=> setUsarNCF(e.target.checked)} />
+                    <span className="text-sm text-gray-700">Generar NCF (B02)</span>
+                  </label>
                   <button onClick={()=>{ 
                     setEditingId(null);
                     setEditingNum(null);
-                    setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); 
+                    setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(true);
                   }} className="px-4 py-2 border rounded">
                     {editingId ? 'Cancelar Edición' : 'Restablecer'}
                   </button>
@@ -1063,6 +1068,7 @@
     document.body.setAttribute('data-skin', s);
     document.documentElement.setAttribute('data-skin', s);
   })();
+
   window.addEventListener('message', function(e){
     if(e.data && e.data.type === 'mqf-skin-set'){
       document.body.setAttribute('data-skin', e.data.skin);

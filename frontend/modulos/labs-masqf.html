@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>LABS-MASQF: Centro de Tecnología - MQF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/components.css">
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="../assets/logo_b64.js"></script>
+    <style>
+        :root {
+            --lab-primary: #0f172a;
+            --lab-accent: #3b82f6;
+            --lab-success: #10b981;
+            --lab-danger: #ef4444;
+            --lab-warning: #f59e0b;
+            --lab-bg: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--lab-bg);
+            margin: 0;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .lab-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        /* Sidebar Tecnológico */
+        .lab-sidebar {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .lab-sidebar-header {
+            padding: 15px 20px;
+            background: var(--mqf-gradient);
+            color: white !important;
+        }
+
+        .lab-sidebar-header h2 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lab-sidebar-header i {
+            color: white !important;
+            opacity: 0.9;
+        }
+
+        .lab-status-list {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .status-item span { font-size: 14px; font-weight: 500; }
+        .status-dot { 
+            width: 8px; height: 8px; border-radius: 50%; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .status-dot.online { background: var(--lab-success); box-shadow: 0 0 8px var(--lab-success); }
+        .status-dot.warning { background: var(--lab-warning); }
+        .status-dot.error { background: var(--lab-danger); }
+
+        /* Main Content */
+        .lab-main {
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .lab-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .lab-card-header {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lab-card-header h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lab-card-body {
+            padding: 20px;
+        }
+
+        /* Mono Terminal Styles */
+        .lab-terminal {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .lab-terminal .cmd { color: #3b82f6; }
+        .lab-terminal .res { color: #10b981; }
+        .lab-terminal .err { color: #ef4444; }
+
+        /* Dashboard Actions */
+        .actions-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-card {
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-card:hover {
+            border-color: var(--lab-accent);
+            background: #f0f9ff;
+            transform: translateY(-2px);
+        }
+
+        .action-card i {
+            font-size: 20px;
+            color: var(--lab-accent);
+        }
+
+        .action-card div h4 { margin: 0; font-size: 14px; }
+        .action-card div p { margin: 0; font-size: 12px; color: #64748b; }
+
+        /* Release Manager Badge */
+        .version-badge {
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+        }
+    </style>
+</head>
+<body class="mqf-bg-surface">
+
+    <div class="mqf-module-header">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <h1 class="mqf-module-header__title">
+                    <i class="fa-solid fa-flask-vial"></i> LABS-MASQF
+                </h1>
+                <p class="mqf-module-header__subtitle">Centro de Tecnología, Diagnóstico y Soporte Avanzado</p>
+            </div>
+            <div style="display:flex; gap:8px; padding-top:4px;">
+                <span class="version-badge" style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3);">v3.0.1 Stable</span>
+            </div>
+        </div>
+        <div class="mqf-module-tabs">
+            <button class="mqf-module-tab active" onclick="showPanel('mando')" id="tab-mando">
+                <i class="fa-solid fa-terminal"></i> Centro de Mando
+            </button>
+            <button class="mqf-module-tab" onclick="showPanel('skins')" id="tab-skins">
+                <i class="fa-solid fa-palette"></i> Skins & UI
+            </button>
+            <button class="mqf-module-tab" onclick="showPanel('ncf-manager')" id="tab-ncf">
+                <i class="fa-solid fa-hashtag"></i> NCF Manager
+            </button>
+        </div>
+    </div>
+
+    <div class="lab-grid" style="padding: 20px; height: calc(100vh - 140px);">
+        
+        <!-- SIDEBAR DIAGNÓSTICO -->
+        <aside class="lab-sidebar">
+            <div class="lab-sidebar-header">
+                <h2><i class="fa-solid fa-microscope"></i> Estado Local</h2>
+            </div>
+            
+            <div class="lab-status-list">
+                <div style="font-size:11px; color:#64748b; text-transform:uppercase; font-weight:700; margin-bottom:10px;">Salud del Entorno</div>
+                
+                <div class="status-item">
+                    <span>Base de Datos (MariaDB)</span>
+                    <div class="status-dot online" id="status-db"></div>
+                </div>
+                <div class="status-item">
+                    <span>Motor Contable (Core)</span>
+                    <div class="status-dot online" id="status-motor"></div>
+                </div>
+                <div class="status-item">
+                    <span>Secuenciador NCF</span>
+                    <div class="status-dot online" id="status-ncf"></div>
+                </div>
+                <div class="status-item">
+                    <span>API Integración</span>
+                    <div class="status-dot online" id="status-api"></div>
+                </div>
+                <div class="status-item">
+                    <span>Espacio en Disco</span>
+                    <span style="font-size:12px; color:var(--lab-success);">82% Libre</span>
+                </div>
+
+                <div style="margin-top:30px; font-size:11px; color:#64748b; text-transform:uppercase; font-weight:700; margin-bottom:10px;">Sesión Activa</div>
+                <div style="padding:15px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
+                    <div style="font-weight:600; font-size:13px;" id="tech-user">Administrador Sistema</div>
+                    <div style="font-size:11px; color:#64748b;">Nivel: Tecnología / IA Labs</div>
+                </div>
+            </div>
+
+            <div style="padding:20px; border-top:1px solid #f1f5f9;">
+                <button onclick="checkHealth()" class="mqf-btn mqf-btn--secondary" style="width:100%; font-size:12px;">
+                    <i class="fa-solid fa-arrows-rotate"></i> Forzar Check de Salud
+                </button>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="lab-main" id="panel-mando">
+            
+            <!-- MOTOR DE PRUEBAS RÁPIDAS -->
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-bolt"></i> Acciones de Emergencia y Diagnóstico</h3>
+                </div>
+                <div class="lab-card-body">
+                    <div class="actions-row">
+                        <div class="action-card" onclick="triggerTest('ncf')">
+                            <i class="fa-solid fa-hashtag"></i>
+                            <div>
+                                <h4>Test de NCF</h4>
+                                <p>Verificar última secuencia</p>
+                            </div>
+                        </div>
+                        <div class="action-card" onclick="triggerTest('asiento')">
+                            <i class="fa-solid fa-calculator"></i>
+                            <div>
+                                <h4>Test Contable</h4>
+                                <p>Simular evento partida doble</p>
+                            </div>
+                        </div>
+                        <div class="action-card" onclick="limpiarLab()">
+                            <i class="fa-solid fa-broom"></i>
+                            <div>
+                                <h4>Limpieza Lab</h4>
+                                <p>Borrar registros temporales</p>
+                            </div>
+                        </div>
+                        <div class="action-card" onclick="alert('Funcionalidad de Release Manager próximamente')">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <div>
+                                <h4>Push Update</h4>
+                                <p>Sincronizar módulos SaaS</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TERMINAL DE OUTPUT -->
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-terminal"></i> Terminal de Eventos LABS-MASQF</h3>
+                    <button onclick="clearTerminal()" style="background:none; border:none; color:var(--lab-accent); cursor:pointer; font-size:12px;">Limpiar</button>
+                </div>
+                <div class="lab-card-body">
+                    <div id="lab-terminal" class="lab-terminal">
+                        <div class="res">[SYSTEM] LABS-MASQF Inicializado...</div>
+                        <div class="cmd">> Ready for commands.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULARIO DE PRUEBA AVANZADO (HIDDEN BY DEFAULT) -->
+            <div id="test-panel" class="lab-card" style="display:none;">
+                <div class="lab-card-header">
+                    <h3 id="test-panel-title">Configuración de Prueba</h3>
+                    <button onclick="closeTestPanel()" style="background:none; border:none; cursor:pointer;">&times;</button>
+                </div>
+                <div class="lab-card-body" id="test-panel-body">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- PANEL SKINS & UI -->
+        <main class="lab-main" id="panel-skins" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Auditor de Interfaz y Skins</h3>
+                </div>
+                <div class="lab-card-body">
+                    <p class="text-sm text-gray-600 mb-4">Herramienta para verificar la integridad visual y la aplicación de los tokens de diseño (Skin Engine).</p>
+                    
+                    <div class="test-grid" style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px;">
+                        <!-- Columna 1: Tokens -->
+                        <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <h4 style="margin-top:0; font-size:14px; color:var(--lab-accent);">
+                                <i class="fa-solid fa-code"></i> CSS Design Tokens (Computed)
+                            </h4>
+                            <div id="skin-tokens-list" style="display:grid; grid-template-columns: 1fr; gap:8px;">
+                                <!-- JS content -->
+                            </div>
+                        </div>
+                        
+                        <!-- Columna 2: Preview -->
+                        <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <h4 style="margin-top:0; font-size:14px; color:var(--lab-accent);">
+                                <i class="fa-solid fa-eye"></i> Previsualización de Componentes
+                            </h4>
+                            
+                            <div style="display:flex; flex-direction:column; gap:12px;">
+                                <div style="display:flex; gap:8px;">
+                                    <button class="mqf-btn mqf-btn--primary">Primario</button>
+                                    <button class="mqf-btn mqf-btn--secondary">Secundario</button>
+                                </div>
+                                <div style="padding:10px; background:var(--mqf-gradient); color:white; border-radius:8px; text-align:center; font-weight:bold; font-size:12px;">
+                                    var(--mqf-gradient)
+                                </div>
+                                <div style="padding:10px; background:var(--mqf-primary-light); color:var(--mqf-primary-text); border-radius:8px; border:1px solid var(--mqf-primary); font-size:12px;">
+                                    Alerta Informativa MQF
+                                </div>
+                                <div class="lab-card" style="margin-bottom:0; box-shadow:none; border-style:dashed;">
+                                    <div class="lab-card-header" style="padding:10px;">
+                                        <h3 style="font-size:12px;">Card Interna</h3>
+                                    </div>
+                                    <div class="lab-card-body" style="padding:10px; font-size:11px;">
+                                        Cuerpo de la tarjeta con tokens aplicados.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- PANEL NCF MANAGER -->
+        <main class="lab-main" id="panel-ncf-manager" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-list-ol"></i> Monitor de Secuencias NCF (DGII)</h3>
+                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="imprimirReporteNCF()">
+                        <i class="fa-solid fa-file-pdf"></i> Imprimir Reporte NCF
+                    </button>
+                </div>
+                <div class="lab-card-body">
+                    <div id="ncf-stats-grid" class="actions-row" style="margin-bottom:20px;">
+                        <!-- Se llena vía JS -->
+                    </div>
+
+                    <div class="lab-card" style="margin-bottom:0;">
+                        <div class="lab-card-header" style="background:#f1f5f9;">
+                            <h3 style="font-size:13px; color:#475569;">Log de Auditoría NCF (Últimos 20)</h3>
+                        </div>
+                        <div class="lab-card-body" style="padding:0;">
+                            <table class="mqf-table" style="width:100%; border-collapse:collapse; font-size:12px;">
+                                <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                                    <tr>
+                                        <th style="padding:10px; text-align:left;">Fecha</th>
+                                        <th style="padding:10px; text-align:left;">Tipo</th>
+                                        <th style="padding:10px; text-align:left;">NCF</th>
+                                        <th style="padding:10px; text-align:left;">Módulo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ncf-log-tbody">
+                                    <!-- Se llena vía JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const API = window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/finance_lab.php';
+        const terminal = document.getElementById('lab-terminal');
+
+        function log(msg, type = 'res') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearTerminal() { terminal.innerHTML = ''; log('Terminal reseteada.', 'cmd'); }
+
+        async function checkHealth() {
+            log('Iniciando chequeo de salud...', 'cmd');
+            // Simulación por ahora, luego conectar a un endpoint de salud real
+            setTimeout(() => {
+                log('DB Connection: OK (Latency 5ms)', 'res');
+                log('Contabilidad Engine: OK', 'res');
+                log('NCF Sequential: Active', 'res');
+            }, 500);
+        }
+
+        function triggerTest(type) {
+            const panel = document.getElementById('test-panel');
+            const title = document.getElementById('test-panel-title');
+            const body = document.getElementById('test-panel-body');
+            
+            panel.style.display = 'block';
+            
+            if (type === 'ncf') {
+                title.innerHTML = '<i class="fa-solid fa-hashtag"></i> Simulación de NCF';
+                body.innerHTML = `
+                    <div class="form-group">
+                        <label>Tipo de Comprobante</label>
+                        <select id="sim_ncf_tipo" class="mqf-input">
+                            <option value="B01">Crédito Fiscal (B01)</option>
+                            <option value="B02" selected>Consumo (B02)</option>
+                        </select>
+                    </div>
+                    <button onclick="runNCFTest()" class="mqf-btn mqf-btn--primary mt-4">Solicitar NCF</button>
+                `;
+            } else if (type === 'asiento') {
+                title.innerHTML = '<i class="fa-solid fa-calculator"></i> Simulación de Asiento Contable';
+                body.innerHTML = `
+                    <div class="form-group">
+                        <label>Evento de Negocio</label>
+                        <select id="sim_asiento_evento" class="mqf-input">
+                            <option value="EMISION_POLIZA">Emisión de Póliza</option>
+                            <option value="COBRO_PRIMA">Cobro de Prima</option>
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Monto DOP</label>
+                        <input type="number" id="sim_asiento_monto" class="mqf-input" value="5000">
+                    </div>
+                    <button onclick="runAsientoTest()" class="mqf-btn mqf-btn--secondary mt-4">Disparar Motor</button>
+                `;
+            }
+        }
+
+        async function runNCFTest() {
+            const tipo = document.getElementById('sim_ncf_tipo').value;
+            log(`Solicitando NCF tipo ${tipo}...`, 'cmd');
+            try {
+                const res = await fetch(`${API}?action=test_ncf`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({tipo, usar: true})
+                }).then(r => r.json());
+                
+                if (res.exito) {
+                    log(`NCF Recibido: ${res.datos.ncf}`, 'res');
+                } else {
+                    log(`Error: ${res.mensaje}`, 'err');
+                }
+            } catch(e) { log(`Error de Red: ${e.message}`, 'err'); }
+        }
+
+        async function runAsientoTest() {
+            const evento = document.getElementById('sim_asiento_evento').value;
+            const monto = document.getElementById('sim_asiento_monto').value;
+            log(`Disparando evento ${evento} por monto ${monto}...`, 'cmd');
+            try {
+                const res = await fetch(`${API}?action=test_asiento`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({evento, monto})
+                }).then(r => r.json());
+                
+                if (res.exito) {
+                    log(`Asiento Generado Correctamente: ${res.datos.numero}`, 'res');
+                    res.datos.lineas.forEach(l => {
+                        log(`  > ${l.cuenta}: D:${l.debe} C:${l.haber}`, 'res');
+                    });
+                } else {
+                    log(`Error Contable: ${res.mensaje}`, 'err');
+                }
+            } catch(e) { log(`Error de Red: ${e.message}`, 'err'); }
+        }
+
+        async function limpiarLab() {
+            if(!confirm('¿Resetear entorno de pruebas?')) return;
+            log('Limpiando base de datos del laboratorio...', 'cmd');
+            try {
+                const res = await fetch(`${API}?action=limpiar_lab`).then(r=>r.json());
+                log(res.mensaje, 'res');
+            } catch(e) { log('Fallo en limpieza', 'err'); }
+        }
+
+        function closeTestPanel() { document.getElementById('test-panel').style.display = 'none'; }
+
+        // Gestión de Paneles
+        function showPanel(panelId) {
+            document.querySelectorAll('.lab-main').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
+            
+            const target = document.getElementById(`panel-${panelId}`);
+            if (target) target.style.display = 'block';
+            
+            const tab = document.getElementById(`tab-${panelId}`);
+            if (tab) tab.classList.add('active');
+
+            if (panelId === 'skins') cargarDiagnosticoSkin();
+            if (panelId === 'ncf-manager') cargarStatusNCF();
+        }
+
+        async function cargarStatusNCF() {
+            log('Cargando estado de secuencias NCF...', 'cmd');
+            try {
+                const res = await fetch(`${API}?action=get_ncf_status`).then(r => r.json());
+                if (res.exito) {
+                    // Llenar Grid de Stats
+                    const grid = document.getElementById('ncf-stats-grid');
+                    grid.innerHTML = res.datos.secuencias.map(s => {
+                        const disp = s.secuencia_final - s.secuencia_actual;
+                        const pct = (disp / s.secuencia_final) * 100;
+                        const colorClass = disp < 100 ? 'text-danger' : (disp < 500 ? 'text-warning' : 'text-success');
+                        
+                        return `
+                            <div class="action-card" style="cursor:default; flex-direction:column; align-items:flex-start;">
+                                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                                    <h4 style="color:var(--lab-accent); font-weight:700;">${s.tipo}</h4>
+                                    <button class="mqf-btn mqf-btn--sm" style="padding:2px 8px; font-size:10px;" onclick="ajustarSecuencia('${s.tipo}', ${s.secuencia_actual})">Ajustar</button>
+                                </div>
+                                <div style="font-size:20px; font-weight:700; margin:5px 0;">${s.prefijo}${String(s.secuencia_actual).padStart(8, '0')}</div>
+                                <div style="font-size:11px; color:#64748b;">
+                                    Disponibles: <span class="${colorClass}" style="font-weight:700;">${disp.toLocaleString()}</span> (${pct.toFixed(1)}%)
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Llenar Log
+                    const tbody = document.getElementById('ncf-log-tbody');
+                    tbody.innerHTML = res.datos.logs.map(l => `
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:10px;">${new Date(l.fecha_emision).toLocaleString()}</td>
+                            <td style="padding:10px;"><span class="version-badge">${l.tipo}</span></td>
+                            <td style="padding:10px; font-family:monospace; font-weight:700;">${l.ncf}</td>
+                            <td style="padding:10px; color:#64748b;">${l.modulo_origen}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) { log('Error cargando NCF: ' + e.message, 'err'); }
+        }
+
+        async function ajustarSecuencia(tipo, actual) {
+            const nuevo = prompt(`Ajustar secuencia actual para ${tipo}:\n(Valor actual: ${actual})`, actual);
+            if (nuevo === null || nuevo === "") return;
+            
+            try {
+                const res = await fetch(`${API}?action=update_ncf_sequence`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({tipo, valor: nuevo})
+                }).then(r => r.json());
+                
+                if (res.exito) {
+                    log(res.mensaje, 'res');
+                    cargarStatusNCF();
+                } else {
+                    alert(res.mensaje);
+                }
+            } catch(e) { alert('Error de red'); }
+        }
+
+        function imprimirReporteNCF() {
+            log('Generando reporte PDF de NCF...', 'cmd');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const date = new Date().toLocaleString();
+
+            // Logo y Encabezado
+            if (window.LOGO_MQF_B64) {
+                doc.addImage(window.LOGO_MQF_B64, 'PNG', 15, 10, 25, 12);
+            }
+            
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59); // Slate-800
+            doc.setFont("helvetica", "bold");
+            doc.text('MAS QUE FIANZAS', 45, 17);
+            
+            doc.setFontSize(14);
+            doc.setTextColor(79, 70, 229); // Indigo-600
+            doc.text('REPORTE DE ESTADO NCF - DGII', 45, 24);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generado por: Administrador Sistema`, 45, 29);
+            doc.text(`Fecha de emisión: ${date}`, 45, 33);
+            
+            doc.setDrawColor(200);
+            doc.line(15, 38, 195, 38);
+
+            // 1. Resumen de Secuencias
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+            doc.text('ESTADO ACTUAL DE SECUENCIAS', 15, 42);
+
+            const secuenciasRows = [];
+            document.querySelectorAll('#ncf-stats-grid .action-card').forEach(card => {
+                const tipo = card.querySelector('h4').textContent;
+                const actual = card.querySelector('div:nth-child(2)').textContent;
+                const info = card.querySelector('div:nth-child(3)').textContent;
+                secuenciasRows.push([tipo, actual, info]);
+            });
+
+            doc.autoTable({
+                startY: 46,
+                head: [['Tipo', 'Último NCF Generado', 'Disponibilidad']],
+                body: secuenciasRows,
+                theme: 'striped',
+                headStyles: { fillColor: [79, 70, 229] }
+            });
+
+            // 2. Log de Auditoría
+            doc.setFontSize(12);
+            doc.text('HISTORIAL RECIENTE DE EMISIÓN (LOG)', 15, doc.lastAutoTable.finalY + 15);
+
+            const logRows = [];
+            document.querySelectorAll('#ncf-log-tbody tr').forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (cells.length > 0) {
+                    logRows.push([
+                        cells[0].textContent,
+                        cells[1].textContent,
+                        cells[2].textContent,
+                        cells[3].textContent
+                    ]);
+                }
+            });
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 20,
+                head: [['Fecha/Hora', 'Tipo', 'NCF', 'Módulo Origen']],
+                body: logRows,
+                theme: 'grid',
+                headStyles: { fillColor: [100, 116, 139] }
+            });
+
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text('LABS-MASQF - Documento de control interno tecnológico', 15, doc.internal.pageSize.height - 10);
+
+            doc.save(`Reporte_NCF_MQF_${Date.now()}.pdf`);
+            log('Reporte NCF generado con éxito.', 'res');
+        }
+
+        function cargarDiagnosticoSkin() {
+            const list = document.getElementById('skin-tokens-list');
+            const style = getComputedStyle(document.documentElement);
+            const tokens = [
+                { name: '--mqf-primary', label: 'Color Primario' },
+                { name: '--mqf-secondary', label: 'Color Secundario' },
+                { name: '--mqf-gradient', label: 'Gradiente Principal' },
+                { name: '--mqf-success', label: 'Éxito / Positivo' },
+                { name: '--mqf-danger', label: 'Error / Crítico' },
+                { name: '--mqf-bg', label: 'Fondo de Página' },
+                { name: '--mqf-surface', label: 'Superficie Base' }
+            ];
+            
+            list.innerHTML = tokens.map(t => {
+                const val = style.getPropertyValue(t.name).trim();
+                const isColor = val.startsWith('#') || val.startsWith('rgb');
+                return `
+                    <div style="background:white; padding:8px 12px; border-radius:8px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:10px; color:#64748b; font-weight:700;">${t.label}</div>
+                            <div style="font-size:11px; font-family:'JetBrains Mono'; color:#1e293b;">${t.name}</div>
+                            <div style="font-size:12px; font-weight:bold; color:var(--lab-accent);">${val}</div>
+                        </div>
+                        ${isColor ? `<div style="width:24px; height:24px; border-radius:4px; background:${val}; border:1px solid #ddd;"></div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            log('Diagnóstico de Skin generado con éxito.', 'res');
+        }
+
+        // Auto initialization
+        checkHealth();
+    </script>
+</body>
+</html>

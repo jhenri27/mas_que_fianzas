@@ -1626,6 +1626,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+  (function(){
+    var s = localStorage.getItem('mqf-skin') || 'indigo';
+    document.body.setAttribute('data-skin', s);
+    document.documentElement.setAttribute('data-skin', s);
+  })();
+</script>
 <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 </body>
 </html>

@@ -14,15 +14,38 @@ class Dashboard {
     }
 
     init() {
-        // Verificar sesión
+        console.log('[Dashboard] Inicializando...');
+        
+        // 1. Configurar Listeners primero (Prioridad para que la UI responda)
+        try {
+            this.setupEventListeners();
+        } catch (e) {
+            console.error('[Dashboard] Error en setupEventListeners:', e);
+        }
+
+        // 2. Aplicar Skin
+        try {
+            this.initSkin();
+        } catch (e) {
+            console.warn('[Dashboard] Falló initSkin, usando default.', e);
+        }
+
+        // 3. Verificar Sesión
         if (!api.tieneSesion()) {
+            console.warn('[Dashboard] Sesión no detectada, redirigiendo...');
             window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
             return;
         }
 
-        this.setupUI();
-        this.setupEventListeners();
-        this.cargarDatos();
+        // 4. Cargar UI y Datos
+        try {
+            this.setupUI();
+            this.cargarDatos();
+        } catch (e) {
+            console.error('[Dashboard] Error en carga de UI/Datos:', e);
+        }
+        
+        console.log('[Dashboard] Listo.');
     }
 
     setupUI() {
@@ -66,6 +89,46 @@ class Dashboard {
         }
     }
 
+
+
+    // ── SISTEMA DE SKINS (UX-SKINS) ───────────────────────────────────────────
+    initSkin() {
+        const savedSkin = localStorage.getItem('mqf-skin') || 'indigo';
+        const autoTheme = localStorage.getItem('mqf-auto-theme') === 'true';
+        
+        let skinToApply = savedSkin;
+        
+        if (autoTheme) {
+            const hora = new Date().getHours();
+            if (hora >= 19 || hora < 7) {
+                skinToApply = 'obsidian';
+            } else {
+                if (savedSkin !== 'custom' && savedSkin !== 'coral') {
+                    skinToApply = 'indigo';
+                }
+            }
+        }
+        
+        this.aplicarSkin(skinToApply);
+    }
+
+    aplicarSkin(skin) {
+        document.body.setAttribute('data-skin', skin);
+        document.documentElement.setAttribute('data-skin', skin);
+        localStorage.setItem('mqf-skin', skin);
+
+        // Broadcast a todos los iframes cargados
+        document.querySelectorAll('iframe').forEach(iframe => {
+            try {
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({ type: 'mqf-skin-set', skin: skin }, '*');
+                }
+            } catch (err) {
+                console.warn('[Dashboard] No se pudo enviar skin a iframe:', err);
+            }
+        });
+    }
+
     setupEventListeners() {
         // Navegación del sidebar
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -102,6 +165,22 @@ class Dashboard {
                 this.logout();
             });
         }
+
+        // Listener de mensajes para UX-SKINS
+        window.addEventListener('message', (e) => {
+            if (!e.data || !e.data.type) return;
+
+            if (e.data.type === 'mqf-skin-apply') {
+                this.aplicarSkin(e.data.skin);
+            } else if (e.data.type === 'mqf-skin-preview') {
+                document.body.setAttribute('data-skin', e.data.skin);
+                document.documentElement.setAttribute('data-skin', e.data.skin);
+                document.querySelectorAll('iframe').forEach(f => {
+                    try { f.contentWindow.postMessage({ type: 'mqf-skin-set', skin: e.data.skin }, '*'); } catch(err) {}
+                });
+            }
+        });
+
 
         // User menu dropdown
         const userMenuToggle = document.getElementById('userMenuToggle');
@@ -432,6 +511,24 @@ class Dashboard {
             }
         }
 
+        // Si es centro_financiero, forzar carga del iframe
+        if (modulo === 'centro_financiero') {
+            const iframe = document.getElementById('finance-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_financiero.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
+        // Si es labs_masqf, forzar carga del iframe
+        if (modulo === 'labs_masqf') {
+            const iframe = document.getElementById('labs-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/labs-masqf.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
         // Actualizar título
 
         const titulo = document.getElementById('pageTitle');
@@ -446,6 +543,8 @@ class Dashboard {
             'productos': 'PRODUCTOS',
             'reportes': 'REPORTES',
             'usuarios': 'USUARIOS Y PERFILES',
+            'centro_financiero': 'CENTRO FINANCIERO',
+            'labs_masqf': 'LABS-MASQF (TECNOLOGÍA)',
             'configuracion': 'CONFIGURACIÓN'
         };
 
@@ -963,9 +1062,9 @@ function cerrarModal(modalId) {
 }
 
 // Inicializar dashboard cuando carga la página
-let dashboard;
+window.dashboard = null;
 document.addEventListener('DOMContentLoaded', function() {
-    dashboard = new Dashboard();
+    window.dashboard = new Dashboard();
 });
 
 // =====================================================

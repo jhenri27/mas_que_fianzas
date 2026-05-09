@@ -26,6 +26,16 @@ const POLIZA_DOCS = {
         gris: [100, 116, 139],
         verde: [22, 163, 74],
         rojo: [220, 38, 38]
+    },
+    // Paletas sincronizadas con skin-engine.css
+    THEMES: {
+        indigo:   { primary: [79, 70, 229],  secondary: [124, 58, 237] }, // #4f46e5, #7c3aed
+        obsidian: { primary: [129, 140, 248], secondary: [30, 41, 59] },  // #818cf8, #1e293b
+        coral:    { primary: [244, 63, 94],  secondary: [251, 113, 133] } // #f43f5e, #fb7185
+    },
+    getTheme: function() {
+        const skin = localStorage.getItem('mqf-skin') || 'indigo';
+        return this.THEMES[skin] || this.THEMES.indigo;
     }
 };
 
@@ -130,20 +140,19 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
         // Zona B: Logo (centro)
         const LX=MX+38, LW=42, LH=14;
         const logoB64 = (window.LOGOS && window.LOGOS[asegNombre]) || (asegNombre === 'MULTISEGUROS' ? window.LOGO_MULTISEGUROS_B64 : null);
-        
         console.log(`[Marbete] Logo for ${asegNombre}:`, logoB64 ? 'Found (Length: ' + logoB64.length + ')' : 'Not Found');
-
+        const theme = POLIZA_DOCS.getTheme();
         if (logoB64) {
             try {
                 doc.addImage(logoB64,'PNG',LX,MY+2,LW,LH);
             } catch(e) {
                 console.warn('Error adding logo image:', e);
-                T(14,'bold',0,51,153); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
+                T(14,'bold', ...theme.primary); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
             }
         } else {
-            T(14,'bold',0,51,153); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
+            T(14,'bold', ...theme.primary); doc.text(asegNombre || 'Aseguradora',LX+LW/2,MY+9,{align:'center'});
             if(asegNombre === 'MULTISEGUROS') {
-                T(5.5,'italic',0,51,153); doc.text('Somos Su Alternativa',LX+LW/2,MY+14,{align:'center'});
+                T(5.5,'italic', ...theme.primary); doc.text('Somos Su Alternativa',LX+LW/2,MY+14,{align:'center'});
             }
         }
 
@@ -257,7 +266,7 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
         if (qrImg) {
             const QR_SIZE = 25;
             doc.addImage(qrImg, 'PNG', BX2 - QR_SIZE - 2, YCP + 2, QR_SIZE, QR_SIZE);
-            T(5.5, 'bold', 0, 51, 153);
+            T(5.5, 'bold', ...theme.primary);
             doc.text('VERIFICACIÓN', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 5, { align: 'center' });
             doc.text('EN LÍNEA', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 7, { align: 'center' });
         }
@@ -292,7 +301,9 @@ function generarSolicitudPDF(poliza, cliente, vehiculo, opts = {}) {
         doc.text('MAS QUE FIANZAS', margenL, 18);
     }
 
-    doc.setFillColor(...COLORES.azul);
+    const theme = POLIZA_DOCS.getTheme();
+
+    doc.setFillColor(...theme.primary);
     doc.rect(55, 8, 100, 16, 'F');
     doc.setTextColor(...COLORES.blanco);
     doc.setFontSize(11); doc.setFont('helvetica', 'bold');
@@ -307,7 +318,7 @@ function generarSolicitudPDF(poliza, cliente, vehiculo, opts = {}) {
     doc.text(EMPRESA.email, margenR, 18, { align: 'right' });
 
     const dibujarSeccion = (titulo, num, yPos) => {
-        doc.setFillColor(...COLORES.azul);
+        doc.setFillColor(...theme.primary);
         doc.rect(margenL, yPos, 182, 7, 'F');
         doc.setTextColor(...COLORES.blanco);
         doc.setFontSize(9); doc.setFont('helvetica', 'bold');
@@ -430,8 +441,10 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     const { COLORES, EMPRESA } = POLIZA_DOCS;
     const W = 210, margenL = 14, margenR = 196;
 
+    const theme = POLIZA_DOCS.getTheme();
+
     // Fondo encabezado
-    doc.setFillColor(...COLORES.azul);
+    doc.setFillColor(...theme.primary);
     doc.rect(0, 0, W, 42, 'F');
 
     if (window.LOGO_MQF_B64) {
@@ -470,9 +483,9 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     y += 32;
 
     // Descripción del servicio
-    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...COLORES.azul);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...theme.primary);
     doc.text('DESCRIPCIÓN DEL SERVICIO', margenL, y);
-    doc.setLineWidth(0.3); doc.setDrawColor(...COLORES.azul);
+    doc.setLineWidth(0.3); doc.setDrawColor(...theme.primary);
     doc.line(margenL, y + 2, margenR, y + 2);
     y += 8;
 
@@ -486,7 +499,7 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
             fmtDOP(pago.monto)
         ]],
         theme: 'grid',
-        headStyles: { fillColor: COLORES.azul, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+        headStyles: { fillColor: theme.primary, textColor: 255, fontStyle: 'bold', fontSize: 9 },
         styles: { fontSize: 8, cellPadding: 3 },
         columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } }
     });
@@ -506,7 +519,7 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     doc.text(fmtDOP(primaNeta), margenR, y + 7, { align: 'right' });
     doc.text('ITBIS (18%):', W - 88, y + 13);
     doc.text(fmtDOP(itbis), margenR, y + 13, { align: 'right' });
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(...COLORES.azul); doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...theme.primary); doc.setFontSize(10);
     doc.text('TOTAL:', W - 88, y + 22);
     doc.text(fmtDOP(pago.monto), margenR, y + 22, { align: 'right' });
 
