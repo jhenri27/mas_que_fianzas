@@ -161,7 +161,7 @@ class PolizaManager {
             $emitida_por = $datos['emitida_por'];
             $fecha_em = date('Y-m-d');
 
-            $stmt->bind_param("ssiiisssssddddd s i s", 
+            $stmt->bind_param("ssiiisssssddddsisis", 
                 $num, $num_aseg, $cot_id, $cli_id, $vehiculoId,
                 $tipo_seguro, $tipo_poliza, $ramo, $aseguradora, $perfil,
                 $total, $neta, $itbis, $otros,

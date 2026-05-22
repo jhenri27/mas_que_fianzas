@@ -30,25 +30,6 @@ try {
             respuestaJSON(false, 'Usuario y contraseña requeridos', null, 400);
         }
 
-        // ========== MOCK LOGIN para demo (sin BD) ==========
-        if ($datos['username'] === 'admin' && $datos['password'] === 'Demo@123') {
-            $token_mock = bin2hex(random_bytes(16));
-            // Guardar en localStorage via respuesta plana (api-client.js usa ...data spread)
-            header('Content-Type: application/json; charset=utf-8');
-            http_response_code(200);
-            echo json_encode([
-                'exito'             => true,
-                'mensaje'           => 'Login exitoso (Demo)',
-                'token_sesion'      => $token_mock,
-                'nombre_completo'   => 'Administrador Sistema',
-                'perfil'            => 'Administrador',
-                'usuario_id'        => 1,
-                'requiere_cambio_password' => false,
-                'timestamp'         => date('Y-m-d H:i:s')
-            ], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        // ====================================================
 
         $resultado = $auth->login($datos['username'], $datos['password']);
 

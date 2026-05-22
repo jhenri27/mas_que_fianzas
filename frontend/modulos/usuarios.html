@@ -7,9 +7,16 @@
     <title>Usuarios - MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">`n  <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
+    
+    <!-- Librerías de Exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .sidebar{display:none!important}.top-navbar{display:none!important}.main-content{margin-left:0!important;width:100%!important;padding-top:0!important}.content-area{padding:20px!important;margin-top:0!important;height:100vh;overflow-y:auto;box-sizing:border-box}
         .badge-activo{background:var(--mqf-success-light);color:var(--mqf-success-text);padding:3px 10px;border-radius:var(--mqf-radius-full);font-size:var(--mqf-text-xs);font-weight:700}
@@ -68,8 +75,27 @@
             <i class="fa-solid fa-users-gear"></i> Gestión de Usuarios
         </h1>
         <p class="mqf-module-header__subtitle">Administra los usuarios de la plataforma, comisiones y red comercial</p>
-        <div style="display:flex;gap:8px;align-items:center;padding-bottom:16px;">
-            <input type="text" id="buscadorUsuarios" class="mqf-input" placeholder="Buscar por nombre, usuario o código..." style="max-width:300px;">
+        <div style="display:flex; gap:8px; padding-bottom:16px; flex-wrap:wrap; align-items:center;">
+            <button class="btn btn-secondary" onclick="window.parent.document.querySelector('.nav-item[data-module=\'dashboard\']').click();">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+            </button>
+            <!-- EXPORT DROPDOWN -->
+            <div class="dropdown-export" style="position:relative; display:inline-block;">
+                <button class="btn btn-secondary" onclick="document.getElementById('exportMenu').style.display = document.getElementById('exportMenu').style.display === 'block' ? 'none' : 'block'; event.stopPropagation();">
+                    <i class="fa-solid fa-download"></i> Exportar <i class="fa-solid fa-caret-down"></i>
+                </button>
+                <div id="exportMenu" class="dropdown-content" style="display:none; position:absolute; right:0; top: 100%; margin-top: 5px; background-color:#fff; min-width:160px; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2); z-index:100; border-radius:6px; overflow:hidden;">
+                    <a href="#" onclick="window.exportarListado('pdf', 'usuarios'); return false;" style="color:#334155; padding:12px 16px; text-decoration:none; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-file-pdf" style="color:#ef4444; width:20px; text-align:center;"></i> PDF</a>
+                    <a href="#" onclick="window.exportarListado('excel', 'usuarios'); return false;" style="color:#334155; padding:12px 16px; text-decoration:none; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-file-excel" style="color:#16a34a; width:20px; text-align:center;"></i> Excel</a>
+                    <a href="#" onclick="window.exportarListado('csv', 'usuarios'); return false;" style="color:#334155; padding:12px 16px; text-decoration:none; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-file-csv" style="color:#0284c7; width:20px; text-align:center;"></i> CSV</a>
+                    <a href="#" onclick="window.exportarListado('json', 'usuarios'); return false;" style="color:#334155; padding:12px 16px; text-decoration:none; display:flex; align-items:center; gap:10px; border-bottom:1px solid #f1f5f9;"><i class="fa-solid fa-code" style="color:#ca8a04; width:20px; text-align:center;"></i> JSON</a>
+                    <a href="#" onclick="window.exportarListado('zip', 'usuarios'); return false;" style="color:#334155; padding:12px 16px; text-decoration:none; display:flex; align-items:center; gap:10px;"><i class="fa-solid fa-file-zipper" style="color:#9333ea; width:20px; text-align:center;"></i> ZIP</a>
+                </div>
+            </div>
+            <!-- IMPORT BUTTON -->
+            <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="window.abrirAsistenteImportacion('usuarios')">
+                <i class="fa-solid fa-upload"></i> Importar
+            </button>
             <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirModalUsuario()" id="btn-nuevo-usuario">
                 <i class="fa-solid fa-plus"></i> Nuevo Usuario
             </button>
@@ -77,7 +103,10 @@
     </div>
 
     <div style="padding:20px;">
-    <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto;margin-top:0;">
+    <div style="margin-bottom:16px;">
+        <input type="text" id="buscadorUsuarios" class="mqf-input" placeholder="🔍 Buscar por nombre, usuario o código..." style="max-width:300px; width:100%;">
+    </div>
+    <div class="table-container" style="overflow-x:auto;">
         <table class="data-table" style="width:100%;border-collapse:collapse;min-width:900px;">
             <thead><tr>
                 <th>Codigo</th><th>Nombre</th><th>Usuario</th><th>Perfil</th><th>Comisionante</th><th>Referente</th><th>Estado</th><th>Acciones</th>
@@ -128,7 +157,7 @@
             </select>
         </div>
         <!-- COMISIONANTE TOGGLE -->
-        <div class="field-full" style="background:#f8fafc;border-radius:10px;padding:14px 16px;border:1.5px solid #e2e8f0;">
+        <div class="field-full" style="padding:14px 16px; border-radius:10px;">
             <label class="form-label" style="margin-bottom:10px;"><i class="fa-solid fa-hand-holding-dollar" style="color:#6366f1;margin-right:5px;"></i>Este usuario es Comisionante?</label>
             <div class="toggle-row">
                 <label class="toggle-switch"><input type="checkbox" id="u_es_comisionante" onchange="toggleComisiones()"><span class="toggle-slider"></span></label>
@@ -149,6 +178,86 @@
                 <span style="font-size:11px;color:#64748b;">Porcentaje sobre produccion de su red</span>
             </div>
         </div>
+        
+        <!-- SECCIÓN COMISIONES POR RAMO (Socio Comercial PDV o Agente) -->
+        <div id="seccion_ramos_comisiones" class="field-full" style="display:none; grid-template-columns: repeat(3, 1fr); gap:12px; background:#f0fdf4; border-radius:10px; padding:16px; border:1.5px solid #bbf7d0;">
+            <div class="field-full" style="font-weight:700; font-size:13px; color:#166534; border-bottom: 1px solid #bbf7d0; padding-bottom:6px; margin-bottom:4px;">
+                <i class="fa-solid fa-calculator" style="margin-right:5px;"></i> Comisiones Especiales por Ramo (%)
+            </div>
+            <div>
+                <label class="form-label">Autos Ley</label>
+                <input class="form-input" type="number" id="u_comision_autos_ley" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label">Autos Full</label>
+                <input class="form-input" type="number" id="u_comision_autos_full" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label">Fianzas</label>
+                <input class="form-input" type="number" id="u_comision_fianzas" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label">Incendio</label>
+                <input class="form-input" type="number" id="u_comision_incendio" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label">Responsabilidad Civil</label>
+                <input class="form-input" type="number" id="u_comision_rc" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label">Otros Ramos</label>
+                <input class="form-input" type="number" id="u_comision_otros" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+        </div>
+
+        <!-- SECCIÓN DATOS BANCARIOS (Socio Comercial PDV o Agente) -->
+        <div id="seccion_datos_bancarios" class="field-full" style="display:none; grid-template-columns: repeat(3, 1fr); gap:12px; background:#f8fafc; border-radius:10px; padding:16px; border:1.5px solid #e2e8f0;">
+            <div class="field-full" style="font-weight:700; font-size:13px; color:#334155; border-bottom: 1px solid #e2e8f0; padding-bottom:6px; margin-bottom:4px;">
+                <i class="fa-solid fa-building-columns" style="margin-right:5px;"></i> Información Bancaria para Pagos
+            </div>
+            <div>
+                <label class="form-label">Banco</label>
+                <select class="form-input" id="u_banco">
+                    <option value="">Seleccione...</option>
+                    <option value="Banreservas">Banreservas</option>
+                    <option value="Banco Popular">Banco Popular</option>
+                    <option value="Banco BHD">Banco BHD</option>
+                    <option value="Scotiabank">Scotiabank</option>
+                    <option value="Asociación Popular">Asociación Popular</option>
+                    <option value="Banco Santa Cruz">Banco Santa Cruz</option>
+                    <option value="Banco Promerica">Banco Promerica</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Tipo Cuenta</label>
+                <select class="form-input" id="u_tipo_cuenta">
+                    <option value="">Seleccione...</option>
+                    <option value="Ahorro">Ahorros</option>
+                    <option value="Corriente">Corriente</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Número de Cuenta</label>
+                <input class="form-input" type="text" id="u_numero_cuenta" placeholder="Ej: 9600123456">
+            </div>
+        </div>
+
+        <!-- SECCIÓN DATOS ADICIONALES (Socio Comercial PDV o Agente) -->
+        <div id="seccion_datos_adicionales" class="field-full" style="display:none; grid-template-columns: 1fr 1fr; gap:12px; background:#faf5ff; border-radius:10px; padding:16px; border:1.5px solid #f3e8ff;">
+            <div class="field-full" style="font-weight:700; font-size:13px; color:#6b21a8; border-bottom: 1px solid #e9d5ff; padding-bottom:6px; margin-bottom:4px;">
+                <i class="fa-solid fa-circle-info" style="margin-right:5px;"></i> Detalles de Ubicación y Personal
+            </div>
+            <div>
+                <label class="form-label">Enlace Ubicación (Google Maps)</label>
+                <input class="form-input" type="url" id="u_ubicacion" placeholder="https://maps.app.goo.gl/...">
+            </div>
+            <div>
+                <label class="form-label">Fecha de Cumpleaños</label>
+                <input class="form-input" type="date" id="u_fecha_cumpleanos">
+            </div>
+        </div>
+
         <!-- REFERENTE -->
         <div id="seccion_referente" class="visible">
             <label class="form-label"><i class="fa-solid fa-sitemap" style="color:#0ea5e9;margin-right:5px;"></i>Supervisor / Referente</label>
@@ -175,6 +284,7 @@
 
 <script src="../assets/api-client.js?v=7"></script>
 <script src="../assets/components.js"></script>
+<script src="../assets/data-export.js?v=3"></script>
 <script>
 window.usuariosData = [];
 var paginaActual = 1;
@@ -286,13 +396,44 @@ function cargarListaReferentes(excludeId) {
     if (currentVal) select.value = currentVal;
 }
 
+function togglePerfilCampos() {
+    var perfilVal = parseInt(document.getElementById('u_perfil').value);
+    // 5 = Socio Comercial PDV, 2 = Agente Comercial
+    var mostrarExtras = (perfilVal === 5 || perfilVal === 2);
+    
+    var seccionRamos = document.getElementById('seccion_ramos_comisiones');
+    var seccionBancos = document.getElementById('seccion_datos_bancarios');
+    var seccionAdicionales = document.getElementById('seccion_datos_adicionales');
+    
+    if (seccionRamos) seccionRamos.style.display = mostrarExtras ? 'grid' : 'none';
+    if (seccionBancos) seccionBancos.style.display = mostrarExtras ? 'grid' : 'none';
+    if (seccionAdicionales) seccionAdicionales.style.display = mostrarExtras ? 'grid' : 'none';
+}
+
+document.getElementById('u_perfil').addEventListener('change', togglePerfilCampos);
+
 function abrirModalUsuario() {
     document.getElementById('usuarioForm').reset();
     document.getElementById('user_id').value = '';
     document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>Nuevo Usuario';
     document.getElementById('seccion_red_usuarios').style.display = 'none';
     document.getElementById('seccion_referente').className = 'field-full visible';
+    
+    // Limpiar campos extras para asegurar reset
+    document.getElementById('u_comision_autos_ley').value = '';
+    document.getElementById('u_comision_autos_full').value = '';
+    document.getElementById('u_comision_fianzas').value = '';
+    document.getElementById('u_comision_incendio').value = '';
+    document.getElementById('u_comision_rc').value = '';
+    document.getElementById('u_comision_otros').value = '';
+    document.getElementById('u_banco').value = '';
+    document.getElementById('u_tipo_cuenta').value = '';
+    document.getElementById('u_numero_cuenta').value = '';
+    document.getElementById('u_ubicacion').value = '';
+    document.getElementById('u_fecha_cumpleanos').value = '';
+    
     toggleComisiones();
+    togglePerfilCampos();
     cargarListaReferentes(null);
     document.getElementById('usuarioModal').style.display = 'flex';
 }
@@ -319,7 +460,25 @@ async function editarUsuario(id) {
     document.getElementById('u_es_comisionante').checked = (parseInt(fullUser.es_comisionante) === 1);
     document.getElementById('u_comision').value     = parseFloat(fullUser.porcentaje_comision || 0).toFixed(2);
     document.getElementById('u_comision_red').value = parseFloat(fullUser.porcentaje_comision_red || 0).toFixed(2);
+    
+    // Cargar campos extras
+    document.getElementById('u_comision_autos_ley').value  = parseFloat(fullUser.comision_autos_ley || 0).toFixed(2);
+    document.getElementById('u_comision_autos_full').value = parseFloat(fullUser.comision_autos_full || 0).toFixed(2);
+    document.getElementById('u_comision_fianzas').value    = parseFloat(fullUser.comision_fianzas || 0).toFixed(2);
+    document.getElementById('u_comision_incendio').value   = parseFloat(fullUser.comision_incendio || 0).toFixed(2);
+    document.getElementById('u_comision_rc').value         = parseFloat(fullUser.comision_rc || 0).toFixed(2);
+    document.getElementById('u_comision_otros').value      = parseFloat(fullUser.comision_otros || 0).toFixed(2);
+    
+    document.getElementById('u_banco').value               = fullUser.banco || '';
+    document.getElementById('u_tipo_cuenta').value         = fullUser.tipo_cuenta || '';
+    document.getElementById('u_numero_cuenta').value       = fullUser.numero_cuenta || '';
+    
+    document.getElementById('u_ubicacion').value           = fullUser.ubicacion || '';
+    document.getElementById('u_fecha_cumpleanos').value    = fullUser.fecha_cumpleanos || '';
+    
     toggleComisiones();
+    togglePerfilCampos();
+    
     document.getElementById('seccion_referente').className = 'field-full visible';
     cargarListaReferentes(fullUser.id);
     document.getElementById('u_referente').value = fullUser.referente_id || '';
@@ -368,7 +527,22 @@ document.getElementById('usuarioForm').addEventListener('submit', async function
         es_comisionante: esComisionante,
         porcentaje_comision:     esComisionante ? parseFloat(document.getElementById('u_comision').value || 0) : 0,
         porcentaje_comision_red: esComisionante ? parseFloat(document.getElementById('u_comision_red').value || 0) : 0,
-        referente_id: document.getElementById('u_referente').value ? parseInt(document.getElementById('u_referente').value) : null
+        referente_id: document.getElementById('u_referente').value ? parseInt(document.getElementById('u_referente').value) : null,
+        
+        // Nuevos campos comisiones y banco
+        comision_autos_ley:  parseFloat(document.getElementById('u_comision_autos_ley').value || 0),
+        comision_autos_full: parseFloat(document.getElementById('u_comision_autos_full').value || 0),
+        comision_fianzas:    parseFloat(document.getElementById('u_comision_fianzas').value || 0),
+        comision_incendio:   parseFloat(document.getElementById('u_comision_incendio').value || 0),
+        comision_rc:         parseFloat(document.getElementById('u_comision_rc').value || 0),
+        comision_otros:      parseFloat(document.getElementById('u_comision_otros').value || 0),
+        
+        banco:               document.getElementById('u_banco').value,
+        tipo_cuenta:         document.getElementById('u_tipo_cuenta').value,
+        numero_cuenta:       document.getElementById('u_numero_cuenta').value.trim(),
+        
+        ubicacion:           document.getElementById('u_ubicacion').value.trim(),
+        fecha_cumpleanos:    document.getElementById('u_fecha_cumpleanos').value || null
     };
     try {
         var endpoint = id ? '/usuarios.php/editar/' + id : '/usuarios.php/crear';
@@ -448,6 +622,10 @@ document.getElementById('buscadorUsuarios').addEventListener('input', function()
 });
 
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') cerrarModal(); });
+document.addEventListener('click', function() {
+    var exportMenu = document.getElementById('exportMenu');
+    if (exportMenu) exportMenu.style.display = 'none';
+});
 cargarUsuarios();
 </script>
 

@@ -17,7 +17,9 @@
   <!-- JSZip para ZIP -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- Logo MQF en Base64 (necesario para PDFs) -->
-  <script src="../assets/logo_b64.js"></script>
+  <script src="../assets/logo_b64.js?v=4"></script>
+  <!-- API Client -->
+  <script src="../assets/api-client.js?v=7"></script>
   <!-- Motor de exportación con dibujarCotizacionPDF() -->
   <script src="../assets/data-export.js"></script>
   <!-- React -->
@@ -270,9 +272,10 @@
       const email = document.getElementById('f_email').value.trim();
       const tipo = document.getElementById('f_tipo').value;
       const monto = parseFloat(document.getElementById('f_monto').value) || 0;
+      const beneficiario = document.getElementById('f_beneficiario').value.trim();
 
       if (!nombre || !tipo || monto <= 0) {
-        alert('Complete: Nombre, Tipo de fianza y Monto');
+        MQF.toast('Complete: Nombre, Tipo de fianza y Monto', 'warning');
         return;
       }
 
@@ -298,6 +301,7 @@
         total: cot.total,
         cobertura: JSON.stringify(coberturasArr),
         tasa: TASAS[tipo],
+        beneficiario: beneficiario,
         fecha: new Date().toISOString(),
         usar_ncf: document.getElementById('f_usar_ncf').checked
       };
@@ -306,21 +310,29 @@
       if (window._editingFianzaId) data.id = window._editingFianzaId;
 
       try {
-        const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=${action}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        }).then(r => r.json());
+        const res = await api.solicitud(`/cotizaciones.php?action=${action}`, 'POST', data);
 
         if (res.exito) {
           console.log("Guardado exitoso:", res);
-          localToast(window._editingFianzaId ? '✅ Fianza actualizada correctamente' : '✅ Cotización guardada: ' + cot.numero, 'success');
+          MQF.toast(window._editingFianzaId ? '✅ Fianza actualizada correctamente' : '✅ Cotización guardada: ' + cot.numero, 'success');
           
-          // Presentar PDF
+          // Presentar PDF (asegurar beneficiario impreso)
           generarPDFFianzaProfesional(data);
           
           window._editingFianzaId = null;
           window._editingFianzaNum = null;
+          
+          // Restablecer campos
+          document.getElementById('f_nombre').value = '';
+          document.getElementById('f_cedula').value = '';
+          document.getElementById('f_telefono').value = '';
+          document.getElementById('f_email').value = '';
+          document.getElementById('f_tipo').value = '';
+          document.getElementById('f_plazo').value = '12';
+          document.getElementById('f_monto').value = '';
+          document.getElementById('f_beneficiario').value = '';
+          document.getElementById('resultado-body').innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;">Complete el formulario para ver el resultado</p>';
+          window.currentCot = null;
           
           // Recargar historial después de un breve delay
           setTimeout(() => {
@@ -329,23 +341,17 @@
           }, 1000);
         } else {
           console.error("Error API:", res);
-          alert('Error al guardar: ' + (res.mensaje || 'Respuesta inválida del servidor'));
+          MQF.toast('Error al guardar: ' + (res.mensaje || 'Respuesta inválida del servidor'), 'error');
         }
       } catch (e) {
         console.error("Error de conexión:", e);
-        alert('Error de conexión con el servidor: ' + e.message);
+        MQF.toast('Error de conexión con el servidor: ' + e.message, 'error');
       }
     }
 
-    // Helper para feedback visual (si no existe mostrarToast, usar alert)
-    function localToast(msg, type) {
-      // Intentar llamar a la función del dashboard padre si existe, 
-      // verificando que NO sea esta misma función local para evitar recursión.
-      if (window.parent && typeof window.parent.mostrarToast === 'function') {
-        window.parent.mostrarToast(msg, type);
-      } else {
-        alert(msg);
-      }
+    // Helper para feedback visual
+    function displayMsg(msg, isSuccess) {
+      MQF.toast(msg, isSuccess ? 'success' : 'error');
     }
 
     function generarPDFFianzaProfesional(data) {
@@ -369,8 +375,7 @@
       const body = document.getElementById('historial-body');
       body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando...</p>';
 
-      fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=listar')
-        .then(r => r.json())
+      api.solicitud('/cotizaciones.php?action=listar')
         .then(res => {
           if (res.exito && res.datos && res.datos.length > 0) {
             // Guardar en variable global para exportarListado()
@@ -461,14 +466,14 @@
       if (!window.cotizacionesData) return;
       const c = window.cotizacionesData.find(item => item.id == id);
       if (!c) {
-        alert('No se encontró la cotización ID: ' + id); return;
+        MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return;
       }
       if (typeof dibujarCotizacionPDF === 'function') {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
       } else {
-        alert('Motor PDF no disponible. Recarga la página.');
+        MQF.toast('Motor PDF no disponible. Recarga la página.', 'error');
       }
     }
 
@@ -480,7 +485,7 @@
       const c = window.cotizacionesData.find(item => String(item.id) === String(id));
       if (!c) {
         console.error("Cotización no encontrada para ID:", id, window.cotizacionesData);
-        alert('No se encontró la cotización ID: ' + id); return;
+        MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return;
       }
       console.log("Registro encontrado:", c);
 
@@ -505,6 +510,7 @@
         if (labelToValue) document.getElementById('f_tipo').value = labelToValue[0];
         document.getElementById('f_plazo').value = c.plazo || 12;
         document.getElementById('f_monto').value = c.monto_afianzado || 0;
+        document.getElementById('f_beneficiario').value = c.beneficiario || '';
         
         calcularFianza();
         showTab('fianzas');
@@ -785,6 +791,8 @@
 
       function validate(){
         const e = {};
+        if(!cliente) e.cliente = 'Ingrese el nombre del cliente';
+        if(!cedula) e.cedula = 'Ingrese la cédula o RNC';
         if(!type) e.type = 'Selecciona el tipo de vehículo';
         if(!uso) e.uso = 'Selecciona el uso';
         if(!capacidad) e.capacidad = 'Selecciona la capacidad/cilindrada';
@@ -821,11 +829,8 @@
       const totalPrice = (Number(price) || 0) + Number(totalOptional || 0);
 
       function guardarCotizacionSeguro() {
-        if(!type || !uso || !capacidad || !insurer || price <= 0){
-          alert('Complete todos los campos del formulario');
-          return;
-        }
-
+        if(!validate()) return;
+        
         const isEdit = !!editingId;
         const numCot = isEdit ? editingNum : ('SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
         
@@ -845,27 +850,28 @@
           prima_mensual: 0,
           impuesto: 0,
           total: totalPrice,
+          usar_ncf: usarNCF,
           fecha: new Date().toISOString()
         };
         
         if (isEdit) data.id = editingId;
         const action = isEdit ? 'actualizar' : 'guardar';
         
-        fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=' + action, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        }).then(r=>r.json()).then(res=>{
-          if(res.exito){
-            alert('Cotización ' + (isEdit ? 'actualizada' : 'guardada') + ': ' + numCot);
-            generarPDFSeguroProfesional(data);
+        api.solicitud(`/cotizaciones.php?action=${action}`, 'POST', data).then(res=>{
+          if (res.exito) {
+            const finalNum = res.datos?.numero || data.numero;
+            MQF.toast('Cotización ' + (isEdit ? 'actualizada' : 'guardada') + ': ' + finalNum, 'success');
+            generarPDFSeguroProfesional(Object.assign({}, data, { servicios_opcionales: optionalSelected }));
             setEditingId(null);
             setEditingNum(null);
-            window.parent.postMessage({ type: 'cotizacion-guardada', data: data }, '*');
+            // Restablecer campos
+            setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(true);
+            setCliente(''); setCedula('');
+            cargarHistorial();
           } else {
-            alert('Error: ' + res.mensaje);
+            MQF.toast('Error: ' + res.mensaje, 'error');
           }
-        }).catch(e=> alert('Error: ' + e.message));
+        }).catch(e=> MQF.toast('Error: ' + e.message, 'error'));
       }
 
       function generarPDFSeguroProfesional(data) {
@@ -883,8 +889,17 @@
           } else {
             console.error('dibujarCotizacionPDF no disponible — verifica data-export.js');
             doc.text('Sin motor PDF', 14, 20);
-            const blob = doc.output('blob');
-            window.open(URL.createObjectURL(blob), '_blank');
+            try {
+              const blob = doc.output('blob');
+              const url = URL.createObjectURL(blob);
+              const win = window.open(url, '_blank');
+              if (!win || win.closed || typeof win.closed === 'undefined') {
+                throw new Error('Popup blocked');
+              }
+            } catch (err) {
+              console.warn('El navegador bloqueó la ventana emergente de impresión, descargando directamente...', err);
+              doc.save(dataNorm.numero ? `${dataNorm.numero}.pdf` : 'cotizacion.pdf');
+            }
           }
         } catch(e){ console.error('PDF Error:', e); }
       }
@@ -899,25 +914,38 @@
               </div>
               <form className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo</label>
+                  <label className="block text-sm font-medium text-gray-700">Nombre del Cliente *</label>
+                  <input type="text" value={cliente} onChange={e=>{setCliente(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cliente; return n; });}} placeholder="Nombre completo" className="mt-1 w-full p-3 border rounded" />
+                  {errors.cliente && <div className="text-sm text-red-600 mt-1">{errors.cliente}</div>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Cédula / RNC *</label>
+                  <input type="text" value={cedula} onChange={e=>{setCedula(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cedula; return n; });}} placeholder="000-0000000-0" className="mt-1 w-full p-3 border rounded" />
+                  {errors.cedula && <div className="text-sm text-red-600 mt-1">{errors.cedula}</div>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo *</label>
                   <select value={type} onChange={e=>setType(e.target.value)} className="mt-1 w-full p-3 border rounded">
                     <option value="">Seleccione Tipo...</option>
                     {tipos.map(t=> <option key={t} value={t}>{t}</option>)}
                   </select>
+                  {errors.type && <div className="text-sm text-red-600 mt-1">{errors.type}</div>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Uso</label>
+                  <label className="block text-sm font-medium text-gray-700">Uso *</label>
                   <select value={uso} onChange={e=>setUso(e.target.value)} disabled={!type} className="mt-1 w-full p-3 border rounded">
                     <option value="">Seleccione Uso...</option>
                     {usos.map(u=> <option key={u} value={u}>{u}</option>)}
                   </select>
+                  {errors.uso && <div className="text-sm text-red-600 mt-1">{errors.uso}</div>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Capacidad / Cilindrada</label>
+                  <label className="block text-sm font-medium text-gray-700">Capacidad / Cilindrada *</label>
                   <select value={capacidad} onChange={e=>setCapacidad(e.target.value)} disabled={!uso} className="mt-1 w-full p-3 border rounded">
                     <option value="">Seleccione Capacidad...</option>
                     {capacidades.map(c=> <option key={c} value={c}>{c}</option>)}
                   </select>
+                  {errors.capacidad && <div className="text-sm text-red-600 mt-1">{errors.capacidad}</div>}
                 </div>
               </form>
             </div>
@@ -1001,42 +1029,7 @@
                 </div>
 
                 <div className="mt-6 flex gap-3">
-                  <button onClick={()=>{
-                    if(!validate()) return;
-                    const numCot = editingId ? editingNum : ('SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
-                    const q = { 
-                      id: editingId,
-                      tipo: 'SEGURO DE LEY', 
-                      subtipo: type,
-                      numero: numCot,
-                      uso: uso, 
-                      capacidad: capacidad, 
-                      aseguradora: insurer, 
-                      prima_base: price, 
-                      cobertura: selectedCoverage, 
-                      servicios_opcionales: optionalSelected, 
-                      total: totalPrice,
-                      usar_ncf: usarNCF
-                    };
-                    
-                    const action = editingId ? 'actualizar' : 'guardar';
-                    
-                    fetch(`/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=${action}`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(q)
-                    }).then(r=>r.json()).then(res=>{
-                      if(res.exito){
-                        alert(editingId ? 'Cotización actualizada' : 'Cotización guardada');
-                        generarPDFSeguroProfesional(Object.assign({}, q, { numero: q.numero }));
-                        setEditingId(null);
-                        setEditingNum(null);
-                        cargarHistorial();
-                      } else {
-                        alert('Error: ' + res.mensaje);
-                      }
-                    }).catch(e=> alert('Error: ' + e.message));
-                  }} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">
+                  <button onClick={guardarCotizacionSeguro} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">
                     {editingId ? 'Guardar Cambios' : 'Guardar y Descargar PDF'}
                   </button>
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1047,6 +1040,7 @@
                     setEditingId(null);
                     setEditingNum(null);
                     setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(true);
+                    setCliente(''); setCedula('');
                   }} className="px-4 py-2 border rounded">
                     {editingId ? 'Cancelar Edición' : 'Restablecer'}
                   </button>

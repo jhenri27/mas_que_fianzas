@@ -7,7 +7,8 @@
     <title>Pólizas — MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">`n  <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
     <style>
@@ -186,6 +187,14 @@
         .empty-state i { font-size:48px; margin-bottom:16px; display:block; }
         .empty-state h3 { font-size:16px; color:#64748b; margin:0 0 8px; }
         .empty-state p { font-size:13px; margin:0; }
+
+        /* Drag & Drop */
+        .drop-zone--dragover {
+            background: #e0e7ff !important;
+            border-color: #4f46e5 !important;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
 
         /* Toast eliminado — se usa MQF.toast() via components.js */
     </style>
@@ -688,6 +697,20 @@
                 <label>Descripción</label>
                 <input type="text" id="p-descripcion" placeholder="Cuota de póliza anual...">
             </div>
+            <!-- ZONA PREMIUM DRAG & DROP -->
+            <div class="form-group" style="margin-top:15px;">
+                <label style="font-weight:600; color:#475569; font-size:12px;">Comprobante de Pago (Opcional - PDF, PNG, JPG, JPEG, Máx. 5MB)</label>
+                <div id="drop-zone" style="border:2px dashed #818cf8; border-radius:10px; padding:20px; text-align:center; background:#f5f7ff; cursor:pointer; transition:all 0.3s; position:relative; margin-top:5px;">
+                    <input type="file" id="p-soporte" accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+                    <i class="fa-cloud-arrow-up fa-solid" style="font-size:32px; color:#4f46e5; margin-bottom:8px; display:block;"></i>
+                    <span id="drop-zone-text" style="font-size:13px; color:#4f46e5; font-weight:600; display:block;">Arrastra aquí tu comprobante o <span style="text-decoration:underline;">haz clic para buscar</span></span>
+                    <span style="font-size:11px; color:#64748b; display:block; margin-top:4px;">Formatos permitidos: PDF, PNG, JPG, JPEG (Max. 5MB)</span>
+                    <div id="selected-file-info" style="display:none; margin-top:10px; padding:8px 12px; background:#e0e7ff; border:1px solid #818cf8; border-radius:8px; align-items:center; justify-content:space-between; gap:10px;">
+                        <span id="selected-file-name" style="font-size:12px; font-weight:600; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:320px; display:inline-block;"></span>
+                        <button type="button" id="btn-remove-file" style="background:#ef4444; border:none; color:#fff; border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:700; display:inline-block; white-space:nowrap;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-pago')">Cancelar</button>
@@ -755,7 +778,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="../assets/logo_b64.js"></script>
+<script src="../assets/logo_b64.js?v=4"></script>
 <script src="../assets/logos_aseguradoras.js"></script>
 <script>
 // Inicializar window.LOGOS si no existe (debería venir de logos_aseguradoras.js)
@@ -765,6 +788,38 @@ console.log('Logos Cargados:', Object.keys(window.LOGOS));
 <script src="../assets/polizas-pdf.js?v=6"></script>
 <script>
 'use strict';
+
+// Interceptor global de fetch para inyectar token de sesión en cabeceras y parámetros (bypassing Apache WAMP limits)
+const originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+    const token = localStorage.getItem('token_sesion') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token_sesion') : null);
+    let requestUrl = url;
+    
+    if (token) {
+        // 1. Inyectar cabecera Authorization
+        options.headers = options.headers || {};
+        if (options.headers instanceof Headers) {
+            if (!options.headers.has('Authorization')) {
+                options.headers.append('Authorization', `Bearer ${token}`);
+            }
+        } else {
+            if (!options.headers['Authorization']) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+        }
+
+        // 2. Inyectar como parámetro de consulta (evita que Apache descarte la cabecera Authorization)
+        if (typeof url === 'string') {
+            const separator = url.includes('?') ? '&' : '?';
+            requestUrl = `${url}${separator}token_sesion=${encodeURIComponent(token)}`;
+        }
+    }
+    
+    // 3. Forzar transmisión de cookies/credenciales de sesión (PHPSESSID) en todas las peticiones
+    options.credentials = 'include';
+    
+    return originalFetch(requestUrl, options);
+};
 
 // Shim de compatibilidad: showToast() → MQF.toast()
 function showToast(msg, tipo) {
@@ -985,10 +1040,10 @@ async function generarDocAction(tipo) {
             generarSolicitudPDF(p, cliente, vehiculo);
         } else if (tipo === 'recibo') {
             const pagoDummy = { numero_recibo: 'REC-' + Date.now(), monto: p.prima_total, tipo_pago: 'efectivo', fecha_pago: new Date().toISOString().split('T')[0], cuota_numero: 1, cuota_total: 1 };
-            generarReciboPDF(p, cliente, pagoDummy);
+            await generarReciboPDF(p, cliente, pagoDummy);
         } else if (tipo === 'factura') {
             const pagoDummy = { numero_recibo: 'FAC-' + Date.now(), numero_ncf: 'B02-' + Date.now(), monto: p.prima_total, tipo_pago: 'efectivo', fecha_pago: new Date().toISOString().split('T')[0] };
-            generarFacturaPDF(p, cliente, pagoDummy);
+            await generarFacturaPDF(p, cliente, pagoDummy);
         }
         mostrarToast('PDF generado exitosamente', 'success');
     } catch (e) {
@@ -1034,43 +1089,185 @@ async function registrarPago() {
         mostrarToast('Complete el monto del pago', 'error'); return;
     }
 
-    const datos = {
-        poliza_id: polizaId,
-        monto, 
-        fecha_pago: document.getElementById('p-fecha').value,
-        tipo_pago: document.getElementById('p-tipo').value,
-        banco: document.getElementById('p-banco').value,
-        numero_comprobante: document.getElementById('p-comprobante').value,
-        numero_ncf: document.getElementById('p-ncf').value,
-        cuota_numero: document.getElementById('p-cuota-num').value,
-        cuota_total: document.getElementById('p-cuota-total').value,
-        descripcion: document.getElementById('p-descripcion').value
-    };
+    const formData = new FormData();
+    formData.append('poliza_id', polizaId);
+    formData.append('monto', monto);
+    formData.append('fecha_pago', document.getElementById('p-fecha').value);
+    formData.append('tipo_pago', document.getElementById('p-tipo').value);
+    formData.append('banco', document.getElementById('p-banco').value);
+    formData.append('numero_comprobante', document.getElementById('p-comprobante').value);
+    formData.append('numero_ncf', document.getElementById('p-ncf').value);
+    formData.append('cuota_numero', document.getElementById('p-cuota-num').value);
+    formData.append('cuota_total', document.getElementById('p-cuota-total').value);
+    formData.append('descripcion', document.getElementById('p-descripcion').value);
+
+    const fileInput = document.getElementById('p-soporte');
+    if (fileInput && fileInput.files.length > 0) {
+        formData.append('documento_deposito', fileInput.files[0]);
+    }
 
     try {
-        // Aquí llamaríamos a la API de pagos
-        mostrarToast('Pago registrado. Generando recibo...', 'success');
-        cerrarModal('modal-pago');
+        const r = await fetch(`${BASE_API}/pagos.php?action=registrar`, {
+            method: 'POST',
+            body: formData
+        });
+        const d = await r.json();
 
-        // Auto-generar recibo
-        const poliza = polizasData.find(x => x.id == polizaId);
-        if (poliza) {
-            const cliente = { nombre: poliza.cliente_nombre };
-            datos.numero_recibo = `REC-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
-            setTimeout(() => generarReciboPDF(poliza, cliente, datos), 500);
+        if (d.exito) {
+            const esPendiente = d.estado_pago === 'pendiente';
+            if (esPendiente) {
+                mostrarToast('✅ Pago registrado para validación administrativa (Pendiente)', 'success');
+            } else {
+                mostrarToast('✅ Pago registrado exitosamente en el Libro Mayor', 'success');
+            }
+            cerrarModal('modal-pago');
+
+            // Auto-generar recibo usando los datos del servidor (como número de recibo oficial o provisional)
+            const poliza = polizasData.find(x => x.id == polizaId);
+            if (poliza) {
+                const cliente = {
+                    nombre_completo: poliza.cliente_nombre,
+                    nombre: poliza.cliente_nombre,
+                    cedula: poliza.cliente_cedula || 'N/A',
+                    email: poliza.cliente_email || 'N/A',
+                    telefono: poliza.cliente_telefono || 'N/A'
+                };
+                const datosPago = {
+                    poliza_id: polizaId,
+                    monto,
+                    fecha_pago: document.getElementById('p-fecha').value,
+                    tipo_pago: document.getElementById('p-tipo').value,
+                    banco: document.getElementById('p-banco').value,
+                    numero_comprobante: document.getElementById('p-comprobante').value,
+                    numero_ncf: d.ncf || document.getElementById('p-ncf').value,
+                    cuota_numero: document.getElementById('p-cuota-num').value,
+                    cuota_total: document.getElementById('p-cuota-total').value,
+                    descripcion: document.getElementById('p-descripcion').value,
+                    numero_recibo: d.numero_recibo,
+                    numero_referencia: d.numero_referencia,
+                    estado_pago: d.estado_pago
+                };
+                setTimeout(async () => {
+                    try {
+                        await generarReciboPDF(poliza, cliente, datosPago);
+                    } catch(err) {
+                        console.error('Error generating PDF:', err);
+                    }
+                }, 500);
+            }
+
+            // Limpiar campo de archivo
+            resetDragAndDrop();
+
+            setTimeout(cargarPolizas, 1000);
+        } else {
+            mostrarToast('Error al registrar el pago: ' + d.mensaje, 'error');
+        }
+    } catch (e) {
+        mostrarToast('Error de conexión al registrar el pago', 'error');
+    }
+}
+
+// Inicializar Drag & Drop
+function initDragAndDrop() {
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('p-soporte');
+    const textEl = document.getElementById('drop-zone-text');
+    const fileInfo = document.getElementById('selected-file-info');
+    const fileName = document.getElementById('selected-file-name');
+    const btnRemove = document.getElementById('btn-remove-file');
+
+    if (!dropZone || !fileInput) return;
+
+    // Trigger click on click
+    dropZone.addEventListener('click', (e) => {
+        if (e.target !== btnRemove && !btnRemove.contains(e.target)) {
+            fileInput.click();
+        }
+    });
+
+    // Dragover & Dragenter
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drop-zone--dragover');
+        }, false);
+    });
+
+    // Dragleave & Drop
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drop-zone--dragover');
+        }, false);
+    });
+
+    // Drop file
+    dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    // Remove file
+    btnRemove.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        resetDragAndDrop();
+    });
+
+    function handleFileSelect(file) {
+        // Validate size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            mostrarToast('El archivo excede el tamaño máximo permitido de 5 MB', 'error');
+            resetDragAndDrop();
+            return;
         }
 
-        setTimeout(cargarPolizas, 1000);
-    } catch (e) {
-        mostrarToast('Error al registrar el pago', 'error');
+        // Validate format
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['pdf', 'png', 'jpg', 'jpeg'].includes(ext)) {
+            mostrarToast('Formato de archivo no válido. Solo se permiten: PDF, PNG, JPG, JPEG', 'error');
+            resetDragAndDrop();
+            return;
+        }
+
+        fileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+        fileInfo.style.display = 'flex';
+        textEl.style.display = 'none';
+        dropZone.style.background = '#e0e7ff';
     }
+}
+
+function resetDragAndDrop() {
+    const fileInput = document.getElementById('p-soporte');
+    const textEl = document.getElementById('drop-zone-text');
+    const fileInfo = document.getElementById('selected-file-info');
+    const dropZone = document.getElementById('drop-zone');
+
+    if (fileInput) fileInput.value = '';
+    if (fileInfo) fileInfo.style.display = 'none';
+    if (textEl) textEl.style.display = 'block';
+    if (dropZone) dropZone.style.background = '#f5f7ff';
 }
 
 // ═══════════════════════════════════════
 // VALIDAR PÓLIZA
 // ═══════════════════════════════════════
 async function validarPoliza(id) {
-    if (!confirm('¿Confirma que desea validar esta póliza? Este proceso marca la póliza como revisada y aprobada.')) return;
+    if (!(await MQF.confirm('¿Confirma que desea validar esta póliza? Este proceso marca la póliza como revisada y aprobada.', {type: 'primary'}))) return;
     try {
         const r = await fetch(`${BASE_API}/polizas.php?action=validar&id=${id}`, { method: 'POST' });
         const d = await r.json();
@@ -1587,13 +1784,7 @@ function abrirModal(id) { document.getElementById(id).classList.add('open'); }
 function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function mostrarToast(msg, tipo = 'info') {
-    const toast = document.getElementById('toast');
-    const iconos = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info' };
-    toast.className = `toast-${tipo}`;
-    toast.innerHTML = `<i class="fa-solid ${iconos[tipo] || 'fa-circle-info'}"></i> ${msg}`;
-    toast.style.display = 'flex';
-    clearTimeout(toast._timeout);
-    toast._timeout = setTimeout(() => toast.style.display = 'none', 3500);
+    showToast(msg, tipo);
 }
 
 function fmtMoneda(n) {
@@ -1623,6 +1814,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarPolizas();
     // Poner fecha de hoy por defecto en el formulario de pago
     document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];
+    initDragAndDrop();
 });
 </script>
 

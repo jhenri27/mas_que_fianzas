@@ -1,21 +1,20 @@
-# 🎉 RESUMEN EJECUTIVO - MAS QUE FIANZAS
+# 🎉 RESUMEN EJECUTIVO - MÁS QUE FIANZAS
 
-> **Versión:** 2.1.0 | **Fecha de actualización:** 22 de Abril de 2026 | **Estado:** ✅ EN PRODUCCIÓN
+> **Versión:** 3.3.0 | **Fecha de actualización:** 21 de Mayo de 2026 | **Estado:** ✅ ESTABILIZADA EN PRODUCCIÓN
 
 ---
 
-## ✅ MISIÓN CUMPLIDA
+## ✅ MISIÓN CUMPLIDA (Plataforma Estabilizada)
 
-Se ha desarrollado y evolucionado exitosamente una **plataforma integrada de gestión de seguros y fianzas** que combina:
+Se ha desarrollado, auditado y estabilizado exitosamente la **Plataforma Integrada MÁS QUE FIANZAS** bajo estrictas normas de aseguramiento de calidad (MS-LS v1.0). El sistema consolida:
 
-- ✅ Módulo de cotizador integrado (Seguros de Ley + Fianzas)
-- ✅ Sistema de gestión de usuarios completo con jerarquía de IDs
-- ✅ Control de accesos basado en roles (RBAC) con perfil "Socio Comercial PDV"
-- ✅ Auditoría y seguridad robusta con SMTP y logs
-- ✅ Base de datos normalizada y eficiente
-- ✅ Interfaz responsiva y profesional con exportación PDF corporativo
-- ✅ Sistema de recuperación de contraseñas vía correo electrónico
-- ✅ Módulos activos: Clientes, Pólizas, Cotizaciones
+- ✅ **Motor ETL en Python 3.14.5** para importación masiva de redes comerciales de forma 100% libre de dependencias externas.
+- ✅ **Normalización Bancaria Automatizada** de cuentas redireccionando variantes de "Reservas" a "Banreservas" con tipo de cuenta forzado a "Ahorro".
+- ✅ **Importación Idempotente Inteligente** que previene duplicados en base de datos.
+- ✅ **Formulario de Usuarios Dinámico** con comisiones por ramo y campos bancarios interactivos según el perfil seleccionado.
+- ✅ Módulo de cotizaciones avanzado (Fianzas + Seguros de Ley) y exportación multiformato (.pdf, .xlsx, .zip, etc.).
+- ✅ Control de accesos robusto (RBAC) con menú e interfaz adaptada para el rol "Socio Comercial PDV".
+- ✅ Auditoría y seguridad integral con logs, SMTP configurable y tokens temporales.
 
 ---
 
@@ -404,7 +403,7 @@ PLATAFORMA_INTEGRADA/
 - WAMP Server instalado y funcionando
 - Apache 2.4+
 - MySQL 5.7+ o MariaDB 10.3+
-- PHP 7.4+ (recomendado 8.0+)
+- PHP 8.2+ (Probado y compatible hasta PHP 8.2.29)
 - Extensión PHP: OpenSSL (para SMTP con SSL/TLS)
 - Navegador moderno (Chrome, Firefox, Edge)
 
@@ -437,15 +436,16 @@ PLATAFORMA_INTEGRADA/
 | 1.5.0 | Mar 2026 | Cotizador integrado (Fianzas + Seguros de Ley) |
 | 2.0.0 | Abr 2026 | PDF corporativo, historial, exportación multi-formato |
 | 2.1.0 | Abr 2026 | SMTP, recuperación contraseña, jerarquía usuarios, PDV |
+| 3.3.0 | May 2026 | **Estabilización de Calidad:** Motor ETL Python 3.14.5, normalización Banreservas, comisiones por ramo, importación idempotente. |
 
 ---
 
-**Proyecto:** MAS QUE FIANZAS - Plataforma Integrada  
+**Proyecto:** MÁS QUE FIANZAS - Plataforma Integrada  
 **Repositorio:** jhenri27/mas_que_fianzas (GitHub)  
-**Versión actual:** 2.1.0  
-**Fecha:** 22 de Abril de 2026  
-**Estado:** ✅ EN PRODUCCIÓN
+**Versión actual:** 3.3.0  
+**Fecha:** 21 de Mayo de 2026  
+**Estado:** ✅ ESTABILIZADA EN PRODUCCIÓN
 
 ---
 
-*¿Preguntas? Revisar la documentación incluida o el repositorio en GitHub.*
+*¿Preguntas? Revisar la documentación completa en README.md o el repositorio en GitHub.*

@@ -72,6 +72,14 @@
                     <span class="icon">👨‍💼</span>
                     <span class="label">USUARIOS</span>
                 </a>
+                <a href="#" class="nav-item" data-module="centro_financiero">
+                    <span class="icon">🏛️</span>
+                    <span class="label">CENTRO FINANCIERO</span>
+                </a>
+                <a href="#" class="nav-item" data-module="labs_masqf" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; background: rgba(0,0,0,0.2);">
+                    <span class="icon">🧪</span>
+                    <span class="label">LABS-MASQF</span>
+                </a>
                 <a href="#" class="nav-item" data-module="configuracion">
                     <span class="icon">⚙️</span>
                     <span class="label">CONFIGURACIÓN</span>
@@ -465,7 +473,7 @@
                         async function probarConexionSmtp() {
                             const emailDestino = prompt("Ingresa un correo electrónico para recibir el mensaje de prueba:");
                             if (!emailDestino || !emailDestino.includes('@')) {
-                                if (emailDestino !== null) alert("Por favor, ingresa un correo válido.");
+                                if (emailDestino !== null) MQF.toast("Por favor, ingresa un correo válido.", "warning");
                                 return;
                             }
 
@@ -570,7 +578,7 @@
                         }
                         
                         async function limpiarLogsSmtp() {
-                            if(!confirm('¿Estás seguro de limpiar los logs?')) return;
+                            if(!(await MQF.confirm('¿Estás seguro de limpiar los logs?', {type: 'danger'}))) return;
                             try {
                                 const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/logs_smtp.php', {
                                     method: 'POST',
@@ -580,9 +588,10 @@
                                 const result = await response.json();
                                 if(result.exito) {
                                     cargarLogsSmtp();
+                                    MQF.toast('Logs limpiados', 'success');
                                 }
                             } catch(e) {
-                                alert('Error al limpiar logs');
+                                MQF.toast('Error al limpiar logs', 'error');
                             }
                         }
 
@@ -623,6 +632,16 @@
                             }
                         }
                     </script>
+                </section>
+
+                <!-- Centro Financiero Module -->
+                <section id="modulo-centro_financiero" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="finance-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="Centro Financiero"></iframe>
+                </section>
+
+                <!-- LABS-MASQF Module -->
+                <section id="modulo-labs_masqf" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="labs-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="LABS-MASQF"></iframe>
                 </section>
             </div>
         </main>
@@ -833,36 +852,7 @@
     <script src="assets/api-client.js"></script>
     <script src="assets/dashboard.js"></script>
     <script>
-    /* ── UX-SKINS: aplicar al cargar y escuchar mensajes de iframes ── */
-    (function(){
-      function aplicarSkin(skin){
-        document.body.setAttribute('data-skin', skin);
-        document.documentElement.setAttribute('data-skin', skin);
-        localStorage.setItem('mqf-skin', skin);
-        // Propagar a todos los iframes
-        document.querySelectorAll('iframe').forEach(f=>{
-          try{ f.contentWindow.postMessage({type:'mqf-skin-set',skin},'*'); }catch(e){}
-        });
-      }
-      // Cargar skin guardado
-      const saved = localStorage.getItem('mqf-skin') || 'indigo';
-      aplicarSkin(saved);
 
-      // Escuchar mensajes del módulo ux-skins (preview y apply)
-      window.addEventListener('message', function(e){
-        if(e.data && e.data.type === 'mqf-skin-apply'){
-          aplicarSkin(e.data.skin);
-        } else if(e.data && e.data.type === 'mqf-skin-preview'){
-          // Solo preview local, sin guardar
-          document.body.setAttribute('data-skin', e.data.skin);
-          document.documentElement.setAttribute('data-skin', e.data.skin);
-        }
-      });
-
-      // Exponer globalmente para uso en dashboard.js
-      window.MQF = window.MQF || {};
-      window.MQF.applySkin = aplicarSkin;
-    })();
     </script>
     <script>
     /* ── UX-SKINS: iframe loader + config panel switcher ── */

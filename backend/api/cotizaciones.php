@@ -17,6 +17,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../config.php';
 
+// Validar sesión: aceptar PHP session O Bearer token del header Authorization
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$bearer_token = null;
+$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? '') : '');
+if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
+    $bearer_token = trim($matches[1]);
+}
+
+$usuario_id = null;
+if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_id']) {
+    $usuario_id = (int)$_SESSION['usuario_id'];
+} elseif (!empty($bearer_token)) {
+    $db_temp = Database::getInstance()->getConnection();
+    $stmt_tk = $db_temp->prepare("SELECT usuario_id FROM sesiones_usuario WHERE token_sesion = ? AND activa = 1 AND fecha_expiracion > NOW() LIMIT 1");
+    if ($stmt_tk) {
+        $stmt_tk->bind_param("s", $bearer_token);
+        $stmt_tk->execute();
+        $res_tk = $stmt_tk->get_result();
+        if ($row_tk = $res_tk->fetch_assoc()) $usuario_id = (int)$row_tk['usuario_id'];
+        $stmt_tk->close();
+    }
+}
+
+if (!$usuario_id) {
+    respuestaJSON(false, 'Sesión no válida o expirada', null, 401);
+}
+
+$usuario_actual = $usuario_id;
 $metodo = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
@@ -29,6 +59,7 @@ function crearTablaIfNeeded($db) {
         `subtipo`              VARCHAR(100)  DEFAULT NULL,
         `cliente`              VARCHAR(200)  DEFAULT NULL,
         `cedula`               VARCHAR(30)   DEFAULT NULL,
+        `beneficiario`         VARCHAR(255)  DEFAULT NULL,
         `uso`                  VARCHAR(60)   DEFAULT NULL,
         `capacidad`            VARCHAR(100)  DEFAULT NULL,
         `aseguradora`          VARCHAR(100)  DEFAULT NULL,
@@ -52,6 +83,7 @@ function insertar_cotizacion($db, $c) {
     $subtipo     = $c['subtipo'] ?? '';
     $cliente     = $c['cliente'] ?? '';
     $cedula      = $c['cedula'] ?? '';
+    $beneficiario= $c['beneficiario'] ?? '';
     $uso         = $c['uso'] ?? '';
     $capacidad   = $c['capacidad'] ?? '';
     $aseguradora = $c['aseguradora'] ?? '';
@@ -61,21 +93,21 @@ function insertar_cotizacion($db, $c) {
     $prima_base  = floatval($c['prima_base'] ?? 0);
     $impuesto    = floatval($c['impuesto'] ?? 0);
     $total       = floatval($c['total'] ?? 0);
-    $servicios   = isset($c['servicios_opcionales']) ? json_encode($c['servicios_opcionales']) : '';
+    $servicios   = isset($c['servicios_opcionales']) ? (is_array($c['servicios_opcionales']) ? json_encode($c['servicios_opcionales']) : $c['servicios_opcionales']) : '';
     $fecha_raw   = $c['fecha'] ?? date('Y-m-d H:i:s');
     // Normalizar fecha ISO a MySQL
     $fecha = date('Y-m-d H:i:s', strtotime($fecha_raw));
 
     $stmt = $db->prepare(
         "INSERT INTO cotizaciones 
-         (numero, tipo, subtipo, cliente, cedula, uso, capacidad, aseguradora, cobertura,
+         (numero, tipo, subtipo, cliente, cedula, beneficiario, uso, capacidad, aseguradora, cobertura,
           monto_afianzado, plazo, prima_base, impuesto, total, servicios_opcionales, fecha)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
          ON DUPLICATE KEY UPDATE
-         tipo=VALUES(tipo), cliente=VALUES(cliente), total=VALUES(total), fecha=VALUES(fecha)"
+         tipo=VALUES(tipo), cliente=VALUES(cliente), beneficiario=VALUES(beneficiario), total=VALUES(total), fecha=VALUES(fecha)"
     );
-    $stmt->bind_param('sssssssssdidddss',
-        $numero, $tipo, $subtipo, $cliente, $cedula,
+    $stmt->bind_param('ssssssssssdidddss',
+        $numero, $tipo, $subtipo, $cliente, $cedula, $beneficiario,
         $uso, $capacidad, $aseguradora, $cobertura,
         $monto, $plazo, $prima_base, $impuesto, $total,
         $servicios, $fecha
@@ -168,7 +200,7 @@ try {
 
         $id = intval($datos['id']);
         $sql = "UPDATE cotizaciones SET 
-                tipo = ?, subtipo = ?, cliente = ?, cedula = ?, uso = ?, 
+                tipo = ?, subtipo = ?, cliente = ?, cedula = ?, beneficiario = ?, uso = ?, 
                 capacidad = ?, aseguradora = ?, cobertura = ?, 
                 monto_afianzado = ?, plazo = ?, prima_base = ?, 
                 impuesto = ?, total = ?, servicios_opcionales = ?
@@ -181,12 +213,26 @@ try {
         $cobertura = isset($datos['cobertura']) ? 
                     (is_array($datos['cobertura']) ? json_encode($datos['cobertura']) : $datos['cobertura']) 
                     : ($datos['cobertura'] ?? '');
+        $beneficiario = $datos['beneficiario'] ?? '';
 
-        $stmt->bind_param('ssssssssdidddsi',
-            $datos['tipo'], $datos['subtipo'], $datos['cliente'], $datos['cedula'], $datos['uso'],
-            $datos['capacidad'], $datos['aseguradora'], $cobertura,
-            $datos['monto_afianzado'], $datos['plazo'], $datos['prima_base'],
-            $datos['impuesto'], $datos['total'], $servicios, $id
+        $tipo = $datos['tipo'] ?? 'GENERAL';
+        $subtipo = $datos['subtipo'] ?? '';
+        $cliente = $datos['cliente'] ?? '';
+        $cedula = $datos['cedula'] ?? '';
+        $uso = $datos['uso'] ?? '';
+        $capacidad = $datos['capacidad'] ?? '';
+        $aseguradora = $datos['aseguradora'] ?? '';
+        $monto_afianzado = floatval($datos['monto_afianzado'] ?? 0);
+        $plazo = intval($datos['plazo'] ?? 0);
+        $prima_base = floatval($datos['prima_base'] ?? 0);
+        $impuesto = floatval($datos['impuesto'] ?? 0);
+        $total = floatval($datos['total'] ?? 0);
+
+        $stmt->bind_param('sssssssssdidddsi',
+            $tipo, $subtipo, $cliente, $cedula, $beneficiario, $uso,
+            $capacidad, $aseguradora, $cobertura,
+            $monto_afianzado, $plazo, $prima_base,
+            $impuesto, $total, $servicios, $id
         );
 
         if ($stmt->execute()) {

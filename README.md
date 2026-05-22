@@ -1,17 +1,17 @@
-# 🏛️ MAS QUE FIANZAS - Sistema Integrado de Gestión
+# 🏛️ MÁS QUE FIANZAS - Sistema Integrado de Gestión (v3.3.0 Stabilized)
 
 Sistema web completo de gestión de fianzas, seguros y cotizaciones con:
-- 👥 Gestión integral de usuarios y perfiles
-- 🔐 Control de accesos basado en roles (RBAC)
-- 📋 Módulo de cotizaciones integrado
-- 📊 Sistema de auditoría y reportes
-- 💰 Gestión de pagos, pólizas y siniestros
+- 👥 Gestión integral de usuarios y perfiles comerciales (Agentes, Socios PDV)
+- 🐍 Motor ETL de importación de usuarios en **Python 3.14.5** (Idempotente, con normalización Banreservas)
+- 🔐 Control de accesos basado en roles (RBAC) y auditoría total
+- 📋 Módulo de cotizaciones de seguros de ley y fianzas con PDF corporativos
+- 📊 Sistema contable de pagos, pólizas y siniestros
 
 ## 📋 Requisitos Previos
 
-- **WAMP Server** instalado (Apache, MySQL, PHP)
-- **MySQL 5.7+** o **MariaDB 10.3+**
-- **PHP 7.4+**
+- **WAMP Server** instalado con **Apache**, **MySQL 5.7+ / MariaDB 10.3+**
+- **PHP 8.2+** (Probado y compatible hasta PHP 8.2.29)
+- **Python 3.14+** (Instalado en el PATH del sistema para soporte del motor ETL)
 - **Navegador moderno** (Chrome, Firefox, Edge, Safari)
 
 ## 🚀 Instalación Rápida
@@ -64,27 +64,32 @@ URL: http://localhost/PLATAFORMA_INTEGRADA/frontend/
 PLATAFORMA_INTEGRADA/
 ├── backend/
 │   ├── api/
-│   │   ├── auth.php          # API de autenticación
-│   │   ├── usuarios.php      # API de gestión de usuarios
-│   │   └── perfiles.php      # API de gestión de perfiles
-│   ├── config.php            # Configuración de BD
-│   ├── Autenticacion.php     # Clase de autenticación
-│   ├── UsuarioManager.php    # Gestión de usuarios
-│   └── PerfilManager.php     # Gestión de perfiles
+│   │   ├── auth.php              # API de autenticación
+│   │   ├── usuarios.php          # API de gestión de usuarios (con importación XLSX)
+│   │   ├── perfiles.php          # API de gestión de perfiles
+│   │   └── pagos.php             # API de canales de pago e ingresos (Finanzas)
+│   ├── config.php                # Configuración de BD centralizada
+│   ├── Autenticacion.php         # Clase de autenticación
+│   ├── UsuarioManager.php        # Gestión de usuarios (operaciones de importación)
+│   ├── PagoManager.php           # Motor contable de control de pagos
+│   └── etl_usuarios_import.py    # Motor ETL en Python 3.14.5 (Normalización Reservas)
 ├── frontend/
-│   ├── index.html            # Página de login
-│   ├── dashboard.html        # Dashboard principal
+│   ├── index.html                # Página de login
+│   ├── dashboard.html            # Dashboard principal
 │   ├── assets/
-│   │   ├── api-client.js     # Cliente de API
-│   │   ├── login.js          # Lógica de login
-│   │   ├── login.css         # Estilos de login
-│   │   ├── dashboard.js      # Lógica del dashboard
-│   │   ├── dashboard.css     # Estilos del dashboard
-│   │   └── modulos.css       # Estilos de módulos
-│   └── modulos/              # Módulos adicionales
+│   │   ├── api-client.js         # Cliente unificado de llamadas HTTP
+│   │   ├── dashboard.js          # Lógica principal del Dashboard
+│   │   ├── data-export.js        # Motor PDF/Excel/CSV/ZIP unificado
+│   │   └── skin-engine.css       # Gestión visual de skins (Premium dark/light)
+│   └── modulos/
+│       ├── usuarios.html         # CRUD y formulario dinámico (Comisiones/Bancos)
+│       └── cotizaciones.html     # Cotizador integrado de fianzas y seguros de ley
 ├── database/
-│   └── schema_masque_fianzas.sql  # Script de BD
-└── README.md                 # Este archivo
+│   ├── schema_masque_fianzas.sql # Script SQL original de la BD
+│   └── cf_schema.sql             # Esquema ampliado para canales de cobro
+├── verify.php                    # Verificador visual del sistema (v3.3.0 Dashboard)
+├── verify_system_end_to_end.php  # Script de diagnóstico de comandos (CLI/Python/BD)
+└── README.md                     # Este archivo
 ```
 
 ## 🛠️ Características Principales

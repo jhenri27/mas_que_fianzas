@@ -160,15 +160,27 @@
   <!-- Configuración Avanzada -->
   <div class="section-card" style="margin-top:28px; padding: 20px; background: white; border-radius: 12px; border: 1px solid var(--mqf-border);">
     <div class="section-title" style="display:flex; align-items:center; gap:10px; margin-bottom:12px; font-weight:700;">
-      <i class="fa-solid fa-clock" style="color:var(--mqf-primary)"></i> Automatización Horaria
+      <i class="fa-solid fa-sliders" style="color:var(--mqf-primary)"></i> Configuración de Apariencia Avanzada
     </div>
-    <div style="display:flex; align-items:center; justify-content:space-between;">
+    <!-- Automatización Horaria -->
+    <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; border-bottom: 1px solid var(--mqf-border); margin-bottom:16px;">
       <div>
         <div style="font-weight:600; font-size:14px; color:var(--mqf-text);">Modo Inteligente Día/Noche</div>
         <div style="font-size:12px; color:var(--mqf-text-muted);">Activa automáticamente el modo Obsidian Dark después de las 19:00 hasta las 07:00.</div>
       </div>
       <label class="mqf-switch">
         <input type="checkbox" id="auto-theme-toggle" onchange="toggleAutoTheme()">
+        <span class="mqf-switch-slider"></span>
+      </label>
+    </div>
+    <!-- Glassmorphic Rollback -->
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-weight:600; font-size:14px; color:var(--mqf-text);">Diseño Moderno Glassmorphic (Premium)</div>
+        <div style="font-size:12px; color:var(--mqf-text-muted);">Activa efectos translúcidos ultra-premium, brillos dinámicos y la tipografía Outfit. Desactívalo para usar el rollback de estilos clásicos y sólidos.</div>
+      </div>
+      <label class="mqf-switch">
+        <input type="checkbox" id="glass-theme-toggle" checked onchange="toggleGlassTheme()">
         <span class="mqf-switch-slider"></span>
       </label>
     </div>
@@ -250,6 +262,7 @@ const COLOR_FIELDS = [
 ];
 
 let skinActual    = 'indigo';
+let glassEnabled  = true;
 let customTokens  = {};
 let tipoFuente    = 'Inter';
 
@@ -261,8 +274,26 @@ async function init() {
 
 async function cargarConfig() {
   // Aplicar skin guardado en localStorage inmediatamente (sin esperar API)
-  const localSkin = localStorage.getItem('mqf-skin') || 'indigo';
-  aplicarSkinLocalmente(localSkin);
+  let localSkin = localStorage.getItem('mqf-skin') || 'indigo';
+  
+  if (localSkin.endsWith('-classic')) {
+    glassEnabled = false;
+    skinActual = localSkin.replace('-classic', '');
+  } else {
+    const localGlass = localStorage.getItem('mqf-glass-enabled');
+    if (localGlass === 'false') {
+      glassEnabled = false;
+    } else {
+      glassEnabled = true;
+    }
+    skinActual = localSkin;
+  }
+
+  // Sincronizar checkbox en la UI
+  const glassToggle = document.getElementById('glass-theme-toggle');
+  if (glassToggle) glassToggle.checked = glassEnabled;
+
+  aplicarSkinLocalmente(skinActual);
 
   try {
     const token = localStorage.getItem('token_sesion') || '';
@@ -273,7 +304,20 @@ async function cargarConfig() {
     const res = await response.json();
     if (!res || !res.exito) return;
 
-    const skinEfectivo = res.skin_efectivo || localSkin;
+    let skinEfectivo = res.skin_efectivo || localSkin;
+    
+    if (skinEfectivo.endsWith('-classic')) {
+      glassEnabled = false;
+      skinActual = skinEfectivo.replace('-classic', '');
+    } else {
+      const localGlass = localStorage.getItem('mqf-glass-enabled');
+      if (localGlass === 'false') {
+        glassEnabled = false;
+      } else {
+        glassEnabled = true;
+      }
+      skinActual = skinEfectivo;
+    }
     customTokens = res.custom_tokens || {};
     tipoFuente   = res.brand_tipografia || 'Inter';
 
@@ -282,36 +326,30 @@ async function cargarConfig() {
     if (document.getElementById('brand-nombre'))
       document.getElementById('brand-nombre').value = res.brand_nombre_empresa || '';
 
-    aplicarSkinLocalmente(skinEfectivo);
+    // Sincronizar checkbox en la UI
+    if (glassToggle) glassToggle.checked = glassEnabled;
+
+    aplicarSkinLocalmente(skinActual);
     actualizarColorPickers(customTokens);
     seleccionarFuenteUI(tipoFuente);
   } catch (e) {
     // Sin conexión o sin auth — usar localStorage, sin toast de error
-    console.info('[UX-SKINS] API no disponible, usando config local:', localSkin);
-    document.getElementById('skin-activo-label').textContent = SKIN_LABELS[localSkin] || localSkin;
+    console.info('[UX-SKINS] API no disponible, usando config local:', skinActual);
+    document.getElementById('skin-activo-label').textContent = SKIN_LABELS[skinActual] || skinActual;
   }
 }
 
 // ── SKIN SELECTION ────────────────────────────────────────────────────────────
 function seleccionarSkin(skin) {
   skinActual = skin;
-  document.querySelectorAll('.skin-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-' + skin).classList.add('selected');
-
-  // Mostrar/ocultar editor custom
-  document.getElementById('custom-editor').classList.toggle('visible', skin === 'custom');
-
-  // Preview inmediato en padre (si está en iframe)
   aplicarSkinLocalmente(skin);
-
-  // Notificar al padre (dashboard)
-  if (window.parent && window.parent !== window) {
-    window.parent.postMessage({ type: 'mqf-skin-preview', skin }, '*');
-  }
+  notificarPadre(skin);
 }
 
 function aplicarSkinLocalmente(skin) {
-  document.body.setAttribute('data-skin', skin);
+  const resolvedSkin = (glassEnabled && skin !== 'custom') ? skin : (skin === 'custom' ? 'custom' : skin + '-classic');
+  document.body.setAttribute('data-skin', resolvedSkin);
+  
   // Actualizar badges
   ['indigo','obsidian','coral','custom'].forEach(s => {
     const b = document.getElementById('badge-' + s);
@@ -319,6 +357,15 @@ function aplicarSkinLocalmente(skin) {
   });
   const active = document.getElementById('badge-' + skin);
   if (active) { active.textContent = 'Activo'; active.className = 'skin-badge badge-active'; }
+
+  // Resaltar la tarjeta seleccionada en el grid
+  document.querySelectorAll('.skin-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('card-' + skin);
+  if (card) card.classList.add('selected');
+
+  // Mostrar/ocultar editor custom
+  const customEditor = document.getElementById('custom-editor');
+  if (customEditor) customEditor.classList.toggle('visible', skin === 'custom');
 
   if (skin === 'custom') aplicarTokensCustom();
 }
@@ -411,8 +458,11 @@ async function apiPost(endpoint, datos) {
 }
 
 async function aplicarEmpresa() {
+  const resolvedSkin = (glassEnabled && skinActual !== 'custom') ? skinActual : (skinActual === 'custom' ? 'custom' : skinActual + '-classic');
+  
   // 1. Aplicar y guardar localmente de inmediato
-  localStorage.setItem('mqf-skin', skinActual);
+  localStorage.setItem('mqf-skin', resolvedSkin);
+  localStorage.setItem('mqf-glass-enabled', glassEnabled);
   notificarPadre(skinActual);
   aplicarSkinLocalmente(skinActual);
 
@@ -420,7 +470,7 @@ async function aplicarEmpresa() {
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
 
   // 2. Intentar persistir en BD (silencioso si falla)
-  const res = await apiPost('/skins.php/guardar_empresa', { skin: skinActual });
+  const res = await apiPost('/skins.php/guardar_empresa', { skin: resolvedSkin });
   if (skinActual === 'custom') await guardarCustomTokens();
 
   if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-building"></i> Aplicar a toda la empresa'; }
@@ -434,13 +484,16 @@ async function aplicarEmpresa() {
 }
 
 async function aplicarSoloParaMi() {
+  const resolvedSkin = (glassEnabled && skinActual !== 'custom') ? skinActual : (skinActual === 'custom' ? 'custom' : skinActual + '-classic');
+  
   // 1. Local inmediato
-  localStorage.setItem('mqf-skin', skinActual);
+  localStorage.setItem('mqf-skin', resolvedSkin);
+  localStorage.setItem('mqf-glass-enabled', glassEnabled);
   notificarPadre(skinActual);
   aplicarSkinLocalmente(skinActual);
 
   // 2. BD en segundo plano
-  const res = await apiPost('/skins.php/guardar_usuario', { skin: skinActual });
+  const res = await apiPost('/skins.php/guardar_usuario', { skin: resolvedSkin });
   if (skinActual === 'custom') await guardarCustomTokens();
 
   if (res && res.exito) {
@@ -460,11 +513,17 @@ async function guardarCustomTokens() {
 }
 
 async function restablecer() {
-  if (!confirm('¿Restablecer al tema Indigo Corp (default)?')) return;
+  if (!(await MQF.confirm('¿Restablecer al tema Indigo Corp (default)?', {type: 'warning'}))) return;
+  glassEnabled = true;
   localStorage.setItem('mqf-skin', 'indigo');
+  localStorage.setItem('mqf-glass-enabled', 'true');
   localStorage.setItem('mqf-auto-theme', 'false');
-  const toggle = document.getElementById('auto-theme-toggle');
-  if (toggle) toggle.checked = false;
+  
+  const autoToggle = document.getElementById('auto-theme-toggle');
+  if (autoToggle) autoToggle.checked = false;
+  const glassToggle = document.getElementById('glass-theme-toggle');
+  if (glassToggle) glassToggle.checked = true;
+
   seleccionarSkin('indigo');
   notificarPadre('indigo');
   await apiPost('/skins.php/guardar_usuario', { skin: 'sistema' }); // silencioso
@@ -486,6 +545,31 @@ function toggleAutoTheme() {
   } else {
     MQF.toast('☀️ Modo Automático desactivado.', 'info');
   }
+}
+
+function toggleGlassTheme() {
+  const checkbox = document.getElementById('glass-theme-toggle');
+  glassEnabled = checkbox.checked;
+  localStorage.setItem('mqf-glass-enabled', glassEnabled);
+
+  // 1. Resolver el skin actual con/sin clásico
+  const resolvedSkin = (glassEnabled && skinActual !== 'custom') ? skinActual : (skinActual === 'custom' ? 'custom' : skinActual + '-classic');
+  
+  // 2. Guardar en localStorage bajo la clave mqf-skin
+  localStorage.setItem('mqf-skin', resolvedSkin);
+
+  // 3. Aplicar localmente
+  aplicarSkinLocalmente(skinActual);
+
+  // 4. Notificar al padre para actualización en tiempo real
+  notificarPadre(skinActual);
+
+  MQF.toast(
+    glassEnabled 
+      ? '💎 Efectos Glassmorphic y tipografía Outfit activados.' 
+      : '🏛️ Modo Clásico activado (estilos sólidos originales y tipografía Inter).', 
+    'info'
+  );
 }
 
 function initAutoThemeUI() {
@@ -520,14 +604,27 @@ function importarBrand(evt) {
 // ── COMUNICACIÓN CON IFRAME PADRE ─────────────────────────────────────────────
 function notificarPadre(skin) {
   if (window.parent && window.parent !== window) {
-    window.parent.postMessage({ type: 'mqf-skin-apply', skin }, '*');
+    const resolvedSkin = (glassEnabled && skin !== 'custom') ? skin : (skin === 'custom' ? 'custom' : skin + '-classic');
+    window.parent.postMessage({ type: 'mqf-skin-apply', skin: resolvedSkin }, '*');
+    window.parent.postMessage({ type: 'mqf-skin-preview', skin: resolvedSkin }, '*');
   }
 }
 
 // Escuchar si el padre nos pide actualizar
 window.addEventListener('message', (e) => {
   if (e.data?.type === 'mqf-skin-set') {
-    aplicarSkinLocalmente(e.data.skin);
+    let skin = e.data.skin;
+    if (skin.endsWith('-classic')) {
+      glassEnabled = false;
+      skinActual = skin.replace('-classic', '');
+    } else {
+      glassEnabled = true;
+      skinActual = skin;
+    }
+    const glassToggle = document.getElementById('glass-theme-toggle');
+    if (glassToggle) glassToggle.checked = glassEnabled;
+    
+    aplicarSkinLocalmente(skinActual);
   }
 });
 

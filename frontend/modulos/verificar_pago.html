@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Pago - MÁS QUE FIANZAS</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+            --panel-bg: rgba(30, 41, 59, 0.45);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            
+            /* Status Colors */
+            --color-pendiente: #f59e0b;
+            --bg-pendiente: rgba(245, 158, 11, 0.08);
+            --border-pendiente: rgba(245, 158, 11, 0.25);
+            
+            --color-aprobado: #10b981;
+            --bg-aprobado: rgba(16, 185, 129, 0.08);
+            --border-aprobado: rgba(16, 185, 129, 0.25);
+            
+            --color-rechazado: #ef4444;
+            --bg-rechazado: rgba(239, 68, 68, 0.08);
+            --border-rechazado: rgba(239, 68, 68, 0.25);
+            
+            --theme-primary: #6366f1;
+            --theme-primary-hover: #4f46e5;
+            --theme-glow: rgba(99, 102, 241, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient background glow dots */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+            top: 10%;
+            left: 10%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            bottom: 10%;
+            right: 5%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 750px;
+            z-index: 10;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .glass-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-area img {
+            max-height: 45px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.3));
+        }
+
+        .logo-fallback {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* Status Banner section */
+        .status-banner {
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .status-banner .status-icon {
+            font-size: 24px;
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status-banner .status-info h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-banner .status-info p {
+            font-size: 13.5px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* Statuses details */
+        .status-banner.pendiente {
+            background: var(--bg-pendiente);
+            border-color: var(--border-pendiente);
+            color: var(--color-pendiente);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.08);
+        }
+        .status-banner.pendiente .status-icon {
+            color: var(--color-pendiente);
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .status-banner.aprobado {
+            background: var(--bg-aprobado);
+            border-color: var(--border-aprobado);
+            color: var(--color-aprobado);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
+        }
+        .status-banner.aprobado .status-icon {
+            color: var(--color-aprobado);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .status-banner.rechazado {
+            background: var(--bg-rechazado);
+            border-color: var(--border-rechazado);
+            color: var(--color-rechazado);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.08);
+        }
+        .status-banner.rechazado .status-icon {
+            color: var(--color-rechazado);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Data Grid section */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        @media (max-width: 600px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .glass-card {
+                padding: 25px 20px;
+            }
+        }
+
+        .info-card {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .info-card .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-card .value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .info-card .value.highlight {
+            color: #818cf8;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* Ledger card */
+        .info-card.ledger-stamp {
+            grid-column: 1 / -1;
+            border-left: 4px solid var(--color-aprobado);
+            background: rgba(16, 185, 129, 0.02);
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Footer buttons styling */
+        .actions-area {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--theme-primary);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--theme-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Loading / Error states layout */
+        .loading-view, .error-view {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            border-top-color: var(--theme-primary);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-view i {
+            font-size: 48px;
+            color: var(--color-rechazado);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .error-view h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .error-view p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        
+        <!-- Header / Logo Area -->
+        <div class="logo-area">
+            <div class="logo-fallback" id="empresa-logo-text">MÁS QUE FIANZAS</div>
+            <div class="subtitle">Verificador de Transacciones</div>
+        </div>
+
+        <!-- Dynamic Content Mounts here -->
+        <div id="content-mount">
+            <!-- Loading view default -->
+            <div class="loading-view" id="loading-spinner">
+                <div class="spinner"></div>
+                <p>Verificando registro con el Libro Mayor y la base de datos fiscal...</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const mount = document.getElementById("content-mount");
+        
+        // Extract ref from query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref') || '';
+        
+        if (!ref) {
+            renderError("Falta la referencia de la transacción en la URL. Escanee el código QR oficial nuevamente.");
+            return;
+        }
+
+        try {
+            // Call API
+            const response = await fetch(`../../backend/api/pagos.php?action=verificar&ref=${encodeURIComponent(ref)}`);
+            const json = await response.json();
+
+            if (!response.ok || !json.exito) {
+                renderError(json.mensaje || "La transacción consultada no pudo ser validada. El código de referencia no existe o es inválido.");
+                return;
+            }
+
+            const p = json.data;
+            renderPaymentDetails(p);
+            
+        } catch (e) {
+            console.error(e);
+            renderError("No se pudo conectar con el servidor para la validación en tiempo real. Por favor verifique su conexión e intente más tarde.");
+        }
+    });
+
+    function renderError(msg) {
+        const mount = document.getElementById("content-mount");
+        mount.innerHTML = `
+            <div class="error-view">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h2>Error de Validación</h2>
+                <p>${escapeHtml(msg)}</p>
+                <div class="actions-area">
+                    <a href="polizas.html" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Volver a la Plataforma
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPaymentDetails(p) {
+        const mount = document.getElementById("content-mount");
+        
+        // Format DOP currency
+        const fmtDOP = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' });
+        const formatFecha = (f) => f ? new Date(f.replace(/-/g, '/')).toLocaleDateString('es-DO') : 'N/A';
+        
+        let bannerClass = 'pendiente';
+        let bannerIcon = 'fa-regular fa-clock';
+        let bannerTitle = 'PAGO REGISTRADO — EN VALIDACIÓN ADMINISTRATIVA';
+        let bannerText = '';
+
+        if (p.estado_pago === 'pendiente') {
+            bannerClass = 'pendiente';
+            bannerIcon = 'fa-regular fa-clock';
+            bannerTitle = 'PAGO REGISTRADO — EN VALIDACIÓN ADMINISTRATIVA';
+            bannerText = '<strong>[ATENCIÓN LEGAL]</strong> Cobertura de póliza y vigencia activas ÚNICAMENTE por un <strong>plazo de gracia de 24 horas</strong>. Su cobertura se prorrogará de forma indefinida inmediatamente tras la validación aprobatoria del soporte de depósito o transferencia. De lo contrario, se suspenderá automáticamente.';
+        } else if (p.estado_pago === 'procesado') {
+            bannerClass = 'aprobado';
+            bannerIcon = 'fa-regular fa-circle-check';
+            bannerTitle = 'TRANSACCIÓN VERIFICADA Y CONCILIADA CONTABLEMENTE';
+            bannerText = 'Certificamos la validación aprobatoria de los fondos. Las cuentas auxiliares de Caja/Bancos y Primas por Cobrar se encuentran debidamente balanceadas y cuadradas en la contabilidad general de MAS QUE FIANZAS, SRL.';
+        } else if (p.estado_pago === 'rechazado') {
+            bannerClass = 'rechazado';
+            bannerIcon = 'fa-solid fa-circle-xmark';
+            bannerTitle = 'TRANSACCIÓN RECHAZADA — SIN VALIDEZ COOPERATIVA';
+            bannerText = '<strong>[ALERTA DE SEGURIDAD]</strong> El soporte de pago no cumple con la certificación de depósito de fondos. <strong>La cobertura y vigencia de la póliza asociada quedan INACTIVAS e INVALIDADAS de inmediato</strong> por falta de pago conforme a la Ley de Seguros 146-02.';
+        }
+
+        // Build data columns
+        let html = `
+            <!-- Status banner -->
+            <div class="status-banner ${bannerClass}">
+                <div class="status-icon"><i class="${bannerIcon}"></i></div>
+                <div class="status-info">
+                    <h2>${bannerTitle}</h2>
+                    <p>${bannerText}</p>
+                </div>
+            </div>
+
+            <!-- Main grid metadata -->
+            <div class="info-grid">
+                
+                <div class="info-card">
+                    <div class="label">Monto de la Transacción</div>
+                    <div class="value highlight">${fmtDOP.format(p.monto)} DOP</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="label">Número de Referencia</div>
+                    <div class="value">${escapeHtml(p.numero_referencia)}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Asegurado</div>
+                    <div class="value">${escapeHtml(p.cliente_nombre)}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Cédula / Pasaporte</div>
+                    <div class="value">${escapeHtml(p.cliente_cedula)}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Póliza Asociada</div>
+                    <div class="value">${escapeHtml(p.numero_poliza)}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Método / Banco</div>
+                    <div class="value">${escapeHtml(p.tipo_pago.toUpperCase())} ${p.banco ? '— ' + escapeHtml(p.banco) : ''}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Referencia Bancaria</div>
+                    <div class="value">${escapeHtml(p.numero_comprobante || 'N/A')}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Número Recibo Oficial</div>
+                    <div class="value">${escapeHtml(p.numero_recibo || 'N/A')}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Fecha Recibo / Emisión</div>
+                    <div class="value">${formatFecha(p.fecha_pago)}</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="label">Comprobante Fiscal NCF</div>
+                    <div class="value">${escapeHtml(p.numero_ncf || 'N/A')}</div>
+                </div>
+
+                ${p.validador ? `
+                <div class="info-card">
+                    <div class="label">Validado por</div>
+                    <div class="value">${escapeHtml(p.validador)}</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Fecha Validación</div>
+                    <div class="value">${escapeHtml(p.fecha_validacion)}</div>
+                </div>
+                ` : ''}
+
+                <!-- Double entry ledger accounting check -->
+                ${p.estado_pago === 'procesado' && p.asiento_contable ? `
+                <div class="info-card ledger-stamp">
+                    <div>
+                        <div class="label" style="color: var(--color-aprobado);">Asiento del Libro Mayor (Partida Doble)</div>
+                        <div class="value" style="font-size: 16px; margin-top: 2px;">
+                            <i class="fa-solid fa-building-columns"></i> Folio Contable: <strong>${escapeHtml(p.asiento_contable)}</strong>
+                        </div>
+                    </div>
+                    <span style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: var(--color-aprobado); padding: 4px 8px; border-radius: 6px; font-weight: 700;">CONCILIADO</span>
+                </div>
+                ` : ''}
+
+            </div>
+
+            <!-- Actions area -->
+            <div class="actions-area">
+                <a href="polizas.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a Pólizas
+                </a>
+                ${p.estado_pago !== 'rechazado' ? `
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fa-solid fa-print"></i> Imprimir Certificado
+                </button>
+                ` : ''}
+            </div>
+        `;
+
+        mount.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+</script>
+</body>
+</html>

@@ -39,7 +39,7 @@ async function exportarDiario() {
     const res = await fetch('../../backend/api/centro_financiero.php?action=get_diario&limit=100').then(r => r.json());
     
     if (!res.exito) {
-        alert("Error al obtener datos para el reporte");
+        MQF.toast("Error al obtener datos para el reporte", "error");
         return;
     }
 

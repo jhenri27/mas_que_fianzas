@@ -12,7 +12,8 @@
     
     <!-- Design System MQF -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">`n  <link rel="stylesheet" href="../assets/skin-engine.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
     <link rel="stylesheet" href="../assets/dashboard.css">
     
@@ -198,10 +199,9 @@
                         </div>
                     </div>
                     <!-- IMPORT BUTTON -->
-                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="document.getElementById('importFile').click()">
+                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="window.abrirAsistenteImportacion('clientes')">
                         <i class="fa-solid fa-upload"></i> Importar
                     </button>
-                    <input type="file" id="importFile" accept=".csv, .xlsx, .json" style="display:none;" onchange="window.importarDatos(event)">
                     <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="window.abrirModalCliente()">
                         <i class="fa-solid fa-plus"></i> Nuevo Cliente
                     </button>
@@ -216,7 +216,7 @@
                 <input type="text" id="buscadorClientes" class="mqf-input" placeholder="🔍 Buscar por ID, Nombre, RNC o Teléfono...">
             </div>
 
-            <div class="table-container" style="background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow-x:auto;">
+            <div class="table-container" style="overflow-x:auto;">
                 <table class="data-table" id="tablaClientes" style="width:100%; border-collapse:collapse; min-width:800px;">
                     <thead>
                         <tr>
@@ -241,60 +241,60 @@
 
             <!-- Modal Cliente -->
 
-            <div id="clienteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-                <div style="background:#fff; width:90%; max-width:600px; border-radius:8px; overflow:hidden; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
-                    <div style="padding:15px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                        <h3 id="clienteModalTitle" style="margin:0; font-size:18px; color:#1e293b; font-weight:600;">Nuevo Cliente</h3>
-                        <button onclick="cerrarModalCliente()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#94a3b8; line-height:1;">&times;</button>
+            <div id="clienteModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:1000; align-items:center; justify-content:center;">
+                <div class="modal-box" style="width:90%; max-width:600px;">
+                    <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 id="clienteModalTitle" class="mqf-modal-title" style="margin:0; font-size:18px; font-weight:600;">Nuevo Cliente</h3>
+                        <button onclick="cerrarModalCliente()" class="modal-close" style="line-height:1;">&times;</button>
                     </div>
-                    <form id="clienteForm" style="padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <form id="clienteForm" class="modal-body" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                         <input type="hidden" id="cliente_id" name="id">
                         
                         <div style="grid-column:1 / -1;">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Tipo de Persona</label>
-                            <select id="tipo_persona" name="tipo_persona" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Tipo de Persona</label>
+                            <select id="tipo_persona" name="tipo_persona" class="form-input" required style="width:100%; padding:10px 12px; box-sizing:border-box;">
                                 <option value="Fisica">Física</option>
                                 <option value="Juridica">Jurídica</option>
                             </select>
                         </div>
                         
                         <div style="grid-column:1 / -1;">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Nombre / Razón Social <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="nombre_razon_social" name="nombre_razon_social" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Nombre / Razón Social <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="nombre_razon_social" name="nombre_razon_social" class="form-input" required style="width:100%; padding:10px 12px; box-sizing:border-box;">
                         </div>
                         
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">RNC / Cédula <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="rfc" name="rnc" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">RNC / Cédula <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="rfc" name="rnc" class="form-input" required style="width:100%; padding:10px 12px; box-sizing:border-box;">
                         </div>
                         
                         <div>
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Teléfono</label>
-                            <input type="tel" id="telefono" name="telefono" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Teléfono</label>
+                            <input type="tel" id="telefono" name="telefono" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                         </div>
                         
                         <div style="grid-column:1 / -1;">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Correo Electrónico</label>
-                            <input type="email" id="correo" name="correo" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Correo Electrónico</label>
+                            <input type="email" id="correo" name="correo" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                         </div>
                         
                         <div style="grid-column:1 / -1;">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Dirección Física</label>
-                            <input type="text" id="direccion" name="direccion" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Dirección Física</label>
+                            <input type="text" id="direccion" name="direccion" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                         </div>
                         
                         <div style="grid-column:1 / -1;">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Estatus</label>
-                            <select id="estatus" name="estatus" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; outline:none;">
+                            <label class="form-label" style="display:block; margin-bottom:5px;">Estatus</label>
+                            <select id="estatus" name="estatus" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                                 <option value="Activo">Activo</option>
                                 <option value="Inactivo">Inactivo</option>
                             </select>
                         </div>
-
-                        <div style="grid-column:1 / -1; display: flex; gap: 10px;">
+ 
+                        <div class="field-full" style="grid-column:1 / -1; display: flex; gap: 10px; padding: 10px; border-radius: 8px;">
                             <div style="flex: 1;">
-                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">Comisionante</label>
-                                <select id="comisionante" name="comisionante" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; outline:none;">
+                                <label class="form-label" style="display:block; margin-bottom:5px;">Comisionante</label>
+                                <select id="comisionante" name="comisionante" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                                     <option value="">Sin comisionante</option>
                                     <option value="Supervisor comercial">Supervisor comercial</option>
                                     <option value="Supervisor Comercial de Zona">Supervisor Comercial de Zona</option>
@@ -303,16 +303,16 @@
                                 </select>
                             </div>
                             <div style="flex: 1;">
-                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:13px; color:#475569;">C&oacute;digo del Usuario</label>
-                                <input type="text" id="codigo_comisionante" name="codigo_comisionante" placeholder="Ej. USR-123" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px; outline:none;">
+                                <label class="form-label" style="display:block; margin-bottom:5px;">C&oacute;digo del Usuario</label>
+                                <input type="text" id="codigo_comisionante" name="codigo_comisionante" placeholder="Ej. USR-123" class="form-input" style="width:100%; padding:10px 12px; box-sizing:border-box;">
                                 <div id="comisionante_lookup" style="margin-top:5px; font-size:12px; min-height:18px;"></div>
                                 <input type="hidden" id="nombre_comisionante" name="nombre_comisionante">
                             </div>
                         </div>
                         
-                        <div style="grid-column:1 / -1; display:flex; justify-content:flex-end; gap:10px; margin-top:10px; border-top:1px solid #e2e8f0; padding-top:20px;">
-                            <button type="button" onclick="cerrarModalCliente()" class="btn btn-secondary" style="padding:10px 20px; border:1px solid #cbd5e1; background:#f8fafc; color:#475569; font-weight:600; border-radius:6px; cursor:pointer;">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="padding:10px 20px; background:#4f46e5; color:#fff; font-weight:600; border:none; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-save" style="margin-right:5px;"></i> Guardar Cliente</button>
+                        <div class="modal-footer" style="grid-column:1 / -1; display:flex; justify-content:flex-end; gap:10px; margin-top:10px; padding-top:20px;">
+                            <button type="button" onclick="cerrarModalCliente()" class="btn-cancel" style="padding:10px 20px; font-weight:600; cursor:pointer;">Cancelar</button>
+                            <button type="submit" class="btn-save" style="padding:10px 20px; font-weight:600; cursor:pointer;"><i class="fa-solid fa-save" style="margin-right:5px;"></i> Guardar Cliente</button>
                         </div>
                     </form>
                 </div>
@@ -333,14 +333,14 @@
     <script>
     window.imprimirCliente = function(id) {
         if (!window.clientesData || !window.clientesData.length) {
-            alert('Los datos aún no están cargados. Espere un momento y vuelva a intentarlo.');
+            MQF.toast('Los datos aún no están cargados. Espere un momento y vuelva a intentarlo.', 'warning');
             return;
         }
         var c = window.clientesData.find(function(x){ return x.id == id; });
-        if (!c) { alert('Cliente no encontrado (ID: ' + id + ')'); return; }
+        if (!c) { MQF.toast('Cliente no encontrado (ID: ' + id + ')', 'error'); return; }
 
         if (typeof window.jspdf === 'undefined') {
-            alert('La librería de PDF no está disponible. Recargue la página con Ctrl+F5.');
+            MQF.toast('La librería de PDF no está disponible. Recargue la página con Ctrl+F5.', 'error');
             return;
         }
         var jsPDF = window.jspdf.jsPDF;
@@ -415,10 +415,19 @@
         doc.text('Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. Cod. postal: 10107, Republica Dominicana', 105, 278, {align:'center'});
         doc.text('Tel: +1 (829) 629-1952 | Email: info@masquefianzas.com', 105, 283, {align:'center'});
 
-        doc.autoPrint();
-        var blob = doc.output('blob');
-        var url  = URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        try {
+            doc.autoPrint();
+            var blob = doc.output('blob');
+            var url  = URL.createObjectURL(blob);
+            var win  = window.open(url, '_blank');
+            if (!win || win.closed || typeof win.closed === 'undefined') {
+                throw new Error('Popup blocked by browser settings');
+            }
+        } catch (e) {
+            console.warn('PDF Popup blocked. Downloading file directly.', e);
+            doc.save('Ficha_Cliente_' + fmt(c.id) + '.pdf');
+            MQF.toast('Descarga directa iniciada (Popup bloqueado)', 'info');
+        }
     };
     </script>
 

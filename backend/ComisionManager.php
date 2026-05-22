@@ -23,8 +23,22 @@ class ComisionManager {
      * @param float $primaNeta Base para el cálculo (Prima total sin ITBIS)
      */
     public function calcularYRegistrarComisiones($polizaId, $vendedorId, $primaNeta) {
-        // Obtener datos del vendedor y su posible supervisor (referente)
+        // Obtener tipo de seguro de la póliza
+        $sql_poliza = "SELECT tipo_seguro FROM polizas WHERE id = ?";
+        $stmt_poliza = $this->db->prepare($sql_poliza);
+        $tipoSeguro = '';
+        if ($stmt_poliza) {
+            $stmt_poliza->bind_param("i", $polizaId);
+            $stmt_poliza->execute();
+            $poliza = $stmt_poliza->get_result()->fetch_assoc();
+            $tipoSeguro = $poliza ? ($poliza['tipo_seguro'] ?? '') : '';
+            $stmt_poliza->close();
+        }
+
+        // Obtener datos del vendedor (incluyendo comisiones por ramos) y su posible supervisor (referente)
         $sql = "SELECT u.id, u.porcentaje_comision, u.referente_id, 
+                       u.comision_autos_ley, u.comision_autos_full, u.comision_fianzas,
+                       u.comision_incendio, u.comision_rc, u.comision_otros,
                        s.porcentaje_comision_red as porc_red
                 FROM usuarios u
                 LEFT JOIN usuarios s ON u.referente_id = s.id
@@ -36,14 +50,36 @@ class ComisionManager {
         $stmt->bind_param("i", $vendedorId);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
         if (!$user) return false;
 
         $registros = 0;
 
         // 1. Comisión del Vendedor (Intermediario)
-        // Se calcula sobre la prima neta
-        $porcVendedor = floatval($user['porcentaje_comision'] ?? 0);
+        // Resolver porcentaje de comisión específico por ramo o fallback
+        $porcVendedor = 0.00;
+        $tipoSeguroNorm = strtolower($tipoSeguro);
+        
+        if (strpos($tipoSeguroNorm, 'fianza') !== false) {
+            $porcVendedor = floatval($user['comision_fianzas'] ?? 0);
+        } elseif (strpos($tipoSeguroNorm, 'ley') !== false) {
+            $porcVendedor = floatval($user['comision_autos_ley'] ?? 0);
+        } elseif (strpos($tipoSeguroNorm, 'full') !== false || strpos($tipoSeguroNorm, 'vehiculo') !== false || strpos($tipoSeguroNorm, 'auto') !== false) {
+            $porcVendedor = floatval($user['comision_autos_full'] ?? 0);
+        } elseif (strpos($tipoSeguroNorm, 'incendio') !== false) {
+            $porcVendedor = floatval($user['comision_incendio'] ?? 0);
+        } elseif (strpos($tipoSeguroNorm, 'responsabilidad') !== false || strpos($tipoSeguroNorm, 'rc') !== false) {
+            $porcVendedor = floatval($user['comision_rc'] ?? 0);
+        } else {
+            $porcVendedor = floatval($user['comision_otros'] ?? 0);
+        }
+        
+        // Retrocompatibilidad: Si el porcentaje resuelto es 0.00, usar el general plano
+        if ($porcVendedor <= 0.00) {
+            $porcVendedor = floatval($user['porcentaje_comision'] ?? 0);
+        }
+
         if ($porcVendedor > 0) {
             $monto = $primaNeta * ($porcVendedor / 100);
             if ($this->insertarComision($polizaId, $vendedorId, 'intermediario', $porcVendedor, $primaNeta, $monto)) {

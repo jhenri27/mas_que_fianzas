@@ -817,18 +817,18 @@ class Dashboard {
             }
 
             if (resultado.exito) {
-                alert(resultado.mensaje);
+                MQF.toast(resultado.mensaje, 'success');
                 if (resultado.password_temporal) {
-                    alert('NUEVO USUARIO CREADO\n\nContraseña Temporal: ' + resultado.password_temporal + '\n\nEnvíe estos accesos al usuario.');
+                    MQF.toast('NUEVO USUARIO CREADO\n\nContraseña Temporal: ' + resultado.password_temporal + '\n\nEnvíe estos accesos al usuario.', 'success');
                 }
                 cerrarModal('usuarioModal');
                 this.cargarUsuarios();
             } else {
-                alert('Error: ' + resultado.mensaje);
+                MQF.toast('Error: ' + resultado.mensaje, 'error');
             }
         } catch (error) {
             console.error('Error guardando usuario:', error);
-            alert('Error de conexión al guardar el usuario');
+            MQF.toast('Error de conexión al guardar el usuario', 'error');
         }
     }
 
@@ -841,10 +841,10 @@ class Dashboard {
         if (razon) {
             const resultado = await api.bloquearUsuario(usuarioId, razon);
             if (resultado.exito) {
-                alert('Usuario bloqueado exitosamente');
+                MQF.toast('Usuario bloqueado exitosamente', 'success');
                 this.cargarUsuarios();
             } else {
-                alert('Error: ' + resultado.mensaje);
+                MQF.toast('Error: ' + resultado.mensaje, 'error');
             }
         }
     }
@@ -852,10 +852,10 @@ class Dashboard {
     async desbloquearUsuario(usuarioId) {
         const resultado = await api.desbloquearUsuario(usuarioId);
         if (resultado.exito) {
-            alert('Usuario desbloqueado exitosamente');
+            MQF.toast('Usuario desbloqueado exitosamente', 'success');
             this.cargarUsuarios();
         } else {
-            alert('Error: ' + resultado.mensaje);
+            MQF.toast('Error: ' + resultado.mensaje, 'error');
         }
     }
 
@@ -900,15 +900,15 @@ class Dashboard {
             }
 
             if (resultado.exito) {
-                alert(resultado.mensaje || 'Perfil guardado exitosamente');
+                MQF.toast(resultado.mensaje || 'Perfil guardado exitosamente', 'success');
                 cerrarModal('perfilModal');
                 this.cargarPerfiles();
             } else {
-                alert('Error: ' + resultado.mensaje);
+                MQF.toast('Error: ' + resultado.mensaje, 'error');
             }
         } catch (error) {
             console.error('Error guardando perfil:', error);
-            alert('Error de conexión al guardar el perfil');
+            MQF.toast('Error de conexión al guardar el perfil', 'error');
         }
     }
 

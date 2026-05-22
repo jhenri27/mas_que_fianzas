@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Lógica del Módulo de Clientes interactuando con api-client.js
  */
 
@@ -83,12 +83,12 @@ function abrirModalCliente() {
 function editarClienteUI(id) {
     try {
         if (!window.clientesData) {
-            alert('Aún no se han cargado los datos de los clientes.');
+            MQF.toast('Aún no se han cargado los datos de los clientes.', 'warning');
             return;
         }
         const cliente = window.clientesData.find(c => c.id == id);
         if (!cliente) {
-            alert('No se encontró el cliente con ID ' + id);
+            MQF.toast('No se encontró el cliente con ID ' + id, 'error');
             return;
         }
         
@@ -124,7 +124,7 @@ function editarClienteUI(id) {
         document.getElementById('clienteModalTitle').textContent = 'Editar Cliente';
         document.getElementById('clienteModal').style.display = 'flex';
     } catch(e) {
-        alert('Ocurrió un error abriendo la edición: ' + e.message);
+        MQF.toast('Ocurrió un error abriendo la edición: ' + e.message, 'error');
         console.error(e);
     }
 }
@@ -165,14 +165,14 @@ async function guardarCliente(e) {
         }
 
         if (resultado.exito) {
-            alert('Cliente guardado exitosamente en Base de Datos');
+            MQF.toast('Cliente guardado exitosamente en Base de Datos', 'success');
             cerrarModalCliente();
             cargarClientes(); // Recargar tabla
         } else {
-            alert('Error: ' + resultado.mensaje);
+            MQF.toast('Error: ' + resultado.mensaje, 'error');
         }
     } catch (error) {
-        alert('Error conectando con el servidor MySQL.');
+        MQF.toast('Error conectando con el servidor MySQL.', 'error');
     } finally {
         btn.innerHTML = txtOriginal;
         btn.disabled = false;
@@ -188,11 +188,11 @@ window.editarClienteUI = editarClienteUI;
 // IMPRIMIR FICHA DE CLIENTE EN PDF CORPORATIVO
 // ======================================================
 window.imprimirCliente = function(id) {
-    if (!window.clientesData) { alert('Los datos de clientes aún no están cargados.'); return; }
+    if (!window.clientesData) { MQF.toast('Los datos de clientes aún no están cargados.', 'warning'); return; }
     const c = window.clientesData.find(x => x.id == id);
-    if (!c) { alert('Cliente no encontrado (ID: ' + id + ')'); return; }
+    if (!c) { MQF.toast('Cliente no encontrado (ID: ' + id + ')', 'error'); return; }
 
-    if (typeof window.jspdf === 'undefined') { alert('Librería jsPDF no cargada'); return; }
+    if (typeof window.jspdf === 'undefined') { MQF.toast('Librería jsPDF no cargada', 'error'); return; }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 

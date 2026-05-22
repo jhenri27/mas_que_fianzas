@@ -72,7 +72,7 @@ class UsuarioManager {
             }
 
             // Generar código de usuario
-            $codigo_usuario = $this->generarCodigoUsuario($datos['perfil_id']);
+            $codigo_usuario = !empty($datos['codigo_usuario']) ? $datos['codigo_usuario'] : $this->generarCodigoUsuario($datos['perfil_id']);
 
             // Generar contraseña temporal
             $password_temporal = $this->generarPasswordTemporal();
@@ -82,15 +82,17 @@ class UsuarioManager {
             $sql = "INSERT INTO usuarios 
                     (codigo_usuario, cedula, nombre, apellido, email, telefono, username, password_hash, 
                      perfil_id, estado, es_comisionante, porcentaje_comision, porcentaje_comision_red, 
+                     comision_autos_ley, comision_autos_full, comision_fianzas, comision_incendio, comision_rc, comision_otros,
+                     banco, tipo_cuenta, numero_cuenta, ubicacion, fecha_cumpleanos,
                      referente_id, requiere_cambio_password, creado_por) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
 
             $stmt = $this->db->prepare($sql);
             if (!$stmt) {
-                return ['exito' => false, 'mensaje' => 'Error en la preparación de la consulta'];
+                return ['exito' => false, 'mensaje' => 'Error en la preparación de la consulta: ' . $this->db->error];
             }
 
-            $estado = 'inactivo';
+            $estado = !empty($datos['estado']) ? $datos['estado'] : 'inactivo';
             $cedula = $datos['cedula'];
             $nombre = $datos['nombre'];
             $apellido = $datos['apellido'];
@@ -101,10 +103,58 @@ class UsuarioManager {
             $es_comisionante = (int)($datos['es_comisionante'] ?? 0);
             $porcentaje_comision = (float)($datos['porcentaje_comision'] ?? 0);
             $porcentaje_comision_red = (float)($datos['porcentaje_comision_red'] ?? 0);
+            
+            // comisiones por ramo
+            $comision_autos_ley = (float)($datos['comision_autos_ley'] ?? 0);
+            $comision_autos_full = (float)($datos['comision_autos_full'] ?? 0);
+            $comision_fianzas = (float)($datos['comision_fianzas'] ?? 0);
+            $comision_incendio = (float)($datos['comision_incendio'] ?? 0);
+            $comision_rc = (float)($datos['comision_rc'] ?? 0);
+            $comision_otros = (float)($datos['comision_otros'] ?? 0);
+            
+            // perfil y extras
+            $banco = !empty($datos['banco']) ? trim($datos['banco']) : null;
+            $tipo_cuenta = !empty($datos['tipo_cuenta']) ? trim($datos['tipo_cuenta']) : null;
+
+            if ($tipo_cuenta !== null) {
+                $tipo_cuenta_lower = strtolower($tipo_cuenta);
+                if (strpos($tipo_cuenta_lower, 'reserva') !== false) {
+                    $banco = 'Banreservas';
+                    $tipo_cuenta = 'Ahorro';
+                } elseif (strpos($tipo_cuenta_lower, 'ahorro') !== false) {
+                    $tipo_cuenta = 'Ahorro';
+                } elseif (strpos($tipo_cuenta_lower, 'corriente') !== false) {
+                    $tipo_cuenta = 'Corriente';
+                } else {
+                    $tipo_cuenta = 'Ahorro';
+                }
+            }
+            if ($banco !== null) {
+                $banco_lower = strtolower($banco);
+                if (strpos($banco_lower, 'reserva') !== false) {
+                    $banco = 'Banreservas';
+                } elseif (strpos($banco_lower, 'popular') !== false) {
+                    $banco = 'Banco Popular';
+                } elseif (strpos($banco_lower, 'bhd') !== false) {
+                    $banco = 'Banco BHD';
+                } elseif (strpos($banco_lower, 'scotia') !== false) {
+                    $banco = 'Scotiabank';
+                } elseif (strpos($banco_lower, 'santa cruz') !== false) {
+                    $banco = 'Banco Santa Cruz';
+                }
+            }
+
+            $numero_cuenta = !empty($datos['numero_cuenta']) ? $datos['numero_cuenta'] : null;
+            $ubicacion = !empty($datos['ubicacion']) ? $datos['ubicacion'] : null;
+            $fecha_cumpleanos = !empty($datos['fecha_cumpleanos']) ? $datos['fecha_cumpleanos'] : null;
+
             $referente_id = !empty($datos['referente_id']) ? (int)$datos['referente_id'] : null;
+            if (empty($referente_id) && !empty($datos['supervisor_texto'])) {
+                $referente_id = $this->buscarSupervisorPorTexto($datos['supervisor_texto']);
+            }
 
             $stmt->bind_param(
-                "ssssssssisiiddi",
+                "ssssssssisiidddddddsssssii",
                 $codigo_usuario,
                 $cedula,
                 $nombre,
@@ -118,6 +168,17 @@ class UsuarioManager {
                 $es_comisionante,
                 $porcentaje_comision,
                 $porcentaje_comision_red,
+                $comision_autos_ley,
+                $comision_autos_full,
+                $comision_fianzas,
+                $comision_incendio,
+                $comision_rc,
+                $comision_otros,
+                $banco,
+                $tipo_cuenta,
+                $numero_cuenta,
+                $ubicacion,
+                $fecha_cumpleanos,
                 $referente_id,
                 $usuario_creador
             );
@@ -173,10 +234,41 @@ class UsuarioManager {
                 return ['exito' => false, 'mensaje' => 'Usuario no encontrado'];
             }
 
+            // Enforce account type & bank normalization rules
+            if (isset($datos['tipo_cuenta'])) {
+                $tipo_cuenta_lower = strtolower(trim($datos['tipo_cuenta']));
+                if (strpos($tipo_cuenta_lower, 'reserva') !== false) {
+                    $datos['banco'] = 'Banreservas';
+                    $datos['tipo_cuenta'] = 'Ahorro';
+                } elseif (strpos($tipo_cuenta_lower, 'ahorro') !== false) {
+                    $datos['tipo_cuenta'] = 'Ahorro';
+                } elseif (strpos($tipo_cuenta_lower, 'corriente') !== false) {
+                    $datos['tipo_cuenta'] = 'Corriente';
+                } else {
+                    $datos['tipo_cuenta'] = 'Ahorro';
+                }
+            }
+            if (isset($datos['banco'])) {
+                $banco_lower = strtolower(trim($datos['banco']));
+                if (strpos($banco_lower, 'reserva') !== false) {
+                    $datos['banco'] = 'Banreservas';
+                } elseif (strpos($banco_lower, 'popular') !== false) {
+                    $datos['banco'] = 'Banco Popular';
+                } elseif (strpos($banco_lower, 'bhd') !== false) {
+                    $datos['banco'] = 'Banco BHD';
+                } elseif (strpos($banco_lower, 'scotia') !== false) {
+                    $datos['banco'] = 'Scotiabank';
+                } elseif (strpos($banco_lower, 'santa cruz') !== false) {
+                    $datos['banco'] = 'Banco Santa Cruz';
+                }
+            }
+
             // Preparar campos para actualizar
             $campos_actualizables = [
                 'nombre', 'apellido', 'email', 'telefono', 'perfil_id', 'estado',
-                'es_comisionante', 'porcentaje_comision', 'porcentaje_comision_red', 'referente_id'
+                'es_comisionante', 'porcentaje_comision', 'porcentaje_comision_red', 'referente_id',
+                'comision_autos_ley', 'comision_autos_full', 'comision_fianzas', 'comision_incendio', 'comision_rc', 'comision_otros',
+                'banco', 'tipo_cuenta', 'numero_cuenta', 'ubicacion', 'fecha_cumpleanos'
             ];
             $campos_actualizar = [];
             $tipos = '';
@@ -196,13 +288,13 @@ class UsuarioManager {
                     // Determinar tipo para bind_param
                     if (in_array($campo, ['perfil_id', 'es_comisionante', 'referente_id'])) {
                         $tipos .= 'i';
-                        $valores[] = $datos[$campo] !== '' ? (int)$datos[$campo] : null;
-                    } elseif (in_array($campo, ['porcentaje_comision', 'porcentaje_comision_red'])) {
+                        $valores[] = ($datos[$campo] !== '' && $datos[$campo] !== null) ? (int)$datos[$campo] : null;
+                    } elseif (in_array($campo, ['porcentaje_comision', 'porcentaje_comision_red', 'comision_autos_ley', 'comision_autos_full', 'comision_fianzas', 'comision_incendio', 'comision_rc', 'comision_otros'])) {
                         $tipos .= 'd';
                         $valores[] = (float)$datos[$campo];
                     } else {
                         $tipos .= 's';
-                        $valores[] = $datos[$campo];
+                        $valores[] = ($datos[$campo] !== '' && $datos[$campo] !== null) ? $datos[$campo] : null;
                     }
                 }
             }
@@ -568,9 +660,35 @@ class UsuarioManager {
     }
 
     /**
+     * Verificar si cedula existe
+     */
+    private function cedulaExiste($cedula, $usuario_id = null) {
+        if (empty($cedula)) return false;
+        $sql = "SELECT id FROM usuarios WHERE cedula = ?";
+        if ($usuario_id) {
+            $sql .= " AND id != ?";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        if ($usuario_id) {
+            $stmt->bind_param("si", $cedula, $usuario_id);
+        } else {
+            $stmt->bind_param("s", $cedula);
+        }
+
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+
+        return $existe;
+    }
+
+    /**
      * Verificar si email existe
      */
     private function emailExiste($email, $usuario_id = null) {
+        if (empty($email)) return false;
         $sql = "SELECT id FROM usuarios WHERE email = ?";
         if ($usuario_id) {
             $sql .= " AND id != ?";
@@ -584,6 +702,7 @@ class UsuarioManager {
         }
 
         $stmt->execute();
+        $stmt->store_result();
         $existe = $stmt->num_rows > 0;
         $stmt->close();
 
@@ -594,6 +713,7 @@ class UsuarioManager {
      * Verificar si username existe
      */
     private function usernameExiste($username, $usuario_id = null) {
+        if (empty($username)) return false;
         $sql = "SELECT id FROM usuarios WHERE username = ?";
         if ($usuario_id) {
             $sql .= " AND id != ?";
@@ -607,6 +727,7 @@ class UsuarioManager {
         }
 
         $stmt->execute();
+        $stmt->store_result();
         $existe = $stmt->num_rows > 0;
         $stmt->close();
 
@@ -629,39 +750,148 @@ class UsuarioManager {
      * Importación masiva de usuarios
      */
     public function importarUsuarios($usuarios, $usuario_creador) {
-
         $insertados = 0;
+        $actualizados = 0;
         $errores = 0;
         $mensajes = [];
 
         foreach ($usuarios as $u) {
+            // Sanitize and resolve duplicates/placeholders
+            $raw_code = !empty($u['codigo_usuario']) ? trim($u['codigo_usuario']) : '';
+            $raw_username = !empty($u['username']) ? trim($u['username']) : (!empty($raw_code) ? $raw_code : 'temp' . rand(1000, 9999));
+            
+            // Resolve existing user for idempotency
+            $existing_id = null;
+            $sql_find = "SELECT id FROM usuarios WHERE username = ? OR (codigo_usuario = ? AND codigo_usuario IS NOT NULL AND codigo_usuario != '') LIMIT 1";
+            $stmt_find = $this->db->prepare($sql_find);
+            $stmt_find->bind_param("ss", $raw_username, $raw_code);
+            $stmt_find->execute();
+            $stmt_find->bind_result($found_id);
+            if ($stmt_find->fetch()) {
+                $existing_id = $found_id;
+            }
+            $stmt_find->close();
+
+            // Cedula
+            $ced = trim($u['cedula'] ?? $u['rnc'] ?? '');
+            $ced_clean = str_replace(['-', ' '], '', $ced);
+            if (empty($ced_clean) || preg_match('/^0+$/', $ced_clean) || ($existing_id === null && $this->cedulaExiste($ced_clean))) {
+                // Safe fallback to avoid unique constraint crashes
+                $ced_clean = !empty($raw_code) ? $raw_code : $raw_username;
+            }
+            
+            // Email
+            $email = trim($u['email'] ?? $u['correo'] ?? '');
+            if (empty($email) || ($existing_id === null && $this->emailExiste($email))) {
+                // Safe fallback to avoid duplicate email crashes
+                $email = strtolower($raw_username) . "@masquefianzas.com.do";
+            }
+
             // Preparar datos para crearUsuario
             $datos = [
-                'cedula'    => $u['cedula'] ?? $u['rnc'] ?? '',
-                'nombre'    => $u['nombre'] ?? '',
-                'apellido'  => $u['apellido'] ?? '',
-                'email'     => $u['email'] ?? $u['correo'] ?? '',
-                'username'  => $u['username'] ?? '',
-                'perfil_id' => $u['perfil_id'] ?? 2, // Por defecto Agente
-                'telefono'  => $u['telefono'] ?? null
+                'codigo_usuario'          => !empty($raw_code) ? $raw_code : null,
+                'cedula'                  => $ced_clean,
+                'nombre'                  => $u['nombre'] ?? '',
+                'apellido'                => $u['apellido'] ?? '',
+                'email'                   => $email,
+                'username'                => $raw_username,
+                'perfil_id'               => $u['perfil_id'] ?? 2, // Por defecto Agente
+                'estado'                  => $u['estado'] ?? 'activo',
+                'telefono'                => $u['telefono'] ?? null,
+                'es_comisionante'         => $u['es_comisionante'] ?? 1,
+                'porcentaje_comision'     => $u['porcentaje_comision'] ?? 0.00,
+                'porcentaje_comision_red' => $u['porcentaje_comision_red'] ?? 0.00,
+                'referente_id'            => !empty($u['referente_id']) ? (int)$u['referente_id'] : null,
+                'supervisor_texto'        => $u['supervisor_texto'] ?? null,
+                
+                // Comisiones por ramos
+                'comision_autos_ley'      => $u['comision_autos_ley'] ?? 0.00,
+                'comision_autos_full'     => $u['comision_autos_full'] ?? 0.00,
+                'comision_fianzas'        => $u['comision_fianzas'] ?? 0.00,
+                'comision_incendio'       => $u['comision_incendio'] ?? 0.00,
+                'comision_rc'             => $u['comision_rc'] ?? 0.00,
+                'comision_otros'          => $u['comision_otros'] ?? 0.00,
+                
+                // Extras
+                'banco'                   => $u['banco'] ?? null,
+                'tipo_cuenta'             => $u['tipo_cuenta'] ?? null,
+                'numero_cuenta'           => $u['numero_cuenta'] ?? null,
+                'ubicacion'               => $u['ubicacion'] ?? null,
+                'fecha_cumpleanos'        => $u['fecha_cumpleanos'] ?? null
             ];
 
-            $res = $this->crearUsuario($datos, $usuario_creador);
-            if ($res['exito']) {
-                $insertados++;
+            if ($existing_id) {
+                // Update
+                $res = $this->editarUsuario($existing_id, $datos, $usuario_creador);
+                if ($res['exito']) {
+                    $actualizados++;
+                } else {
+                    $errores++;
+                    $mensajes[] = "Error al actualizar @{$raw_username}: {$res['mensaje']}";
+                }
             } else {
-                $errores++;
-                $mensajes[] = "Error en {$datos['username']}: {$res['mensaje']}";
+                // Insert
+                $res = $this->crearUsuario($datos, $usuario_creador);
+                if ($res['exito']) {
+                    $insertados++;
+                } else {
+                    $errores++;
+                    $mensajes[] = "Error al crear @{$raw_username}: {$res['mensaje']}";
+                }
             }
         }
 
         return [
-            'exito' => $insertados > 0,
-            'mensaje' => "Proceso finalizado. Insertados: $insertados, Errores: $errores",
+            'exito' => ($insertados + $actualizados) > 0,
+            'mensaje' => "Proceso finalizado. Insertados: $insertados, Actualizados: $actualizados, Errores: $errores",
             'insertados' => $insertados,
+            'actualizados' => $actualizados,
             'errores' => $errores,
             'detalles' => $mensajes
         ];
+    }
+
+    /**
+     * Busca un supervisor por su código numérico o nombre completo
+     */
+    public function buscarSupervisorPorTexto($texto) {
+        if (empty($texto)) return null;
+        
+        $texto = trim($texto);
+        // Extraer código (ej. "002") si viene en formato "002- Nombre" o "002"
+        $codigo = null;
+        if (preg_match('/^(\d+)/', $texto, $matches)) {
+            $codigo = $matches[1];
+        }
+        
+        if ($codigo) {
+            // Rellenar con ceros a la izquierda para coincidir con la nomenclatura standard
+            $codigo_largo = str_pad($codigo, 3, '0', STR_PAD_LEFT);
+            $sql = "SELECT id FROM usuarios WHERE (codigo_usuario LIKE ? OR username LIKE ?) AND (perfil_id = 9 OR perfil_id = 10 OR perfil_id = 2 OR perfil_id = 1) LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $busqueda1 = "%" . $codigo . "%";
+            $busqueda2 = "%" . $codigo_largo . "%";
+            $stmt->bind_param("ss", $busqueda1, $busqueda2);
+            $stmt->execute();
+            $res = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($res) return (int)$res['id'];
+        }
+        
+        // Intentar por nombre
+        $limpio = trim(preg_replace('/^\d+\s*[-_:]\s*/', '', $texto)); // Quitar prefijo "002-"
+        if (!empty($limpio)) {
+            $sql = "SELECT id FROM usuarios WHERE (CONCAT(nombre, ' ', apellido) LIKE ? OR username LIKE ?) LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $busqueda = "%" . $limpio . "%";
+            $stmt->bind_param("ss", $busqueda, $busqueda);
+            $stmt->execute();
+            $res = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            if ($res) return (int)$res['id'];
+        }
+        
+        return null;
     }
 }
 

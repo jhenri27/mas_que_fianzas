@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="../assets/design-system.css">
     <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
+    <script src="../assets/components.js"></script>
     <!-- PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="../assets/logo_b64.js"></script>
+    <script src="../assets/logo_b64.js?v=4"></script>
     <style>
         :root {
             --lab-primary: #0f172a;
@@ -24,10 +25,10 @@
 
         body { 
             font-family: 'Outfit', sans-serif;
-            background-color: var(--lab-bg);
+            background-color: var(--mqf-bg, var(--lab-bg));
             margin: 0;
             padding: 20px;
-            color: #1e293b;
+            color: var(--mqf-text, #1e293b);
         }
 
         .lab-grid {
@@ -39,9 +40,9 @@
 
         /* Sidebar Tecnológico */
         .lab-sidebar {
-            background: white;
+            background: var(--mqf-surface, white);
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--mqf-border, #e2e8f0);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -80,7 +81,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--mqf-border, #f1f5f9);
         }
 
         .status-item span { font-size: 14px; font-weight: 500; }
@@ -99,9 +100,9 @@
         }
 
         .lab-card {
-            background: white;
+            background: var(--mqf-surface, white);
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--mqf-border, #e2e8f0);
             margin-bottom: 20px;
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -109,8 +110,8 @@
 
         .lab-card-header {
             padding: 15px 20px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--mqf-surface-2, #f8fafc);
+            border-bottom: 1px solid var(--mqf-border, #e2e8f0);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -120,7 +121,7 @@
             margin: 0;
             font-size: 15px;
             font-weight: 600;
-            color: #475569;
+            color: var(--mqf-text, #475569);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -157,7 +158,8 @@
 
         .action-card {
             padding: 15px;
-            border: 1px solid #e2e8f0;
+            background: var(--mqf-surface, white);
+            border: 1px solid var(--mqf-border, #e2e8f0);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
@@ -167,8 +169,8 @@
         }
 
         .action-card:hover {
-            border-color: var(--lab-accent);
-            background: #f0f9ff;
+            border-color: var(--mqf-primary, var(--lab-accent));
+            background: var(--mqf-primary-light, #f0f9ff);
             transform: translateY(-2px);
         }
 
@@ -215,6 +217,9 @@
             <button class="mqf-module-tab" onclick="showPanel('ncf-manager')" id="tab-ncf">
                 <i class="fa-solid fa-hashtag"></i> NCF Manager
             </button>
+            <button class="mqf-module-tab" onclick="showPanel('logs')" id="tab-logs">
+                <i class="fa-solid fa-bug"></i> Logs del Sistema
+            </button>
         </div>
     </div>
 
@@ -251,7 +256,7 @@
                 </div>
 
                 <div style="margin-top:30px; font-size:11px; color:#64748b; text-transform:uppercase; font-weight:700; margin-bottom:10px;">Sesión Activa</div>
-                <div style="padding:15px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
+                <div class="lab-modal-section" style="padding:15px; border-radius:10px;">
                     <div style="font-weight:600; font-size:13px;" id="tech-user">Administrador Sistema</div>
                     <div style="font-size:11px; color:#64748b;">Nivel: Tecnología / IA Labs</div>
                 </div>
@@ -295,7 +300,7 @@
                                 <p>Borrar registros temporales</p>
                             </div>
                         </div>
-                        <div class="action-card" onclick="alert('Funcionalidad de Release Manager próximamente')">
+                        <div class="action-card" onclick="MQF.toast('Funcionalidad de Release Manager próximamente', 'info')">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <div>
                                 <h4>Push Update</h4>
@@ -335,55 +340,181 @@
 
         <!-- PANEL SKINS & UI -->
         <main class="lab-main" id="panel-skins" style="display:none;">
+
+            <!-- SELECTOR DE SKIN EN TIEMPO REAL -->
             <div class="lab-card">
                 <div class="lab-card-header">
-                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Auditor de Interfaz y Skins</h3>
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Control de Skin en Tiempo Real</h3>
+                    <span class="version-badge" id="skin-active-label">Skin: indigo</span>
                 </div>
                 <div class="lab-card-body">
-                    <p class="text-sm text-gray-600 mb-4">Herramienta para verificar la integridad visual y la aplicación de los tokens de diseño (Skin Engine).</p>
-                    
-                    <div class="test-grid" style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px;">
-                        <!-- Columna 1: Tokens -->
-                        <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
-                            <h4 style="margin-top:0; font-size:14px; color:var(--lab-accent);">
-                                <i class="fa-solid fa-code"></i> CSS Design Tokens (Computed)
-                            </h4>
-                            <div id="skin-tokens-list" style="display:grid; grid-template-columns: 1fr; gap:8px;">
-                                <!-- JS content -->
-                            </div>
-                        </div>
-                        
-                        <!-- Columna 2: Preview -->
-                        <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
-                            <h4 style="margin-top:0; font-size:14px; color:var(--lab-accent);">
-                                <i class="fa-solid fa-eye"></i> Previsualización de Componentes
-                            </h4>
-                            
-                            <div style="display:flex; flex-direction:column; gap:12px;">
-                                <div style="display:flex; gap:8px;">
-                                    <button class="mqf-btn mqf-btn--primary">Primario</button>
-                                    <button class="mqf-btn mqf-btn--secondary">Secundario</button>
-                                </div>
-                                <div style="padding:10px; background:var(--mqf-gradient); color:white; border-radius:8px; text-align:center; font-weight:bold; font-size:12px;">
-                                    var(--mqf-gradient)
-                                </div>
-                                <div style="padding:10px; background:var(--mqf-primary-light); color:var(--mqf-primary-text); border-radius:8px; border:1px solid var(--mqf-primary); font-size:12px;">
-                                    Alerta Informativa MQF
-                                </div>
-                                <div class="lab-card" style="margin-bottom:0; box-shadow:none; border-style:dashed;">
-                                    <div class="lab-card-header" style="padding:10px;">
-                                        <h3 style="font-size:12px;">Card Interna</h3>
-                                    </div>
-                                    <div class="lab-card-body" style="padding:10px; font-size:11px;">
-                                        Cuerpo de la tarjeta con tokens aplicados.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;">
+                        <button onclick="cambiarSkinLab('indigo')" class="mqf-btn mqf-btn--secondary" id="btn-skin-indigo" style="flex:1; min-width:140px;">
+                            <i class="fa-solid fa-sun"></i> Indigo Light (Default)
+                        </button>
+                        <button onclick="cambiarSkinLab('obsidian')" class="mqf-btn mqf-btn--secondary" id="btn-skin-obsidian" style="flex:1; min-width:140px;">
+                            <i class="fa-solid fa-moon"></i> Obsidian Dark
+                        </button>
+                        <button onclick="cambiarSkinLab('coral')" class="mqf-btn mqf-btn--secondary" id="btn-skin-coral" style="flex:1; min-width:140px;">
+                            <i class="fa-solid fa-fire"></i> Coral Finance
+                        </button>
+                    </div>
+
+                    <!-- Preview de gradiente y colores del skin activo -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; margin-bottom:20px;">
+                        <div style="padding:14px; background:var(--mqf-gradient); border-radius:10px; text-align:center; color:white; font-size:12px; font-weight:700;">Gradiente</div>
+                        <div style="padding:14px; background:var(--mqf-primary); border-radius:10px; text-align:center; color:white; font-size:12px; font-weight:700;">Primary</div>
+                        <div style="padding:14px; background:var(--mqf-surface); border-radius:10px; border:1px solid var(--mqf-border); text-align:center; color:var(--mqf-text); font-size:12px; font-weight:700;">Surface</div>
+                        <div style="padding:14px; background:var(--mqf-bg); border-radius:10px; border:1px solid var(--mqf-border); text-align:center; color:var(--mqf-text); font-size:12px; font-weight:700;">Background</div>
+                        <div style="padding:14px; background:var(--mqf-success); border-radius:10px; text-align:center; color:white; font-size:12px; font-weight:700;">Success</div>
+                        <div style="padding:14px; background:var(--mqf-danger); border-radius:10px; text-align:center; color:white; font-size:12px; font-weight:700;">Danger</div>
+                    </div>
+
+                    <!-- Botones de muestra -->
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                        <button class="mqf-btn mqf-btn--primary">Btn Primary</button>
+                        <button class="mqf-btn mqf-btn--secondary">Btn Secondary</button>
+                        <button class="mqf-btn mqf-btn--danger">Btn Danger</button>
+                        <button class="mqf-btn mqf-btn--success">Btn Success</button>
                     </div>
                 </div>
             </div>
+
+            <!-- TEST DE MODALES PREMIUM -->
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-table-columns"></i> Laboratorio de Modales Premium</h3>
+                    <span style="font-size:11px; color:var(--mqf-text-muted);">El diseño aplicará el skin activo automáticamente</span>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:16px;">
+                        Selecciona un skin arriba y luego abre el modal de prueba para ver el rediseño en acción.
+                        El modal usa las mismas clases que el módulo real de Usuarios.
+                    </p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button onclick="abrirModalTest()" class="mqf-btn mqf-btn--primary">
+                            <i class="fa-solid fa-user-plus"></i> Previsualizar Modal — Nuevo Usuario
+                        </button>
+                        <button onclick="abrirModalTestEditar()" class="mqf-btn mqf-btn--secondary">
+                            <i class="fa-solid fa-user-gear"></i> Previsualizar Modal — Editar Usuario
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tokens del skin activo -->
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-code"></i> CSS Design Tokens (Computed)</h3>
+                </div>
+                <div class="lab-card-body">
+                    <div id="skin-tokens-list" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+                </div>
+            </div>
+
         </main>
+
+        <!-- MODAL TEST — comparte las mismas clases que usuarios.html -->
+        <div class="modal-overlay" id="labModalTest" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; align-items:center; justify-content:center;">
+            <div class="modal-box" style="width:95%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                    <h3 id="labModalTitle"><i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>Nuevo Usuario</h3>
+                    <button class="modal-close" onclick="cerrarModalTest()" style="font-size:22px; line-height:1;">&times;</button>
+                </div>
+                <form autocomplete="off">
+                <div class="modal-body" style="padding:22px; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <label class="form-label">Cedula / RNC *</label>
+                        <input class="form-input" type="text" placeholder="V-2600-1234567" value="V-2600-1234567">
+                    </div>
+                    <div>
+                        <label class="form-label">Usuario (login) *</label>
+                        <input class="form-input" type="text" placeholder="usuario123" value="user2600">
+                    </div>
+                    <div>
+                        <label class="form-label">Nombre *</label>
+                        <input class="form-input" type="text" placeholder="Nombre" value="Test Usuario">
+                    </div>
+                    <div>
+                        <label class="form-label">Apellido *</label>
+                        <input class="form-input" type="text" placeholder="Apellido" value="Demo">
+                    </div>
+                    <div>
+                        <label class="form-label">Correo Electrónico *</label>
+                        <input class="form-input" type="email" placeholder="correo@ejemplo.com" value="test@mqf.com">
+                    </div>
+                    <div>
+                        <label class="form-label">Teléfono</label>
+                        <input class="form-input" type="tel" placeholder="809-000-0000">
+                    </div>
+                    <div>
+                        <label class="form-label">Perfil *</label>
+                        <select class="form-input">
+                            <option>Administrador</option>
+                            <option selected>Socio Comercial PDV</option>
+                            <option>Agente Comercial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select class="form-input">
+                            <option>Activo</option>
+                            <option selected>Inactivo</option>
+                        </select>
+                    </div>
+
+                    <!-- Toggle Comisionante -->
+                    <div class="field-full" style="border-radius:10px; padding:14px 16px; grid-column:1/-1;">
+                        <label class="form-label" style="margin-bottom:10px;">
+                            <i class="fa-solid fa-hand-holding-dollar" style="color:#6366f1; margin-right:5px;"></i>
+                            ¿Este usuario es Comisionante?
+                        </label>
+                        <div class="toggle-row" style="display:flex; align-items:center; gap:12px;">
+                            <label class="toggle-switch" style="position:relative; width:46px; height:24px; flex-shrink:0;">
+                                <input type="checkbox" id="lab_comisionante" onchange="toggleLabCom()">
+                                <span class="toggle-slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; border-radius:24px; transition:.3s;"></span>
+                            </label>
+                            <span class="toggle-label" id="lab_toggle_lbl" style="font-size:14px; font-weight:600;">No</span>
+                            <span class="toggle-status" id="lab_toggle_sub" style="font-size:12px;">El usuario no recibirá comisiones directas</span>
+                        </div>
+                    </div>
+
+                    <!-- Sección Comisiones -->
+                    <div id="lab_seccion_comisiones" class="lab-modal-section" style="display:none; grid-column:1/-1; grid-template-columns:1fr 1fr; gap:16px; border-radius:10px; padding:16px;">
+                        <div>
+                            <label class="form-label"><i class="fa-solid fa-percent" style="font-size:11px;"></i> % Comisión Directa</label>
+                            <input class="form-input" type="number" value="5.00" step="0.01">
+                            <span style="font-size:11px; color:#64748b;">Porcentaje sobre pólizas propias</span>
+                        </div>
+                        <div>
+                            <label class="form-label"><i class="fa-solid fa-network-wired" style="font-size:11px;"></i> % Comisión por Red</label>
+                            <input class="form-input" type="number" value="2.00" step="0.01">
+                            <span style="font-size:11px; color:#64748b;">Porcentaje sobre producción de su red</span>
+                        </div>
+                    </div>
+
+                    <!-- Supervisor -->
+                    <div id="seccion_referente" class="lab-modal-section visible" style="grid-column:1/-1; border-radius:10px; padding:16px;">
+                        <label class="form-label">
+                            <i class="fa-solid fa-sitemap" style="color:#0ea5e9; margin-right:5px;"></i>
+                            Supervisor / Referente
+                        </label>
+                        <select class="form-input" style="margin-top:6px;">
+                            <option value="">Ninguno (raíz)</option>
+                            <option>Administrador Sistema (@admin)</option>
+                        </select>
+                        <span style="font-size:11px; color:#64748b; display:block; margin-top:4px;">Usuario superior bajo cuya red quedará registrado</span>
+                    </div>
+                </div>
+                </form>
+                <div class="modal-footer" style="padding:16px 22px; display:flex; justify-content:flex-end; gap:10px; flex-shrink:0;">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalTest()" style="padding:9px 20px; font-weight:600; font-size:14px; cursor:pointer; border-radius:8px;">Cancelar</button>
+                    <button type="button" class="btn-save" onclick="cerrarModalTest()" style="padding:9px 22px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-save"></i> Guardar Usuario
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- PANEL NCF MANAGER -->
         <main class="lab-main" id="panel-ncf-manager" style="display:none;">
@@ -528,7 +659,7 @@
         }
 
         async function limpiarLab() {
-            if(!confirm('¿Resetear entorno de pruebas?')) return;
+            if(!(await MQF.confirm('¿Resetear entorno de pruebas?', {type: 'danger'}))) return;
             log('Limpiando base de datos del laboratorio...', 'cmd');
             try {
                 const res = await fetch(`${API}?action=limpiar_lab`).then(r=>r.json());
@@ -551,6 +682,27 @@
 
             if (panelId === 'skins') cargarDiagnosticoSkin();
             if (panelId === 'ncf-manager') cargarStatusNCF();
+            if (panelId === 'logs') cargarLogsSistema();
+        }
+
+        async function cargarLogsSistema() {
+            const visor = document.getElementById('visor-logs');
+            visor.innerHTML = "Cargando...";
+            try {
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/read_error_log.php');
+                const text = await r.text();
+                // Basic syntax highlighting for logs
+                const formatted = text.split('\n').map(line => {
+                    if (line.includes('Fatal error') || line.includes('Parse error')) return `<span class="log-error">${line}</span>`;
+                    if (line.includes('Warning')) return `<span class="log-warn">${line}</span>`;
+                    if (line.includes('Notice')) return `<span class="log-info">${line}</span>`;
+                    return line;
+                }).join('\n');
+                visor.innerHTML = formatted || "El archivo de logs está vacío.";
+                visor.scrollTop = visor.scrollHeight;
+            } catch (e) {
+                visor.innerHTML = "<span class='log-error'>Error al leer el archivo de logs.</span>";
+            }
         }
 
         async function cargarStatusNCF() {
@@ -594,23 +746,17 @@
         }
 
         async function ajustarSecuencia(tipo, actual) {
-            const nuevo = prompt(`Ajustar secuencia actual para ${tipo}:\n(Valor actual: ${actual})`, actual);
-            if (nuevo === null || nuevo === "") return;
-            
-            try {
-                const res = await fetch(`${API}?action=update_ncf_sequence`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({tipo, valor: nuevo})
-                }).then(r => r.json());
-                
-                if (res.exito) {
-                    log(res.mensaje, 'res');
-                    cargarStatusNCF();
-                } else {
-                    alert(res.mensaje);
-                }
-            } catch(e) { alert('Error de red'); }
+            // Abre el modal premium en lugar del prompt nativo
+            document.getElementById('ncfModalTipo').textContent  = tipo;
+            document.getElementById('ncfModalActual').textContent = actual;
+            document.getElementById('ncfModalValor').value = actual;
+            document.getElementById('ncfModalError').style.display = 'none';
+            // Guardamos tipo y actual para el confirm handler
+            window._ncfAjusteTipo   = tipo;
+            window._ncfAjusteActual = actual;
+            document.getElementById('labNcfModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('ncfModalValor').select(), 80);
+            log(`Ajustando secuencia NCF [${tipo}] — valor actual: ${actual}`, 'cmd');
         }
 
         function imprimirReporteNCF() {
@@ -713,10 +859,10 @@
                 const val = style.getPropertyValue(t.name).trim();
                 const isColor = val.startsWith('#') || val.startsWith('rgb');
                 return `
-                    <div style="background:white; padding:8px 12px; border-radius:8px; border:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background:var(--mqf-surface, white); padding:8px 12px; border-radius:8px; border:1px solid var(--mqf-border, #e2e8f0); display:flex; justify-content:space-between; align-items:center; color:var(--mqf-text);">
                         <div>
                             <div style="font-size:10px; color:#64748b; font-weight:700;">${t.label}</div>
-                            <div style="font-size:11px; font-family:'JetBrains Mono'; color:#1e293b;">${t.name}</div>
+                            <div style="font-size:11px; font-family:'JetBrains Mono'; color:var(--mqf-text);">${t.name}</div>
                             <div style="font-size:12px; font-weight:bold; color:var(--lab-accent);">${val}</div>
                         </div>
                         ${isColor ? `<div style="width:24px; height:24px; border-radius:4px; background:${val}; border:1px solid #ddd;"></div>` : ''}
@@ -729,6 +875,217 @@
 
         // Auto initialization
         checkHealth();
+
+        // ── LAB: Control de Skin en Tiempo Real ──────────────────────
+        function cambiarSkinLab(skin) {
+            document.body.setAttribute('data-skin', skin);
+            document.documentElement.setAttribute('data-skin', skin);
+            localStorage.setItem('mqf-skin', skin);
+            // Actualizar label
+            const label = document.getElementById('skin-active-label');
+            if (label) label.textContent = 'Skin: ' + skin;
+            // Actualizar botones activos
+            ['indigo','obsidian','coral'].forEach(s => {
+                const btn = document.getElementById('btn-skin-' + s);
+                if (btn) {
+                    btn.className = s === skin
+                        ? 'mqf-btn mqf-btn--primary'
+                        : 'mqf-btn mqf-btn--secondary';
+                }
+            });
+            // Notificar también al iframe padre si está embebido
+            try {
+                window.parent.postMessage({ type: 'mqf-skin-set', skin }, '*');
+            } catch(e) {}
+            log(`Skin cambiado a: [${skin}]`, 'cmd');
+            // Refrescar tokens
+            cargarDiagnosticoSkin();
+        }
+
+        // ── LAB: Abrir/Cerrar Modal de Test ──────────────────────────
+        function abrirModalTest() {
+            const el = document.getElementById('labModalTest');
+            document.getElementById('labModalTitle').innerHTML =
+                '<i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>Nuevo Usuario';
+            document.getElementById('lab_comisionante').checked = false;
+            toggleLabCom();
+            document.getElementById('lab_seccion_comisiones').style.display = 'none';
+            el.style.display = 'flex';
+            log('Modal de Nuevo Usuario abierto — skin: ' + (document.body.getAttribute('data-skin') || 'indigo'), 'res');
+        }
+
+        function abrirModalTestEditar() {
+            const el = document.getElementById('labModalTest');
+            document.getElementById('labModalTitle').innerHTML =
+                '<i class="fa-solid fa-user-gear" style="margin-right:8px;"></i>Mantenimiento de Usuario';
+            document.getElementById('lab_comisionante').checked = true;
+            toggleLabCom();
+            document.getElementById('lab_seccion_comisiones').style.display = 'grid';
+            el.style.display = 'flex';
+            log('Modal de Editar Usuario abierto — skin: ' + (document.body.getAttribute('data-skin') || 'indigo'), 'res');
+        }
+
+        function cerrarModalTest() {
+            document.getElementById('labModalTest').style.display = 'none';
+            log('Modal cerrado.', 'cmd');
+        }
+
+        // Toggle comisionante en el modal de test
+        function toggleLabCom() {
+            const chk = document.getElementById('lab_comisionante');
+            const lbl = document.getElementById('lab_toggle_lbl');
+            const sub = document.getElementById('lab_toggle_sub');
+            const sec = document.getElementById('lab_seccion_comisiones');
+            if (chk && chk.checked) {
+                if (lbl) { lbl.textContent = 'Sí'; lbl.style.color = '#6366f1'; }
+                if (sub) sub.textContent = 'El usuario recibirá comisiones por su producción y por su red';
+                if (sec) sec.style.display = 'grid';
+            } else {
+                if (lbl) { lbl.textContent = 'No'; lbl.style.color = ''; }
+                if (sub) sub.textContent = 'El usuario no recibirá comisiones directas';
+                if (sec) sec.style.display = 'none';
+            }
+        }
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalTest(); });
+
+        // Aplicar skin guardado al cargar
+        (function() {
+            const s = localStorage.getItem('mqf-skin') || 'indigo';
+            document.body.setAttribute('data-skin', s);
+            document.documentElement.setAttribute('data-skin', s);
+            const label = document.getElementById('skin-active-label');
+            if (label) label.textContent = 'Skin: ' + s;
+            const btn = document.getElementById('btn-skin-' + s);
+            if (btn) btn.className = 'mqf-btn mqf-btn--primary';
+        })();
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MODAL NCF — Ajustar Secuencia (reemplaza prompt nativo)
+         Usa las mismas clases que los modales de Usuarios para
+         heredar automáticamente el skin activo.
+         ═══════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="labNcfModal"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; align-items:center; justify-content:center;">
+        <div class="modal-box" style="width:95%; max-width:420px; display:flex; flex-direction:column; overflow:hidden;">
+
+            <!-- Header -->
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0; padding:18px 22px;">
+                <h3 style="margin:0; font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-sliders"></i>
+                    Ajustar Secuencia NCF
+                </h3>
+                <button class="modal-close" onclick="cerrarNcfModal()"
+                        style="background:none; border:none; font-size:22px; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body" style="padding:22px; display:flex; flex-direction:column; gap:16px;">
+
+                <!-- Info del tipo seleccionado -->
+                <div class="lab-modal-section" style="padding:14px 16px; border-radius:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">
+                                <i class="fa-solid fa-hashtag" style="color:#6366f1; margin-right:4px;"></i> Tipo de Comprobante
+                            </div>
+                            <div style="font-size:18px; font-weight:800; font-family:monospace;" id="ncfModalTipo">B01</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px;">
+                                Secuencia Actual
+                            </div>
+                            <div style="font-size:18px; font-weight:700; font-family:monospace; color:#6366f1;" id="ncfModalActual">00000001</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input nueva secuencia -->
+                <div>
+                    <label class="form-label" style="display:block; margin-bottom:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;">
+                        <i class="fa-solid fa-arrow-right-to-bracket" style="color:#6366f1; margin-right:4px;"></i>
+                        Nueva Secuencia
+                    </label>
+                    <input type="number" id="ncfModalValor" class="form-input"
+                           style="font-size:16px; font-family:monospace; font-weight:700;"
+                           placeholder="Ingrese el número de secuencia"
+                           min="1" step="1">
+                    <div id="ncfModalError" style="display:none; margin-top:6px; font-size:12px; color:#ef4444;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> El valor debe ser mayor a 0.
+                    </div>
+                    <p style="margin-top:6px; font-size:11px; color:#64748b;">
+                        ⚠️ Cambiar la secuencia afecta el próximo NCF emitido. Acción de solo administración.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer" style="padding:16px 22px; display:flex; justify-content:flex-end; gap:10px; flex-shrink:0;">
+                <button type="button" class="btn-cancel" onclick="cerrarNcfModal()"
+                        style="padding:9px 20px; font-weight:600; font-size:14px; cursor:pointer; border-radius:8px;">
+                    Cancelar
+                </button>
+                <button type="button" class="btn-save" onclick="confirmarAjusteNcf()"
+                        style="padding:9px 22px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Aplicar Secuencia
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function cerrarNcfModal() {
+            document.getElementById('labNcfModal').style.display = 'none';
+        }
+
+        async function confirmarAjusteNcf() {
+            const tipo  = window._ncfAjusteTipo;
+            const nuevo = document.getElementById('ncfModalValor').value;
+            const err   = document.getElementById('ncfModalError');
+
+            if (!nuevo || parseInt(nuevo) < 1) {
+                err.style.display = 'block';
+                document.getElementById('ncfModalValor').focus();
+                return;
+            }
+            err.style.display = 'none';
+
+            const btn = document.querySelector('#labNcfModal .btn-save');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aplicando...';
+
+            try {
+                const res = await fetch(`${API}?action=update_ncf_sequence`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ tipo, valor: nuevo })
+                }).then(r => r.json());
+
+                if (res.exito) {
+                    log(`✅ Secuencia [${tipo}] actualizada a ${nuevo}: ${res.mensaje}`, 'res');
+                    cerrarNcfModal();
+                    cargarStatusNCF();
+                } else {
+                    log(`❌ Error al ajustar NCF: ${res.mensaje}`, 'err');
+                    err.textContent = '❌ ' + (res.mensaje || 'Error del servidor.');
+                    err.style.display = 'block';
+                }
+            } catch(e) {
+                log('Error de conexión al ajustar NCF: ' + e.message, 'err');
+                err.textContent = '❌ Error de conexión con el servidor.';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aplicar Secuencia';
+            }
+        }
+
+        // Cerrar NCF modal con ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') cerrarNcfModal();
+        });
     </script>
 </body>
 </html>

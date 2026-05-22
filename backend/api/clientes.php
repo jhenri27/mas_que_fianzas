@@ -20,11 +20,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once '../config.php';
 require_once '../ClienteManager.php';
 
+// Validar sesión: aceptar PHP session O Bearer token del header Authorization
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$bearer_token = null;
+$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? '') : '');
+if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
+    $bearer_token = trim($matches[1]);
+}
+
+$usuario_id = null;
+if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_id']) {
+    $usuario_id = (int)$_SESSION['usuario_id'];
+} elseif (!empty($bearer_token)) {
+    $db_temp = Database::getInstance()->getConnection();
+    $stmt_tk = $db_temp->prepare("SELECT usuario_id FROM sesiones_usuario WHERE token_sesion = ? AND activa = 1 AND fecha_expiracion > NOW() LIMIT 1");
+    if ($stmt_tk) {
+        $stmt_tk->bind_param("s", $bearer_token);
+        $stmt_tk->execute();
+        $res_tk = $stmt_tk->get_result();
+        if ($row_tk = $res_tk->fetch_assoc()) $usuario_id = (int)$row_tk['usuario_id'];
+        $stmt_tk->close();
+    }
+}
+
+if (!$usuario_id) {
+    respuestaJSON(false, 'Sesión no válida o expirada', null, 401);
+}
+
+$usuario_actual = $usuario_id;
 $metodo = $_SERVER['REQUEST_METHOD'];
 $ruta = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-// Validar sesión opcional
-session_start();
 
 try {
     $manager = new ClienteManager();

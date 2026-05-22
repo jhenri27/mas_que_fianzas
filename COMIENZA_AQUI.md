@@ -1,36 +1,28 @@
 # 🧭 GUÍA DE ORIENTACIÓN — ¿POR DÓNDE EMPEZAR?
 
-> **Versión:** 3.2.0 | **Actualizado:** 23 de Abril de 2026
+> **Versión:** 3.3.0 | **Actualizado:** 21 de Mayo de 2026
 
 ---
 
-## 👋 Bienvenido a MAS QUE FIANZAS
+## 👋 Bienvenido a MÁS QUE FIANZAS (Plataforma Estabilizada)
 
-Has recibido una plataforma completa en evolución activa. Este documento te guía sobre **qué leer primero** según tu rol.
+Has recibido una plataforma completa estabilizada bajo estrictas normas de aseguramiento de calidad (MS-LS v1.0). Este documento te guía sobre **qué leer primero** según tu rol.
 
 ---
 
-## 🌟 NOVEDADES — Versión 2.1.0 (Abril 2026)
+## 🌟 NOVEDADES — Versión 3.3.0 (Mayo 2026)
 
-La plataforma ha sido significativamente enriquecida con las siguientes funcionalidades:
+La plataforma ha sido sustancialmente robustecida con las siguientes funcionalidades de nivel empresarial:
 
-| Funcionalidad | Estado |
-|--------------|--------|
-| **Recuperación de contraseña por email** (token + SMTP) | ✅ Nuevo |
-| **Panel SMTP configurable** desde el Dashboard sin código | ✅ Nuevo |
-| **Visor de logs SMTP** en tiempo real | ✅ Nuevo |
-| **Jerarquía de IDs de usuarios** (RED-XXX, DIR-XXX, PDV-XXX, VEN-XXX) | ✅ Nuevo |
-| **Sistema de referidos en árbol** con comisiones de red | ✅ Nuevo |
-| **Nuevo perfil "Socio Comercial PDV"** con menú adaptado | ✅ Nuevo |
-| **PDF corporativo** con logo MQF real en todas las cotizaciones | ✅ Mejorado |
-| **Cotizador Seguros de Ley** con 13 tipos, precios reales MULTISEGUROS | ✅ v2 |
-| **Cotizador Fianzas** profesional con 7 tipos y coberturas | ✅ v2 |
-| **Historial de cotizaciones** exportable en PDF, Excel, CSV, JSON, ZIP | ✅ Mejorado |
-| **Módulo Clientes** activo con CRUD completo | ✅ Activo |
-| **Módulo Pólizas** activo con base funcional | ✅ Activo |
-| **Dashboard con actividad reciente** clickeable con modal de detalle | ✅ Mejorado |
-| **Estadísticas en tiempo real**: Clientes, Cotizaciones, Fianzas, Seguros | ✅ Mejorado |
-| **Estándar MS-LS v1.0**: Grilla técnica para PDFs corporativos (Marbete) | ✅ Nuevo |
+| Funcionalidad | Estado | Descripción |
+|--------------|--------|-------------|
+| **Motor ETL Python 3.14.5** | ✅ Nuevo (Estabilizado) | Procesa listados XLSX masivos de usuarios de forma ultra-rápida y 100% libre de dependencias. |
+| **Normalización Bancaria Inteligente** | ✅ Nuevo (Estabilizado) | Convierte variantes de "Reservas" a "Banreservas" y fuerza cuentas tipo "Ahorro" de manera automática y segura. |
+| **Importación 100% Idempotente** | ✅ Nuevo (Estabilizado) | Previene registros duplicados de usuarios y actualiza comisiones dinámicamente si el usuario ya existe en la BD. |
+| **Módulos Comisiones y Bancos Dinámicos** | ✅ Nuevo (Estabilizado) | Formulario dinámico en `usuarios.html` que habilita/deshabilita comisiones por ramo y campos bancarios según perfil. |
+| **Recuperación de contraseña por email** | ✅ Activo | Token seguro + plantilla HTML con visor SMTP. |
+| **Panel de Canales de Cobro (Finanzas)** | ✅ Activo | Soporte dinámico para depósitos, transferencias, tarjetas y pasarelas de pago. |
+| **PDF Corporativo MQF Estabilizado** | ✅ Mejorado | Logo en alta definición, grillas alineadas y soporte para firmas digitales en fianzas y seguros de ley. |
 
 ---
 
@@ -40,7 +32,7 @@ La plataforma ha sido significativamente enriquecida con las siguientes funciona
 **Tiempo estimado: 1 hora**
 
 1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)
-   - Entender qué se ha entregado en v2.1.0
+   - Entender qué se ha entregado en v3.3.0
 
 2. **[10 min]** Leer: [INSTALACION_RAPIDA.md](INSTALACION_RAPIDA.md)
    - Pasos exactos para instalar o actualizar
@@ -198,7 +190,7 @@ La plataforma ha sido significativamente enriquecida con las siguientes funciona
 
 ```
 Para TODOS:
-  1. RESUMEN_EJECUTIVO.md       ← Comienza aquí (versión 2.1.0)
+  1. RESUMEN_EJECUTIVO.md       ← Comienza aquí (versión 3.3.0)
      └─ 10 min
 
 Para INSTALAR:
@@ -228,7 +220,7 @@ Para VERIFICAR INSTALACIÓN:
 
 ```
 ┌──────────────────────────────────────────────────┐
-│       PLATAFORMA MAS QUE FIANZAS v2.1.0          │
+│       PLATAFORMA MÁS QUE FIANZAS v3.3.0          │
 │                                                  │
 │  LOGIN ──→ DASHBOARD ──→ MÓDULOS                 │
 │              │                                   │
@@ -249,7 +241,7 @@ Para VERIFICAR INSTALACIÓN:
 
 | Actividad | Tiempo | Documento/Acción |
 |-----------|--------|-----------------|
-| Visión general v2.1.0 | 10 min | RESUMEN_EJECUTIVO |
+| Visión general v3.3.0 | 10 min | RESUMEN_EJECUTIVO |
 | Instalación / actualización | 15 min | INSTALACION_RAPIDA |
 | Configurar SMTP | 10 min | Dashboard → Seguridad |
 | Primera cotización PDF | 5 min | Dashboard → Cotizaciones |
@@ -356,7 +348,7 @@ Para VERIFICAR INSTALACIÓN:
 
 ```
 Paso 1: Lee RESUMEN_EJECUTIVO.md (10 min)
-         → Entiende qué cambió en v2.1.0
+         → Entiende qué cambió en v3.3.0
 
 Paso 2: Lee INSTALACION_RAPIDA.md (10 min)
          → Sigue los pasos exactos
@@ -379,5 +371,5 @@ Paso 5: Crea usuarios del equipo (10 min)
 
 ---
 
-*Documento de orientación actualizado para la versión 2.1.0 de la plataforma.*  
-*Actualizado: 22 de Abril de 2026*
+*Documento de orientación actualizado para la versión 3.3.0 de la plataforma.*  
+*Actualizado: 21 de Mayo de 2026*

@@ -106,6 +106,62 @@ try {
         }
         respuestaJSON(true, 'Usuarios obtenidos', $resultado, 200);
 
+    } elseif (strpos($ruta, '/importar-excel') !== false && $metodo === 'POST') {
+        // IMPORTACIÓN DE EXCEL/CSV VÍA ETL PYTHON 3.14
+        if (empty($_FILES['file']) && empty($_FILES['archivo'])) {
+            respuestaJSON(false, 'Debe proporcionar un archivo válido', null, 400);
+        }
+
+        $archivo = $_FILES['file'] ?? $_FILES['archivo'];
+        
+        // Crear carpeta temporal si no existe
+        $upload_dir = dirname(__DIR__) . '/uploads/temp_import';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+
+        // Generar nombre de archivo temporal seguro
+        $ext = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+        $temp_name = 'import_' . time() . '_' . uniqid() . '.' . $ext;
+        $temp_file_path = $upload_dir . '/' . $temp_name;
+
+        if (!move_uploaded_file($archivo['tmp_name'], $temp_file_path)) {
+            respuestaJSON(false, 'No se pudo mover el archivo subido', null, 500);
+        }
+
+        // Ejecutar ETL en Python 3.14
+        $python_cmd = "python";
+        $script_path = escapeshellarg(dirname(__DIR__) . '/etl_usuarios_import.py');
+        $file_path_arg = escapeshellarg($temp_file_path);
+        
+        $command = "$python_cmd $script_path $file_path_arg";
+        
+        $output = [];
+        $return_var = 0;
+        exec($command, $output, $return_var);
+        
+        // Eliminar archivo temporal de inmediato
+        if (file_exists($temp_file_path)) {
+            unlink($temp_file_path);
+        }
+        
+        $json_output = implode("\n", $output);
+        $etl_data = json_decode($json_output, true);
+        
+        if ($return_var !== 0 || empty($etl_data) || !$etl_data['exito']) {
+            $err_msg = $etl_data['mensaje'] ?? 'Error desconocido al procesar el archivo con el motor Python ETL.';
+            respuestaJSON(false, $err_msg, ['output' => $json_output], 500);
+        }
+        
+        // Ejecutar la importación masiva en la BD a través de UsuarioManager
+        $resultado = $manager->importarUsuarios($etl_data['registros'], $usuario_actual);
+        
+        // Agregar logs y warnings del motor ETL en la respuesta
+        $resultado['warnings'] = $etl_data['warnings'] ?? [];
+        $resultado['registros_leidos'] = count($etl_data['registros']);
+        
+        respuestaJSON(true, 'Archivo importado y procesado exitosamente por el motor ETL', $resultado, 200);
+
     } elseif (strpos($ruta, '/importar') !== false && $metodo === 'POST') {
         // IMPORTACIÓN MASIVA
         $datos = json_decode(file_get_contents('php://input'), true);

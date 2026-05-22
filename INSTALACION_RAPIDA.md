@@ -1,29 +1,22 @@
-# 📖 GUÍA DE INSTALACIÓN RÁPIDA
+# 📖 GUÍA DE INSTALACIÓN RÁPIDA (v3.3.0 Stabilized)
 
-## Paso 1️⃣: Preparar el Ambiente
+## Paso 1️⃣: Preparar el Ambiente y Prerrequisitos
 
 1. **Abrir WAMP** (si no está abierto)
-   - Click en el icono de WAMP en la bandeja del sistema
-   - Esperar a que esté en verde
+   - Click en el icono de WAMP en la bandeja del sistema.
+   - Asegurarse de que Apache, MySQL (puerto 3306) y PHP 8.2+ estén en ejecución (icono verde).
 
-2. **Verificar que Apache y MySQL están corriendo**
-   - Click derecho en WAMP → Icono debe estar verde
+2. **Verificar Instancia de Python (para motor ETL)**
+   - Abrir CMD o PowerShell.
+   - Ejecutar: `python --version`
+   - Debe retornar **Python 3.14.x** (o compatible v3.11+). Si no está disponible, instálalo y agrégalo al PATH del sistema.
 
-## Paso 2️⃣: Copiar Archivos
+3. **Copiar Archivos de la Plataforma**
+   - Navegar a la carpeta de WAMP: `C:\wamp64\www\`
+   - Copiar el directorio `PLATAFORMA_INTEGRADA` en esa ruta.
+   - Ruta resultante: `C:\wamp64\www\PLATAFORMA_INTEGRADA\`
 
-1. **Navegar a la carpeta de WAMP:**
-   ```
-   C:\wamp64\www\
-   ```
-
-2. **Crear carpeta si no existe:**
-   ```
-   C:\wamp64\www\PLATAFORMA_INTEGRADA\
-   ```
-
-3. **Copiar todos los archivos del proyecto** en esta carpeta
-
-## Paso 3️⃣: Crear Base de Datos
+## Paso 2️⃣: Crear la Base de Datos
 
 ### Opción A: Usando phpMyAdmin (Recomendado)
 
@@ -67,24 +60,32 @@
    EXIT;
    ```
 
-## Paso 4️⃣: Verificar Instalación
+## Paso 3️⃣: Verificar e Inicializar con Verificador de Sistema
 
-1. **Acceder al sistema:**
-   ```
-   http://localhost/PLATAFORMA_INTEGRADA/frontend/
-   ```
+1. **Ejecutar Verificación Visual:**
+   - Abre en tu navegador la URL:
+     ```
+     http://localhost/PLATAFORMA_INTEGRADA/verify.php
+     ```
+   - Este Dashboard Premium v3.3.0 comprobará la base de datos, las 16 columnas requeridas, el estado de los perfiles comerciales, y si Python 3.14.5 está en el PATH del servidor.
 
-2. **Debe aparecer la página de login**
+2. **Ejecutar Diagnóstico Técnico Completo:**
+   - Abre la URL:
+     ```
+     http://localhost/PLATAFORMA_INTEGRADA/verify_system_end_to_end.php
+     ```
+   - Este script confirmará que el motor ETL de Python es capaz de procesar el archivo XLSX e importar a los socios comerciales de forma idempotente con cuentas bancarias normalizadas.
 
-## Paso 5️⃣: Iniciar Sesión
+3. **Acceder a la Aplicación:**
+   - URL: `http://localhost/PLATAFORMA_INTEGRADA/frontend/`
 
-**Credenciales de prueba:**
-```
-Usuario: admin
-Contraseña: Demo@123
-```
+## Paso 4️⃣: Iniciar Sesión
 
-✅ ¡Listo! El sistema está instalado
+**Credenciales Administrativas Predeterminadas:**
+- **Usuario/Email:** `admin@masquefianzas.com`
+- **Contraseña:** `Demo@123`
+
+✅ ¡Listo! El sistema se encuentra 100% instalado, verificado y estabilizado comercialmente.
 
 ---
 
@@ -180,5 +181,5 @@ Para producción, habilitar SSL en Apache
 
 ---
 
-**Fecha:** 22 de Febrero de 2026
-**Versión:** 1.0.0
+**Fecha:** 21 de Mayo de 2026
+**Versión:** v3.3.0 Stabilized

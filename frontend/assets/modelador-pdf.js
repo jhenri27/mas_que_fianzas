@@ -39,8 +39,8 @@ async function subirPlantilla() {
     const nameInput = document.getElementById('nombrePlantilla');
     const asegInput = document.getElementById('aseguradoraPlantilla');
     
-    if(!fileInput.files[0]) return alert("Selecciona un archivo");
-    if(!nameInput.value) return alert("Ponle un nombre a la plantilla");
+    if(!fileInput.files[0]) return MQF.toast("Selecciona un archivo", "warning");
+    if(!nameInput.value) return MQF.toast("Ponle un nombre a la plantilla", "warning");
 
     const formData = new FormData();
     formData.append('action', 'upload');
@@ -57,7 +57,7 @@ async function subirPlantilla() {
         });
         const json = await res.json();
         if(json.exito) {
-            alert(json.mensaje);
+            MQF.toast(json.mensaje, "success");
             fileInput.value = '';
             nameInput.value = '';
             asegInput.value = '';
@@ -65,10 +65,10 @@ async function subirPlantilla() {
             document.getElementById('listaPlantillas').value = json.id;
             cargarPlantilla();
         } else {
-            alert(json.mensaje);
+            MQF.toast(json.mensaje, "error");
         }
     } catch(e) {
-        alert("Error de red subiendo plantilla");
+        MQF.toast("Error de red subiendo plantilla", "error");
     }
 }
 
@@ -156,7 +156,7 @@ function renderizarImagen(url) {
 // LÓGICA DE CAMPOS ARRASTRABLES
 // ---------------------------------
 function agregarCampo(variable) {
-    if(!currentPlantillaId) return alert("Carga una plantilla primero");
+    if(!currentPlantillaId) return MQF.toast("Carga una plantilla primero", "warning");
     // Coordenadas default en PT (centro)
     const defX = 100; 
     const defY = 100;
@@ -337,7 +337,7 @@ function eliminarCampoActivo() {
 
 // Guardar Mapeo
 async function guardarMapeo() {
-    if(!currentPlantillaId) return alert("No hay plantilla cargada.");
+    if(!currentPlantillaId) return MQF.toast("No hay plantilla cargada.", "warning");
     
     const payload = {
         action: 'save_fields',
@@ -371,11 +371,11 @@ async function guardarMapeo() {
         });
         const json = await res.json();
         if(json.exito) {
-            alert(json.mensaje);
+            MQF.toast(json.mensaje, "success");
         } else {
-            alert(json.mensaje);
+            MQF.toast(json.mensaje, "error");
         }
     } catch(e) {
-        alert("Error guardando configuración");
+        MQF.toast("Error guardando configuración", "error");
     }
 }

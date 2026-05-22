@@ -1,42 +1,54 @@
-# ✅ VERIFICACIÓN FINAL - ESTRUCTURA DEL PROYECTO
+# ✅ VERIFICACIÓN FINAL - ESTRUCTURA DEL PROYECTO (v3.3.0 Stabilized)
 
-## 📁 ESTRUCTURA DE CARPETAS CREADA
+## 📁 ESTRUCTURA DE CARPETAS Y ARCHIVOS DEL PROYECTO
 
 ```
-c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
+c:\wamp64\www\PLATAFORMA_INTEGRADA\
 │
 ├── 📂 backend/
 │   ├── 📂 api/
-│   │   ├── auth.php                    [✅ 185 líneas]
-│   │   ├── usuarios.php                [✅ 210 líneas]
-│   │   └── perfiles.php                [✅ 195 líneas]
+│   │   ├── auth.php                    [✅ Autenticación y cambio pass]
+│   │   ├── usuarios.php                [✅ CRUD usuarios e importación XLSX]
+│   │   ├── perfiles.php                [✅ CRUD perfiles y permisos RBAC]
+│   │   └── pagos.php                   [✅ APIs de registro de cobros y caja]
 │   │
-│   ├── config.php                      [✅ 365 líneas]
-│   ├── Autenticacion.php               [✅ 420 líneas]
-│   ├── UsuarioManager.php              [✅ 512 líneas]
-│   └── PerfilManager.php               [✅ 512 líneas]
-│
-├── 📂 frontend/
-│   ├── index.html                      [✅ 125 líneas - Login]
-│   ├── dashboard.html                  [✅ 465 líneas - Dashboard]
+│   ├── 📂 config/
+│   │   └── smtp.json                   [✅ Configuración de correo]
+│   ├── 📂 logs/
+│   │   ├── error.log                   [✅ Logs de errores de PHP]
+│   │   └── smtp.log                    [✅ Logs de envío de correos]
 │   │
-│   └── 📂 assets/
-│       ├── api-client.js               [✅ 250 líneas - Cliente API]
-│       ├── login.js                    [✅ 100 líneas - Login logic]
-│       ├── dashboard.js                [✅ 400 líneas - Dashboard logic]
-│       │
-│       ├── login.css                   [✅ 280 líneas]
-│       ├── dashboard.css               [✅ 520 líneas]
-│       └── modulos.css                 [✅ 280 líneas]
+│   ├── config.php                      [✅ Configuración DB unificada]
+│   ├── Autenticacion.php               [✅ Gestor de sesiones]
+│   ├── UsuarioManager.php              [✅ Lógica CRUD y ETL de usuarios]
+│   ├── PagoManager.php                 [✅ Lógica de cobros y comisiones]
+│   └── etl_usuarios_import.py          [✅ Motor ETL Python 3.14.5]
 │
 ├── 📂 database/
-│   ├── schema_masque_fianzas.sql       [✅ 1,200 líneas - 20 tablas]
-│   └── datos_iniciales.sql             [✅ 85 líneas - Datos prueba]
+│   ├── schema_masque_fianzas.sql       [✅ 20 tablas normalizadas]
+│   └── cf_schema.sql                   [✅ Estructura canales de pago]
 │
-├── 📄 .htaccess                        [✅ 85 líneas - Config Apache]
-├── 📄 README.md                        [✅ 320 líneas - Documentación]
-├── 📄 INSTALACION_RAPIDA.md            [✅ 210 líneas - Guía instalación]
-└── 📄 ESPECIFICACIONES.md              [✅ 350 líneas - Este documento]
+├── 📂 frontend/
+│   ├── index.html                      [✅ Estética premium - Login]
+│   ├── dashboard.html                  [✅ Shell responsiva de módulos]
+│   │
+│   ├── 📂 assets/
+│   │   ├── api-client.js               [✅ Cliente API unificado]
+│   │   ├── dashboard.js                [✅ Controlador dashboard y CRUD]
+│   │   ├── data-export.js              [✅ Motor PDF/Excel/CSV/ZIP]
+│   │   ├── logo_b64.js                 [✅ Logo corporativo en base64]
+│   │   └── skin-engine.css             [✅ Temas premium HSL dark/light]
+│   │
+│   └── 📂 modulos/
+│       ├── usuarios.html               [✅ Formulario comisiones/bancos dinámico]
+│       └── cotizaciones.html           [✅ Cotizador React de seguros y fianzas]
+│
+├── 📄 .htaccess                        [✅ Cabeceras de seguridad Apache]
+├── 📄 verify.php                        [✅ Dashboard visual de verificación]
+├── 📄 verify_system_end_to_end.php      [✅ Script de diagnóstico CLI]
+├── 📄 README.md                        [✅ Documentación técnica core]
+├── 📄 INSTALACION_RAPIDA.md            [✅ Guía rápida para despliegue]
+└── 📄 ESPECIFICACIONES.md              [✅ Malla de seguridad y diseño]
 ```
 
 ---
@@ -101,19 +113,19 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 
 ---
 
-## 📊 RESUMEN DE NÚMEROS
+## 📊 RESUMEN DE NÚMEROS (v3.3.0)
 
 | Categoría | Cantidad | Detalles |
 |-----------|----------|----------|
-| **Archivos creados** | 22 | PHP, JS, CSS, HTML, SQL, config |
-| **Líneas de código** | ~6,800 | Backend: 1,800 | Frontend: 1,750 | DB: 1,285 | Docs: 880 |
-| **Endpoints API** | 19 | 4 Auth + 8 Usuarios + 7 Perfiles |
-| **Tablas BD** | 20 | Completamente normalizadas |
-| **Roles definidos** | 8 | Con jerarquía y herencia |
-| **Módulos de negocio** | 11 | 1 completo + 10 placeholders |
-| **Funciones de permiso** | 50+ | Por módulo |
-| **Breakpoints responsive** | 3 | Desktop (1024px), Tablet (768px), Mobile (480px) |
-| **Métodos de seguridad** | 7 | Sesiones, hashing, rate limiting, audit, CORS, prepared statements, headers |
+| **Archivos creados/modif** | 42 | PHP, Python, JS, CSS, HTML, SQL, Config JSON |
+| **Líneas de código** | ~12,000 | Código optimizado, managers, ETL y utilidades |
+| **Endpoints API** | 25+ | 4 Auth + 8 Usuarios + 7 Perfiles + 4 Pagos + logs SMTP |
+| **Tablas BD** | 20 | Normalizadas con triggers de auditoría activos |
+| **Roles definidos** | 9 | Añadido "Socio Comercial PDV" |
+| **Módulos de negocio** | 9 activos | Dashboard, Cotizaciones, Clientes, Pólizas, Usuarios, Perfiles, Auditoría, Pagos, Config |
+| **Funciones de permiso** | 50+ | Control granular por rol |
+| **Motor ETL Python** | 3.14.5 | Carga de listados masivos XLSX con normalización Banreservas |
+| **Capas de Seguridad** | 10 | Sesiones, hashing bcrypt, rate limiting, prepared statements, CORS, headers de seguridad, SMTP seguro, tokens temporales, auditoría, soft delete |
 
 ---
 
@@ -347,7 +359,7 @@ mysql -u root -p masque_fianzas < database/datos_iniciales.sql
 
 ---
 
-**Proyecto Completo y Verificado**
-**Fecha:** 22 de Febrero de 2026
-**Versión:** 1.0.0
-**Estado:** ✅ LISTO PARA PRODUCCIÓN
+**Proyecto Completado, Estabilizado y Verificado**
+**Fecha:** 21 de Mayo de 2026
+**Versión:** 3.3.0
+**Estado:** ✅ ESTABILIZADA EN PRODUCCIÓN

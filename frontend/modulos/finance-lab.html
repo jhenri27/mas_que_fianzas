@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../assets/design-system.css">
     <link rel="stylesheet" href="../assets/skin-engine.css">
     <link rel="stylesheet" href="../assets/components.css">
+    <script src="../assets/components.js"></script>
     <style>
         body { padding: 40px; }
         .lab-container { max-width: 1000px; margin: 0 auto; }
@@ -226,12 +227,12 @@
         }
 
         async function limpiarLab() {
-            if(!confirm('¿Seguro que deseas eliminar los datos de prueba del Lab?')) return;
+            if(!(await MQF.confirm('¿Seguro que deseas eliminar los datos de prueba del Lab?', {type: 'danger'}))) return;
             try {
                 const res = await fetch(`${API}?action=limpiar_lab`).then(r=>r.json());
-                alert(res.mensaje);
-                location.reload();
-            } catch(e) { alert('Error al limpiar'); }
+                MQF.toast(res.mensaje, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } catch(e) { MQF.toast('Error al limpiar', 'error'); }
         }
     </script>
 </body>

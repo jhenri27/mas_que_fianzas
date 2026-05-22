@@ -1,13 +1,13 @@
-# 📚 ÍNDICE MAESTRO - PLATAFORMA MAS QUE FIANZAS
+# 📚 ÍNDICE MAESTRO - PLATAFORMA MÁS QUE FIANZAS (v3.3.0 Stabilized)
 
 ## 🎯 Introducción Rápida
 
-Bienvenido a la **Plataforma Integrada MAS QUE FIANZAS** - un sistema completo de gestión de seguros y fianzas con control de usuarios y roles.
+Bienvenido a la **Plataforma Integrada MÁS QUE FIANZAS** - un sistema integral de emisión de seguros, fianzas, importación de redes masivas mediante procesos ETL y canales contables.
 
-- **Versión:** 1.0.0
-- **Estado:** ✅ Listo para producción
-- **Tecnología:** PHP + MySQL + JavaScript
-- **Requisitos:** WAMP Server (Apache + MySQL + PHP 7.4+)
+- **Versión:** 3.3.0
+- **Estado:** ✅ Estabilizado y Listo para Producción (MS-LS v1.0)
+- **Tecnología:** PHP 8.2 + MySQL + Python 3.14.5 + Vanilla JavaScript
+- **Requisitos:** WAMP Server (Apache + MySQL 5.7+), Python 3.14.5 en PATH
 
 ---
 
@@ -289,43 +289,43 @@ Ver más en: **README.md sección Configuración**
 
 ## 📱 Módulos del Sistema
 
-### Completamente Funcional ✅
+### Completamente Funcional & Estabilizado ✅
 
 **Dashboard**
-- Página principal con bienvenida
-- Estadísticas del sistema
-- Acceso a todos los módulos
+- Página principal interactiva con bienvenida personalizada por rol.
+- Estadísticas unificadas y en tiempo real (Clientes, Cotizaciones, Fianzas, Seguros emitidos).
+- Gráficos integrados y panel de actividades recientes clickeable con detalles modales.
 
 **Cotizaciones**
-- Sistema completo de cotizaciones
-- Cálculo automático de primas
-- Historial de cotizaciones
-- Datos del cliente
+- Sistema completo y dinámico de cotizaciones para Seguros de Ley y Fianzas comerciales.
+- Cálculo automático en tiempo real de primas basado en tablas dinámicas.
+- Exportación multi-formato avanzada (PDF corporativo MQF, Excel, CSV, JSON, ZIP).
 
 **Usuarios & Perfiles**
-- CRUD completo de usuarios
-- Gestión de perfiles/roles
-- Asignación de permisos
-- Auditoría de cambios
+- CRUD completo con asignación automática de códigos jerárquicos (RED-XXX, PDV-XXX, etc.).
+- Formulario de creación dinámico: se adaptan comisiones y campos bancarios según el perfil.
+- **Motor ETL en Python 3.14.5** integrado para carga masiva ultra-rápida.
+- Procesos 100% idempotentes para prevención de registros duplicados.
+- Auditoría integral de accesos e historial detallado de cambios.
 
-### Placeholders (Estructura lista) 🟡
+**Clientes**
+- CRUD completo de clientes (Personas Físicas y Jurídicas) integrado con el cotizador.
+
+**Pólizas y Fianzas**
+- Módulo activo de emisión y administración de pólizas con soporte de plantillas de impresión MS-LS v1.0.
+- Generación de cotizaciones de fianzas profesionales (7 tipos) con cálculo preciso.
+
+**Pagos (Canales de Cobro / Centro Financiero)**
+- Registro y validación contable de pagos y amortización de comisiones.
+- Soporte para transferencias, depósitos bancarios, tarjetas y pasarelas de pago.
+
+### En Desarrollo Activo / Mantenimiento 🟡
 
 ```
-- Clientes      (estructura de tabla lista)
-- Pólizas       (estructura de tabla lista)
-- Fianzas       (estructura de tabla lista)
-- Pagos         (estructura de tabla lista)
-- Siniestros    (estructura de tabla lista)
-- Productos     (estructura de tabla lista)
-- Reportes      (estructura de tabla lista)
-- Configuración (estructura de tabla lista)
+- Siniestros    (estructura de tabla lista, lógica de reporte básica activa)
+- Productos     (módulo para editar tarifas dinámicas en cotizador)
+- Configuración (SMTP, plantillas de PDF y variables del cotizador activas)
 ```
-
-Cada placeholder tiene:
-- ✅ Tabla de BD creada
-- ✅ API endpoint preparado
-- ✅ Interfaz HTML/CSS lista
-- ⏳ Solo falta lógica JavaScript
 
 ---
 

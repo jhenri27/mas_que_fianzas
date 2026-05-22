@@ -139,8 +139,17 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
 
         // Zona B: Logo (centro)
         const LX=MX+38, LW=42, LH=14;
-        const logoB64 = (window.LOGOS && window.LOGOS[asegNombre]) || (asegNombre === 'MULTISEGUROS' ? window.LOGO_MULTISEGUROS_B64 : null);
-        console.log(`[Marbete] Logo for ${asegNombre}:`, logoB64 ? 'Found (Length: ' + logoB64.length + ')' : 'Not Found');
+        let logoB64 = null;
+        if (window.LOGOS && window.LOGOS[asegNombre]) {
+            logoB64 = window.LOGOS[asegNombre];
+        } else if (asegNombre === 'MULTISEGUROS') {
+            logoB64 = window.LOGO_MULTISEGUROS_B64;
+        } else if (window.LOGOS && window.LOGOS['MULTISEGUROS']) {
+            logoB64 = window.LOGOS['MULTISEGUROS'];
+        } else {
+            logoB64 = window.LOGO_MULTISEGUROS_B64;
+        }
+        console.log(`[Marbete] Logo using insurer logo (${asegNombre}):`, logoB64 ? 'Found (Length: ' + logoB64.length + ')' : 'Not Found');
         const theme = POLIZA_DOCS.getTheme();
         if (logoB64) {
             try {
@@ -265,7 +274,28 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
         const qrImg = await generarQRDataURL(qrUrl);
         if (qrImg) {
             const QR_SIZE = 25;
-            doc.addImage(qrImg, 'PNG', BX2 - QR_SIZE - 2, YCP + 2, QR_SIZE, QR_SIZE);
+            const qrX = BX2 - QR_SIZE - 2;
+            const qrY = YCP + 2;
+            doc.addImage(qrImg, 'PNG', qrX, qrY, QR_SIZE, QR_SIZE);
+            
+            // Draw master brand logo (+Que Fianzas) in the center of QR code
+            const overlaySize = QR_SIZE * 0.22; // 5.5mm
+            const overlayX = qrX + (QR_SIZE - overlaySize) / 2;
+            const overlayY = qrY + (QR_SIZE - overlaySize) / 2;
+
+            // Solid white square to clear QR dots in center
+            doc.setFillColor(255, 255, 255);
+            doc.rect(overlayX, overlayY, overlaySize, overlaySize, 'F');
+
+            // Draw brand logo slightly smaller to have a white margin
+            if (window.LOGO_MQF_B64) {
+                try {
+                    doc.addImage(window.LOGO_MQF_B64, 'PNG', overlayX + 0.5, overlayY + 0.5, overlaySize - 1.0, overlaySize - 1.0);
+                } catch(eqr) {
+                    console.warn('[Marbete] Error embedding brand logo inside QR:', eqr);
+                }
+            }
+
             T(5.5, 'bold', ...theme.primary);
             doc.text('VERIFICACIÓN', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 5, { align: 'center' });
             doc.text('EN LÍNEA', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 7, { align: 'center' });
@@ -435,7 +465,7 @@ function generarSolicitudPDF(poliza, cliente, vehiculo, opts = {}) {
 // 3. RECIBO DE PAGO
 //    Formato: A4, diseño corporativo azul
 // ==========================================
-function generarReciboPDF(poliza, cliente, pago, opts = {}) {
+async function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const { COLORES, EMPRESA } = POLIZA_DOCS;
@@ -444,6 +474,7 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     const theme = POLIZA_DOCS.getTheme();
 
     // Fondo encabezado
+    const esPendiente = (pago.estado_pago === 'pendiente');
     doc.setFillColor(...theme.primary);
     doc.rect(0, 0, W, 42, 'F');
 
@@ -452,10 +483,20 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     }
 
     doc.setTextColor(...COLORES.blanco);
-    doc.setFontSize(20); doc.setFont('helvetica', 'bold');
-    doc.text('RECIBO DE PAGO', W / 2, 18, { align: 'center' });
+    if (esPendiente) {
+        doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+        doc.text('RECIBO PROVISIONAL', W / 2, 15, { align: 'center' });
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+        doc.setTextColor(253, 224, 71); // Amarillo brillante
+        doc.text('(PENDIENTE DE VALIDACIÓN)', W / 2, 21, { align: 'center' });
+        doc.setTextColor(...COLORES.blanco);
+    } else {
+        doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+        doc.text('RECIBO OFICIAL DE PAGO', W / 2, 17, { align: 'center' });
+    }
+    
     doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-    doc.text(`N° Recibo: ${pago.numero_recibo || 'REC-' + new Date().getFullYear() + '-' + String(pago.id || '0001').padStart(4, '0')}`, W / 2, 24, { align: 'center' });
+    doc.text(`N° Recibo: ${pago.numero_recibo || 'REC-' + new Date().getFullYear() + '-' + String(pago.id || '0001').padStart(4, '0')}`, W / 2, 27, { align: 'center' });
 
     // Info de empresa derecha
     doc.setFontSize(7);
@@ -523,13 +564,34 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
     doc.text('TOTAL:', W - 88, y + 22);
     doc.text(fmtDOP(pago.monto), margenR, y + 22, { align: 'right' });
 
-    y += 40;
+    y += 35;
 
-    // Nota de referencia
-    if (pago.numero_comprobante) {
-        doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
-        doc.text(`Banco: ${pago.banco || 'N/A'}  |  N° Ref/Comprobante: ${pago.numero_comprobante}`, margenL, y);
-        y += 10;
+    // Caja de banco/referencia si existe
+    if (pago.banco || pago.numero_comprobante || pago.numero_referencia) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(margenL, y, 95, 18, 'F');
+        doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.2);
+        doc.rect(margenL, y, 95, 18);
+        
+        doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(...theme.primary);
+        doc.text('INFORMACIÓN DE DEPÓSITO / TRANSFERENCIA', margenL + 3, y + 5);
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80); doc.setFontSize(7);
+        doc.text(`Banco Destino: ${pago.banco || 'N/A'}`, margenL + 3, y + 10);
+        doc.text(`N° Ref/Comprobante: ${pago.numero_comprobante || pago.numero_referencia || 'N/A'}`, margenL + 3, y + 14);
+        y += 24;
+    } else {
+        y += 5;
+    }
+
+    // QR Code (Validation & Accounting Verification)
+    const refVal = pago.numero_referencia || pago.numero_recibo || '';
+    const qrUrl = `${window.location.origin}/PLATAFORMA_INTEGRADA/frontend/modulos/verificar_pago.html?ref=${refVal}`;
+    const qrImg = await generarQRDataURL(qrUrl);
+    if (qrImg) {
+        doc.addImage(qrImg, 'PNG', W - margenL - 30, y - 5, 30, 30);
+        doc.setFontSize(6); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 116, 139);
+        doc.text('ESCANEE PARA VERIFICAR', W - margenL - 15, y + 28, { align: 'center' });
+        doc.text('VALIDEZ Y ESTADO CONTABLE', W - margenL - 15, y + 30.5, { align: 'center' });
     }
 
     // Firma
@@ -554,10 +616,9 @@ function generarReciboPDF(poliza, cliente, pago, opts = {}) {
 // 4. FACTURA INTERNA
 //    Igual que Recibo + NCF grande + datos DGII
 // ==========================================
-function generarFacturaPDF(poliza, cliente, pago, opts = {}) {
-    const doc = generarReciboPDF(poliza, cliente, pago, { returnDoc: true });
+async function generarFacturaPDF(poliza, cliente, pago, opts = {}) {
+    const doc = await generarReciboPDF(poliza, cliente, pago, { returnDoc: true });
     // La factura es igual al recibo pero el NCF se muestra grande y en rojo para que se distinga
-    // Se puede ampliar aquí con lógica de NCF autorizado
     if (!opts.returnDoc) {
         doc.save(`Factura-${pago.numero_ncf || poliza.numero_poliza}.pdf`);
     }
@@ -631,10 +692,23 @@ async function generarDocumentoDinamicoPDF(plantilla, data) {
         };
 
         // ── LOGO ──────────────────────────────────────────────────────────
-        const asegKey = (plantilla.aseguradora_nombre || '').toUpperCase().trim();
-        const logoURI = (window.LOGOS && window.LOGOS[asegKey]) ||
-                        (asegKey === 'MULTISEGUROS' ? window.LOGO_MULTISEGUROS_B64 : null);
-        console.log('[PDF] Logo:', asegKey, logoURI ? 'OK len='+logoURI.length : 'NO');
+        const esMarbete = (plantilla.nombre || '').toLowerCase().includes('marbete');
+        let logoURI = window.LOGO_MQF_B64; // Default to master brand logo
+
+        if (esMarbete) {
+            const asegNombre = (plantilla.aseguradora_nombre || data.poliza?.aseguradora || 'MULTISEGUROS').toUpperCase().trim();
+            if (window.LOGOS && window.LOGOS[asegNombre]) {
+                logoURI = window.LOGOS[asegNombre];
+            } else if (asegNombre === 'MULTISEGUROS') {
+                logoURI = window.LOGO_MULTISEGUROS_B64;
+            } else if (window.LOGOS && window.LOGOS['MULTISEGUROS']) {
+                logoURI = window.LOGOS['MULTISEGUROS'];
+            } else {
+                logoURI = window.LOGO_MULTISEGUROS_B64;
+            }
+        }
+
+        console.log('[PDF] Logo using selection:', logoURI ? 'OK len='+logoURI.length : 'NO');
         if (logoURI) {
             try {
                 const logoBytes = dataURItoBytes(logoURI);
@@ -656,7 +730,43 @@ async function generarDocumentoDinamicoPDF(plantilla, data) {
                     const qrBytes = dataURItoBytes(qrDataURI);
                     const qrImg = await pdfDoc.embedPng(qrBytes);
                     const QS = 65;
-                    firstPage.drawImage(qrImg, { x: pageWidth - QS - 12, y: 12, width: QS, height: QS });
+                    const qrX = pageWidth - QS - 12;
+                    const qrY = 12;
+                    firstPage.drawImage(qrImg, { x: qrX, y: qrY, width: QS, height: QS });
+
+                    // Embed master brand logo inside QR center for marbetes
+                    if (esMarbete) {
+                        const overlaySize = QS * 0.22; // 14.3pt
+                        const overlayX = qrX + (QS - overlaySize) / 2;
+                        const overlayY = qrY + (QS - overlaySize) / 2;
+
+                        // Solid white square to clear QR code center
+                        firstPage.drawRectangle({
+                            x: overlayX,
+                            y: overlayY,
+                            width: overlaySize,
+                            height: overlaySize,
+                            color: rgb(1, 1, 1)
+                        });
+
+                        // Draw brand logo in the center
+                        if (window.LOGO_MQF_B64) {
+                            try {
+                                const masterLogoBytes = dataURItoBytes(window.LOGO_MQF_B64);
+                                const isJpgMaster = window.LOGO_MQF_B64.startsWith('data:image/jpeg') || window.LOGO_MQF_B64.startsWith('data:image/jpg');
+                                const masterLogoImg = isJpgMaster ? await pdfDoc.embedJpg(masterLogoBytes) : await pdfDoc.embedPng(masterLogoBytes);
+                                firstPage.drawImage(masterLogoImg, {
+                                    x: overlayX + 1.0,
+                                    y: overlayY + 1.0,
+                                    width: overlaySize - 2.0,
+                                    height: overlaySize - 2.0
+                                });
+                            } catch(eMaster) {
+                                console.warn('[PDF] Error QR center brand logo:', eMaster.message);
+                            }
+                        }
+                    }
+
                     firstPage.drawText('Escanear para verificar', { x: pageWidth - QS - 10, y: 9, size: 5.5, font: fontBold, color: rgb(0, 0.2, 0.6) });
                     console.log('[PDF] QR incrustado OK');
                 }

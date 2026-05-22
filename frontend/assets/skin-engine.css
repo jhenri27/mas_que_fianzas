@@ -1,15 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 /* ============================================================
    SKIN ENGINE — MAS QUE FIANZAS
    Motor de temas: sobrescribe tokens --mqf-* según [data-skin]
-   Versión: 1.0 | Mayo 2026
-   Uso:  <body data-skin="indigo">   (default)
-         <body data-skin="obsidian"> (dark mode)
-         <body data-skin="coral">    (energético)
-         <body data-skin="custom">   (B2B - tokens via JS)
+   Versión: 2.0 | Mayo 2026
+   Uso:  <body data-skin="indigo">          (modern glassmorphic - default)
+         <body data-skin="obsidian">        (modern glassmorphic - dark)
+         <body data-skin="coral">           (modern glassmorphic - coral)
+         <body data-skin="custom">          (modern glassmorphic - brand)
+         <body data-skin="indigo-classic">  (rollback solid - default)
+         <body data-skin="obsidian-classic">(rollback solid - dark)
+         <body data-skin="coral-classic">   (rollback solid - coral)
    ============================================================ */
 
-/* ── SKIN 1: INDIGO CORP (default, ya definido en design-system.css) ── */
+/* ── FUENTE GLOBAL PARA TEMAS MODERNOS ── */
+[data-skin="indigo"], [data-skin="obsidian"], [data-skin="coral"], [data-skin="custom"] {
+  --mqf-font: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+[data-skin="indigo"] body, [data-skin="indigo"] input, [data-skin="indigo"] select, [data-skin="indigo"] button, [data-skin="indigo"] textarea,
+[data-skin="obsidian"] body, [data-skin="obsidian"] input, [data-skin="obsidian"] select, [data-skin="obsidian"] button, [data-skin="obsidian"] textarea,
+[data-skin="coral"] body, [data-skin="coral"] input, [data-skin="coral"] select, [data-skin="coral"] button, [data-skin="coral"] textarea,
+[data-skin="custom"] body, [data-skin="custom"] input, [data-skin="custom"] select, [data-skin="custom"] button, [data-skin="custom"] textarea {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* ── SKIN 1: INDIGO CORP (Modern Glassmorphic) ── */
 [data-skin="indigo"] {
+  --mqf-primary:         #4f46e5;
+  --mqf-primary-dark:    #4338ca;
+  --mqf-primary-light:   #eef2ff;
+  --mqf-secondary:       #7c3aed;
+  --mqf-gradient:        linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --mqf-text:            #0f172a;
+  --mqf-text-secondary:  #334155;
+  --mqf-text-muted:      #64748b;
+  --mqf-text-light:      #94a3b8;
+  --mqf-text-inverse:    #ffffff;
+  --mqf-shadow-primary:  0 10px 25px rgba(79, 70, 229, 0.2);
+  color-scheme: light;
+
+  /* Glass tokens */
+  --mqf-glass-bg:        rgba(255, 255, 255, 0.65);
+  --mqf-glass-border:    rgba(99, 102, 241, 0.12);
+  --mqf-glow-1:          rgba(79, 70, 229, 0.05);
+  --mqf-glow-2:          rgba(124, 58, 237, 0.04);
+  --mqf-shadow-premium:  0 20px 40px -8px rgba(79, 70, 229, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  --mqf-bg:              #f8fafc;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(255, 255, 255, 0.4);
+  --mqf-border:          var(--mqf-glass-border);
+  
+  background-attachment: fixed;
+  background-image: radial-gradient(at 0% 0%, rgba(243, 244, 246, 0.8) 0, transparent 50%),
+                    radial-gradient(at 50% 0%, rgba(238, 242, 255, 0.8) 0, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(245, 243, 255, 0.8) 0, transparent 50%) !important;
+}
+
+/* ── SKIN 2: OBSIDIAN DARK (Modern Glassmorphic - Luminous Blue & Emerald Green) ── */
+[data-skin="obsidian"] {
+  --mqf-primary:         #10b981;
+  --mqf-primary-dark:    #059669;
+  --mqf-primary-light:   rgba(16, 185, 129, 0.15);
+  --mqf-primary-hover:   rgba(16, 185, 129, 0.25);
+  --mqf-secondary:       #34d399;
+  --mqf-gradient:        linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+
+  --mqf-text:            #f8fafc;
+  --mqf-text-secondary:  #cbd5e1;
+  --mqf-text-muted:      #94a3b8;
+  --mqf-text-light:      #64748b;
+  --mqf-text-inverse:    #020617;
+
+  --mqf-success:         #10b981;
+  --mqf-success-light:   rgba(16, 185, 129, 0.15);
+  --mqf-success-text:    #34d399;
+  --mqf-danger:          #ef4444;
+  --mqf-danger-light:    rgba(239, 68, 68, 0.15);
+  --mqf-danger-text:     #fca5a5;
+  --mqf-warning:         #fbbf24;
+  --mqf-warning-light:   rgba(251, 191, 36, 0.15);
+  --mqf-warning-text:    #fde68a;
+  --mqf-info:            #3b82f6;
+  --mqf-info-light:      rgba(59, 130, 246, 0.15);
+  --mqf-info-text:       #93c5fd;
+
+  --mqf-shadow-xs:       0 1px 2px rgba(0,0,0,.6);
+  --mqf-shadow-sm:       0 4px 12px rgba(0,0,0,.7);
+  --mqf-shadow:          0 10px 30px rgba(0,0,0,.7);
+  --mqf-shadow-md:       0 20px 40px rgba(0,0,0,.8);
+  --mqf-shadow-primary:  0 8px 20px rgba(16, 185, 129, 0.3);
+  color-scheme: dark;
+
+  /* Glass tokens */
+  --mqf-glass-bg:        rgba(15, 23, 42, 0.6);
+  --mqf-glass-border:    rgba(16, 185, 129, 0.35); /* Intense luminous green lines */
+  --mqf-glow-1:          rgba(16, 185, 129, 0.12);
+  --mqf-glow-2:          rgba(99, 102, 241, 0.1);
+  --mqf-shadow-premium:  0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  --mqf-bg:              #020617;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(30, 41, 59, 0.7);
+  --mqf-border:          var(--mqf-glass-border);
+  --mqf-border-strong:   rgba(16, 185, 129, 0.5);
+
+  background-attachment: fixed;
+  background-image: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.2) 0, transparent 50%),
+                    radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.15) 0, transparent 50%) !important;
+}
+
+/* ── SKIN 3: CORAL FINANCE (Modern Glassmorphic) ── */
+[data-skin="coral"] {
+  --mqf-primary:         #f43f5e;
+  --mqf-primary-dark:    #e11d48;
+  --mqf-primary-light:   #fff1f2;
+  --mqf-primary-hover:   rgba(244,63,94,.08);
+  --mqf-secondary:       #fb923c;
+  --mqf-gradient:        linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+
+  --mqf-text:            #18181b;
+  --mqf-text-secondary:  #3f3f46;
+  --mqf-text-muted:      #71717a;
+  --mqf-text-light:      #a1a1aa;
+  --mqf-text-inverse:    #ffffff;
+  --mqf-shadow-primary:  0 8px 20px rgba(244,63,94,.25);
+  color-scheme: light;
+
+  /* Glass tokens */
+  --mqf-glass-bg:        rgba(255, 255, 255, 0.6);
+  --mqf-glass-border:    rgba(244, 63, 94, 0.08);
+  --mqf-glow-1:          rgba(244, 63, 94, 0.04);
+  --mqf-glow-2:          rgba(251, 146, 60, 0.03);
+  --mqf-shadow-premium:  0 20px 40px -8px rgba(244, 63, 94, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  --mqf-bg:              #fffbfb;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(255, 255, 255, 0.35);
+  --mqf-border:          var(--mqf-glass-border);
+  --mqf-border-strong:   rgba(244, 63, 94, 0.15);
+
+  background-attachment: fixed;
+  background-image: radial-gradient(at 0% 0%, rgba(254, 242, 242, 0.8) 0, transparent 50%),
+                    radial-gradient(at 50% 0%, rgba(255, 247, 237, 0.8) 0, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(254, 242, 242, 0.8) 0, transparent 50%) !important;
+}
+
+/* ── CLÁSICO 1: INDIGO CORP (Rollback Sólido) ── */
+[data-skin="indigo-classic"] {
   --mqf-primary:         #4f46e5;
   --mqf-primary-dark:    #4338ca;
   --mqf-primary-light:   #eef2ff;
@@ -28,8 +169,8 @@
   color-scheme: light;
 }
 
-/* ── SKIN 2: OBSIDIAN DARK ── */
-[data-skin="obsidian"] {
+/* ── CLÁSICO 2: OBSIDIAN DARK (Rollback Sólido) ── */
+[data-skin="obsidian-classic"] {
   --mqf-primary:         #818cf8;
   --mqf-primary-dark:    #6366f1;
   --mqf-primary-light:   #1e1b4b;
@@ -70,6 +211,33 @@
   --mqf-shadow-primary:  0 8px 20px rgba(129,140,248,.3);
 
   color-scheme: dark;
+}
+
+/* ── CLÁSICO 3: CORAL FINANCE (Rollback Sólido) ── */
+[data-skin="coral-classic"] {
+  --mqf-primary:         #f43f5e;
+  --mqf-primary-dark:    #e11d48;
+  --mqf-primary-light:   #fff1f2;
+  --mqf-primary-hover:   rgba(244,63,94,.08);
+  --mqf-secondary:       #fb923c;
+  --mqf-gradient:        linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #fff1f2 0%, #fff7ed 100%);
+
+  --mqf-bg:              #fff8f7;
+  --mqf-surface:         #ffffff;
+  --mqf-surface-2:       #fef2f2;
+  --mqf-border:          #fce7f3;
+  --mqf-border-strong:   #fbcfe8;
+
+  --mqf-text:            #18181b;
+  --mqf-text-secondary:  #3f3f46;
+  --mqf-text-muted:      #71717a;
+  --mqf-text-light:      #a1a1aa;
+  --mqf-text-inverse:    #ffffff;
+
+  --mqf-shadow-primary:  0 8px 20px rgba(244,63,94,.25);
+
+  color-scheme: light;
 }
 
 /* Ajustes específicos Obsidian para elementos del dashboard */
@@ -144,3 +312,1140 @@
   --mqf-text-secondary:  var(--brand-text-secondary, #374151);
   color-scheme: light;
 }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  MODAL PREMIUM — OBSIDIAN DARK (Neon Uiverse Style)         ║
+   ║  Solo aplica cuando data-skin="obsidian"                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* ── Animaciones Obsidian Modal ── */
+@keyframes mqf-neon-border-pulse {
+  0%, 100% {
+    box-shadow:
+      0px -16px 24px 0px rgba(255,255,255,0.06) inset,
+      0 0 0 1px rgba(34,211,238,0.35),
+      0 0 10px 2px rgba(34,211,238,0.18),
+      0 32px 64px rgba(0,0,0,0.65);
+  }
+  50% {
+    box-shadow:
+      0px -16px 24px 0px rgba(255,255,255,0.09) inset,
+      0 0 0 2px rgba(34,211,238,0.72),
+      0 0 26px 6px rgba(34,211,238,0.32),
+      0 32px 64px rgba(0,0,0,0.65);
+  }
+}
+@keyframes mqf-header-scan {
+  0%   { left: -60%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { left: 110%; opacity: 0; }
+}
+
+/* Backdrop profundo en Obsidian */
+[data-skin="obsidian"] .modal-overlay,
+[data-skin="obsidian"] .mqf-modal-backdrop {
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  background: rgba(0, 0, 0, 0.78) !important;
+}
+
+/* Modal — fondo oscuro con radial-gradient cyan + borde pulsante */
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .mqf-modal {
+  background-color: hsla(240, 15%, 9%, 1) !important;
+  background-image:
+    radial-gradient(at 88% 40%, hsla(240, 15%, 9%, 1)  0px, transparent 85%),
+    radial-gradient(at 49% 30%, hsla(240, 15%, 9%, 1)  0px, transparent 85%),
+    radial-gradient(at 14% 26%, hsla(240, 15%, 9%, 1)  0px, transparent 85%),
+    radial-gradient(at  0% 64%, hsl(189,  99%, 26%)    0px, transparent 85%),
+    radial-gradient(at 41% 94%, hsl(189,  97%, 36%)    0px, transparent 85%),
+    radial-gradient(at 100% 99%, hsl(188, 94%, 13%)    0px, transparent 85%) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(34, 211, 238, 0.3) !important;
+  animation: mqf-neon-border-pulse 3s ease-in-out infinite !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Header del modal */
+[data-skin="obsidian"] .modal-header,
+[data-skin="obsidian"] .mqf-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(34, 211, 238, 0.18) !important;
+  padding: 18px 22px !important;
+}
+[data-skin="obsidian"] .modal-header h3,
+[data-skin="obsidian"] .mqf-modal-title {
+  color: #ffffff !important;
+  text-shadow: 0 0 18px rgba(34, 211, 238, 0.45);
+}
+[data-skin="obsidian"] .modal-close,
+[data-skin="obsidian"] .mqf-modal-close {
+  background: rgba(34, 211, 238, 0.12) !important;
+  border: 1px solid rgba(34, 211, 238, 0.25) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+[data-skin="obsidian"] .modal-close:hover,
+[data-skin="obsidian"] .mqf-modal-close:hover {
+  background: rgba(34, 211, 238, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* Cuerpo del modal */
+[data-skin="obsidian"] .modal-body,
+[data-skin="obsidian"] .mqf-modal-body {
+  background: transparent !important;
+}
+
+/* Labels */
+[data-skin="obsidian"] .form-label {
+  color: hsl(0, 0%, 83%) !important;
+}
+
+/* Inputs, selects, textareas dentro del modal */
+[data-skin="obsidian"] .modal-body .form-input,
+[data-skin="obsidian"] .modal-body .mqf-input,
+[data-skin="obsidian"] .modal-body select,
+[data-skin="obsidian"] .mqf-modal-body .mqf-input,
+[data-skin="obsidian"] .mqf-modal-body select {
+  background: hsla(240, 9%, 14%, 0.85) !important;
+  border: 1.5px solid hsl(240, 9%, 26%) !important;
+  color: #f1f5f9 !important;
+  border-radius: 8px !important;
+}
+[data-skin="obsidian"] .modal-body .form-input:focus,
+[data-skin="obsidian"] .modal-body .mqf-input:focus,
+[data-skin="obsidian"] .modal-body select:focus,
+[data-skin="obsidian"] .mqf-modal-body .mqf-input:focus {
+  border-color: hsl(189, 100%, 50%) !important;
+  box-shadow: 0 0 0 3px hsla(189, 100%, 50%, 0.14) !important;
+  outline: none !important;
+}
+[data-skin="obsidian"] .modal-body .form-input::placeholder,
+[data-skin="obsidian"] .mqf-modal-body .mqf-input::placeholder {
+  color: hsl(240, 9%, 45%) !important;
+}
+
+/* Toggle slider en Obsidian */
+[data-skin="obsidian"] .toggle-slider         { background: hsl(240, 9%, 25%) !important; }
+[data-skin="obsidian"] input:checked + .toggle-slider { background: hsl(189, 92%, 40%) !important; }
+[data-skin="obsidian"] .toggle-label          { color: #f1f5f9 !important; }
+[data-skin="obsidian"] .toggle-status         { color: #94a3b8 !important; }
+
+/* Sección comisiones */
+[data-skin="obsidian"] #seccion_comisiones {
+  background: hsla(240, 9%, 14%, 0.7) !important;
+  border-color: rgba(34, 211, 238, 0.2) !important;
+}
+[data-skin="obsidian"] #seccion_comisiones span { color: #94a3b8 !important; }
+
+/* Sección referente y red de usuarios */
+[data-skin="obsidian"] #seccion_referente,
+[data-skin="obsidian"] .red-card {
+  background: hsla(240, 9%, 14%, 0.7) !important;
+  border-color: hsl(240, 9%, 25%) !important;
+}
+[data-skin="obsidian"] .red-name   { color: #f1f5f9 !important; }
+[data-skin="obsidian"] .red-code   { color: #94a3b8 !important; }
+[data-skin="obsidian"] .red-avatar { background: hsl(189, 92%, 25%) !important; }
+[data-skin="obsidian"] .codigo-chip {
+  background: hsla(240, 9%, 11%, 1) !important;
+  color: hsl(189, 100%, 65%) !important;
+  border: 1px solid rgba(34, 211, 238, 0.2) !important;
+}
+
+/* Comisionante toggle wrapper */
+[data-skin="obsidian"] .field-full {
+  background: hsla(240, 9%, 14%, 0.6) !important;
+  border-color: rgba(34, 211, 238, 0.18) !important;
+}
+
+/* Footer del modal */
+[data-skin="obsidian"] .modal-footer,
+[data-skin="obsidian"] .mqf-modal-footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(34, 211, 238, 0.14) !important;
+}
+
+/* Botón guardar — Neon Cyan Gradient */
+[data-skin="obsidian"] .btn-save,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--primary,
+[data-skin="obsidian"] .modal-footer .mqf-btn--primary {
+  background: linear-gradient(0deg, hsl(189, 92%, 58%), hsl(189, 99%, 26%)) !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow:
+    inset 0 -2px 25px -4px rgba(255, 255, 255, 0.25),
+    0 4px 15px rgba(34, 211, 238, 0.35) !important;
+}
+[data-skin="obsidian"] .btn-save:hover,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--primary:hover,
+[data-skin="obsidian"] .modal-footer .mqf-btn--primary:hover {
+  filter: brightness(1.15) !important;
+  transform: translateY(-2px) !important;
+  box-shadow:
+    inset 0 -2px 25px -4px rgba(255, 255, 255, 0.35),
+    0 8px 24px rgba(34, 211, 238, 0.5) !important;
+}
+
+/* Botón cancelar en Obsidian */
+[data-skin="obsidian"] .btn-cancel,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--secondary,
+[data-skin="obsidian"] .modal-footer .mqf-btn--secondary {
+  background: hsla(240, 9%, 18%, 0.9) !important;
+  border: 1.5px solid hsl(240, 9%, 30%) !important;
+  color: hsl(0, 0%, 75%) !important;
+  border-radius: 9999px !important;
+}
+[data-skin="obsidian"] .btn-cancel:hover {
+  background: hsla(240, 9%, 25%, 1) !important;
+  color: #ffffff !important;
+}
+
+/* Action buttons de tabla en Obsidian */
+[data-skin="obsidian"] .action-btn {
+  background: hsla(240, 9%, 18%, 1) !important;
+  border-color: hsl(240, 9%, 28%) !important;
+  color: #94a3b8 !important;
+}
+[data-skin="obsidian"] .action-btn:hover {
+  background: hsl(189, 80%, 18%) !important;
+  border-color: hsl(189, 92%, 40%) !important;
+  color: hsl(189, 100%, 70%) !important;
+}
+[data-skin="obsidian"] .action-btn.danger:hover {
+  background: #7f1d1d !important;
+  border-color: #f87171 !important;
+  color: #fca5a5 !important;
+}
+
+/* Toasts Premium Obsidian */
+[data-skin="obsidian"] .mqf-toast {
+  background: hsla(240, 15%, 11%, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(34, 211, 238, 0.25) !important;
+  border-left: 4px solid var(--mqf-primary) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(34, 211, 238, 0.15) !important;
+  border-radius: 12px !important;
+}
+[data-skin="obsidian"] .mqf-toast--success { border-left-color: var(--mqf-success) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(52, 211, 153, 0.15) !important; }
+[data-skin="obsidian"] .mqf-toast--error { border-left-color: var(--mqf-danger) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(248, 113, 113, 0.15) !important; }
+[data-skin="obsidian"] .mqf-toast--warning { border-left-color: var(--mqf-warning) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(251, 191, 36, 0.15) !important; }
+[data-skin="obsidian"] .mqf-toast--info { border-left-color: var(--mqf-info) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 15px rgba(96, 165, 250, 0.15) !important; }
+[data-skin="obsidian"] .mqf-toast .mqf-toast-close { color: rgba(241, 245, 249, 0.6) !important; transition: 0.2s; }
+[data-skin="obsidian"] .mqf-toast .mqf-toast-close:hover { color: #ffffff !important; }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║  MODAL PREMIUM — INDIGO LIGHT (Mejoras Visuales Premium)    ║
+   ║  Solo aplica cuando data-skin="indigo"                      ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+/* Backdrop con blur sutil */
+[data-skin="indigo"] .modal-overlay,
+[data-skin="indigo"] .mqf-modal-backdrop {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  background: rgba(15, 23, 42, 0.52) !important;
+}
+
+/* Modal box — fondo blanco sólido con acento lila arriba a la derecha */
+[data-skin="indigo"] .modal-box,
+[data-skin="indigo"] .mqf-modal {
+  background-color: #ffffff !important;
+  background-image: radial-gradient(
+    ellipse at 95% 0%,
+    hsl(245, 80%, 96%) 0%,
+    hsl(260, 60%, 98%) 30%,
+    #ffffff 60%
+  ) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(99, 102, 241, 0.14) !important;
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.06),
+    0 8px 24px rgba(79, 70, 229, 0.12),
+    0 24px 64px rgba(0, 0, 0, 0.12) !important;
+  animation: mqf-fadeInScale 0.22s cubic-bezier(0.34, 1.45, 0.64, 1) !important;
+  overflow: hidden !important;
+}
+
+/* Header del modal con gradiente de marca */
+[data-skin="indigo"] .modal-header,
+[data-skin="indigo"] .mqf-modal-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  border-radius: 15px 15px 0 0 !important;
+  padding: 18px 24px !important;
+  border-bottom: none !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+}
+[data-skin="indigo"] .modal-header h3,
+[data-skin="indigo"] .mqf-modal-title {
+  color: #ffffff !important;
+}
+[data-skin="indigo"] .modal-close,
+[data-skin="indigo"] .mqf-modal-close {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+}
+[data-skin="indigo"] .modal-close:hover,
+[data-skin="indigo"] .mqf-modal-close:hover {
+  background: rgba(255, 255, 255, 0.32) !important;
+  color: #ffffff !important;
+}
+
+/* Inputs con focus ring más vivido */
+[data-skin="indigo"] .form-input:focus,
+[data-skin="indigo"] .mqf-input:focus {
+  border-color: #6366f1 !important;
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.14),
+    0 1px 4px rgba(79, 70, 229, 0.08) !important;
+}
+
+/* Botón guardar con inset-glow */
+[data-skin="indigo"] .btn-save,
+[data-skin="indigo"] .mqf-modal-footer .mqf-btn--primary,
+[data-skin="indigo"] .modal-footer .mqf-btn--primary {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%) !important;
+  border-radius: 8px !important;
+  border: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 4px 14px rgba(79, 70, 229, 0.35) !important;
+  transition: all 0.2s ease !important;
+}
+[data-skin="indigo"] .btn-save:hover,
+[data-skin="indigo"] .mqf-modal-footer .mqf-btn--primary:hover,
+[data-skin="indigo"] .modal-footer .mqf-btn--primary:hover {
+  background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 22px rgba(79, 70, 229, 0.45) !important;
+}
+
+/* Footer con fondo sutil */
+[data-skin="indigo"] .modal-footer,
+[data-skin="indigo"] .mqf-modal-footer {
+  background: #f8fafc !important;
+  border-top: 1px solid #e5e7eb !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+/* Body del modal — fondo blanco sólido (nunca transparente) */
+[data-skin="indigo"] .modal-body,
+[data-skin="indigo"] .mqf-modal-body {
+  background: #ffffff !important;
+}
+
+/* Sub-secciones internas — blanco degradado con sombra Uiverse */
+[data-skin="indigo"] .modal-body .field-full,
+[data-skin="indigo"] #seccion_comisiones,
+[data-skin="indigo"] #seccion_referente,
+[data-skin="indigo"] .lab-modal-section {
+  background: linear-gradient(
+    145deg,
+    #ffffff   0%,
+    #f5f6ff  50%,
+    #eef0fc 100%
+  ) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow:
+    inset 0 -3em 3em rgba(0, 0, 0, 0.04),
+    0 0 0 2px rgb(210, 213, 238),
+    0.2em 0.3em 0.8em rgba(79, 70, 229, 0.13) !important;
+}
+/* Garantizar contraste de texto en sub-secciones */
+[data-skin="indigo"] .modal-body .field-full .form-label,
+[data-skin="indigo"] .modal-body .toggle-label,
+[data-skin="indigo"] .modal-body .toggle-status,
+[data-skin="indigo"] #seccion_comisiones .form-label,
+[data-skin="indigo"] #seccion_comisiones span,
+[data-skin="indigo"] #seccion_referente .form-label,
+[data-skin="indigo"] #seccion_referente span {
+  color: #1e293b !important;
+}
+[data-skin="indigo"] #seccion_comisiones span,
+[data-skin="indigo"] #seccion_referente span {
+  color: #475569 !important;
+}
+
+/* Toasts Premium Indigo */
+[data-skin="indigo"] .mqf-toast {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
+  border-left: 4px solid var(--mqf-primary) !important;
+  color: #1e293b !important;
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.12), 0 4px 10px rgba(0,0,0,0.06) !important;
+  border-radius: 12px !important;
+}
+[data-skin="indigo"] .mqf-toast--success { border-left-color: var(--mqf-success) !important; }
+[data-skin="indigo"] .mqf-toast--error { border-left-color: var(--mqf-danger) !important; }
+[data-skin="indigo"] .mqf-toast--warning { border-left-color: var(--mqf-warning) !important; }
+[data-skin="indigo"] .mqf-toast--info { border-left-color: var(--mqf-info) !important; }
+[data-skin="indigo"] .mqf-toast .mqf-toast-close { color: rgba(30, 41, 59, 0.5) !important; transition: 0.2s; }
+[data-skin="indigo"] .mqf-toast .mqf-toast-close:hover { color: #1e293b !important; }
+
+/* Header scan effect en Obsidian — sobre el header (no el body) */
+[data-skin="obsidian"] .modal-header,
+[data-skin="obsidian"] .mqf-modal-header,
+[data-skin="obsidian-classic"] .modal-header,
+[data-skin="obsidian-classic"] .mqf-modal-header {
+  position: relative !important;
+  overflow: hidden !important;
+}
+[data-skin="obsidian"] .modal-header::before,
+[data-skin="obsidian"] .mqf-modal-header::before,
+[data-skin="obsidian-classic"] .modal-header::before,
+[data-skin="obsidian-classic"] .mqf-modal-header::before {
+  content: "" !important;
+  pointer-events: none;
+  position: absolute !important;
+  top: 0;
+  left: -60%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 211, 238, 0.18) 50%,
+    transparent 100%
+  ) !important;
+  animation: mqf-header-scan 4.5s ease-in-out infinite !important;
+  z-index: 0 !important;
+}
+[data-skin="obsidian"] .modal-header > *,
+[data-skin="obsidian"] .mqf-modal-header > *,
+[data-skin="obsidian-classic"] .modal-header > *,
+[data-skin="obsidian-classic"] .mqf-modal-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   💎 2.0 ULTRA-PREMIUM GLASSMORPHIC GLOBAL RULES
+   ============================================================ */
+
+/* ── 1. BRILLOS AMBIENTALES DINÁMICOS (BODY GLOW) ── */
+[data-skin="indigo"]::before,
+[data-skin="obsidian"]::before,
+[data-skin="coral"]::before,
+[data-skin="custom"]::before {
+  content: '' !important;
+  position: fixed !important;
+  width: 400px !important;
+  height: 400px !important;
+  background: radial-gradient(circle, var(--mqf-glow-1) 0%, rgba(0, 0, 0, 0) 70%) !important;
+  top: 5% !important;
+  left: 5% !important;
+  z-index: -10 !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+[data-skin="indigo"]::after,
+[data-skin="obsidian"]::after,
+[data-skin="coral"]::after,
+[data-skin="custom"]::after {
+  content: '' !important;
+  position: fixed !important;
+  width: 500px !important;
+  height: 500px !important;
+  background: radial-gradient(circle, var(--mqf-glow-2) 0%, rgba(0, 0, 0, 0) 70%) !important;
+  bottom: 10% !important;
+  right: 5% !important;
+  z-index: -10 !important;
+  pointer-events: none !important;
+  opacity: 0.8 !important;
+}
+
+/* Asegurar body relativo para los pseudo-elementos */
+[data-skin="indigo"], [data-skin="obsidian"], [data-skin="coral"], [data-skin="custom"] {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ── 2. CARD, MODALES Y CONTENEDORES GLASSMORPHIC ── */
+[data-skin="indigo"] .card,
+[data-skin="indigo"] .mqf-card,
+[data-skin="indigo"] .stat-card,
+[data-skin="indigo"] .mqf-kpi-card,
+[data-skin="indigo"] .finance-card,
+[data-skin="indigo"] .section-card,
+[data-skin="indigo"] .modal-box,
+[data-skin="indigo"] .mqf-modal,
+[data-skin="indigo"] .wizard-body,
+[data-skin="indigo"] .tbl-wrap,
+[data-skin="indigo"] .table-container,
+[data-skin="indigo"] .dropdown-menu,
+
+[data-skin="obsidian"] .card,
+[data-skin="obsidian"] .mqf-card,
+[data-skin="obsidian"] .stat-card,
+[data-skin="obsidian"] .mqf-kpi-card,
+[data-skin="obsidian"] .finance-card,
+[data-skin="obsidian"] .section-card,
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .mqf-modal,
+[data-skin="obsidian"] .wizard-body,
+[data-skin="obsidian"] .tbl-wrap,
+[data-skin="obsidian"] .table-container,
+[data-skin="obsidian"] .dropdown-menu,
+
+[data-skin="coral"] .card,
+[data-skin="coral"] .mqf-card,
+[data-skin="coral"] .stat-card,
+[data-skin="coral"] .mqf-kpi-card,
+[data-skin="coral"] .finance-card,
+[data-skin="coral"] .section-card,
+[data-skin="coral"] .modal-box,
+[data-skin="coral"] .mqf-modal,
+[data-skin="coral"] .wizard-body,
+[data-skin="coral"] .tbl-wrap,
+[data-skin="coral"] .table-container,
+[data-skin="coral"] .dropdown-menu,
+
+[data-skin="custom"] .card,
+[data-skin="custom"] .mqf-card,
+[data-skin="custom"] .stat-card,
+[data-skin="custom"] .mqf-kpi-card,
+[data-skin="custom"] .finance-card,
+[data-skin="custom"] .section-card,
+[data-skin="custom"] .modal-box,
+[data-skin="custom"] .mqf-modal,
+[data-skin="custom"] .wizard-body,
+[data-skin="custom"] .tbl-wrap,
+[data-skin="custom"] .table-container,
+[data-skin="custom"] .dropdown-menu {
+  background: var(--mqf-surface) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--mqf-border) !important;
+  box-shadow: var(--mqf-shadow-premium) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Efecto hover suave para tarjetas */
+[data-skin="indigo"] .card:hover, [data-skin="indigo"] .stat-card:hover,
+[data-skin="obsidian"] .card:hover, [data-skin="obsidian"] .stat-card:hover,
+[data-skin="coral"] .card:hover, [data-skin="coral"] .stat-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Asegurar transparencias en tablas modernas */
+[data-skin="indigo"] .data-table, [data-skin="indigo"] .mqf-table,
+[data-skin="obsidian"] .data-table, [data-skin="obsidian"] .mqf-table,
+[data-skin="coral"] .data-table, [data-skin="coral"] .mqf-table {
+  background: transparent !important;
+}
+[data-skin="indigo"] .data-table tr, [data-skin="indigo"] .mqf-table tr,
+[data-skin="obsidian"] .data-table tr, [data-skin="obsidian"] .mqf-table tr,
+[data-skin="coral"] .data-table tr, [data-skin="coral"] .mqf-table tr {
+  background: transparent !important;
+}
+
+/* ── 3. SPECIFICITY OVERRIDES PARA ELEMENTOS RIGIDOS EN IFRAMES ── */
+[data-skin="obsidian"] .wizard-step,
+[data-skin="obsidian"] .field-full,
+[data-skin="obsidian"] .finance-card,
+[data-skin="obsidian"] .comision-card,
+[data-skin="obsidian"] #seccion_comisiones,
+[data-skin="obsidian"] #seccion_referente,
+[data-skin="obsidian"] .red-card,
+[data-skin="obsidian"] .lab-sidebar,
+[data-skin="obsidian"] .lab-card,
+[data-skin="obsidian"] .action-card,
+[data-skin="obsidian"] .lab-terminal {
+  background: rgba(30, 41, 59, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+[data-skin="obsidian"] .wizard-step *,
+[data-skin="obsidian"] .field-full *,
+[data-skin="obsidian"] .red-card * {
+  color: #e2e8f0 !important;
+}
+
+[data-skin="obsidian"] .wizard-step span,
+[data-skin="obsidian"] .wizard-step label,
+[data-skin="obsidian"] .wizard-step strong,
+[data-skin="obsidian"] .field-full label,
+[data-skin="obsidian"] .finance-card span,
+[data-skin="obsidian"] .finance-card strong {
+  color: #f1f5f9 !important;
+}
+
+/* Cajas de inputs premium con bordes brillantes y foco */
+[data-skin="obsidian"] input, 
+[data-skin="obsidian"] select, 
+[data-skin="obsidian"] textarea {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-skin="obsidian"] input:focus, 
+[data-skin="obsidian"] select:focus, 
+[data-skin="obsidian"] textarea:focus {
+  border-color: var(--mqf-primary) !important;
+  box-shadow: 0 0 10px rgba(129, 140, 248, 0.25) !important;
+}
+
+/* Ajustes de contraste para modales Obsidian moderno */
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .mqf-modal {
+  background: rgba(15, 23, 42, 0.75) !important;
+}
+
+/* Ajustes de contraste para modales Indigo moderno */
+[data-skin="indigo"] .modal-box,
+[data-skin="indigo"] .mqf-modal {
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ============================================================
+   🌌 SECCIÓN ULTRA-PREMIUM AESTHETICS (MAYO 2026 UPDATE)
+   Rediseño Completo de Sidebars, Contraste de Textos, 
+   Líneas Verde Neón de Obsidian y Botones con Glowing Shadows
+   ============================================================ */
+
+/* ── 1. BARRAS LATERALES (SIDEBAR) MODERNAS ULTRA-PREMIUM ── */
+
+@keyframes mqf-neon-indigo-pulse {
+  0%, 100% {
+    border-right-color: rgba(129, 140, 248, 0.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 10px rgba(129, 140, 248, 0.1) !important;
+  }
+  50% {
+    border-right-color: rgba(129, 140, 248, 0.85);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(129, 140, 248, 0.35) !important;
+  }
+}
+
+@keyframes mqf-neon-coral-pulse {
+  0%, 100% {
+    border-right-color: rgba(244, 63, 94, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 10px rgba(244, 63, 94, 0.1) !important;
+  }
+  50% {
+    border-right-color: rgba(244, 63, 94, 0.85);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(244, 63, 94, 0.35) !important;
+  }
+}
+
+/* Indigo Corp Sidebar */
+[data-skin="indigo"] .sidebar {
+  background: linear-gradient(135deg, #090a1e 0%, #1e1b4b 60%, #111827 100%) !important;
+  border-right: 1px solid rgba(129, 140, 248, 0.45) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(129, 140, 248, 0.1) !important;
+  animation: mqf-neon-indigo-pulse 4s infinite alternate !important;
+}
+[data-skin="indigo"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.72) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="indigo"] .sidebar .nav-item:hover {
+  background: rgba(129, 140, 248, 0.15) !important;
+  color: #ffffff !important;
+  padding-left: 24px !important;
+  text-shadow: 0 0 8px rgba(129, 140, 248, 0.6) !important;
+}
+[data-skin="indigo"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(79, 70, 229, 0.3) 0%, rgba(124, 58, 237, 0.15) 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #818cf8 !important;
+  box-shadow: inset 3px 0 0 #818cf8, 0 0 10px rgba(129, 140, 248, 0.2) !important;
+  text-shadow: 0 0 8px rgba(129, 140, 248, 0.6) !important;
+}
+[data-skin="indigo"] .sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+[data-skin="indigo"] .sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Coral Finance Sidebar */
+[data-skin="coral"] .sidebar {
+  background: linear-gradient(135deg, #1e050b 0%, #4c0519 60%, #110105 100%) !important;
+  border-right: 1px solid rgba(244, 63, 94, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(244, 63, 94, 0.1) !important;
+  animation: mqf-neon-coral-pulse 4s infinite alternate !important;
+}
+[data-skin="coral"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.72) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="coral"] .sidebar .nav-item:hover {
+  background: rgba(244, 63, 94, 0.15) !important;
+  color: #ffffff !important;
+  padding-left: 24px !important;
+  text-shadow: 0 0 8px rgba(244, 63, 94, 0.6) !important;
+}
+[data-skin="coral"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(244, 63, 94, 0.3) 0%, rgba(251, 146, 60, 0.15) 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #fb7185 !important;
+  box-shadow: inset 3px 0 0 #fb7185, 0 0 10px rgba(244, 63, 94, 0.2) !important;
+  text-shadow: 0 0 8px rgba(244, 63, 94, 0.6) !important;
+}
+[data-skin="coral"] .sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+[data-skin="coral"] .sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Obsidian Sidebar (Cosmic & Emerald Neon) */
+[data-skin="obsidian"] .sidebar {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 100%) !important;
+  border-right: 1px solid rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(16, 185, 129, 0.08) !important;
+}
+[data-skin="obsidian"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.72) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="obsidian"] .sidebar .nav-item:hover {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+  padding-left: 24px !important;
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.5) !important;
+}
+[data-skin="obsidian"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.24) 0%, rgba(99, 102, 241, 0.12) 100%) !important;
+  color: #34d399 !important;
+  border-left-color: #10b981 !important;
+  box-shadow: inset 3px 0 0 #10b981 !important;
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.5) !important;
+}
+[data-skin="obsidian"] .sidebar-header {
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+[data-skin="obsidian"] .sidebar-footer {
+  border-top: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+/* ── 2. MEJORA DE CONTRASTE EXTREMO PARA TEMAS CLAROS (INDIGO Y CORAL) ── */
+
+/* Labels y textos de formularios */
+[data-skin="indigo"] label,
+[data-skin="indigo"] .form-label,
+[data-skin="indigo"] .detail-label,
+[data-skin="indigo"] .toggle-label,
+[data-skin="indigo"] .control-label,
+[data-skin="indigo"] .form-group label,
+[data-skin="indigo"] .field-full label,
+[data-skin="indigo"] .wizard-step label,
+[data-skin="indigo"] .wizard-step span,
+[data-skin="indigo"] .wizard-step strong,
+[data-skin="indigo"] #seccion_comisiones span,
+[data-skin="indigo"] #seccion_referente span,
+[data-skin="indigo"] .toggle-status,
+
+[data-skin="coral"] label,
+[data-skin="coral"] .form-label,
+[data-skin="coral"] .detail-label,
+[data-skin="coral"] .toggle-label,
+[data-skin="coral"] .control-label,
+[data-skin="coral"] .form-group label,
+[data-skin="coral"] .field-full label,
+[data-skin="coral"] .wizard-step label,
+[data-skin="coral"] .wizard-step span,
+[data-skin="coral"] .wizard-step strong,
+[data-skin="coral"] #seccion_comisiones span,
+[data-skin="coral"] #seccion_referente span,
+[data-skin="coral"] .toggle-status {
+  color: #0f172a !important; /* Negro puro para todos los labels */
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+/* Títulos de sección, tarjetas y encabezados de página */
+[data-skin="indigo"] h1, [data-skin="indigo"] h2, [data-skin="indigo"] h3, [data-skin="indigo"] h4, [data-skin="indigo"] h5, [data-skin="indigo"] h6,
+[data-skin="indigo"] .card-title, [data-skin="indigo"] .stat-content h3, [data-skin="indigo"] .page-header h2, [data-skin="indigo"] .section-title,
+
+[data-skin="coral"] h1, [data-skin="coral"] h2, [data-skin="coral"] h3, [data-skin="coral"] h4, [data-skin="coral"] h5, [data-skin="coral"] h6,
+[data-skin="coral"] .card-title, [data-skin="coral"] .stat-content h3, [data-skin="coral"] .page-header h2, [data-skin="coral"] .section-title {
+  color: #0f172a !important; /* Negro asfalto puro para todos los títulos */
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* Textos secundarios, párrafos, subtítulos */
+[data-skin="indigo"] p, [data-skin="indigo"] .text-muted, [data-skin="indigo"] .user-role, [data-skin="indigo"] .help-block, [data-skin="indigo"] span.text-muted,
+
+[data-skin="coral"] p, [data-skin="coral"] .text-muted, [data-skin="coral"] .user-role, [data-skin="coral"] .help-block, [data-skin="coral"] span.text-muted {
+  color: #334155 !important; /* Gris carbón de alto contraste */
+  font-weight: 500 !important;
+  text-shadow: none !important;
+}
+
+/* Números grandes en tarjetas estadísticas */
+[data-skin="indigo"] .stat-number, [data-skin="indigo"] .stat-amount, [data-skin="indigo"] .kpi-number {
+  color: #312e81 !important; /* Azul índigo muy oscuro */
+  font-weight: 800 !important;
+}
+[data-skin="coral"] .stat-number, [data-skin="coral"] .stat-amount, [data-skin="coral"] .kpi-number {
+  color: #9f1239 !important; /* Rosa carmesí muy oscuro */
+  font-weight: 800 !important;
+}
+
+/* Tablas y celdas */
+[data-skin="indigo"] .data-table td, [data-skin="indigo"] .mqf-table td, [data-skin="indigo"] .table td,
+[data-skin="coral"] .data-table td, [data-skin="coral"] .mqf-table td, [data-skin="coral"] .table td {
+  color: #1e293b !important; /* Gris asfalto oscuro */
+  font-weight: 500 !important;
+}
+
+[data-skin="indigo"] .data-table th, [data-skin="indigo"] .mqf-table th, [data-skin="indigo"] .table th,
+[data-skin="coral"] .data-table th, [data-skin="coral"] .mqf-table th, [data-skin="coral"] .table th {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Inputs y Controles */
+[data-skin="indigo"] input, [data-skin="indigo"] select, [data-skin="indigo"] textarea,
+[data-skin="coral"] input, [data-skin="coral"] select, [data-skin="coral"] textarea {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  background: #ffffff !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ── 3. REDISEÑO DE OBSIDIAN CON NEÓN ESMERALDA Y FONDO CÓSMICO ── */
+
+@keyframes mqf-neon-emerald-pulse {
+  0%, 100% {
+    box-shadow:
+      0px -16px 24px 0px rgba(255,255,255,0.03) inset,
+      0 0 0 1px rgba(16, 185, 129, 0.35),
+      0 0 12px 2px rgba(16, 185, 129, 0.18),
+      0 32px 64px rgba(0,0,0,0.75) !important;
+  }
+  50% {
+    box-shadow:
+      0px -16px 24px 0px rgba(255,255,255,0.05) inset,
+      0 0 0 2.5px rgba(16, 185, 129, 0.75),
+      0 0 28px 8px rgba(16, 185, 129, 0.35),
+      0 32px 64px rgba(0,0,0,0.75) !important;
+  }
+}
+
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .mqf-modal {
+  background-color: #020617 !important;
+  background-image:
+    radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.25) 0px, transparent 50%),
+    radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.2) 0px, transparent 50%) !important;
+  border-radius: 16px !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.45) !important;
+  animation: mqf-neon-emerald-pulse 3.5s ease-in-out infinite !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+[data-skin="obsidian"] .modal-header,
+[data-skin="obsidian"] .mqf-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.25) !important;
+  padding: 18px 22px !important;
+}
+
+[data-skin="obsidian"] .modal-header h3,
+[data-skin="obsidian"] .mqf-modal-title {
+  color: #ffffff !important;
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5) !important;
+}
+
+[data-skin="obsidian"] .modal-close,
+[data-skin="obsidian"] .mqf-modal-close {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+[data-skin="obsidian"] .modal-close:hover,
+[data-skin="obsidian"] .mqf-modal-close:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important;
+}
+
+[data-skin="obsidian"] .modal-header::before,
+[data-skin="obsidian"] .mqf-modal-header::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.25) 50%,
+    transparent 100%
+  ) !important;
+  animation: mqf-header-scan 4s ease-in-out infinite !important;
+}
+
+/* Inputs de Obsidian con Foco Neón Verde */
+[data-skin="obsidian"] .modal-body .form-input,
+[data-skin="obsidian"] .modal-body .mqf-input,
+[data-skin="obsidian"] .modal-body select,
+[data-skin="obsidian"] .mqf-modal-body .mqf-input,
+[data-skin="obsidian"] .mqf-modal-body select {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+[data-skin="obsidian"] .modal-body .form-input:focus,
+[data-skin="obsidian"] .modal-body .mqf-input:focus,
+[data-skin="obsidian"] .modal-body select:focus,
+[data-skin="obsidian"] .mqf-modal-body .mqf-input:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Modales y canceladores */
+[data-skin="obsidian"] .modal-footer,
+[data-skin="obsidian"] .mqf-modal-footer {
+  background: transparent !important;
+  border-top: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+[data-skin="obsidian"] .btn-cancel,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--secondary,
+[data-skin="obsidian"] .modal-footer .mqf-btn--secondary {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  color: #94a3b8 !important;
+}
+
+[data-skin="obsidian"] .btn-cancel:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Botón guardar neón esmeralda */
+[data-skin="obsidian"] .btn-save,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--primary,
+[data-skin="obsidian"] .modal-footer .mqf-btn--primary {
+  background: linear-gradient(180deg, #34d399 0%, #059669 100%) !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  color: #020617 !important;
+  font-weight: 700 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 18px rgba(16, 185, 129, 0.45) !important;
+}
+
+[data-skin="obsidian"] .btn-save:hover,
+[data-skin="obsidian"] .mqf-modal-footer .mqf-btn--primary:hover,
+[data-skin="obsidian"] .modal-footer .mqf-btn--primary:hover {
+  background: linear-gradient(180deg, #6ee7b7 0%, #10b981 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 24px rgba(16, 185, 129, 0.65) !important;
+}
+
+/* Tarjetas y contenedores de Obsidian con relieve verde neón */
+[data-skin="obsidian"] .card,
+[data-skin="obsidian"] .stat-card,
+[data-skin="obsidian"] .mqf-card,
+[data-skin="obsidian"] .mqf-kpi-card,
+[data-skin="obsidian"] .finance-card,
+[data-skin="obsidian"] .section-card,
+[data-skin="obsidian"] .tbl-wrap,
+[data-skin="obsidian"] .table-container,
+[data-skin="obsidian"] .wizard-body {
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.08) !important;
+}
+
+[data-skin="obsidian"] .card:hover,
+[data-skin="obsidian"] .stat-card:hover,
+[data-skin="obsidian"] .mqf-card:hover,
+[data-skin="obsidian"] .mqf-kpi-card:hover,
+[data-skin="obsidian"] .finance-card:hover {
+  transform: translateY(-5px) !important;
+  border-color: rgba(16, 185, 129, 0.7) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* ── 4. BOTONES DE ACCIÓN RÁPIDA (ACTION BUTTONS) PREMIUM ULTRA-GLOW ── */
+
+/* Indigo Corp Action Buttons */
+[data-skin="indigo"] .action-btn {
+  background: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.18) !important;
+  color: #312e81 !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+[data-skin="indigo"] .action-btn i,
+[data-skin="indigo"] .action-btn span:first-child {
+  font-size: 18px !important;
+  filter: drop-shadow(0 3px 5px rgba(79, 70, 229, 0.35)) !important;
+  transition: transform 0.28s ease !important;
+  display: inline-block !important;
+}
+[data-skin="indigo"] .action-btn:hover {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.15), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
+  color: #4f46e5 !important;
+}
+[data-skin="indigo"] .action-btn:hover i,
+[data-skin="indigo"] .action-btn:hover span:first-child {
+  transform: scale(1.15) !important;
+}
+
+/* Coral Finance Action Buttons */
+[data-skin="coral"] .action-btn {
+  background: #ffffff !important;
+  border: 1px solid rgba(244, 63, 94, 0.18) !important;
+  color: #9f1239 !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 8px 20px rgba(244, 63, 94, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+[data-skin="coral"] .action-btn i,
+[data-skin="coral"] .action-btn span:first-child {
+  font-size: 18px !important;
+  filter: drop-shadow(0 3px 5px rgba(244, 63, 94, 0.35)) !important;
+  transition: transform 0.28s ease !important;
+  display: inline-block !important;
+}
+[data-skin="coral"] .action-btn:hover {
+  background: #ffffff !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 28px rgba(244, 63, 94, 0.15), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
+  color: #f43f5e !important;
+}
+[data-skin="coral"] .action-btn:hover i,
+[data-skin="coral"] .action-btn:hover span:first-child {
+  transform: scale(1.15) !important;
+}
+
+/* Obsidian Action Buttons */
+[data-skin="obsidian"] .action-btn {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.06), 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+[data-skin="obsidian"] .action-btn i,
+[data-skin="obsidian"] .action-btn span:first-child {
+  font-size: 18px !important;
+  filter: drop-shadow(0 3px 6px rgba(16, 185, 129, 0.55)) !important;
+  color: #34d399 !important;
+  transition: transform 0.28s ease !important;
+  display: inline-block !important;
+}
+[data-skin="obsidian"] .action-btn:hover {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: #10b981 !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 28px rgba(16, 185, 129, 0.25), 0 0 15px rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+}
+[data-skin="obsidian"] .action-btn:hover i,
+[data-skin="obsidian"] .action-btn:hover span:first-child {
+  transform: scale(1.15) !important;
+  filter: drop-shadow(0 4px 8px #10b981) !important;
+}
+
+/* ── 4. APARTADO MODULAR PARA LABS-MASQF EN TODOS LOS SKINS ── */
+
+/* Obsidian Lab adjustments */
+[data-skin="obsidian"] .lab-card-header {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+[data-skin="obsidian"] .lab-modal-section {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+[data-skin="obsidian"] .lab-terminal {
+  background: #090e1a !important;
+  border: 1.5px solid rgba(16, 185, 129, 0.35) !important;
+  color: #34d399 !important;
+}
+[data-skin="obsidian"] .lab-terminal span {
+  text-shadow: 0 0 5px rgba(52, 211, 153, 0.3) !important;
+}
+
+/* Indigo Lab styling */
+[data-skin="indigo"] .lab-sidebar,
+[data-skin="indigo"] .lab-card,
+[data-skin="indigo"] .action-card {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(79, 70, 229, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.04) !important;
+}
+[data-skin="indigo"] .lab-card-header {
+  background: rgba(243, 244, 246, 0.6) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+[data-skin="indigo"] .lab-terminal {
+  background: #0f172a !important;
+  border: 1px solid rgba(79, 70, 229, 0.2) !important;
+  color: #38bdf8 !important;
+}
+
+/* Coral Lab styling */
+[data-skin="coral"] .lab-sidebar,
+[data-skin="coral"] .lab-card,
+[data-skin="coral"] .action-card {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(244, 63, 94, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(244, 63, 94, 0.04) !important;
+}
+[data-skin="coral"] .lab-card-header {
+  background: rgba(243, 244, 246, 0.6) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+[data-skin="coral"] .lab-terminal {
+  background: #0f172a !important;
+  border: 1px solid rgba(244, 63, 94, 0.2) !important;
+  color: #fb7185 !important;
+}
+
+

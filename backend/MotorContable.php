@@ -32,7 +32,7 @@ class MotorContable {
             // 2. Construir encabezado
             $header = [
                 'fecha' => $datos['fecha'] ?? date('Y-m-d'),
-                'descripcion' => $regla['descripcion_format'],
+                'descripcion' => $datos['descripcion_personalizada'] ?? $regla['descripcion_format'],
                 'tipo' => 'AUTOMATICO',
                 'origen_modulo' => $datos['modulo'],
                 'origen_id' => $datos['id']
@@ -100,6 +100,13 @@ class MotorContable {
      * Evalúa la fórmula o campo de datos para obtener el monto
      */
     private static function calcularMonto($formula, $datos) {
+        if ($formula === 'monto_total') {
+            $monto_neto = isset($datos['monto_neto']) ? (float)$datos['monto_neto'] : 0;
+            $comision = isset($datos['comision']) ? (float)$datos['comision'] : 0;
+            $itbis = isset($datos['itbis']) ? (float)$datos['itbis'] : 0;
+            return $monto_neto + $comision + $itbis;
+        }
+
         if (isset($datos[$formula])) {
             return (float)$datos[$formula];
         }

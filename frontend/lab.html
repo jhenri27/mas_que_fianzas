@@ -6,6 +6,7 @@
   <title>🧪 Lab — MQF Design System v1.0</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="assets/design-system.css">
+  <link rel="stylesheet" href="assets/skin-engine.css">
   <link rel="stylesheet" href="assets/components.css">
   <style>
     body { padding: 32px; background: var(--mqf-bg); font-family: var(--mqf-font); }
@@ -37,6 +38,20 @@
 
 <h1 class="lab-title">🧪 MQF Design System — Laboratorio v1.0</h1>
 <p class="lab-subtitle">Prueba visual interactiva de todos los cambios de estandarización UI/UX aplicados. Abre en <code>http://localhost/PLATAFORMA_INTEGRADA/frontend/lab.html</code></p>
+
+<!-- ═══ SKIN SELECTOR WIDGET ═══ -->
+<div class="lab-section" style="position: sticky; top: 16px; z-index: 100; box-shadow: var(--mqf-shadow-md); border-color: var(--mqf-primary); background: var(--mqf-surface); padding: 20px; border-radius: var(--mqf-radius-lg);">
+  <h2 style="border-left-color: var(--mqf-secondary); font-size: 18px; margin-bottom: 6px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Selector Dinámico de Skins (Sandbox de Pruebas)</h2>
+  <p class="lab-desc" style="margin-bottom: 14px;">Cambia el tema de la plataforma al instante para validar la transparencia Ultra-Premium Glassmorphic o el Rollback a estilos sólidos clásicos.</p>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <button class="mqf-btn mqf-btn--primary" onclick="setLabSkin('indigo')">💎 Indigo Corp (Modern)</button>
+    <button class="mqf-btn mqf-btn--primary" onclick="setLabSkin('obsidian')">💎 Obsidian Dark (Modern)</button>
+    <button class="mqf-btn mqf-btn--primary" onclick="setLabSkin('coral')">💎 Coral Finance (Modern)</button>
+    <button class="mqf-btn mqf-btn--secondary" onclick="setLabSkin('indigo-classic')">🏛️ Indigo Corp (Classic)</button>
+    <button class="mqf-btn mqf-btn--secondary" onclick="setLabSkin('obsidian-classic')">🏛️ Obsidian Dark (Classic)</button>
+    <button class="mqf-btn mqf-btn--secondary" onclick="setLabSkin('coral-classic')">🏛️ Coral Finance (Classic)</button>
+  </div>
+</div>
 
 <!-- ═══ 1. TOKENS CARGADOS ═══ -->
 <div class="lab-section">
@@ -257,6 +272,22 @@ async function testConfirm() {
   );
   MQF.toast(ok ? '🗑️ Eliminado (demo)' : '↩️ Cancelado', ok ? 'success' : 'info');
 }
+
+// Control dinámico de skins en el laboratorio
+function setLabSkin(skin) {
+  document.body.setAttribute('data-skin', skin);
+  document.documentElement.setAttribute('data-skin', skin);
+  localStorage.setItem('mqf-skin', skin);
+  MQF.toast('🎨 Skin aplicado: <strong>' + skin + '</strong>', 'success');
+}
+
+// Inicializar con el skin guardado en localStorage
+document.addEventListener('DOMContentLoaded', () => {
+  const savedSkin = localStorage.getItem('mqf-skin') || 'indigo';
+  // Aplicar sin mostrar toast de éxito en la carga inicial
+  document.body.setAttribute('data-skin', savedSkin);
+  document.documentElement.setAttribute('data-skin', savedSkin);
+});
 </script>
 </body>
 </html>

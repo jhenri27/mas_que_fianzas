@@ -9,17 +9,20 @@ Este documento sirve para verificar que **todos los archivos necesarios** están
 ## 📁 ESTRUCTURA ESPERADA
 
 ```
-c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
+c:\wamp64\www\PLATAFORMA_INTEGRADA\
 │
 ├── 📁 [backend]                          ← CARPETA
 │   ├── 📁 [api]                          ← SUBCARPETA
 │   │   ├── auth.php                      [✓ DEBE EXISTIR]
 │   │   ├── usuarios.php                  [✓ DEBE EXISTIR]
-│   │   └── perfiles.php                  [✓ DEBE EXISTIR]
+│   │   ├── perfiles.php                  [✓ DEBE EXISTIR]
+│   │   └── pagos.php                     [✓ DEBE EXISTIR]
 │   ├── config.php                        [✓ DEBE EXISTIR]
 │   ├── Autenticacion.php                 [✓ DEBE EXISTIR]
 │   ├── UsuarioManager.php                [✓ DEBE EXISTIR]
-│   └── PerfilManager.php                 [✓ DEBE EXISTIR]
+│   ├── PerfilManager.php                 [✓ DEBE EXISTIR]
+│   ├── PagoManager.php                   [✓ DEBE EXISTIR]
+│   └── etl_usuarios_import.py            [✓ DEBE EXISTIR]
 │
 ├── 📁 [frontend]                         ← CARPETA
 │   ├── 📁 [assets]                       ← SUBCARPETA
@@ -29,16 +32,21 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 │   │   ├── dashboard.js                  [✓ DEBE EXISTIR]
 │   │   ├── dashboard.css                 [✓ DEBE EXISTIR]
 │   │   └── modulos.css                   [✓ DEBE EXISTIR]
-│   ├── 📁 [modulos]                      ← SUBCARPETA (para futuros módulos)
-│   │   └── 📁 [cotizador]                ← OPCIONAL: si integras por aquí
+│   ├── 📁 [modulos]                      ← SUBCARPETA (Estabilizados)
+│   │   ├── usuarios.html                 [✓ DEBE EXISTIR]
+│   │   └── cotizaciones.html             [✓ DEBE EXISTIR]
 │   ├── index.html                        [✓ DEBE EXISTIR]
 │   └── dashboard.html                    [✓ DEBE EXISTIR]
 │
 ├── 📁 [database]                         ← CARPETA
 │   ├── schema_masque_fianzas.sql         [✓ DEBE EXISTIR]
-│   └── datos_iniciales.sql               [✓ DEBE EXISTIR]
+│   ├── datos_iniciales.sql               [✓ DEBE EXISTIR]
+│   └── cf_schema.sql                     [✓ DEBE EXISTIR]
 │
 ├── .htaccess                             [✓ DEBE EXISTIR]
+├── verify.php                            [✓ DEBE EXISTIR]
+├── verify_system_end_to_end.php          [✓ DEBE EXISTIR]
+├── apply_finance_schema.php              [✓ DEBE EXISTIR]
 │
 ├── 📚 [DOCUMENTACIÓN]                    ← ARCHIVOS IMPORTANTES
 │   ├── README.md                         [✓ DEBE EXISTIR]
@@ -48,6 +56,7 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 │   ├── VERIFICACION_FINAL.md             [✓ DEBE EXISTIR]
 │   ├── INDICE_MAESTRO.md                 [✓ DEBE EXISTIR]
 │   ├── RESUMEN_EJECUTIVO.md              [✓ DEBE EXISTIR]
+│   ├── RESUMEN_VISUAL.md                 [✓ DEBE EXISTIR]
 │   ├── COMIENZA_AQUI.md                  [✓ DEBE EXISTIR]
 │   └── VERIFICADOR_ESTRUCTURA.md         [← Este archivo]
 │
@@ -74,12 +83,15 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 - [ ] `backend/api/auth.php` existe (185 líneas)
 - [ ] `backend/api/usuarios.php` existe (210 líneas)
 - [ ] `backend/api/perfiles.php` existe (195 líneas)
+- [ ] `backend/api/pagos.php` existe (150 líneas)
 
-### Clases PHP
+### Clases PHP y Scripts
 - [ ] `backend/config.php` existe (365 líneas)
 - [ ] `backend/Autenticacion.php` existe (420 líneas)
 - [ ] `backend/UsuarioManager.php` existe (512 líneas)
 - [ ] `backend/PerfilManager.php` existe (512 líneas)
+- [ ] `backend/PagoManager.php` existe (350 líneas)
+- [ ] `backend/etl_usuarios_import.py` existe (200 líneas)
 
 ---
 
@@ -113,14 +125,21 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
   - [ ] Crea 8 perfiles
   - [ ] Crea módulos
 
+- [ ] `database/cf_schema.sql` existe (120 líneas)
+  - [ ] Crea tablas de canales de cobro y finanzas
+
 ---
 
-## ✅ CHECKLIST DE CONFIGURACIÓN
+## ✅ CHECKLIST DE CONFIGURACIÓN Y DIAGNÓSTICO
 
 - [ ] `.htaccess` existe
   - [ ] Contiene rewrite rules
   - [ ] Contiene CORS headers
   - [ ] Contiene security headers
+
+- [ ] `verify.php` existe (Dashboard visual v3.3.0)
+- [ ] `verify_system_end_to_end.php` existe (CLI de diagnóstico)
+- [ ] `apply_finance_schema.php` existe (Script de actualización BD)
 
 ---
 
@@ -133,6 +152,7 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 - [ ] `VERIFICACION_FINAL.md` existe (350 líneas)
 - [ ] `INDICE_MAESTRO.md` existe (450 líneas)
 - [ ] `RESUMEN_EJECUTIVO.md` existe (280 líneas)
+- [ ] `RESUMEN_VISUAL.md` existe (280 líneas)
 - [ ] `COMIENZA_AQUI.md` existe (320 líneas)
 - [ ] `VERIFICADOR_ESTRUCTURA.md` existe (este archivo)
 
@@ -195,19 +215,20 @@ c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\
 
 ---
 
-## 📊 RESUMEN DE ARCHIVOS
+## 📊 RESUMEN DE ARCHIVOS (v3.3.0)
 
 | Tipo | Cantidad | Esperado |
 |------|----------|----------|
 | Carpetas | 6 | ✓ |
-| Archivos PHP | 7 | ✓ |
-| Archivos HTML | 2 | ✓ |
-| Archivos JavaScript | 3 | ✓ |
-| Archivos CSS | 3 | ✓ |
-| Archivos SQL | 2 | ✓ |
-| Archivos Config | 1 | ✓ |
-| Archivos Docs | 9 | ✓ |
-| **TOTAL** | **28** | ✓ |
+| Archivos PHP | 12 | ✓ |
+| Archivos Python | 1 | ✓ |
+| Archivos HTML | 4 | ✓ |
+| Archivos JavaScript | 6 | ✓ |
+| Archivos CSS | 4 | ✓ |
+| Archivos SQL | 3 | ✓ |
+| Archivos Config (JSON) | 1 | ✓ |
+| Archivos Docs | 10 | ✓ |
+| **TOTAL** | **42** | ✓ |
 
 ---
 
@@ -302,31 +323,35 @@ Ejecuta este checklist:
   backend/, backend/api/, frontend/, frontend/assets/, 
   frontend/modulos/, database/
 
-□ ¿Existen todos los 7 archivos PHP?
+□ ¿Existen todos los 12 archivos PHP?
   config.php, Autenticacion.php, UsuarioManager.php, PerfilManager.php,
-  auth.php, usuarios.php, perfiles.php
+  PagoManager.php, verify.php, verify_system_end_to_end.php, apply_finance_schema.php,
+  auth.php, usuarios.php, perfiles.php, pagos.php
 
-□ ¿Existen todos los 2 archivos HTML?
-  index.html, dashboard.html
+□ ¿Existe el archivo Python?
+  etl_usuarios_import.py
 
-□ ¿Existen todos los 3 archivos JavaScript?
-  api-client.js, login.js, dashboard.js
+□ ¿Existen todos los 4 archivos HTML?
+  index.html, dashboard.html, usuarios.html, cotizaciones.html
 
-□ ¿Existen todos los 3 archivos CSS?
-  login.css, dashboard.css, modulos.css
+□ ¿Existen todos los 6 archivos JavaScript?
+  api-client.js, login.js, dashboard.js, data-export.js, logo_b64.js, cambiar-password.js
 
-□ ¿Existen todos los 2 archivos SQL?
-  schema_masque_fianzas.sql, datos_iniciales.sql
+□ ¿Existen todos los 4 archivos CSS?
+  login.css, dashboard.css, modulos.css, skin-engine.css
 
-□ ¿Existen todos los 9 archivos de documentación?
+□ ¿Existen todos los 3 archivos SQL?
+  schema_masque_fianzas.sql, datos_iniciales.sql, cf_schema.sql
+
+□ ¿Existen todos los 10 archivos de documentación?
   README.md, INSTALACION_RAPIDA.md, ESPECIFICACIONES.md,
   INTEGRACION_COTIZADOR.md, VERIFICACION_FINAL.md,
-  INDICE_MAESTRO.md, RESUMEN_EJECUTIVO.md, COMIENZA_AQUI.md,
-  VERIFICADOR_ESTRUCTURA.md
+  INDICE_MAESTRO.md, RESUMEN_EJECUTIVO.md, RESUMEN_VISUAL.md,
+  COMIENZA_AQUI.md, VERIFICADOR_ESTRUCTURA.md
 
 □ ¿Existe .htaccess?
 
-TOTAL: 28 archivos esperados
+TOTAL: 42 archivos esperados
 ```
 
 ---
@@ -343,7 +368,7 @@ Si todos los checklist están ✅:
 ## 📞 SI ALGO FALTA
 
 ### Opción 1: Revisar ubicación
-- Verificar ruta correcta: `c:\MQ_insplat_00\PLATAFORMA_INTEGRADA\`
+- Verificar ruta correcta: `c:\wamp64\www\PLATAFORMA_INTEGRADA\`
 - Abrir carpeta en explorador
 - Ver si todos los archivos están ahí
 
@@ -389,8 +414,8 @@ Procede a: **COMIENZA_AQUI.md** → **INSTALACION_RAPIDA.md**
 
 ---
 
-**Fecha de verificación:** 22 de Febrero de 2026
-**Versión:** 1.0.0
-**Estado:** ✅ LISTO
+**Fecha de verificación:** 21 de Mayo de 2026
+**Versión:** v3.3.0 Stabilized
+**Estado:** ✅ LISTO / ESTABILIZADO
 
 Archivo de verificación creado para validar integridad del proyecto.

@@ -338,12 +338,12 @@ class DashboardDebug {
 
     editarUsuario(usuarioId) {
         console.log('[DEBUG] Editar usuario:', usuarioId);
-        alert('Función de edición en desarrollo');
+        MQF.toast('Función de edición en desarrollo', 'info');
     }
 
     editarPerfil(perfilId) {
         console.log('[DEBUG] Editar perfil:', perfilId);
-        alert('Función de edición de perfiles en desarrollo');
+        MQF.toast('Función de edición de perfiles en desarrollo', 'info');
     }
 
     async logout() {
