@@ -77,7 +77,7 @@ function crearTablaIfNeeded($db) {
     $db->query($sql);
 }
 
-function insertar_cotizacion($db, $c) {
+function insertar_cotizacion($db, $c, $usuario_actual = 1) {
     $numero      = $c['numero'];
     $tipo        = $c['tipo'] ?? 'GENERAL';
     $subtipo     = $c['subtipo'] ?? '';
@@ -101,16 +101,16 @@ function insertar_cotizacion($db, $c) {
     $stmt = $db->prepare(
         "INSERT INTO cotizaciones 
          (numero, tipo, subtipo, cliente, cedula, beneficiario, uso, capacidad, aseguradora, cobertura,
-          monto_afianzado, plazo, prima_base, impuesto, total, servicios_opcionales, fecha)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+          monto_afianzado, plazo, prima_base, impuesto, total, servicios_opcionales, fecha, creado_por)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
          ON DUPLICATE KEY UPDATE
          tipo=VALUES(tipo), cliente=VALUES(cliente), beneficiario=VALUES(beneficiario), total=VALUES(total), fecha=VALUES(fecha)"
     );
-    $stmt->bind_param('ssssssssssdidddss',
+    $stmt->bind_param('ssssssssssdidddssi',
         $numero, $tipo, $subtipo, $cliente, $cedula, $beneficiario,
         $uso, $capacidad, $aseguradora, $cobertura,
         $monto, $plazo, $prima_base, $impuesto, $total,
-        $servicios, $fecha
+        $servicios, $fecha, $usuario_actual
     );
     $ok = $stmt->execute();
     $stmt->close();
@@ -126,14 +126,27 @@ try {
         $limite = intval($_GET['limite'] ?? 200);
         $numero = $_GET['numero'] ?? '';
         
-        $sql = "SELECT * FROM cotizaciones";
+        $soloPropios = restringirSoloPropios($usuario_actual, 'Cotizaciones');
+        
         if (!empty($numero)) {
-            $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? LIMIT 1");
-            $stmt->bind_param('s', $numero);
+            if ($soloPropios) {
+                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? AND creado_por = ? LIMIT 1");
+                $stmt->bind_param('si', $numero, $usuario_actual);
+            } else {
+                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? LIMIT 1");
+                $stmt->bind_param('s', $numero);
+            }
             $stmt->execute();
             $result = $stmt->get_result();
         } else {
-            $result = $db->query("SELECT * FROM cotizaciones ORDER BY fecha DESC LIMIT $limite");
+            if ($soloPropios) {
+                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE creado_por = ? ORDER BY fecha DESC LIMIT ?");
+                $stmt->bind_param('ii', $usuario_actual, $limite);
+                $stmt->execute();
+                $result = $stmt->get_result();
+            } else {
+                $result = $db->query("SELECT * FROM cotizaciones ORDER BY fecha DESC LIMIT $limite");
+            }
         }
         
         $rows = [];
@@ -153,7 +166,7 @@ try {
             respuestaJSON(false, 'Numero y tipo son obligatorios', null, 400);
         }
         
-        if (insertar_cotizacion($db, $datos)) {
+        if (insertar_cotizacion($db, $datos, $usuario_actual)) {
             // --- INTEGRACIÓN CENTRO FINANCIERO (HOOKS) ---
             try {
                 require_once '../MotorContable.php';

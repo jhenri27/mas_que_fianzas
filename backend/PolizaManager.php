@@ -56,6 +56,12 @@ class PolizaManager {
             $types .= "s";
         }
 
+        if (!empty($filtros['emitida_por'])) {
+            $whereClause .= " AND p.emitida_por = ?";
+            $params[] = intval($filtros['emitida_por']);
+            $types .= "i";
+        }
+
         $sql = "SELECT p.*, 
                        c.nombre as cliente_nombre, c.cedula as cliente_cedula, c.email as cliente_email, c.telefono as cliente_telefono,
                        v.placa as vehiculo_placa, v.marca as vehiculo_marca, v.modelo as vehiculo_modelo,

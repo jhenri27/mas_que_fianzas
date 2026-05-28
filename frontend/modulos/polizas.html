@@ -7,10 +7,10 @@
     <title>Pólizas — MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">
-    <link rel="stylesheet" href="../assets/skin-engine.css">
-    <link rel="stylesheet" href="../assets/components.css">
-    <link rel="stylesheet" href="../assets/dashboard.css">
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
     <style>
         /* ── Módulo embebido en iframe ── */
         .sidebar { display:none!important; }
@@ -18,7 +18,21 @@
         .main-content { margin-left:0!important; width:100%!important; padding-top:0!important; }
         .content-area { padding:20px!important; margin-top:0!important; min-height:100vh; background:#f8fafc; box-sizing:border-box; }
 
-        /* ── Tabs ── */
+        /* =====================================================
+           NOFTRAB HEADER CONTRAST FIX — inline para garantía
+           Sobreescribe cualquier regla de h1/h2/h3 global
+           ===================================================== */
+        .mqf-module-header h1,
+        .mqf-module-header h2,
+        .mqf-module-header h3,
+        .mqf-module-header__title {
+            color: #ffffff !important;
+        }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+
         .tabs-bar {
             display:flex; gap:4px; margin-bottom:0;
             border-bottom:2px solid #e0e7ff;
@@ -773,7 +787,7 @@
 <div id="toast"></div>
 
 <!-- Scripts -->
-<script src="../assets/api-client.js?v=6"></script>
+<script src="../assets/api-client.js?v=8.0.0"></script>
 <script src="../assets/components.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
@@ -1268,6 +1282,20 @@ function resetDragAndDrop() {
 // ═══════════════════════════════════════
 async function validarPoliza(id) {
     if (!(await MQF.confirm('¿Confirma que desea validar esta póliza? Este proceso marca la póliza como revisada y aprobada.', {type: 'primary'}))) return;
+    
+    // Interceptar para Auditoría Obligatoria NOFTRAB si se ejecuta dentro del Dashboard (parent)
+    if (window.parent && typeof window.parent.solicitarAjusteAuditoria === 'function') {
+        window.parent.solicitarAjusteAuditoria('poliza', id, 'validada', 'Si', function(respuesta) {
+            if (respuesta.exito) {
+                mostrarToast('✅ Póliza validada exitosamente con registro de auditoría', 'success');
+                cargarPolizas();
+            } else {
+                mostrarToast(respuesta.mensaje || 'Error al validar la póliza', 'error');
+            }
+        });
+        return;
+    }
+
     try {
         const r = await fetch(`${BASE_API}/polizas.php?action=validar&id=${id}`, { method: 'POST' });
         const d = await r.json();
@@ -1828,3 +1856,4 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 </body>
 </html>
+

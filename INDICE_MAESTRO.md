@@ -1,54 +1,30 @@
-# 📚 ÍNDICE MAESTRO - PLATAFORMA MÁS QUE FIANZAS (v3.3.0 Stabilized)
+# 📚 ÍNDICE MAESTRO - PLATAFORMA MÁS QUE FIANZAS (v4.0.0 Stable / NOFTRAB v4.0)
 
 ## 🎯 Introducción Rápida
 
-Bienvenido a la **Plataforma Integrada MÁS QUE FIANZAS** - un sistema integral de emisión de seguros, fianzas, importación de redes masivas mediante procesos ETL y canales contables.
+Bienvenido a la **Plataforma Integrada MÁS QUE FIANZAS (v4.0.0 Stable)**, un sistema empresarial de emisión de seguros, fianzas y procesos contables. Esta versión implementa las normativas del **Estándar de Auditoría Inmutable NOFTRAB v4.0**, control de accesos granular con doble capa de seguridad y el nuevo panel interactivo premium del Dashboard.
 
-- **Versión:** 3.3.0
-- **Estado:** ✅ Estabilizado y Listo para Producción (MS-LS v1.0)
-- **Tecnología:** PHP 8.2 + MySQL + Python 3.14.5 + Vanilla JavaScript
-- **Requisitos:** WAMP Server (Apache + MySQL 5.7+), Python 3.14.5 en PATH
+- **Versión:** 4.0.0 Stable
+- **Estado:** ✅ Estabilizado y Listo para Producción (MS-LS v2.0)
+- **Tecnología:** PHP 8.2 + MySQL 5.7+ + Python 3.14.5 + Vanilla JS
+- **Estándar de Auditoría:** NOFTRAB v4.0 (Logs inmutables JSON + Justificación obligatoria)
 
 ---
 
-## 📑 DOCUMENTACIÓN
+## 📑 DOCUMENTACIÓN GENERAL
 
 ### Guías Principales
 
-| Documento | Propósito | Lectura |
-|-----------|-----------|---------|
-| **README.md** | Documentación técnica completa y referencia de APIs | 20 min |
-| **INSTALACION_RAPIDA.md** | Guía paso a paso para instalar en WAMP | 10 min |
-| **ESPECIFICACIONES.md** | Especificaciones técnicas detalladas del proyecto | 15 min |
-| **INTEGRACION_COTIZADOR.md** | Documentación del módulo cotizador integrado | 10 min |
-| **VERIFICACION_FINAL.md** | Checklist y verificación de archivos creados | 10 min |
-| **INDICE_MAESTRO.md** | Este archivo - navegación del proyecto | 5 min |
-
-### Archivos de Ayuda
-
-```
-📄 INSTALACION_RAPIDA.md
-   └─ Sigue estos pasos primero
-   └─ Te guía desde 0 hasta tener el sistema funcionando
-
-📄 README.md
-   └─ Referencia técnica completa
-   └─ Endpoints de la API
-   └─ Ejemplos de uso
-   └─ Troubleshooting
-
-📄 ESPECIFICACIONES.md
-   └─ Especificaciones detalladas
-   └─ Listos de componentes
-   └─ Matriz de permisos
-   └─ Características de seguridad
-
-📄 INTEGRACION_COTIZADOR.md
-   └─ Cómo funciona el modulo cotizador
-   └─ Permisos específicos
-   └─ Flujo de una cotización
-   └─ Tablas de BD relacionadas
-```
+| Documento | Propósito | Tiempo de Lectura |
+|-----------|-----------|------------------|
+| **README.md** | Documentación técnica completa y referencia formal de APIs v4.0. | 20 min |
+| **INSTALACION_RAPIDA.md** | Guía de instalación rápida y configuración en WAMP. | 10 min |
+| **ESPECIFICACIONES.md** | Resumen técnico, matriz de permisos y reglas de privacidad "Propios vs. Todos". | 15 min |
+| **INTEGRACION_COTIZADOR.md** | Documentación del módulo cotizador integrado de seguros y fianzas. | 10 min |
+| **COMIENZA_AQUI.md** | Guía rápida de orientación adaptada según el perfil del usuario. | 10 min |
+| **RESUMEN_EJECUTIVO.md** | Visión ejecutiva de novedades y el estándar NOFTRAB v4.0. | 10 min |
+| **PROYECTO_COMPLETADO.md** | Resumen de la entrega, árbol de archivos y estadísticas actualizadas. | 5 min |
+| **INDICE_MAESTRO.md** | Este archivo - Mapa y navegación completa del proyecto. | 5 min |
 
 ---
 
@@ -57,495 +33,132 @@ Bienvenido a la **Plataforma Integrada MÁS QUE FIANZAS** - un sistema integral 
 ### Directorio Raíz
 ```
 PLATAFORMA_INTEGRADA/
-├── 📁 backend/           [Servidores PHP y APIs]
-├── 📁 frontend/          [HTML, CSS, JavaScript]
-├── 📁 database/          [Scripts SQL]
-├── 📄 .htaccess          [Configuración Apache]
-├── 📄 README.md          [Documentación principal]
-├── 📄 INSTALACION_RAPIDA.md
-├── 📄 ESPECIFICACIONES.md
-├── 📄 INTEGRACION_COTIZADOR.md
-├── 📄 VERIFICACION_FINAL.md
-└── 📄 INDICE_MAESTRO.md  [Este archivo]
+├── backend/              # Servidores, APIs y motores transaccionales (PHP + Python)
+├── frontend/             # Vistas, estilos, modales e interacciones del cliente (HTML + CSS + JS)
+├── database/             # Scripts SQL de base de datos y migraciones
+├── .htaccess             # Reglas Apache y cabeceras de seguridad
+├── README.md             # Guía técnica general
+├── INSTALACION_RAPIDA.md # Guía paso a paso de WAMP
+├── ESPECIFICACIONES.md   # Matriz de roles, tablas y políticas NOFTRAB
+├── INTEGRACION_COTIZADOR.md # Detalles del cotizador React y tarifas
+├── COMIENZA_AQUI.md      # Orientación de perfiles
+├── RESUMEN_EJECUTIVO.md  # Resumen de novedades de la versión
+├── PROYECTO_COMPLETADO.md # Entrega final y checklist
+└── INDICE_MAESTRO.md     # Este archivo
 ```
 
 ### Backend - `/backend`
-
 ```
 backend/
-├── 📁 api/               [Endpoints REST]
-│   ├── auth.php          [Autenticación: login, logout, etc.]
-│   ├── usuarios.php      [CRUD usuarios]
-│   └── perfiles.php      [CRUD perfiles y permisos]
-│
-├── config.php            [Configuración DB y funciones globales]
-├── Autenticacion.php     [Clase de autenticación]
-├── UsuarioManager.php    [Gestión de usuarios]
-└── PerfilManager.php     [Gestión de perfiles y permisos]
+├── api/                  # Endpoints REST de la aplicación
+│   ├── auth.php          # Login, logout y sesiones seguras en BD
+│   ├── usuarios.php      # CRUD de usuarios e importación masiva XLSX
+│   ├── perfiles.php      # CRUD y listados de perfiles
+│   ├── perfiles_engine.php # Wrapper seguro PHP que ejecuta a Python
+│   ├── polizas.php       # Gestión y emisión de pólizas
+│   ├── polizas_stats.php # Estadísticas dinámicas de emisión con filtro propio
+│   ├── pagos.php         # Gestión contable de cobros
+│   ├── comisiones.php    # Listados de comisiones del árbol de comisiones
+│   └── ajustes.php       # Registro de ajustes de auditoría NOFTRAB v4.0
+├── config/
+│   └── smtp.json         # Configuración del servidor de correo SMTP
+├── logs/
+│   ├── error.log         # Errores del intérprete PHP
+│   ├── smtp.log          # Bitácora de envíos de correo
+│   └── audit.log         # Registro de auditoría básico en texto
+├── config.php            # Base de datos central, helpers y registro de auditoría
+├── Autenticacion.php     # Clase controladora de sesiones
+├── UsuarioManager.php    # Lógica de usuarios y ETL
+├── PerfilManager.php     # Validación de la malla de permisos
+├── PagoManager.php       # Motor contable de cobros y transacciones
+├── Mailer.php            # Gestor SMTP PHPMailer
+└── perfiles_engine.py    # Motor CLI en Python para transacciones de permisos en MySQL
 ```
 
 ### Frontend - `/frontend`
-
 ```
 frontend/
-├── 📁 assets/            [Estilos y scripts]
-│   ├── api-client.js     [Cliente HTTP para APIs]
-│   ├── login.css         [Estilos del login]
-│   ├── login.js          [Lógica del login]
-│   ├── dashboard.css     [Estilos del dashboard]
-│   ├── dashboard.js      [Lógica del dashboard]
-│   └── modulos.css       [Estilos de módulos]
-│
-├── 📁 modulos/           [Módulos del sistema]
-│   ├── 📁 cotizador/     [Módulo de cotizaciones]
-│   ├── 📁 clientes/      [Placeholder]
-│   ├── 📁 polizas/       [Placeholder]
-│   ├── 📁 fianzas/       [Placeholder]
-│   ├── 📁 pagos/         [Placeholder]
-│   ├── 📁 siniestros/    [Placeholder]
-│   ├── 📁 productos/     [Placeholder]
-│   ├── 📁 reportes/      [Placeholder]
-│   └── 📁 configuracion/ [Placeholder]
-│
-├── index.html            [Página de login]
-└── dashboard.html        [Dashboard principal]
-```
-
-### Base de Datos - `/database`
-
-```
-database/
-├── schema_masque_fianzas.sql
-│   └─ 20 tablas normalizadas
-│   └─ Todas las relaciones y índices
-│   └─ Triggers de auditoría
-│
-└── datos_iniciales.sql
-    └─ Usuario admin
-    └─ Roles iniciales
-    └─ Configuración base
+├── assets/                # Estilos, scripts y librerías
+│   ├── api-client.js     # Cliente HTTP con tokens Bearer
+│   ├── login.js          # Control de login y credenciales
+│   ├── login.css         # Estilizado responsivo de login
+│   ├── dashboard.js      # Lógica principal del Dashboard, modales y llamadas API
+│   ├── dashboard.css     # Estilos premium, glassmorphism y widget de pólizas
+│   ├── modulos.css       # Estilos compartidos e impresiones
+│   ├── skin-engine.css   # Motor de skins dinámicos
+│   ├── data-export.js    # Motor de exportación PDF, Excel, CSV, ZIP
+│   └── logo_b64.js       # Logo MQF corporativo en base64
+├── modulos/              # Submódulos del sistema cargados en iframes
+│   ├── usuarios.html     # CRUD de usuarios y comisiones dinámicas
+│   ├── cotizaciones.html # Cotizador de seguros de ley y fianzas
+│   ├── polizas.html      # Emisión de pólizas con puente iframe
+│   └── clientes.html     # CRUD de clientes
+├── index.html            # Acceso al sistema (Login)
+├── dashboard.html        # Estructura del Dashboard principal
+├── recuperar.html        # Solicitud de nueva contraseña
+└── cambiar-password.html # Cambio obligatorio de contraseña
 ```
 
 ---
 
-## 🚀 INICIO RÁPIDO
+## 📈 NOVEDADES Y FUNCIONALIDADES DE LA VERSIÓN 4.0.0 STABLE
 
-### Paso 1: Preparar
-```bash
-# No se necesita instalación de paquetes (SQL, PHP integrados)
-# Solo asegurar WAMP está corriendo
+### 1. Widget Premium de Pólizas Emitidas (Dashboard)
+* **Ubicación Estratégica:** En la columna izquierda, justo arriba de las acciones rápidas (desplazando a estas hacia abajo).
+* **Diseño Glassmorphism Premium:** Bordes redondeados suaves, sombras y fondo translúcido.
+* **Pills Degradados HSL:** Cantidades del día (`.pill-diario`), semana (`.pill-semanal`) y mes (`.pill-mensual`) con degradados suaves y modernos.
+* **Top 5 de Clientes con Barras de Progreso:** Muestra los 5 clientes con más pólizas y barras de progreso animadas horizontales que se cargan suavemente (`width: 0%` a `X%`).
+* **Botón Maximizar:** Abre instantáneamente el Modal Detallado.
 
-# 1. Copiar carpeta PLATAFORMA_INTEGRADA a:
-#    c:\wamp64\www\PLATAFORMA_INTEGRADA
-```
+### 2. Modal Analítico Enriquecido (`#modalPolizasDetalle`)
+* Despliega la tabla completa de clientes principales y las pólizas emitidas recientemente con filtros interactivos.
+* **Restricción de Datos Estricta:** Si el usuario es un **Socio Comercial PDV**, el modal se filtra estrictamente en el origen (API de backend) para mostrar exclusivamente sus propias transacciones. El Administrador mantiene la vista global consolidadada de toda la plataforma.
 
-### Paso 2: Base de Datos
-```bash
-# Abrir phpMyAdmin:
-# http://localhost/phpmyadmin
+### 3. Historial de Ajustes Inmutable (Norma NOFTRAB v4.0)
+* Cualquier cambio operativo exige una justificación escrita obligatoria (mínimo 10 caracteres).
+* El endpoint `/backend/api/ajustes.php` captura el estado anterior y el nuevo en formato JSON y los escribe en la tabla `historial_ajustes` de forma indeleble.
 
-# 1. Crear nueva BD: masque_fianzas
-# 2. Importar schema_masque_fianzas.sql
-# 3. Importar datos_iniciales.sql
-```
+### 4. Avatar Superior Interactivo
+* La cabecera `.user-info` responde al hover del ratón con escala de `1.02`, cursor pointer y fondo translúcido.
+* Al hacer click sobre el avatar, se despliega instantáneamente la interfaz de edición "Mi Perfil".
 
-### Paso 3: Verificar
-```bash
-# Abrir en navegador:
-# http://localhost/PLATAFORMA_INTEGRADA
-
-# Login con:
-# Usuario: admin
-# Contraseña: Demo@123
-```
-
-Ver detalles en: **INSTALACION_RAPIDA.md**
+### 5. Puente de Intercepción Iframe
+* El submódulo de pólizas (`polizas.html`) intercepta las peticiones de alteración de estado.
+* Si detecta que está en un iframe, delega la visualización del modal de auditoría al dashboard padre mediante `window.parent.solicitarAjusteAuditoria(...)`, retornando el flujo al completarse la justificación.
 
 ---
 
-## 👥 USUARIOS Y ROLES
-
-### Usuario de Prueba
-```
-Usuario: admin
-Contraseña: Demo@123
-Perfil: Administrador
-Permisos: Acceso total
-```
-
-### 8 Roles Disponibles
-
-| Rol | Acceso Principal | Módulos |
-|-----|---|---|
-| **Administrador** | Total | Todos |
-| **Gerente Técnico** | Técnico/Operativo | Pólizas, Fianzas, Productos |
-| **Gerente Contador** | Financiero | Pagos, Reportes financieros |
-| **Gerente Comercial** | Comercial | Clientes, Cotizaciones, Pólizas |
-| **Socio Comercial** | Limitado | Solo sus cotizaciones/clientes |
-| **Cajero** | Operativo | Solo pagos y caja |
-| **Auditor** | Solo lectura | Vista a todas las transacciones |
-| **Usuario** | Mínimo | Dato limitado por rol |
-
-Ver matriz completa en: **ESPECIFICACIONES.md**
+## 🔑 MALLA DE ROLES PREDEFINIDOS (9 Roles)
+1. **Administrador** (ID: 1) - Acceso total global. Bypass de restricciones e inspección de logs.
+2. **Gerente Técnico** - Gestión de operaciones, catálogo y emisión general.
+3. **Gerente Contador** - Gestión financiera y contable. Visualiza comisiones y reportes.
+4. **Gerente Comercial** - Coordinación comercial general de la red.
+5. **Socio Comercial PDV** - Acceso restringido estrictamente a sus propios clientes, cotizaciones y pólizas.
+6. **Cajero** - Registro de cobros y validación básica.
+7. **Auditor** - Acceso general de lectura para auditoría y visualización de logs.
+8. **Usuario** - Acceso básico e individualizado.
 
 ---
 
-## 🔐 SEGURIDAD
-
-### Implementado
-✅ Autenticación usuario/contraseña
-✅ Hashing bcrypt (costo 10)
-✅ Sesiones seguras
-✅ Rate limiting (5 intentos)
-✅ Control de permisos por rol
-✅ Auditoría completa
-✅ Soft deletes
-✅ SQL Injection protection
-✅ CORS headers
-✅ Session timeouts
-
-### No incluido (pero posible agregar)
-❌ Two-Factor Authentication
-❌ OAuth
-❌ LDAP
-❌ Encriptación end-to-end
-
----
-
-## 📊 API REST
-
-### Endpoints Disponibles
-
-**Autenticación (4 endpoints)**
-```
-POST   /backend/api/auth.php/login
-POST   /backend/api/auth.php/logout
-POST   /backend/api/auth.php/cambiar-password
-GET    /backend/api/auth.php/validar-sesion
-```
-
-**Usuarios (8 endpoints)**
-```
-POST   /backend/api/usuarios.php/crear
-PUT    /backend/api/usuarios.php/editar/{id}
-POST   /backend/api/usuarios.php/bloquear/{id}
-POST   /backend/api/usuarios.php/desbloquear/{id}
-POST   /backend/api/usuarios.php/restablecer-password/{id}
-GET    /backend/api/usuarios.php/obtener/{id}
-GET    /backend/api/usuarios.php/listar
-DELETE /backend/api/usuarios.php/eliminar/{id}
-```
-
-**Perfiles (7 endpoints)**
-```
-POST   /backend/api/perfiles.php/crear
-PUT    /backend/api/perfiles.php/editar/{id}
-POST   /backend/api/perfiles.php/asignar-permisos/{id}
-GET    /backend/api/perfiles.php/obtener/{id}
-GET    /backend/api/perfiles.php/listar
-GET    /backend/api/perfiles.php/malla-permisos
-GET    /backend/api/perfiles.php/validar-acceso
-```
-
-Ver ejemplos en: **README.md**
-
----
-
-## 🔧 CONFIGURACIÓN
+## 🔧 CONFIGURACIÓN DEL SISTEMA
 
 ### Cambiar Conexión a BD
-
-**Archivo:** `backend/config.php` (líneas 1-15)
-
+**Archivo:** `backend/config.php`
 ```php
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', '');  // Cambiar si tienes contraseña
-define('DB_NAME', 'masque_fianzas');
-define('DB_PORT', 3306);
+define('DB_PASSWORD', ''); // Vacío por defecto en WAMP
+define('DB_NAME', 'masque_fianzas_integrada_01');
 ```
 
-### Cambiar Timeout de Sesión
-
-**Archivo:** `backend/config.php` (línea 20)
-
-```php
-define('SESION_TIMEOUT_MINUTOS', 30);  // Cambiar número de minutos
+### Configuración SMTP
+Se administra de manera visual y sin alterar código directamente desde el Dashboard:
 ```
-
-### Agregar Módulo Nuevo
-
-**Archivo:** `database/schema_masque_fianzas.sql`
-
-Insertar en tabla `modulos`:
-```sql
-INSERT INTO modulos (nombre, codigo, descripcion) 
-VALUES ('Mi Módulo', 'MI_MOD', 'Descripción del módulo');
+Dashboard → módulo Seguridad → Configuración SMTP → Llenar campos → Guardar
 ```
-
-Ver más en: **README.md sección Configuración**
+*Se almacena dinámicamente en el archivo JSON `backend/config/smtp.json`.*
 
 ---
 
-## 📱 Módulos del Sistema
-
-### Completamente Funcional & Estabilizado ✅
-
-**Dashboard**
-- Página principal interactiva con bienvenida personalizada por rol.
-- Estadísticas unificadas y en tiempo real (Clientes, Cotizaciones, Fianzas, Seguros emitidos).
-- Gráficos integrados y panel de actividades recientes clickeable con detalles modales.
-
-**Cotizaciones**
-- Sistema completo y dinámico de cotizaciones para Seguros de Ley y Fianzas comerciales.
-- Cálculo automático en tiempo real de primas basado en tablas dinámicas.
-- Exportación multi-formato avanzada (PDF corporativo MQF, Excel, CSV, JSON, ZIP).
-
-**Usuarios & Perfiles**
-- CRUD completo con asignación automática de códigos jerárquicos (RED-XXX, PDV-XXX, etc.).
-- Formulario de creación dinámico: se adaptan comisiones y campos bancarios según el perfil.
-- **Motor ETL en Python 3.14.5** integrado para carga masiva ultra-rápida.
-- Procesos 100% idempotentes para prevención de registros duplicados.
-- Auditoría integral de accesos e historial detallado de cambios.
-
-**Clientes**
-- CRUD completo de clientes (Personas Físicas y Jurídicas) integrado con el cotizador.
-
-**Pólizas y Fianzas**
-- Módulo activo de emisión y administración de pólizas con soporte de plantillas de impresión MS-LS v1.0.
-- Generación de cotizaciones de fianzas profesionales (7 tipos) con cálculo preciso.
-
-**Pagos (Canales de Cobro / Centro Financiero)**
-- Registro y validación contable de pagos y amortización de comisiones.
-- Soporte para transferencias, depósitos bancarios, tarjetas y pasarelas de pago.
-
-### En Desarrollo Activo / Mantenimiento 🟡
-
-```
-- Siniestros    (estructura de tabla lista, lógica de reporte básica activa)
-- Productos     (módulo para editar tarifas dinámicas en cotizador)
-- Configuración (SMTP, plantillas de PDF y variables del cotizador activas)
-```
-
----
-
-## 🧪 TESTING
-
-### Prueba de Login
-1. Ir a http://localhost/PLATAFORMA_INTEGRADA
-2. Ingresar: admin / Demo@123
-3. Debe mostrar dashboard
-
-### Prueba de Usuarios
-1. En Dashboard → Usuarios → Tab "Usuarios"
-2. Crear nuevo usuario (de prueba)
-3. Verificar en tabla
-4. Filtrar por nombre
-5. Editar usuario
-6. Bloquear usuario
-
-### Prueba de Cotizador
-1. En Dashboard → Cotizaciones
-2. Verificar que se carga el formulario
-3. Llenar datos de prueba
-4. Calcular prima
-5. Guardar cotización
-6. Verificar que aparece en historial
-
-### Prueba de Permisos
-1. Crear usuario con rol "Auditor"
-2. Login como ese usuario
-3. Intentar acceder a Configuración
-4. Debe ser bloqueado
-
----
-
-## 🐛 Solución de Problemas
-
-### El login no funciona
-**Verificar:**
-```
-1. ¿WAMP está corriendo? (Apache + MySQL)
-2. ¿BD fue importada? (schema + datos iniciales)
-3. ¿Estructura de carpetas es correcta?
-4. Revisar browser console (F12) para errores JS
-```
-
-### Error de conexión a BD
-**Verificar:**
-```
-1. MySQL está corriendo
-2. BD "masque_fianzas" existe
-3. Credenciales en config.php son correctas
-4. Ver logs de error en backend/logs/error.log
-```
-
-### Los módulos no cargan
-**Verificar:**
-```
-1. Archivo del módulo existe
-2. Permisos de usuario lo permiten
-3. No hay errores de JavaScript (F12 console)
-4. Verificar estructura de carpetas
-```
-
-Ver más en: **README.md - Troubleshooting**
-
----
-
-## 📈 Estadísticas del Proyecto
-
-| Métrica | Cantidad |
-|---------|----------|
-| Archivos creados | 22 |
-| Líneas de código | ~6,800 |
-| Tablas de BD | 20 |
-| Endpoints API | 19 |
-| Roles | 8 |
-| Módulos | 11 |
-| Horas de desarrollo | 24+ |
-
----
-
-## 📞 Referencias Rápidas
-
-### Credenciales de Acceso
-```
-Usuario: admin
-Contraseña: Demo@123
-Rol: Administrador
-```
-
-### URLs Importantes
-```
-Login: http://localhost/PLATAFORMA_INTEGRADA/
-Dashboard: http://localhost/PLATAFORMA_INTEGRADA/frontend/dashboard.html
-phpMyAdmin: http://localhost/phpmyadmin/
-API: http://localhost/PLATAFORMA_INTEGRADA/backend/api/
-```
-
-### Archivos Clave a Editar
-```
-Base de datos: backend/config.php
-Estilos: frontend/assets/dashboard.css
-Lógica: frontend/assets/dashboard.js
-Seguridad: backend/Autenticacion.php
-Usuarios: backend/UsuarioManager.php
-```
-
----
-
-## 🎯 Próximos Pasos Recomendados
-
-### Inmediato (Día 1)
-1. ✅ Instalar y verificar que el login funcione
-2. ✅ Crear usuarios de prueba
-3. ✅ Probar módulo de cotizaciones
-
-### Corto Plazo (Semana 1)
-1. Implementar módulos de negocio (Clientes, Pólizas)
-2. Crear usuarios para el equipo
-3. Configurar roles según estructura org.
-
-### Mediano Plazo (Mes 1)
-1. Implementar generación de PDFs
-2. Agregar reportes personalizados
-3. Integrar con email
-
-### Largo Plazo (Trimestre 1)
-1. Implementar 2FA
-2. Agregar LDAP/SSO
-3. Implementar BI/Analytics
-
----
-
-## 📚 Matriz de Referencia Rápida
-
-| ¿Necesita...? | Ubicación | Línea |
-|---------------|-----------|-------|
-| Cambiar colores | frontend/assets/dashboard.css | 1-50 |
-| Cambiar por qué | backend/config.php | 5-15 |
-| Agregar rol | database/schema_masque_fianzas.sql | Tabla perfiles |
-| Agregar permiso | backend/PerfilManager.php | Variable $mallaPermisos |
-| Cambiar timeout | backend/config.php | 20 |
-| Ver logs | database/auditoria_accesos | Tabla completa |
-| Cambiar email | backend/config.php | 35-40 |
-| Cambiar security | backend/Autenticacion.php | Métodos de validación |
-
----
-
-## ✅ Checklist de Implementación
-
-| Tarea | Estado | Fecha |
-|-------|--------|-------|
-| Base de datos | ✅ Completado | 22/02/2024 |
-| Backend PHP | ✅ Completado | 22/02/2024 |
-| Frontend HTML | ✅ Completado | 22/02/2024 |
-| Estilos CSS | ✅ Completado | 22/02/2024 |
-| JavaScript | ✅ Completado | 22/02/2024 |
-| API REST | ✅ Completado | 22/02/2024 |
-| Autenticación | ✅ Completado | 22/02/2024 |
-| Gestión de usuarios | ✅ Completado | 22/02/2024 |
-| Gestión de perfiles | ✅ Completado | 22/02/2024 |
-| Auditoría | ✅ Completado | 22/02/2024 |
-| Documentación | ✅ Completado | 22/02/2024 |
-| Control de acceso | ✅ Completado | 22/02/2024 |
-
----
-
-## 🎓 Recursos de Aprendizaje
-
-### Para Entender el Código
-
-1. **Backend:**
-   - Leer `backend/config.php` (configuración central)
-   - Leer `backend/Autenticacion.php` (flujo de login)
-   - Leer `backend/UsuarioManager.php` (CRUD pattern)
-
-2. **Frontend:**
-   - Leer `frontend/assets/api-client.js` (comunicación HTTP)
-   - Leer `frontend/assets/dashboard.js` (DOM manipulation)
-   - Leer `frontend/index.html` (estructura HTML)
-
-3. **Base de Datos:**
-   - Ver `database/schema_masque_fianzas.sql` (tablas y relaciones)
-   - Ver tabla `auditoria_accesos` (para entender logging)
-
----
-
-## 📝 Notas Importantes
-
-⚠️ **Seguridad:**
-- Las contraseñas están hasheadas (no almacenar en texto plano)
-- Token de sesión regenerado en cada login
-- Todas las operaciones se registran en auditoría
-
-⚠️ **Rendimiento:**
-- La BD soporta millones de registros con índices apropiados
-- La paginación evita sobrecargas
-- Los cálculos en JavaScript no generan latencia
-
-⚠️ **Copias de Seguridad:**
-- Hacer backup regular de la BD (mysqldump)
-- Guardar archivos de configuración
-- Documentar cambios personalizados
-
----
-
-## 🏁 ¡Listo para Comenzar!
-
-Felicitaciones por tener la **Plataforma MAS QUE FIANZAS** instalada y lista.
-
-**Próximo paso:** Sigue la **INSTALACION_RAPIDA.md**
-
----
-
-**Proyecto:** MAS QUE FIANZAS - Plataforma Integrada
-**Versión:** 1.0.0
-**Creado:** 22 de Febrero de 2026
-**Estado:** ✅ PRODUCCIÓN
-**Licencia:** Privado - Uso Exclusivo
-
----
-
-*Para soporte o preguntas, revisar la documentación completa en README.md o contactar al equipo de desarrollo.*
+*Índice Maestro de la plataforma integrada MÁS QUE FIANZAS.*  
+*Actualizado para la versión v4.0.0 Stable. Mayo de 2026.*

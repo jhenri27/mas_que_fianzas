@@ -550,7 +550,8 @@ document.getElementById('usuarioForm').addEventListener('submit', async function
         var res      = await api.solicitud(endpoint, method, data);
         if (res.exito) {
             var msg = res.mensaje || 'Usuario guardado exitosamente.';
-            if (!id && res.password_temporal) msg += '<br><br><strong>Contraseña temporal:</strong> ' + res.password_temporal;
+            var dataRes = res.datos || res;
+            if (!id && dataRes.password_temporal) msg += '<br><br><strong>Contraseña temporal:</strong> ' + dataRes.password_temporal;
             MQF.toast(msg, 'success', 6000);
             cerrarModal();
             cargarUsuarios(paginaActual);
@@ -574,8 +575,9 @@ async function resetPassword(id) {
     try {
         var res = await api.solicitud('/usuarios.php/restablecer-password/' + id, 'POST');
         if (res.exito) {
-            var msg = res.mensaje + ' | 🔑 Clave: ' + res.password_temporal;
-            if (!res.correo_enviado) msg += ' ⚠️ Entregue la clave de forma manual.';
+            var dataRes = res.datos || res;
+            var msg = res.mensaje + ' | 🔑 Clave: ' + dataRes.password_temporal;
+            if (!dataRes.correo_enviado) msg += ' ⚠️ Entregue la clave de forma manual.';
             MQF.toast(msg, 'success', 8000);
             cargarUsuarios(paginaActual);
         } else {

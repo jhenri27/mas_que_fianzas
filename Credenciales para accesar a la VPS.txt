@@ -1,0 +1,7 @@
+Credenciales para accesar a la VPS de contabo
+PLATAFORMA INTEGRADA
+
+putty/ssh port 22
+85.239.248.147
+root
+MasQF2026

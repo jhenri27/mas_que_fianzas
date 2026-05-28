@@ -137,6 +137,7 @@ class Autenticacion {
                     'mensaje' => 'Login exitoso. Es necesario cambiar la contraseña.',
                     'requiere_cambio_password' => true,
                     'usuario_id' => $usuario['id'],
+                    'perfil_id' => $usuario['perfil_id'],
                     'token_sesion' => $token_sesion
                 ];
             }
@@ -145,6 +146,7 @@ class Autenticacion {
                 'exito' => true,
                 'mensaje' => 'Login exitoso',
                 'usuario_id' => $usuario['id'],
+                'perfil_id' => $usuario['perfil_id'],
                 'nombre_completo' => $_SESSION['nombre_completo'],
                 'perfil' => $usuario['nombre_perfil'],
                 'token_sesion' => $token_sesion

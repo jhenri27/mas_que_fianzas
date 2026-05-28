@@ -56,8 +56,25 @@ try {
         $resultado = $auth->logout($usuario_id);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
-    } elseif (strpos($ruta, '/cambiar-password') !== false && $metodo === 'POST') {
-        // CAMBIAR CONTRASEÑA
+    } elseif ((strpos($ruta, '/cambiar-password-forzado') !== false) && $metodo === 'POST') {
+        // CAMBIAR CONTRASEÑA FORZADO (TRAS RESET ADMIN) — SIN contraseña actual
+        if (!Autenticacion::sesionValida()) {
+            respuestaJSON(false, 'Sesión no válida', null, 401);
+        }
+
+        $datos = json_decode(file_get_contents('php://input'), true);
+        $usuario_id = $_SESSION['usuario_id'];
+
+        $resultado = $auth->cambiarPasswordForzado(
+            $usuario_id,
+            $datos['password_nueva'] ?? '',
+            $datos['password_confirmacion'] ?? ''
+        );
+
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
+
+    } elseif ((strpos($ruta, '/cambiar-password') !== false) && $metodo === 'POST') {
+        // CAMBIAR CONTRASEÑA NORMAL — requiere contraseña actual
         if (!Autenticacion::sesionValida()) {
             respuestaJSON(false, 'Sesión no válida', null, 401);
         }
@@ -84,23 +101,6 @@ try {
 
         $resultado = $auth->validarSesion($token);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado['sesion'] ?? null, $resultado['exito'] ? 200 : 401);
-
-    } elseif (strpos($ruta, '/cambiar-password-forzado') !== false && $metodo === 'POST') {
-        // CAMBIAR CONTRASEÑA FORZADO (TRAS RESET ADMIN)
-        if (!Autenticacion::sesionValida()) {
-            respuestaJSON(false, 'Sesión no válida', null, 401);
-        }
-
-        $datos = json_decode(file_get_contents('php://input'), true);
-        $usuario_id = $_SESSION['usuario_id'];
-
-        $resultado = $auth->cambiarPasswordForzado(
-            $usuario_id,
-            $datos['password_nueva'] ?? '',
-            $datos['password_confirmacion'] ?? ''
-        );
-
-        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
     } elseif (strpos($ruta, '/recuperar-password') !== false && $metodo === 'POST') {
         $datos = json_decode(file_get_contents('php://input'), true);

@@ -331,7 +331,7 @@
   margin-bottom: 20px;
 }
 .mqf-module-header__title {
-  color: var(--mqf-text-inverse);
+  color: #ffffff !important;
   font-size: var(--mqf-text-xl);
   font-weight: 700;
   margin: 0 0 4px;
@@ -340,7 +340,7 @@
   gap: 10px;
 }
 .mqf-module-header__subtitle {
-  color: rgba(255,255,255,.75);
+  color: rgba(255,255,255,.80) !important;
   font-size: var(--mqf-text-sm);
   margin: 0 0 16px;
 }
@@ -609,3 +609,99 @@
 input:checked + .mqf-switch-slider { background-color: var(--mqf-primary); }
 input:focus + .mqf-switch-slider { box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
 input:checked + .mqf-switch-slider:before { transform: translateX(20px); }
+
+/* ===================================================== */
+/* TOGGLE SWITCHES PREMIUM (NOFTRAB)                     */
+/* ===================================================== */
+.mqf-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.mqf-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.mqf-toggle-switch span {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e1;
+  transition: background-color .25s ease, box-shadow .25s ease;
+  border-radius: 26px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+}
+.mqf-toggle-switch span:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: transform .25s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+.mqf-toggle-switch input:checked + span {
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.mqf-toggle-switch input:focus + span {
+  outline: 2px solid rgba(16, 185, 129, 0.4);
+  outline-offset: 2px;
+}
+.mqf-toggle-switch input:checked + span:before {
+  transform: translateX(20px);
+}
+.mqf-toggle-switch.disabled span {
+  background-color: #e2e8f0;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Switch button alternativo (estructura <div class="switch-button">) */
+.switch-button {
+  display: inline-block;
+  position: relative;
+}
+.switch-button__checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.switch-button__label {
+  display: block;
+  width: 46px;
+  height: 26px;
+  border-radius: 26px;
+  background-color: #cbd5e1;
+  cursor: pointer;
+  position: relative;
+  transition: background-color .25s ease;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+}
+.switch-button__label:before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform .25s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+.switch-button__checkbox:checked + .switch-button__label {
+  background-color: #10b981;
+}
+.switch-button__checkbox:checked + .switch-button__label:before {
+  transform: translateX(20px);
+}
+

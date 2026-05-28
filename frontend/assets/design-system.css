@@ -159,6 +159,20 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--mqf-text);
 }
 
+/* EXCEPCIÓN: Cabeceras de módulo siempre en blanco (fondo oscuro/gradiente) */
+.mqf-module-header h1,
+.mqf-module-header h2,
+.mqf-module-header h3,
+.mqf-module-header h4,
+.mqf-module-header h5,
+.mqf-module-header h6,
+.mqf-module-header__title {
+  color: #ffffff !important;
+}
+.mqf-module-header p,
+.mqf-module-header__subtitle {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
 p { color: var(--mqf-text-secondary); line-height: 1.6; }
 a { color: var(--mqf-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }

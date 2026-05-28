@@ -1,8 +1,8 @@
 {
-    "server": "mail.masquefianzas.com",
-    "port": 465,
-    "username": "info@masquefianzas.com",
-    "password": "M4sq53F14nz4s",
-    "encryption": "ssl",
-    "timeout": 10
+    "server": "smtp.gmail.com",
+    "port": 587,
+    "username": "pastorandersonhenriquez@gmail.com",
+    "password": "ujxw vwkx ftik cydf",
+    "encryption": "tls",
+    "timeout": 15
 }

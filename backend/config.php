@@ -176,6 +176,78 @@ function tienePermiso($usuario_id, $funcion_codigo) {
 }
 
 /**
+ * Verifica si el perfil del usuario tiene restringido ver solo datos propios en un módulo específico.
+ */
+function restringirSoloPropios($usuario_id, $modulo_codigo_o_id) {
+    // Bypass para el administrador principal (ID 1)
+    if ($usuario_id == 1) {
+        return false;
+    }
+
+    $db = Database::getInstance()->getConnection();
+
+    // Podemos recibir el código del módulo (string) o el ID del módulo (int)
+    if (is_numeric($modulo_codigo_o_id)) {
+        $sql = "SELECT pp.solo_propios 
+                FROM usuarios u
+                INNER JOIN perfiles p ON u.perfil_id = p.id
+                INNER JOIN permisos_perfil pp ON p.id = pp.perfil_id
+                WHERE u.id = ? AND pp.modulo_id = ? AND pp.solo_propios = 1
+                LIMIT 1";
+    } else {
+        $sql = "SELECT pp.solo_propios 
+                FROM usuarios u
+                INNER JOIN perfiles p ON u.perfil_id = p.id
+                INNER JOIN permisos_perfil pp ON p.id = pp.perfil_id
+                INNER JOIN modulos m ON pp.modulo_id = m.id
+                WHERE u.id = ? AND m.nombre_modulo = ? AND pp.solo_propios = 1
+                LIMIT 1";
+    }
+
+    $stmt = $db->prepare($sql);
+    if (is_numeric($modulo_codigo_o_id)) {
+        $stmt->bind_param("ii", $usuario_id, $modulo_codigo_o_id);
+    } else {
+        $stmt->bind_param("is", $usuario_id, $modulo_codigo_o_id);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $restringido = ($result->num_rows > 0);
+    $stmt->close();
+
+    return $restringido;
+}
+
+
+/**
+ * Registra un ajuste de auditoría inmutable bajo la norma NOFTRAB
+ */
+function registrarAjuste($usuario_id, $modulo_afectado, $tabla_afectada, $registro_id, $valor_anterior, $valor_nuevo, $justificacion) {
+    $db = Database::getInstance()->getConnection();
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'DESCONOCIDA';
+    
+    $valor_anterior_json = json_encode($valor_anterior, JSON_UNESCAPED_UNICODE);
+    $valor_nuevo_json = json_encode($valor_nuevo, JSON_UNESCAPED_UNICODE);
+    
+    $sql = "INSERT INTO historial_ajustes 
+            (usuario_id, modulo_afectado, tabla_afectada, registro_id, valor_anterior, valor_nuevo, justificacion, direccion_ip) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+    $stmt = $db->prepare($sql);
+    if (!$stmt) {
+        error_log("Error al preparar insertar_ajuste: " . $db->error);
+        return false;
+    }
+    
+    $stmt->bind_param("ississss", $usuario_id, $modulo_afectado, $tabla_afectada, $registro_id, $valor_anterior_json, $valor_nuevo_json, $justificacion, $ip);
+    $ok = $stmt->execute();
+    $stmt->close();
+    return $ok;
+}
+
+
+/**
  * Obtiene el perfil del usuario
  */
 function obtenerPerfilUsuario($usuario_id) {

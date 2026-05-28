@@ -1,413 +1,195 @@
-# 📋 RESUMEN DEL PROYECTO - MAS QUE FIANZAS
+# 📋 ESPECIFICACIONES TÉCNICAS Y DE ARQUITECTURA - MAS QUE FIANZAS (v4.0.0 Stable / NOFTRAB v4.0)
 
 ## 🎯 Objetivo Cumplido
 
-Desarrollar una **plataforma integrada completa** que:
-✅ Integre el módulo cotizador dentro de MAS QUE FIANZAS
-✅ Implemente gestión integral de usuarios y perfiles
-✅ Establezca control de accesos basado en roles (RBAC)
-✅ Proporcione auditoría y seguridad robustas
-✅ Cumpla con regulaciones de seguros en República Dominicana
+Desarrollar una **plataforma integrada completa** bajo estándares de alta calidad técnica que:
+✅ Integre el módulo cotizador React de Seguros de Ley y Fianzas comerciales en MAS QUE FIANZAS.
+✅ Implemente gestión integral de usuarios con nomenclatura jerárquica automática (RED, DIR, PDV, VEN).
+✅ Establezca control de accesos basado en roles (RBAC) y **Doble Capa de Seguridad (Layered Security)**.
+✅ Proporcione auditoría total inmutable y cumplimiento estricto del **Estándar NOFTRAB v4.0**.
+✅ Aplique restricciones de privacidad granular "Propios vs. Todos" en listados, widgets y modales.
+✅ Cumpla plenamente con las regulaciones de la Superintendencia de Seguros en República Dominicana.
 
 ---
 
 ## 📦 COMPONENTES ENTREGADOS
 
 ### 1. BASE DE DATOS ✅
-**Archivo:** `database/schema_masque_fianzas.sql`
+**Archivo Principal:** `database/schema_masque_fianzas.sql`
 
-Tablas implementadas (20):
-- `perfiles` - Gestión de roles (8 roles predefinidos)
-- `usuarios` - Información y credenciales de usuarios
-- `permisos_perfil` - Asignación granular de permisos
-- `modulos` - Definición de módulos del sistema
-- `funciones_modulo` - Funciones específicas por módulo
-- `auditoria_accesos` - Registro completo de auditoría
-- `sesiones_usuario` - Gestión de sesiones activas
-- `historial_password` - Historial de cambios de contraseña
-- `clientes` - Gestión de clientes
-- `cotizaciones` - Sistema de cotizaciones
-- `polizas` - Gestión de pólizas
-- `pagos` - Registro de pagos
-- `fianzas` - Gestión de fianzas
-- `siniestros` - Gestión de siniestros
-- `productos` - Catálogo de productos
-- `configuracion_sistema` - Configuración del sistema
-- `usuarios_perfiles_adicionales` - Perfiles secundarios
-- `acceso_datos_usuario` - Restricciones de datos por usuario
-- `notificaciones_alertas` - Sistema de notificaciones
-- `reportes_personalizados` - Reportes configurables
+Tablas implementadas e integradas (21):
+- `perfiles` - Gestión de roles y permisos generales.
+- `usuarios` - Información y credenciales de usuarios.
+- `permisos_perfil` - Asignación granular de permisos por módulo y función (incluye `solo_propios`).
+- `modulos` - Definición de módulos del sistema.
+- `funciones_modulo` - Funciones específicas por módulo.
+- `auditoria_accesos` - Registro completo de auditoría de accesos.
+- `sesiones_usuario` - Gestión de sesiones activas.
+- `historial_password` - Historial de cambios de contraseña.
+- `clientes` - Gestión de clientes (Personas Físicas y Jurídicas).
+- `cotizaciones` - Sistema de cotizaciones de seguros de ley y fianzas (con `creado_por` FK).
+- `polizas` - Gestión y emisión de pólizas (con `emitida_por` FK).
+- `pagos` - Registro y validación contable de cobros (con `registrado_por` FK).
+- `fianzas` - Gestión de fianzas comerciales.
+- `siniestros` - Registro de reclamos y siniestralidad.
+- `productos` - Catálogo de productos y tarifas dinámicas.
+- `configuracion_sistema` - Parámetros SMTP y variables del cotizador.
+- `usuarios_perfiles_adicionales` - Perfiles secundarios para multi-rol.
+- `acceso_datos_usuario` - Restricciones personalizadas por base de datos.
+- `notificaciones_alertas` - Sistema de alertas interactivas.
+- `reportes_personalizados` - Reportes financieros y operativos configurables.
+- `historial_ajustes` - **[NUEVA]** Bitácora inmutable de auditoría forense para ajustes de transacciones (Estándar NOFTRAB v4.0).
 
-### 2. BACKEND (PHP) ✅
-
-#### Archivos de Configuración:
-- `backend/config.php` (365 líneas)
-  - Conexión a BD
-  - Constantes de seguridad
-  - Funciones globales
-  - Clase Singleton de BD
-
-#### Clases de Negocio:
-- `backend/UsuarioManager.php` (512 líneas)
-  - Crear/editar/eliminar usuarios
-  - Bloquear/desbloquear usuarios
-  - Restablecer contraseñas
-  - Listar usuarios con filtros
-  - Validación de permisos
-
-- `backend/PerfilManager.php` (512 líneas)
-  - Crear/editar perfiles
-  - Asignar permisos granular mente
-  - Herencia de permisos
-  - Validación según malla de roles
-  - Malla de 8 roles × 10 módulos
-
-- `backend/Autenticacion.php` (420 líneas)
-  - Autenticación con usuario/contraseña
-  - Gestión de sesiones en BD
-  - Bloqueo temporal por intentos fallidos
-  - Cambio de contraseña
-  - Registro en auditoría
-
-#### APIs REST:
-- `backend/api/auth.php` - Endpoints de autenticación
-- `backend/api/usuarios.php` - CRUD de usuarios
-- `backend/api/perfiles.php` - Gestión de perfiles
-
-### 3. FRONTEND (HTML/CSS/JavaScript) ✅
-
-#### Páginas:
-- `frontend/index.html` - Página de login
-- `frontend/dashboard.html` - Dashboard principal integrado
-
-#### Estilos CSS:
-- `frontend/assets/login.css` (280 líneas)
-  - Diseño responsivo de login
-  - Animaciones suaves
-  - Compatibilidad móvil
-
-- `frontend/assets/dashboard.css` (520 líneas)
-  - Sidebar responsive
-  - Tablas de datos
-  - Modales
-  - Sistema de grid
-
-- `frontend/assets/modulos.css` (280 líneas)
-  - Estilos de módulos
-  - Componentes reutilizables
-  - Utilitarios
-  - Estilos de impresión
-
-#### JavaScript:
-- `frontend/assets/api-client.js` (250 líneas)
-  - Cliente HTTP para API
-  - Métodos para cada endpoint
-  - Gestión de tokens
-  - Manejo de errores
-
-- `frontend/assets/login.js` (100 líneas)
-  - Validación de formulario
-  - Envío de login
-  - Mensajes de alerta
-
-- `frontend/assets/dashboard.js` (400 líneas)
-  - Navegación entre módulos
-  - Gestión de usuarios (CRUD)
-  - Gestión de perfiles
-  - Manejo de modales
-  - Carga de datos
-
-### 4. DOCUMENTACIÓN ✅
-
-- `README.md` (300+ líneas)
-  - Descripción general
-  - Requisitos
-  - Instalación
-  - Estructura del proyecto
-  - Características
-  - Roles y permisos
-  - Endpoints API
-  - Solución de problemas
-
-- `INSTALACION_RAPIDA.md` (150+ líneas)
-  - Guía paso a paso
-  - Troubleshooting
-  - Comandos útiles
-  - Pruebas recomendadas
-
-- `ESPECIFICACIONES.md` (Este archivo)
-  - Resumen técnico completo
-  - Componentes implementados
-  - Malla de permisos
-  - Características de seguridad
-
-### 5. CONFIGURACIÓN ✅
-
-- `.htaccess` - Reescritura de URLs y headers CORS
-- `database/datos_iniciales.sql` - Datos mínimos de prueba
+#### Esquema de la Tabla `historial_ajustes` (NOFTRAB):
+```sql
+CREATE TABLE IF NOT EXISTS historial_ajustes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    usuario_id INT NOT NULL,
+    modulo_afectado VARCHAR(50) NOT NULL,
+    tabla_afectada VARCHAR(50) NOT NULL,
+    registro_id INT NOT NULL,
+    valor_anterior JSON NOT NULL,
+    valor_nuevo JSON NOT NULL,
+    justificacion TEXT NOT NULL,
+    fecha_ajuste TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    direccion_ip VARCHAR(45) NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
 ---
 
-## 🔑 CARACTERÍSTICAS IMPLEMENTADAS
+### 2. BACKEND (PHP + Python CLI) ✅
 
-### Gestión de Usuarios ✅
-```
-✓ Crear usuarios con validaciones
-✓ Editar información de usuarios
-✓ Bloquear/desbloquear usuarios
-✓ Restablecer contraseñas (con historial)
-✓ Listar usuarios con paginación y filtros
-✓ Asignar perfiles múltiples
-✓ Control de estado (activo/inactivo/bloqueado)
-✓ Validación de email y username únicos
-```
+#### Archivos de Configuración y Core:
+- `backend/config.php` (312 líneas):
+  - Conexión a BD mediante patrón Singleton y soporte mysqli.
+  - Constantes de seguridad y Mailer SMTP.
+  - Función de validación de permisos `tienePermiso()`.
+  - Función de restricción de datos propios `restringirSoloPropios()`.
+  - Helper inmutable bajo norma NOFTRAB `registrarAjuste()`.
 
-### Gestión de Perfiles ✅
-```
-✓ Crear perfiles personalizados
-✓ Editar información de perfiles
-✓ 8 roles predefinidos:
-  - Administrador
-  - Gerente Técnico
-  - Gerente Contador
-  - Gerente Comercial
-  - Socio Comercial
-  - Cajero
-  - Auditor
-  - Usuario
-✓ Herencia de permisos entre perfiles
-✓ Niveles jerárquicos
-```
+#### Clases de Negocio:
+- `backend/UsuarioManager.php` (512 líneas) - Gestión de usuarios, comisiones y ETL idempotente.
+- `backend/PerfilManager.php` (512 líneas) - Gestión de perfiles y lógica de herencia de permisos.
+- `backend/Autenticacion.php` (420 líneas) - Sesiones en BD, rate limiting y bloqueo temporal.
+- `backend/PagoManager.php` (480 líneas) - Conciliación bancaria y amortización de comisiones.
+- `backend/perfiles_engine.py` - Motor CLI en Python para transacciones atómicas de permisos y logging JSON de auditorías en BD.
 
-### Gestión de Permisos ✅
-```
-✓ Asignar permisos granulares por función
-✓ Validación de accesos según roles
-✓ Malla de permisos de 8×10 (roles × módulos)
-✓ Permisos específicos:
-  - Ver datos
-  - Crear datos
-  - Editar datos
-  - Eliminar datos
-  - Ver reportes
-  - Exportar datos
-✓ Restricciones (solo propios, según perfil)
-✓ Validación antes de cada acción
-```
+#### APIs REST (/backend/api/):
+- `auth.php` - Endpoints de sesión, login, logout e inicio.
+- `usuarios.php` - CRUD e importación masiva de redes.
+- `perfiles.php` - CRUD y obtención de la malla de roles.
+- `perfiles_engine.php` - Wrapper seguro en PHP para ejecución del motor de Python.
+- `polizas.php` - Listado y emisión de pólizas con filtros de privacidad.
+- `polizas_stats.php` - Endpoint dinámico de estadísticas de emisión diaria/semanal/mensual.
+- `pagos.php` - Registro e historial contable.
+- `comisiones.php` - Listados de comisiones individuales y de red.
+- `ajustes.php` - Registro inmutable de modificaciones bajo la norma NOFTRAB v4.0.
 
-### Seguridad ✅
-```
-✓ Hashing de contraseñas (bcrypt, costo 10)
-✓ Sesiones seguras en BD con tokens únicos
-✓ Bloqueo temporal tras 5 intentos fallidos
-✓ Timeout de sesión (30 minutos configurable)
-✓ Validación de permisos en backend
-✓ Prepared statements (previene SQL injection)
-✓ CORS configurado
-✓ Headers de seguridad
-✓ Auditoría de todos los accesos
-```
+---
 
-### Auditoría ✅
-```
-✓ Registro de intentos de login (exitosos y fallidos)
-✓ Registro de logout
-✓ Registro de cambios de contraseña
-✓ Registro de acciones de usuario
-✓ Captura de IP y navegador
-✓ Registro de valores antes/después en cambios
-✓ Clasificación por tipo de evento
-✓ Búsqueda y filtrado de auditoría
-✓ Tabla `auditoria_accesos` con 6.5M de registros potenciales
-```
+### 3. FRONTEND (HTML/CSS/JavaScript) ✅
 
-### Módulos Integrados ✅
-```
-✓ Dashboard - Inicio con estadísticas
-✓ Cotizador - Sistema integrado
-✓ Usuarios - Gestión completa
-✓ Perfiles - Gestión de roles
-✓ Auditoría - Registro de acciones
-✓ Placeholders para:
-  - Clientes
-  - Pólizas
-  - Fianzas
-  - Pagos
-  - Siniestros
-  - Productos
-  - Reportes
-  - Configuración
-```
+#### Páginas e Interfaces:
+- `frontend/index.html` - Página de login responsiva con transiciones suaves.
+- `frontend/dashboard.html` - Dashboard Shell principal con diseño Glassmorphism e integración de submódulos en iframes.
+- `frontend/recuperar.html` - Recuperación de contraseñas por email con token seguro de 30 minutos.
+- `frontend/cambiar-password.html` - Interfaz obligatoria de actualización de credenciales.
+
+#### Estilos CSS (assets/):
+- `login.css` - Estilizado responsivo con fondos HSL degradados.
+- `dashboard.css` - Sidebar responsive, modales superpuestos, y estilos para el **Widget de Pólizas Emitidas** con pills degradados y barras de progreso animadas.
+- `modulos.css` - Estilos compartidos e iframe bridges.
+- `skin-engine.css` - Selector estético dinámico (Premium dark/light y glassmorphism).
+
+#### JavaScript (assets/):
+- `api-client.js` - Cliente HTTP unificado con soporte para Bearer Token y manejo global de errores.
+- `login.js` - Validación en cliente y animaciones de carga.
+- `dashboard.js` - Navegación asíncrona, control de modales, carga dinámica de módulos según perfil, e integración del modal de justificaciones obligatorias `#modalAjustesAuditoria`.
+- `data-export.js` - Motor de exportación avanzada (PDF corporativo MQF, Excel, CSV, JSON, ZIP).
+- `logo_b64.js` - Logo MQF optimizado para impresión.
+
+---
+
+## 👥 PRIVACIDAD Y RESTRICCIÓN "PROPIOS VS. TODOS"
+
+Para garantizar la confidencialidad de la red comercial y ajustarse estrictamente a las normas de negocio, la plataforma implementa una restricción de datos en la capa de datos:
+
+1. **La columna `solo_propios` en la base de datos:**
+   - La tabla `permisos_perfil` contiene una columna booleana `solo_propios`.
+   - Cuando se asignan permisos a un perfil (ej. **Socio Comercial PDV**), el Administrador puede activar esta opción.
+
+2. **Inyección en el Backend (PHP APIs):**
+   - La función `restringirSoloPropios($usuario_id, $modulo)` comprueba si el perfil del usuario activo tiene la restricción activa.
+   - En Cotizaciones, Pólizas, Pagos y Comisiones se inyecta la cláusula SQL:
+     - `creado_por = {usuario_id}`
+     - `emitida_por = {usuario_id}`
+     - `registrado_por = {usuario_id}`
+     - `usuario_id = {usuario_id}`
+   - El Administrador (`usuario_id = 1`) posee un bypass directo en `config.php` y visualiza la totalidad de los registros de forma global.
+
+3. **Restricción Estricta en el Dashboard y Modales:**
+   - El **Socio Comercial PDV** solo visualizará en los widgets de estadísticas, barras del Top 5 de clientes y en el Modal Enriquecido de Pólizas Emitidas lo concerniente a sus operaciones propias. Las APIs filtran los datos de origen, impidiendo la manipulación en el frontend.
 
 ---
 
 ## 📊 MALLA DE PERMISOS IMPLEMENTADA
 
-| Módulo | Admin | Gte. Tec | Gte. Con | Gte. Com | Socio | Cajero | Auditor | Usuario |
-|--------|-------|----------|----------|----------|-------|--------|---------|---------|
-| Dashboard | C | C | C | C | P | P | C | P |
-| Clientes | C/E | C/E | C | C/E | C | ❌ | C | C |
-| Pólizas | T | C/E | C | C/E | C | ❌ | C | C |
-| Fianzas | T | C/E | C | C/E | C | ❌ | C | C |
+| Módulo | Admin | Gte. Tec | Gte. Con | Gte. Com | Socio Comercial PDV | Cajero | Auditor | Usuario |
+|--------|-------|----------|----------|----------|----------------------|--------|---------|---------|
+| Dashboard | C | C | C | C | **P (Propio)** | P | C | P |
+| Clientes | C/E | C/E | C | C/E | **C (Propio)** | ❌ | C | C |
+| Pólizas | T | C/E | C | C/E | **C (Propio)** | ❌ | C | C |
+| Fianzas | T | C/E | C | C/E | **C (Propio)** | ❌ | C | C |
 | Pagos | T | ❌ | V/R | C | ❌ | Reg | C | CP |
-| Cotizaciones | T | C/E | ❌ | C/E | C/E | ❌ | C | CPr |
+| Cotizaciones | T | C/E | ❌ | C/E | **C/E (Propio)** | ❌ | C | CPr |
 | Productos | T | C/E | C | C | ❌ | ❌ | C | ❌ |
 | Configuración | T | PT | PC | ❌ | ❌ | ❌ | C | ❌ |
-| Reportes | T | Tec | Fin | Com | Com | Caja | Todos | Lim |
-| Siniestros | T | C/E | C | Seg | C | ❌ | C | CP |
+| Reportes | T | Tec | Fin | Com | **Com (Propio)** | Caja | Todos | Lim |
+| Siniestros | T | C/E | C | Seg | **C (Propio)** | ❌ | C | CP |
 
 *Leyenda: C=Completo, C/E=Crear/Editar, C=Consultar, T=Total, P=Parcial, V=Validar, R=Reportes, PT=Parámetros Técnicos, PC=Parámetros Contables, Reg=Registrar, CP=Consultar Propio, CPr=Crear Propio, Seg=Seguimiento, Caja=De Caja, Lim=Limitados, ❌=Bloqueado*
 
 ---
 
-## 🛠️ TECNOLOGÍAS UTILIZADAS
+## ⚖️ HISTORIAL DE AUDITORÍA DE AJUSTES INMUTABLE (NOFTRAB)
 
-### Backend
-- **Lenguaje:** PHP 8.2+ (Probado en PHP 8.2.29)
-- **Base de datos:** MySQL 5.7+ / MariaDB 10.3+
-- **Patrón:** MVC + API REST
-- **Seguridad:** Bcrypt, Prepared Statements, Tokens
-
-### Frontend
-- **HTML5:** Estructura semántica
-- **CSS3:** Grid, Flexbox, Animaciones
-- **JavaScript ES6+:** Programación orientada a objetos
-- **API:** Fetch API, JSON
-
-### Infraestructura
-- **Servidor:** Apache (WAMP)
-- **Reescritura de URLs:** .htaccess
-- **CORS:** Habilitado
-- **Compresión:** Gzip
+El cumplimiento de la norma NOFTRAB v4.0 garantiza la inmutabilidad de los expedientes y la auditoría forense del sistema:
+* **Flujo de Intercepción:** Cualquier cambio sobre una póliza, pago o comisión activa el modal `#modalAjustesAuditoria`.
+* **Validación de Justificación:** El sistema bloquea el envío si el usuario no introduce una justificación superior a los 9 caracteres.
+* **Captura de Estados (JSON):** El backend extrae la fila actual de la tabla en cuestión y la almacena de forma íntegra como `valor_anterior` en formato JSON, aplicando posteriormente el cambio y guardando el nuevo estado completo como `valor_nuevo`.
+* **Trazabilidad:** Se registra de forma automática el `usuario_id`, `modulo_afectado`, `tabla_afectada`, `registro_id`, `direccion_ip` y la marca de tiempo de forma inmutable.
 
 ---
 
-## 📈 MÉTRICAS DEL PROYECTO
+## 📈 MÉTRICAS DEL PROYECTO (v4.0.0 Stable)
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código PHP | ~1,800 |
-| Líneas de código JavaScript | ~750 |
-| Líneas de CSS | ~1,000 |
-| Líneas SQL (BD) | ~1,200 |
-| Tablas de BD | 20 |
-| Endpoints API | 18 |
-| Roles predefinidos | 8 |
-| Módulos | 11 |
-| Funciones por módulo | ~50 |
-| Documentación (líneas) | ~500 |
+| Líneas de código PHP | ~2,600 |
+| Líneas de código JavaScript | ~1,250 |
+| Líneas de CSS | ~1,400 |
+| Líneas SQL (BD) | ~1,600 |
+| Tablas de BD | 21 |
+| Endpoints API | 26 |
+| Roles predefinidos | 9 (incluye Socio Comercial PDV) |
+| Módulos del Dashboard | 12 |
+| Líneas de Python | ~250 |
+| Documentación (líneas) | ~2,500 |
 
 ---
 
-## 🚀 PRÓXIMAS MEJORAS (Opcional)
+## 🏆 ESTADO DEL PROYECTO
 
-1. **Autenticación avanzada:**
-   - Autenticación de dos factores (2FA)
-   - OAuth/SSO
-   - LDAP integration
-
-2. **Características adicionales:**
-   - Dashboard con gráficos
-   - Exportación a PDF/Excel
-   - Notificaciones por email
-   - API GraphQL
-
-3. **Optimizaciones:**
-   - Redis para caché
-   - Búsqueda con Elasticsearch
-   - Microservicios
-
-4. **Seguridad:**
-   - Encriptación end-to-end
-   - WAF integrado
-   - DLP (Data Loss Prevention)
+- **Backend core:** ✅ 100% Estabilizado
+- **Malla de perfiles e inyección "Propios vs. Todos":** ✅ 100% Completada
+- **Widget y Modal Premium de Pólizas:** ✅ 100% Operativo y Responsivo
+- **Estándar de Auditoría NOFTRAB v4.0:** ✅ 100% Integrado e Inmutable
+- **Avatar Superior Interactivo:** ✅ 100% Implementado
+- **Documentación general:** ✅ Sincronizada y Actualizada para Commit Directo
 
 ---
 
-## 📄 ARCHIVO TREE DEL PROYECTO
-
-```
-PLATAFORMA_INTEGRADA/
-├── backend/
-│   ├── api/
-│   │   ├── auth.php
-│   │   ├── usuarios.php
-│   │   ├── perfiles.php
-│   │   └── pagos.php
-│   ├── config.php
-│   ├── Autenticacion.php
-│   ├── UsuarioManager.php
-│   ├── PerfilManager.php
-│   ├── PagoManager.php
-│   └── etl_usuarios_import.py
-├── frontend/
-│   ├── index.html
-│   ├── dashboard.html
-│   ├── assets/
-│   │   ├── api-client.js
-│   │   ├── login.js
-│   │   ├── login.css
-│   │   ├── dashboard.js
-│   │   ├── dashboard.css
-│   │   └── modulos.css
-│   └── modulos/ (Estabilizados)
-├── database/
-│   ├── schema_masque_fianzas.sql
-│   ├── datos_iniciales.sql
-│   └── cf_schema.sql
-├── .htaccess
-├── README.md
-├── INSTALACION_RAPIDA.md
-├── ESPECIFICACIONES.md
-├── verify.php
-└── verify_system_end_to_end.php
-```
-
----
-
-## ✅ CHECKLIST DE CARACTERÍSTICAS
-
-- [x] Autenticación con usuario y contraseña
-- [x] Gestión CRUD de usuarios
-- [x] Gestión CRUD de perfiles
-- [x] Sistema de permisos granular
-- [x] Malla de roles (8 × 10)
-- [x] Bloqueo de usuarios
-- [x] Restablecimiento de contraseñas
-- [x] Auditoría de accesos
-- [x] Auditoría de cambios
-- [x] Sesiones seguras
-- [x] Integración del cotizador
-- [x] Dashboard principal
-- [x] API REST completa
-- [x] Frontend responsivo
-- [x] Validaciones robustas
-- [x] Documentación completa
-- [x] Soporte para WAMP
-
----
-
-## 🎓 INSTALACIÓN Y USO
-
-Ver:
-- `README.md` - Documentación completa
-- `INSTALACION_RAPIDA.md` - Guía paso a paso
-- Credenciales: admin / Demo@123
-
----
-
-## 📞 SOPORTE TÉCNICO
-
-Para problemas, revisar:
-1. Logs: `backend/logs/error.log`
-2. Auditoría: Base de datos → tabla `auditoria_accesos`
-3. Documentación: `README.md`
-4. Guía rápida: `INSTALACION_RAPIDA.md`
-
----
-
-**Proyecto completado:** 21 de Mayo de 2026
-**Versión:** v3.3.0 Stabilized
-**Estado:** ✅ PRODUCCIÓN / ESTABILIZADO
-
-Todas las características solicitadas han sido implementadas con éxito.
+*Especificaciones técnicas y arquitecturales de MAS QUE FIANZAS.*  
+*Actualizado conforme a las directrices de la versión v4.0.0 Stable de la plataforma. Mayo de 2026.*

@@ -67,23 +67,118 @@ class Dashboard {
             userGreeting.textContent = saludo + ', ' + (this.usuarioActual?.nombre_completo || 'Usuario');
         }
 
-        // Configurar menú lateral según el perfil
-        if (this.usuarioActual && this.usuarioActual.perfil === 'Socio Comercial PDV') {
-            const modulosPermitidos = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil'];
+        // Configurar menú lateral dinámico según permisos de base de datos (Doble Capa de Seguridad)
+        if (this.usuarioActual) {
+            let perfilId = parseInt(this.usuarioActual.perfil_id, 10);
             
-            document.querySelectorAll('.nav-item').forEach(item => {
-                const moduleName = item.dataset.module;
-                if (!modulosPermitidos.includes(moduleName)) {
-                    item.style.display = 'none'; // Ocultar
+            // Fallback robusto de perfilId por caché o localStorage antiguo
+            if (isNaN(perfilId)) {
+                const perfilLower = (this.usuarioActual.perfil || '').toLowerCase();
+                if (perfilLower.includes('pdv') || perfilLower.includes('socio')) {
+                    perfilId = 5;
+                } else if (perfilLower.includes('admin') || perfilLower.includes('sistema')) {
+                    perfilId = 1;
                 }
-            });
+            }
 
-            // Ocultar acciones rápidas del dashboard que no corresponden
-            document.querySelectorAll('.action-btn').forEach(btn => {
-                const action = btn.dataset.action;
-                if (action === 'registrar-pago' || action === 'nuevo-cliente') {
-                    // Solo permitimos nueva cotización y ver reportes en el inicio rápido del PDV
-                    btn.style.display = 'none'; 
+            // Bypass global para Administrador (ID 1)
+            if (perfilId === 1) {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.style.display = 'flex';
+                });
+                return;
+            }
+            
+            // Carga dinámica de permisos en BD
+            const token = localStorage.getItem('token_sesion') || '';
+            fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles.php/obtener/${perfilId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(resp => resp.json())
+            .then(result => {
+                if (result.exito && result.datos && Array.isArray(result.datos.permisos)) {
+                    const permisos = result.datos.permisos;
+                    window.MQF_PERMISOS = permisos; // Guardado global para iframes (Norma NOFTRAB)
+                    const modulosPermitidos = {'dashboard': true, 'mi-perfil': true};
+                    
+                    // Agrupar permisos por modulo_id
+                    const moduloConEjecutable = {};
+                    permisos.forEach(p => {
+                        const moduloId = parseInt(p.modulo_id);
+                        if (!moduloConEjecutable.hasOwnProperty(moduloId)) {
+                            moduloConEjecutable[moduloId] = false;
+                        }
+                        if (parseInt(p.puede_ejecutar) === 1) {
+                            moduloConEjecutable[moduloId] = true;
+                        }
+                    });
+                    
+                    // Mapear los módulos que sí tienen al menos una función ejecutable
+                    const idToCode = {
+                        1: 'dashboard', 2: 'clientes', 3: 'polizas', 4: 'fianzas',
+                        5: 'pagos', 6: 'cotizaciones', 7: 'productos', 8: 'configuracion',
+                        9: 'reportes', 10: 'siniestros', 11: 'usuarios'
+                    };
+                    
+                    Object.entries(moduloConEjecutable).forEach(([modIdStr, tieneAcceso]) => {
+                        const modId = parseInt(modIdStr);
+                        const modCod = idToCode[modId];
+                        if (modCod && tieneAcceso) {
+                            modulosPermitidos[modCod] = true;
+                        }
+                    });
+                    
+                    // Ocultar nav-items no autorizados
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        const moduleName = item.dataset.module;
+                        if (moduleName && !modulosPermitidos[moduleName]) {
+                            item.style.display = 'none';
+                        } else {
+                            item.style.display = 'flex';
+                        }
+                    });
+                    
+                    // Ocultar acciones rápidas del dashboard
+                    document.querySelectorAll('.action-btn').forEach(btn => {
+                        const action = btn.dataset.action;
+                        let requerido = '';
+                        if (action === 'nueva-cotizacion') requerido = 'cotizaciones';
+                        else if (action === 'nuevo-cliente') requerido = 'clientes';
+                        else if (action === 'registrar-pago') requerido = 'pagos';
+                        else if (action === 'ver-reportes') requerido = 'reportes';
+                        
+                        if (requerido && !modulosPermitidos[requerido]) {
+                            btn.style.display = 'none';
+                        } else {
+                            btn.style.display = 'inline-flex';
+                        }
+                    });
+                } else {
+                    // Fallback preventivo si no devuelve permisos exitosos
+                    console.warn('[Dashboard] API de perfiles no retornó permisos válidos. Aplicando fallback preventivo.');
+                    if (this.usuarioActual.perfil === 'Socio Comercial PDV') {
+                        const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil'];
+                        document.querySelectorAll('.nav-item').forEach(item => {
+                            const moduleName = item.dataset.module;
+                            if (!fallback.includes(moduleName)) {
+                                item.style.display = 'none';
+                            } else {
+                                item.style.display = 'flex';
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('[Dashboard] Falló la carga del menú dinámico por BD, aplicando fallback:', err);
+                
+                // Fallback por defecto si no hay conexión (Socio Comercial PDV limitado)
+                if (this.usuarioActual.perfil === 'Socio Comercial PDV') {
+                    const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil'];
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        const moduleName = item.dataset.module;
+                        if (!fallback.includes(moduleName)) item.style.display = 'none';
+                    });
                 }
             });
         }
@@ -186,7 +281,8 @@ class Dashboard {
         const userMenuToggle = document.getElementById('userMenuToggle');
         const userDropdownMenu = document.getElementById('userDropdownMenu');
         if (userMenuToggle && userDropdownMenu) {
-            userMenuToggle.addEventListener('click', () => {
+            userMenuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
                 userDropdownMenu.style.display = userDropdownMenu.style.display === 'none' ? 'block' : 'none';
             });
 
@@ -247,6 +343,17 @@ class Dashboard {
                 this.abrirDetalleGlobal('estadistica', null, { titulo, valor, icono });
             });
         });
+
+        // Evento para toda la tarjeta del widget de Pólizas Emitidas (OFTRAB Premium)
+        const widgetPolizas = document.querySelector('.polizas-widget-card');
+        if (widgetPolizas) {
+            widgetPolizas.addEventListener('click', (e) => {
+                // Evitar doble disparo si se hace clic en el botón de expandir (que ya tiene onclick inline)
+                if (!e.target.closest('.expand-btn')) {
+                    abrirDetallePolizas();
+                }
+            });
+        }
 
         // Eventos para actividad reciente (Delegación)
         const activityList = document.getElementById('recentActivityList');
@@ -347,6 +454,12 @@ class Dashboard {
         }
 
         try {
+            await this.cargarEstadisticasPolizas();
+        } catch (error) {
+            console.error('[Dashboard] Error en cargarEstadisticasPolizas:', error);
+        }
+
+        try {
             await this.cargarPerfiles();
         } catch (error) {
             console.error('[Dashboard] Error en cargarPerfiles:', error);
@@ -398,6 +511,60 @@ class Dashboard {
             }
         } catch(error) {
             console.error('Error cargando historial de cotizaciones para dashboard:', error);
+        }
+    }
+
+    async cargarEstadisticasPolizas() {
+        try {
+            const respuesta = await api.solicitud('/polizas_stats.php');
+            if (respuesta.exito && respuesta.data) {
+                const stats = respuesta.data;
+                
+                const elHoy = document.getElementById('polizasHoy');
+                const elSemana = document.getElementById('polizasSemana');
+                const elMes = document.getElementById('polizasMes');
+                
+                if (elHoy) elHoy.textContent = stats.diario;
+                if (elSemana) elSemana.textContent = stats.semanal;
+                if (elMes) elMes.textContent = stats.mensual;
+                
+                const topClientesList = document.getElementById('topClientesList');
+                if (topClientesList) {
+                    if (!stats.top_clientes || stats.top_clientes.length === 0) {
+                        topClientesList.innerHTML = '<div style="opacity: 0.6; font-size: 13px; text-align: center; padding: 10px;">No hay emisiones registradas</div>';
+                        return;
+                    }
+                    
+                    const maxPolizas = Math.max(...stats.top_clientes.map(c => c.cantidad_polizas), 1);
+                    
+                    topClientesList.innerHTML = stats.top_clientes.map(c => {
+                        const pct = (c.cantidad_polizas / maxPolizas) * 100;
+                        return `
+                            <div class="top-cliente-row" style="margin-bottom: 12px;">
+                                <div class="cliente-info-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                                    <span class="cliente-nombre" style="font-weight: 500; opacity: 0.9;">${c.cliente_nombre}</span>
+                                    <span class="cliente-cantidad" style="font-weight: bold; color: var(--accent, #6366f1);">${c.cantidad_polizas} ${c.cantidad_polizas === 1 ? 'póliza' : 'pólizas'}</span>
+                                </div>
+                                <div class="progress-bar-bg" style="background: var(--poliza-bar-bg, rgba(255, 255, 255, 0.05)); height: 6px; border-radius: 3px; overflow: hidden; width: 100%;">
+                                    <div class="progress-bar-fill" style="background: var(--poliza-bar-fill, linear-gradient(90deg, var(--accent, #6366f1) 0%, var(--success, #10b981) 100%)); height: 100%; border-radius: 3px; transition: width 0.8s ease-in-out; width: ${pct}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } else {
+                console.error('Error al obtener estadísticas de pólizas:', respuesta.mensaje);
+                const topClientesList = document.getElementById('topClientesList');
+                if (topClientesList) {
+                    topClientesList.innerHTML = '<div style="opacity: 0.6; font-size: 13px; text-align: center; padding: 10px;">No hay pólizas emitidas o se generó un error.</div>';
+                }
+            }
+        } catch (error) {
+            console.error('Error en cargarEstadisticasPolizas:', error);
+            const topClientesList = document.getElementById('topClientesList');
+            if (topClientesList) {
+                topClientesList.innerHTML = '<div style="opacity: 0.6; font-size: 13px; text-align: center; padding: 10px;">Error al cargar datos. Verifique conexión.</div>';
+            }
         }
     }
 
@@ -1046,6 +1213,198 @@ class Dashboard {
             </div>
         `;
     }
+
+    async cargarRejillaPerfiles() {
+        const select = document.getElementById('selectPerfilPermisos');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Seleccione perfil...</option>';
+        if (this.perfilesCache.length === 0) {
+            await this.cargarPerfiles();
+        }
+        
+        this.perfilesCache.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nombre_perfil;
+            select.appendChild(opt);
+        });
+        
+        document.getElementById('wrapperMallaPermisos').style.display = 'none';
+    }
+
+    async cargarPermisosPerfilSeleccionado(perfilId) {
+        const wrapper = document.getElementById('wrapperMallaPermisos');
+        const tbody = document.getElementById('mallaPermisosBody');
+        const status = document.getElementById('perfilPermisosStatus');
+        
+        if (!perfilId) {
+            wrapper.style.display = 'none';
+            return;
+        }
+        
+        status.textContent = 'Cargando malla de permisos...';
+        status.style.color = '#3b82f6';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; opacity:0.6;">Cargando módulos y permisos...</td></tr>';
+        wrapper.style.display = 'block';
+        
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            
+            // 1. Obtener todos los módulos y funciones
+            const respModulos = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/listar', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const dataModulos = await respModulos.json();
+            
+            // 2. Obtener los permisos guardados del perfil seleccionado
+            const respPermisos = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/obtener/${perfilId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const dataPermisos = await respPermisos.json();
+            
+            if (!dataModulos.exito || !dataPermisos.exito) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color:#ef4444;">No se pudieron cargar los datos de permisos.</td></tr>';
+                status.textContent = '❌ Error al cargar';
+                status.style.color = '#ef4444';
+                return;
+            }
+            
+            const modulos = dataModulos.datos || [];
+            const permisosExistentes = dataPermisos.datos || [];
+            
+            // Crear mapa de permisos por funcion_id para rápido acceso
+            const permisosMap = {};
+            permisosExistentes.forEach(p => {
+                permisosMap[p.funcion_id] = p;
+            });
+            
+            let html = '';
+            
+            modulos.forEach(m => {
+                // Cabecera del Módulo
+                html += `
+                    <tr class="permisos-modulo-header">
+                        <td colspan="11" class="permisos-modulo-header-label">
+                            📁 MÓDULO: ${m.nombre_modulo} <span style="font-size: 11px; opacity:0.6; font-family:monospace; margin-left: 10px;">[${m.codigo_modulo}]</span>
+                        </td>
+                    </tr>
+                `;
+                
+                // Funciones del módulo
+                if (m.funciones && m.funciones.length > 0) {
+                    m.funciones.forEach(f => {
+                        const perm = permisosMap[f.id] || {};
+                        const pEjecutar = perm.puede_ejecutar == 1 || !perm.id; // Activado por defecto si no hay registro
+                        const pVer = perm.ver_datos == 1;
+                        const pCrear = perm.crear_datos == 1;
+                        const pEditar = perm.editar_datos == 1;
+                        const pEliminar = perm.eliminar_datos == 1;
+                        const pReporte = perm.ver_reportes == 1;
+                        const pExportar = perm.exportar_datos == 1;
+                        const pImportar = perm.importar_datos == 1;
+                        const pImprimir = perm.imprimir_datos == 1;
+                        const pSoloPropio = perm.solo_propios == 1;
+                        
+                        html += `
+                            <tr class="permiso-row" data-modulo-id="${m.id}" data-funcion-id="${f.id}">
+                                <td class="permiso-nombre-td">
+                                    ⚙️ ${f.nombre_funcion} <span style="font-size: 11px; opacity:0.5; font-family:monospace;">[${f.codigo_funcion}]</span>
+                                </td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-ejecutar" ${pEjecutar ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-ver" ${pVer ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-crear" ${pCrear ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-editar" ${pEditar ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-eliminar" ${pEliminar ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-reportes" ${pReporte ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-exportar" ${pExportar ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-importar" ${pImportar ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-imprimir" ${pImprimir ? 'checked' : ''}><span></span></label></td>
+                                <td style="text-align:center; padding: 10px;"><label class="mqf-toggle-switch"><input type="checkbox" class="chk-propios" ${pSoloPropio ? 'checked' : ''}><span></span></label></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html += `
+                        <tr>
+                            <td colspan="11" style="padding: 8px 25px; opacity:0.5; font-size:12px; font-style:italic;">No hay funciones asociadas a este módulo.</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            tbody.innerHTML = html;
+            status.textContent = 'Malla de permisos cargada.';
+            status.style.color = '#10b981';
+            setTimeout(() => status.textContent = '', 2000);
+            
+        } catch (error) {
+            console.error('Error cargando permisos de perfil:', error);
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color:#ef4444;">Error de conexión con el servidor.</td></tr>';
+            status.textContent = '❌ Error de red';
+            status.style.color = '#ef4444';
+        }
+    }
+
+    async guardarPermisosPerfil() {
+        const select = document.getElementById('selectPerfilPermisos');
+        const perfilId = select.value;
+        const status = document.getElementById('perfilPermisosStatus');
+        
+        if (!perfilId) return;
+        
+        status.textContent = 'Guardando transaccionalmente con Python...';
+        status.style.color = '#3b82f6';
+        
+        // Recopilar todos los permisos
+        const permisos = [];
+        document.querySelectorAll('.permiso-row').forEach(row => {
+            const moduloId = parseInt(row.dataset.moduloId, 10);
+            const funcionId = parseInt(row.dataset.funcionId, 10);
+            
+            permisos.push({
+                modulo_id: moduloId,
+                funcion_id: funcionId,
+                puede_ejecutar: row.querySelector('.chk-ejecutar').checked,
+                ver_datos: row.querySelector('.chk-ver').checked,
+                crear_datos: row.querySelector('.chk-crear').checked,
+                editar_datos: row.querySelector('.chk-editar').checked,
+                eliminar_datos: row.querySelector('.chk-eliminar').checked,
+                ver_reportes: row.querySelector('.chk-reportes').checked,
+                exportar_datos: row.querySelector('.chk-exportar').checked,
+                importar_datos: row.querySelector('.chk-importar').checked,
+                imprimir_datos: row.querySelector('.chk-imprimir').checked,
+                solo_propios: row.querySelector('.chk-propios').checked
+            });
+        });
+        
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/guardar/${perfilId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(permisos)
+            });
+            
+            const result = await resp.json();
+            if (result.exito) {
+                status.textContent = '✅ Permisos guardados y auditados de forma inmutable con éxito.';
+                status.style.color = '#10b981';
+                MQF.toast('Permisos guardados y auditados de forma inmutable con éxito.', 'success');
+                setTimeout(() => status.textContent = '', 4000);
+            } else {
+                status.textContent = '❌ Error: ' + result.mensaje;
+                status.style.color = '#ef4444';
+            }
+        } catch (error) {
+            console.error('Error al guardar permisos:', error);
+            status.textContent = '❌ Error de conexión con el servidor.';
+            status.style.color = '#ef4444';
+        }
+    }
 }
 
 // Funciones globales de ayuda (si no están en la clase)
@@ -1262,4 +1621,176 @@ async function confirmarCambioPassword() {
         btn.disabled = false;
     }
 }
+
+
+// =====================================================
+// DETALLE DE PÓLIZAS EMITIDAS (NOFTRAB Premium)
+// =====================================================
+async function abrirDetallePolizas() {
+    const modal = document.getElementById('modalPolizasDetalle');
+    if (modal) {
+        modal.classList.add('active');
+    }
+    
+    const pHoy = document.getElementById('polizasHoy')?.textContent || '0';
+    const pSemana = document.getElementById('polizasSemana')?.textContent || '0';
+    const pMes = document.getElementById('polizasMes')?.textContent || '0';
+    
+    const mHoy = document.getElementById('modalPolizasHoy');
+    const mSemana = document.getElementById('modalPolizasSemana');
+    const mMes = document.getElementById('modalPolizasMes');
+    
+    if (mHoy) mHoy.textContent = pHoy;
+    if (mSemana) mSemana.textContent = pSemana;
+    if (mMes) mMes.textContent = pMes;
+    
+    try {
+        const respuesta = await api.solicitud('/polizas_stats.php');
+        const modalTopClientesList = document.getElementById('modalTopClientesList');
+        
+        if (respuesta.exito && respuesta.data) {
+            const stats = respuesta.data;
+            if (mHoy) mHoy.textContent = stats.diario;
+            if (mSemana) mSemana.textContent = stats.semanal;
+            if (mMes) mMes.textContent = stats.mensual;
+            
+            if (modalTopClientesList) {
+                if (!stats.top_clientes || stats.top_clientes.length === 0) {
+                    modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;">No hay pólizas emitidas</div>';
+                } else {
+                    const maxPol = stats.top_clientes.reduce((max, c) => Math.max(max, c.cantidad_polizas), 1);
+                    const gradients = [
+                        'linear-gradient(90deg, #6366f1, #8b5cf6)', // Indigo a Morado
+                        'linear-gradient(90deg, #3b82f6, #06b6d4)', // Azul a Cyan
+                        'linear-gradient(90deg, #10b981, #34d399)', // Esmeralda a Menta
+                        'linear-gradient(90deg, #f59e0b, #fbbf24)', // Ámbar a Dorado
+                        'linear-gradient(90deg, #64748b, #94a3b8)'  // Pizarra a Gris
+                    ];
+                    
+                    modalTopClientesList.innerHTML = stats.top_clientes.map((c, index) => {
+                        const pct = Math.round((c.cantidad_polizas / maxPol) * 100);
+                        const grad = gradients[index % gradients.length];
+                        const plural = c.cantidad_polizas === 1 ? 'Póliza' : 'Pólizas';
+                        return `
+                            <div style="margin-bottom: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">
+                                    <span style="font-weight: 600; color: #334155;">${c.cliente_nombre}</span>
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 12px; background: #eef2ff; padding: 2px 10px; border-radius: 9999px; font-family: monospace;">${c.cantidad_polizas} ${plural}</span>
+                                </div>
+                                <div style="width: 100%; background: #e2e8f0; border-radius: 9999px; height: 10px; overflow: hidden; display: flex; align-items: center;">
+                                    <div style="height: 100%; border-radius: 9999px; width: ${pct}%; background: ${grad}; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+        } else {
+            if (modalTopClientesList) {
+                modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;">No hay pólizas emitidas</div>';
+            }
+        }
+    } catch (error) {
+        console.error('Error cargando detalles en abrirDetallePolizas:', error);
+        const modalTopClientesList = document.getElementById('modalTopClientesList');
+        if (modalTopClientesList) {
+            modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#ef4444; font-style:italic;">Error al cargar las pólizas</div>';
+        }
+    }
+}
+
+// =====================================================
+// AJUSTES Y AUDITORÍA EXPEDIENTES (Norma NOFTRAB v4.0)
+// =====================================================
+window._ajusteCallback = null;
+
+window.solicitarAjusteAuditoria = function(tipo, registroId, campo, valorNuevo, callback) {
+    const elTipo = document.getElementById('ajusteTipo');
+    const elRegId = document.getElementById('ajusteRegistroId');
+    const elCampo = document.getElementById('ajusteCampo');
+    const elValNuevo = document.getElementById('ajusteValorNuevo');
+    const elJust = document.getElementById('ajusteJustificacion');
+    
+    if (elTipo) elTipo.value = tipo;
+    if (elRegId) elRegId.value = registroId;
+    if (elCampo) elCampo.value = campo || '';
+    if (elValNuevo) elValNuevo.value = valorNuevo;
+    if (elJust) elJust.value = '';
+    
+    const errEl = document.getElementById('ajusteError');
+    if (errEl) errEl.textContent = '';
+    
+    window._ajusteCallback = callback;
+    
+    const modal = document.getElementById('modalAjustesAuditoria');
+    if (modal) {
+        modal.classList.add('active');
+    }
+};
+
+window.procesarAjusteAuditoria = async function() {
+    const tipo = document.getElementById('ajusteTipo')?.value;
+    const registroId = document.getElementById('ajusteRegistroId')?.value;
+    const campo = document.getElementById('ajusteCampo')?.value;
+    const valorNuevo = document.getElementById('ajusteValorNuevo')?.value;
+    const justificacion = document.getElementById('ajusteJustificacion')?.value?.trim();
+    const errEl = document.getElementById('ajusteError');
+    const btn = document.getElementById('btnConfirmarAjuste');
+    
+    if (!justificacion || justificacion.length < 10) {
+        if (errEl) errEl.textContent = '⚠️ La justificación debe tener al menos 10 caracteres.';
+        return;
+    }
+    
+    if (errEl) errEl.textContent = '';
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Procesando...';
+    
+    try {
+        const payload = {
+            tipo_ajuste: tipo,
+            registro_id: parseInt(registroId, 10),
+            campo: campo || undefined,
+            valor_nuevo: valorNuevo,
+            justificacion: justificacion
+        };
+        
+        const respuesta = await api.solicitud('/ajustes.php', 'POST', payload);
+        if (respuesta.exito) {
+            cerrarModal('modalAjustesAuditoria');
+            if (typeof window._ajusteCallback === 'function') {
+                window._ajusteCallback(respuesta);
+            }
+            alert('✅ Ajuste aplicado y registrado en el historial inmutable con éxito.');
+        } else {
+            if (errEl) errEl.textContent = '❌ ' + (respuesta.mensaje || 'Error al procesar el ajuste.');
+        }
+    } catch (e) {
+        console.error('Error al procesar ajuste:', e);
+        if (errEl) errEl.textContent = '❌ Error de conexión con el servidor.';
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+};
+
+// --- SOPORTE GLOBAL DE CIERRE DE MODALES (TECLA ESCAPE Y CLIC FUERA DEL CONTENIDO) ---
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const activeModals = document.querySelectorAll('.modal.active, .global-modal.active');
+        activeModals.forEach(function(modal) {
+            cerrarModal(modal.id);
+        });
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal') || e.target.classList.contains('global-modal')) {
+        cerrarModal(e.target.id);
+    }
+});
+
 

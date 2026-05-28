@@ -1,188 +1,107 @@
 # 🧭 GUÍA DE ORIENTACIÓN — ¿POR DÓNDE EMPEZAR?
 
-> **Versión:** 3.3.0 | **Actualizado:** 21 de Mayo de 2026
+> **Versión:** 4.0.0 Stable | **Actualizado:** 22 de Mayo de 2026 | **Estándar:** NOFTRAB v4.0 (Logs Inmutables)
 
 ---
 
-## 👋 Bienvenido a MÁS QUE FIANZAS (Plataforma Estabilizada)
+## 👋 Bienvenido a MÁS QUE FIANZAS (Plataforma Estabilizada v4.0.0)
 
-Has recibido una plataforma completa estabilizada bajo estrictas normas de aseguramiento de calidad (MS-LS v1.0). Este documento te guía sobre **qué leer primero** según tu rol.
+Has recibido una plataforma robusta y estabilizada bajo estrictas normas de aseguramiento de calidad. Este documento te guía sobre **qué leer primero** y **cómo operar las nuevas herramientas** según tu perfil.
 
 ---
 
-## 🌟 NOVEDADES — Versión 3.3.0 (Mayo 2026)
+## 🌟 NOVEDADES — Versión 4.0.0 Stable (Mayo 2026)
 
-La plataforma ha sido sustancialmente robustecida con las siguientes funcionalidades de nivel empresarial:
+La plataforma ha sido enriquecida y estabilizada con funcionalidades de alta seguridad corporativa y diseño visual premium:
 
-| Funcionalidad | Estado | Descripción |
-|--------------|--------|-------------|
-| **Motor ETL Python 3.14.5** | ✅ Nuevo (Estabilizado) | Procesa listados XLSX masivos de usuarios de forma ultra-rápida y 100% libre de dependencias. |
-| **Normalización Bancaria Inteligente** | ✅ Nuevo (Estabilizado) | Convierte variantes de "Reservas" a "Banreservas" y fuerza cuentas tipo "Ahorro" de manera automática y segura. |
-| **Importación 100% Idempotente** | ✅ Nuevo (Estabilizado) | Previene registros duplicados de usuarios y actualiza comisiones dinámicamente si el usuario ya existe en la BD. |
-| **Módulos Comisiones y Bancos Dinámicos** | ✅ Nuevo (Estabilizado) | Formulario dinámico en `usuarios.html` que habilita/deshabilita comisiones por ramo y campos bancarios según perfil. |
-| **Recuperación de contraseña por email** | ✅ Activo | Token seguro + plantilla HTML con visor SMTP. |
-| **Panel de Canales de Cobro (Finanzas)** | ✅ Activo | Soporte dinámico para depósitos, transferencias, tarjetas y pasarelas de pago. |
-| **PDF Corporativo MQF Estabilizado** | ✅ Mejorado | Logo en alta definición, grillas alineadas y soporte para firmas digitales en fianzas y seguros de ley. |
+| Funcionalidad | Estándar / Estado | Descripción |
+|--------------|-------------------|-------------|
+| **Auditoría Inmutable NOFTRAB v4.0** | ⚖️ Norma NOFTRAB v4.0 | Cualquier ajuste o edición en pólizas, pagos o comisiones requiere obligatoriamente una justificación (>9 caracteres) y guarda los estados `before`/`after` en JSON en `historial_ajustes`. |
+| **Privacidad "Propios vs. Todos"** | 🔐 Control de Acceso Granular | Los usuarios con la restricción `solo_propios = 1` activa en su perfil solo visualizan sus propias transacciones en listados, comisiones y modales del Dashboard. |
+| **Widget de Pólizas Emitidas** | 📊 Premium Glassmorphism | Panel en la columna izquierda inferior con pills degradados dinámicos de emisión diaria, semanal y mensual, Top 5 de clientes con barras de progreso y botón maximizar. |
+| **Modal Analítico de Pólizas** | 📈 Premium UI | Modal enriquecido `#modalPolizasDetalle` con el desglose analítico de emisiones y clientes que respeta automáticamente las reglas de privacidad de datos. |
+| **Avatar Superior Interactivo** | 👤 Premium UI / UX | Cabecera `.user-info` con hover animado (escala y transiciones suaves) y click-handler que abre directamente el panel de edición "Mi Perfil". |
+| **Puente de Intercepción Iframe** | 🔗 Iframe Bridge | Los submódulos en iframes (ej: `polizas.html`) interceptan los cambios de estado y delegan la recolección de justificación obligatoria al dashboard padre mediante `window.parent.solicitarAjusteAuditoria(...)`. |
 
 ---
 
 ## 🎯 ELIGE TU PERFIL
 
 ### 👑 Soy ADMINISTRADOR del Sistema
-**Tiempo estimado: 1 hora**
+**Tiempo estimado: 45 minutos**
 
 1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)
-   - Entender qué se ha entregado en v3.3.0
-
+   - Comprender el estándar de auditoría NOFTRAB v4.0 y el alcance de la versión.
 2. **[10 min]** Leer: [INSTALACION_RAPIDA.md](INSTALACION_RAPIDA.md)
-   - Pasos exactos para instalar o actualizar
+   - Pasos exactos para inicializar o actualizar el sistema WAMP y las migraciones.
+3. **[15 min]** Acceder al sistema y configurar SMTP:
+   - URL: `http://localhost/PLATAFORMA_INTEGRADA`
+   - Ingresar con credenciales: `admin` / `Demo@123`
+   - Ir a: Dashboard → módulo Seguridad → Configuración SMTP. Rellenar los campos y hacer clic en **"Probar conexión"**.
+4. **[15 min]** Crear y configurar perfiles:
+   - Crear un usuario Socio Comercial PDV y activar el checkbox de comisiones.
+   - Verificar en la tabla de usuarios la nomenclatura automática (ej: `PDV-001`).
+   - Ir a la base de datos y verificar que para el perfil PDV la opción `solo_propios` esté activa en la malla de permisos.
 
-3. **[20 min]** Instalar y acceder:
-   ```
-   http://localhost/PLATAFORMA_INTEGRADA
-   Usuario: admin / Contraseña: Demo@123
-   ```
-
-4. **[15 min]** Configurar SMTP:
-   - Dashboard → módulo Seguridad/Configuración → SMTP
-   - Ingresar servidor, puerto, usuario y contraseña de correo
-   - Clic en "Probar conexión" para verificar
-
-5. **[10 min]** Crear usuarios desde Dashboard:
-   - Dashboard → Usuarios → "+ Crear Usuario"
-   - Asignar perfil jerárquico (Director, PDV, Vendedor, etc.)
-   - El código (RED-XXX / DIR-XXX / etc.) se asigna automáticamente
-
-**Resultado esperado:** Sistema con SMTP funcionando y primer usuario de equipo creado ✅
-
----
-
-### 📊 Soy GERENTE / Director de Red
-**Tiempo estimado: 30 minutos**
-
-1. **[5 min]** Leer: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md) - Sección "Nuevas funcionalidades"
-
-2. **[10 min]** Entender jerarquía de IDs de usuarios:
-   - RED-XXX: Directores de Red (máximo nivel comercial)
-   - DIR-XXX: Directores de área
-   - PDV-XXX: Socios Comerciales con punto de venta
-   - VEN-XXX: Vendedores de campo
-
-3. **[10 min]** Revisar módulo de usuarios:
-   - Dashboard → Usuarios → ver columna "Código"
-   - Crear un PDV y asignar referente (árbol de comisiones)
-
-4. **[5 min]** Revisar estadísticas del Dashboard:
-   - Cotizaciones totales, por tipo Fianza vs Seguro
-
-**Resultado esperado:** Entender estructura de comisiones y árbol de referidos ✅
+**Resultado esperado:** Servidor de correo activo, usuarios jerárquicos creados y árbol de referidos operando ✅
 
 ---
 
 ### 🏪 Soy SOCIO COMERCIAL (PDV)
 **Tiempo estimado: 15 minutos**
 
-1. **[2 min]** Acceder con tus credenciales proporcionadas por el administrador
+1. **[2 min]** Acceder a la plataforma con las credenciales que te asignó el administrador:
    ```
    http://localhost/PLATAFORMA_INTEGRADA
    ```
+2. **[5 min]** Explorar el Dashboard de Inicio:
+   - Verás el nuevo **Widget de Pólizas Emitidas** en la columna izquierda inferior. Las cifras diarias, semanales y mensuales reflejarán **exclusivamente tu propia producción**.
+   - Haz clic en el botón de maximizar en la esquina superior derecha del widget para abrir el **Modal Analítico**. La lista de clientes y las barras de progreso se autolimitarán de forma segura a tus operaciones.
+3. **[5 min]** Realizar una cotización y emitir póliza:
+   - Cotizaciones → Seguros de Ley → Rellenar datos → Calcular → Guardar e imprimir PDF.
+   - Pólizas → Emitir. Comprobarás que al intentar realizar un ajuste, el sistema te solicitará obligatoriamente una justificación detallada.
+4. **[3 min]** Gestionar tu cuenta:
+   - Pasa el ratón sobre tu foto en la cabecera (notarás un suave efecto hover de escala y sombra). Haz clic en él para abrir instantáneamente la interfaz de **"Mi Perfil"** y cambiar tu contraseña inicial.
 
-2. **[5 min]** Explorar el Dashboard:
-   - Verás solo los módulos que tienes disponibles
-   - Cotizaciones, Clientes, Pólizas, Reportes
-
-3. **[5 min]** Hacer una cotización de prueba:
-   - Dashboard → Cotizaciones → Tab "Seguros de Ley"
-   - Seleccionar: Tipo vehículo → Uso → Capacidad
-   - Ver precio y cobertura automática
-   - Descargar PDF corporativo
-
-4. **[3 min]** Cambiar tu contraseña inicial:
-   - Clic en tu nombre (arriba derecha) → Cambiar Contraseña
-
-**Resultado esperado:** Saber cotizar y descargar PDF para clientes ✅
-
----
-
-### 👤 Soy USUARIO final (Empleado)
-**Tiempo estimado: 10 minutos**
-
-1. **[2 min]** Acceder:
-   ```
-   http://localhost/PLATAFORMA_INTEGRADA
-   ```
-
-2. **[5 min]** Navegar el Dashboard según tu perfil
-
-3. **[3 min]** Cambiar tu contraseña:
-   - Click en nombre de usuario → "Cambiar Contraseña"
-
-> ⚠️ Si olvidaste tu contraseña: en la pantalla de login click en "¿Olvidaste tu contraseña?" y recibirás un email con instrucciones.
-
-**Resultado esperado:** Saber acceder y navegar ✅
-
----
-
-### 🧑‍💻 Soy DESARROLLADOR / Técnico
-**Tiempo estimado: 2-3 horas**
-
-1. **[15 min]** Revisar estructura del proyecto:
-   - `backend/config.php` — configuración central de BD
-   - `backend/config/smtp.json` — configuración SMTP (editable sin código)
-   - `backend/Mailer.php` — motor de envío de correos
-   - `backend/UsuarioManager.php` — patrón de clase principal
-
-2. **[20 min]** Explorar APIs REST:
-   - `backend/api/auth.php` — login, logout, sesión
-   - `backend/api/actividad.php` — registro de actividad por módulo
-   - `backend/api/cotizaciones.php` — guardar/listar cotizaciones
-   - `backend/api/config_smtp.php` — leer/guardar config SMTP
-   - `backend/api/test_smtp.php` — prueba de correo
-   - `backend/api/logs_smtp.php` — visor de logs SMTP
-   - `backend/api/mi_perfil.php` — datos del usuario actual
-   - `backend/api/alter_recuperacion.php` — recuperación de contraseña
-
-3. **[20 min]** Revisar frontend:
-   - `frontend/assets/api-client.js` — cliente HTTP (todas las llamadas)
-   - `frontend/assets/dashboard.js` — lógica principal del Dashboard
-   - `frontend/assets/data-export.js` — motor PDF/Excel/CSV/ZIP
-   - `frontend/modulos/cotizaciones.html` — cotizador React integrado
-
-4. **[15 min]** Entender el flujo de autenticación:
-   - Login → sesión en BD → token → API headers
-   - Recuperación: solicitud → token BD → email → validación → nueva contraseña
-
-5. **[30 min]** Extensión de ejemplo:
-   - Agregar nuevo tipo de fianza en `cotizaciones.html` (TASAS object)
-   - Crear nuevo endpoint en `backend/api/`
-   - Registrar actividad con `api.registrarActividad(modulo, descripcion)`
-
-6. **[10 min] Estándar de Documentos (MS-LS v1.0)**:
-   - Los PDFs corporativos siguen una grilla técnica estricta.
-   - Ver especificaciones en `frontend/assets/polizas-pdf.js` (JSDoc).
-   - **Regla de oro**: Respetar coordenadas X para evitar solapamientos.
-
-**Resultado esperado:** Dominar arquitectura y poder extender siguiendo el estándar corporativo ✅
+**Resultado esperado:** Dominar el cotizador y el panel de estadísticas privadas de tu punto de venta ✅
 
 ---
 
 ### 🔎 Soy AUDITOR / Compliance
-**Tiempo estimado: 45 minutos**
+**Tiempo estimado: 30 minutos**
 
-1. **[10 min]** Revisar: [RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md) - Sección "Seguridad"
+1. **[5 min]** Leer: [ESPECIFICACIONES.md](ESPECIFICACIONES.md)
+   - Estudiar las reglas de auditoría del Estándar NOFTRAB v4.0.
+2. **[15 min]** Auditar el Historial de Ajustes Inmutable:
+   - Ir a la base de datos a la tabla `historial_ajustes`.
+   - Modificar cualquier póliza desde el panel de administración ingresando la justificación (ej. "Corrección de prima por error de digitación").
+   - Comprobar que en la base de datos se almacene de forma inmutable el registro del ajuste con el estado JSON anterior (`valor_anterior`) y posterior (`valor_nuevo`), el `usuario_id`, IP y marca de tiempo.
+3. **[10 min]** Inspeccionar los logs técnicos y accesos:
+   - Ir a: Dashboard → Usuarios → pestaña **"Auditoría"** para revisar la bitácora de accesos.
+   - Ir a: Dashboard → Seguridad → pestaña **"Logs SMTP"** para revisar el visor de correos.
 
-2. **[15 min]** Dashboard → Usuarios → Tab "Auditoría":
-   - Todos los eventos: login, logout, cambios de datos, acceso a módulos
-   - Filtros por usuario, fecha, tipo de evento
+**Resultado esperado:** Asegurar la consistencia técnica de la bitácora de auditoría forense inmutable ✅
 
-3. **[10 min]** Dashboard → Seguridad → "Logs SMTP":
-   - Ver intentos de envío de correo y resultados
+---
 
-4. **[10 min]** Revisar backend/logs/:
-   - `error.log` — errores del sistema PHP
-   - `smtp.log` — actividad de correo electrónico
+### 🧑‍💻 Soy DESARROLLADOR / Técnico
+**Tiempo estimado: 1 hora**
 
-**Resultado esperado:** Entender controles de seguridad y auditabilidad ✅
+1. **[15 min]** Estudiar las APIs de la v4.0.0 Stable:
+   - `backend/api/polizas_stats.php` - Estadísticas y Top 5 con inyección del filtro `restringirSoloPropios()`.
+   - `backend/api/ajustes.php` - Endpoint receptor de la justificación que invoca `registrarAjuste()`.
+   - `backend/api/perfiles_engine.php` y `backend/perfiles_engine.py` - Motor transaccional de permisos en Python.
+2. **[15 min]** Entender el flujo de intercepción de submódulos:
+   - Revisar en `frontend/modulos/polizas.html` la función `validarPoliza(id)`. Ella detecta si el script corre en un iframe y redirige al dashboard padre la ejecución de la auditoría:
+     ```javascript
+     window.parent.solicitarAjusteAuditoria('Pólizas', 'polizas', id, valorAnterior, valorNuevo, () => {
+         // Callback que refresca la lista local
+     });
+     ```
+3. **[20 min]** Ejecutar verificaciones:
+   - Correr en consola: `php verify_system_end_to_end.php` para validar la correcta integración de todos los componentes y motores de Python/PHP.
+
+**Resultado esperado:** Dominar el puente de comunicación en iframes, la API de estadísticas y el estándar NOFTRAB v4.0 ✅
 
 ---
 
@@ -190,186 +109,50 @@ La plataforma ha sido sustancialmente robustecida con las siguientes funcionalid
 
 ```
 Para TODOS:
-  1. RESUMEN_EJECUTIVO.md       ← Comienza aquí (versión 3.3.0)
+  1. RESUMEN_EJECUTIVO.md       ← Novedades y alcance de la v4.0.0 Stable
      └─ 10 min
 
 Para INSTALAR:
-  2. INSTALACION_RAPIDA.md      ← Pasos exactos
-     └─ 15 min
+  2. INSTALACION_RAPIDA.md      ← Configuración paso a paso en WAMP
+     └─ 10 min
 
-Para ENTENDER TÉCNICA:
-  3. ESPECIFICACIONES.md        ← Componentes, APIs, BD
-     └─ 20 min
+Para ENTENDER LA ARQUITECTURA:
+  3. ESPECIFICACIONES.md        ← Matriz de roles y estándar NOFTRAB
+     └─ 15 min
 
 Para el COTIZADOR:
-  4. INTEGRACION_COTIZADOR.md   ← Módulo de cotizaciones
-     └─ 15 min
+  4. INTEGRACION_COTIZADOR.md   ← Operación de primas y PDF MQF
+     └─ 10 min
 
-Para NAVEGAR EL PROYECTO:
-  5. INDICE_MAESTRO.md          ← Mapa del proyecto
-     └─ 20 min
-
-Para VERIFICAR INSTALACIÓN:
-  6. VERIFICACION_FINAL.md      ← Checklist de archivos
-     └─ 15 min
+Para NAVEGAR EL CÓDIGO:
+  5. INDICE_MAESTRO.md          ← Estructura de carpetas y APIs
+     └─ 5 min
 ```
 
 ---
 
-## 🔗 MAPA DEL PROYECTO
+## ✅ CHECKLIST DE INICIO OPERATIVO (v4.0.0 Stable)
 
-```
-┌──────────────────────────────────────────────────┐
-│       PLATAFORMA MÁS QUE FIANZAS v3.3.0          │
-│                                                  │
-│  LOGIN ──→ DASHBOARD ──→ MÓDULOS                 │
-│              │                                   │
-│       ┌──────┴──────────────────────────┐        │
-│       ↓         ↓          ↓            ↓        │
-│  COTIZACIONES CLIENTES  USUARIOS  SEGURIDAD       │
-│  (Seguros+    (CRUD)    (Jerarquía  (SMTP+        │
-│   Fianzas)              +Comisiones) Logs)        │
-│       ↓                                          │
-│  PDF CORPORATIVO (logo MQF)                      │
-│  Excel/CSV/ZIP/JSON                              │
-└──────────────────────────────────────────────────┘
-```
+### Seguridad y Auditoría
+- [ ] La tabla `historial_ajustes` contiene llaves foráneas y registros correctos.
+- [ ] Cualquier modificación de póliza, pago o comisión exige justificación obligatoria.
+- [ ] La justificación de menos de 10 caracteres es rechazada de forma interactiva.
+- [ ] Los logs inmutables JSON se guardan en la base de datos con IP y marca de tiempo.
 
----
+### Interfaz del Dashboard
+- [ ] El Widget de Pólizas se muestra en la barra izquierda inferior (encima de acciones rápidas).
+- [ ] Las barras de progreso de clientes cargan con transiciones fluidas de CSS.
+- [ ] El Modal Analítico se abre al hacer clic en maximizar y renderiza la tabla de clientes.
+- [ ] El avatar del usuario en `.user-info` posee cursor pointer y escala suave en hover.
+- [ ] Al hacer clic en el avatar se abre instantáneamente "Mi Perfil".
 
-## ⏰ TIEMPOS SUGERIDOS
-
-| Actividad | Tiempo | Documento/Acción |
-|-----------|--------|-----------------|
-| Visión general v3.3.0 | 10 min | RESUMEN_EJECUTIVO |
-| Instalación / actualización | 15 min | INSTALACION_RAPIDA |
-| Configurar SMTP | 10 min | Dashboard → Seguridad |
-| Primera cotización PDF | 5 min | Dashboard → Cotizaciones |
-| Crear usuario con jerarquía | 10 min | Dashboard → Usuarios |
-| Entender APIs | 30 min | ESPECIFICACIONES + código |
-| Administrar árbol de referidos | 20 min | Dashboard → Usuarios |
-| **TOTAL admin** | **~100 min** | **Dominio completo** |
+### Privacidad del Socio Comercial PDV
+- [ ] El Socio Comercial PDV no puede ver cotizaciones, pólizas, comisiones o pagos de otros agentes.
+- [ ] Los números en el widget de pólizas del PDV corresponden únicamente a su ID de usuario.
+- [ ] El Modal de pólizas para el PDV restringe la lista de clientes a los registrados por él.
+- [ ] El Administrador conserva el bypass global para supervisar todas las transacciones.
 
 ---
 
-## 📞 PREGUNTAS FRECUENTES
-
-### "¿Cómo configuro el correo del sistema?"
-**Respuesta:** Dashboard → módulo Seguridad → pestaña "Configuración SMTP" → llenar datos → Guardar → Probar
-
-### "¿Cómo recupero una contraseña olvidada?"
-**Respuesta:** En la pantalla de login → "¿Olvidaste tu contraseña?" → ingresar email → revisar bandeja → seguir el enlace (válido 30 minutos)
-
-### "¿Qué significa el código RED-001, DIR-002, etc.?"
-**Respuesta:** Es la nomenclatura jerárquica de usuarios:
-- `RED-XXX` = Director de Red (máximo nivel)
-- `DIR-XXX` = Director de área
-- `PDV-XXX` = Socio Comercial (Punto de Venta)
-- `VEN-XXX` = Vendedor de campo
-
-### "¿Cómo genero una cotización con PDF?"
-**Respuesta:** Dashboard → Cotizaciones → Tab "Seguros de Ley" o "Fianzas" → llenar datos → "Guardar y Descargar PDF"
-
-### "¿Cómo exporto el historial de cotizaciones?"
-**Respuesta:** Dashboard → Cotizaciones → Tab "Historial" → botón "Exportar" → elegir formato (PDF, Excel, CSV, JSON, ZIP)
-
-### "¿Cómo creo un usuario con comisiones?"
-**Respuesta:** Dashboard → Usuarios → "+ Crear Usuario" → activar checkbox "¿Tiene comisión?" → ingresar porcentaje individual y de red → seleccionar referente
-
-### "¿Qué módulos ve un PDV (Socio Comercial)?"
-**Respuesta:** Solo ve: Dashboard, Cotizaciones, Clientes, Pólizas, Reportes y Mi Perfil. Los módulos administrativos están ocultos automáticamente.
-
-### "¿Dónde veo los logs del sistema?"
-**Respuesta:** 
-- Actividad de usuarios: Dashboard → Usuarios → Tab "Auditoría"
-- Logs SMTP: Dashboard → Seguridad → "Logs de Correo"
-- Logs técnicos: `backend/logs/error.log` y `backend/logs/smtp.log`
-
----
-
-## ✅ CHECKLIST DE INICIO
-
-### Instalación (una sola vez)
-- [ ] Sistema accesible en http://localhost/PLATAFORMA_INTEGRADA
-- [ ] Login funciona con admin/Demo@123
-- [ ] Dashboard muestra estadísticas (aunque sean en 0)
-- [ ] SMTP configurado y probado → "Prueba exitosa"
-
-### Configuración inicial
-- [ ] Crear usuarios reales con sus roles apropiados
-- [ ] Asignar árbol de referidos si aplica
-- [ ] Configurar comisiones por usuario si aplica
-- [ ] Cambiar contraseña del admin por una más segura
-
-### Verificación operativa
-- [ ] Cotizador Seguros de Ley genera precio y PDF
-- [ ] Cotizador Fianzas calcula prima y genera PDF
-- [ ] Historial de cotizaciones carga desde la BD
-- [ ] Recuperación de contraseña envía email correctamente
-- [ ] Auditoría registra los eventos de login
-
-**Si todas están marcadas:** ¡La plataforma está lista para operar! ✅
-
----
-
-## 🎯 PRÓXIMAS ACCIONES RECOMENDADAS
-
-### Hoy (Día 1)
-1. ✅ Instalar/verificar sistema
-2. ✅ Configurar SMTP con datos reales de correo
-3. ✅ Crear usuarios del equipo comercial
-4. ✅ Probar flujo completo: cotizar → PDF → historial
-
-### Esta semana
-1. ✅ Asignar roles y árbol de referidos al equipo
-2. ✅ Capacitar a PDVs en el uso del cotizador
-3. ✅ Probar recuperación de contraseña
-
-### Este mes
-1. ✅ Usar cotizador activamente con clientes reales
-2. ✅ Revisar auditoría regularmente
-3. ✅ Revisar historial y estadísticas del Dashboard
-4. ✅ Realizar backups de la base de datos
-
----
-
-## 💡 TIPS IMPORTANTES
-
-🎯 **PDFs del cotizador incluyen el logo MQF** — impresiona a tus clientes  
-📧 **El SMTP se configura sin código** — solo llena el formulario del Dashboard  
-🔑 **Los usuarios pueden recuperar su contraseña solos** — vía email  
-👥 **Los códigos de usuarios son automáticos** — el backend los genera según el perfil  
-📊 **Las estadísticas del Dashboard son en tiempo real** — se cargan desde la API  
-🔒 **El menú se adapta al rol** — un PDV nunca verá el módulo de usuarios
-
----
-
-## 🏁 ¡COMIENZA AQUÍ!
-
-```
-Paso 1: Lee RESUMEN_EJECUTIVO.md (10 min)
-         → Entiende qué cambió en v3.3.0
-
-Paso 2: Lee INSTALACION_RAPIDA.md (10 min)
-         → Sigue los pasos exactos
-
-Paso 3: Instala y entra (15 min)
-         → http://localhost/PLATAFORMA_INTEGRADA
-
-Paso 4: Configura SMTP (10 min)
-         → Dashboard → Seguridad → Configuración SMTP
-
-Paso 5: Crea usuarios del equipo (10 min)
-         → Dashboard → Usuarios → + Crear Usuario
-
-¡LISTO! → El sistema está operativo ✅
-```
-
----
-
-**Tiempo total hasta tener el sistema plenamente configurado: ~55 minutos**
-
----
-
-*Documento de orientación actualizado para la versión 3.3.0 de la plataforma.*  
-*Actualizado: 21 de Mayo de 2026*
+*Guía de orientación técnica y operativa.*  
+*Actualizado conforme al estándar corporativo NOFTRAB v4.0 de la plataforma MÁS QUE FIANZAS. Mayo de 2026.*

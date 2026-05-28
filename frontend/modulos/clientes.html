@@ -12,10 +12,10 @@
     
     <!-- Design System MQF -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../assets/design-system.css">
-    <link rel="stylesheet" href="../assets/skin-engine.css">
-    <link rel="stylesheet" href="../assets/components.css">
-    <link rel="stylesheet" href="../assets/dashboard.css">
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
     
     <!-- Librerías de Exportación -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -39,6 +39,21 @@
         .data-table th { padding: 12px 15px; background: var(--mqf-primary-light); border-bottom: 2px solid var(--mqf-border); color: var(--mqf-primary-dark); font-weight: 700; text-align: left; font-size: var(--mqf-text-xs); text-transform: uppercase; letter-spacing: .5px; }
         .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--mqf-border); color: var(--mqf-text-secondary); }
         .data-table tr:hover { background: var(--mqf-surface-2); }
+
+        /* =====================================================
+           NOFTRAB HEADER CONTRAST FIX — inline para garantía
+           Sobreescribe cualquier regla de h1/h2/h3 global
+           ===================================================== */
+        .mqf-module-header h1,
+        .mqf-module-header h2,
+        .mqf-module-header h3,
+        .mqf-module-header__title {
+            color: #ffffff !important;
+        }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
     </style>
 </head>
 <body class="dashboard-body">
@@ -199,7 +214,7 @@
                         </div>
                     </div>
                     <!-- IMPORT BUTTON -->
-                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="window.abrirAsistenteImportacion('clientes')">
+                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm btn-importar" onclick="window.abrirAsistenteImportacion('clientes')">
                         <i class="fa-solid fa-upload"></i> Importar
                     </button>
                     <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="window.abrirModalCliente()">
@@ -323,8 +338,8 @@
     </main>
 
     <!-- Dashboard Scripts -->
-    <script src="../assets/api-client.js?v=6"></script>
-    <script src="../assets/clientes.js?v=6"></script>
+    <script src="../assets/api-client.js?v=5.0.0"></script>
+    <script src="../assets/clientes.js?v=5.0.0"></script>
     <!-- Logo Base64 para impresión -->
     <script src="../assets/logo_b64.js?v=4"></script>
     <script src="../assets/data-export.js?v=3"></script>
@@ -441,3 +456,4 @@
 <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 </body>
 </html>
+

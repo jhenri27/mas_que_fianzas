@@ -141,6 +141,11 @@ try {
                 $filtros = [];
                 if (isset($_GET['poliza_id'])) $filtros['poliza_id'] = $_GET['poliza_id'];
                 
+                $soloPropios = restringirSoloPropios($usuario_id, 'Pagos');
+                if ($soloPropios) {
+                    $filtros['registrado_por'] = $usuario_id;
+                }
+                
                 $pagos = $pagoManager->obtenerPagos($filtros);
                 echo json_encode(["exito" => true, "data" => $pagos]);
             }

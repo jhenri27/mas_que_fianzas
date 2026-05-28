@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cotizaciones - MAS QUE FIANZAS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../assets/design-system.css">
-  <link rel="stylesheet" href="../assets/skin-engine.css">
-  <link rel="stylesheet" href="../assets/components.css">
+  <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+  <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+  <link rel="stylesheet" href="../assets/components.css?v=9.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF + AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -19,7 +19,7 @@
   <!-- Logo MQF en Base64 (necesario para PDFs) -->
   <script src="../assets/logo_b64.js?v=4"></script>
   <!-- API Client -->
-  <script src="../assets/api-client.js?v=7"></script>
+  <script src="../assets/api-client.js?v=8.0.0"></script>
   <!-- Motor de exportación con dibujarCotizacionPDF() -->
   <script src="../assets/data-export.js"></script>
   <!-- React -->
@@ -29,6 +29,21 @@
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
+
+    /* =====================================================
+       NOFTRAB HEADER CONTRAST FIX — inline para garantía
+       Sobreescribe cualquier regla de h1/h2/h3 global
+       ===================================================== */
+    .mqf-module-header h1,
+    .mqf-module-header h2,
+    .mqf-module-header h3,
+    .mqf-module-header__title {
+        color: #ffffff !important;
+    }
+    .mqf-module-header p,
+    .mqf-module-header__subtitle {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
 
     .cot-panel { display: none; padding: 24px; }
     .cot-panel.active { display: block; }
@@ -149,7 +164,7 @@
             <button onclick="exportarListado('zip','cotizaciones')"><i class="fa-solid fa-file-zipper" style="color:#b45309;width:18px;"></i> ZIP</button>
           </div>
         </div>
-        <label class="btn-import-main" style="cursor:pointer;">
+        <label class="btn-import-main btn-importar" style="cursor:pointer;">
           <i class="fa-solid fa-file-import"></i> Importar
           <input type="file" accept=".xlsx,.csv" style="display:none;" onchange="importarCotizaciones(event)">
         </label>
@@ -1072,3 +1087,4 @@
 </script>
 </body>
 </html>
+

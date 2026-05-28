@@ -280,6 +280,12 @@ class PagoManager {
             $types .= "i";
         }
 
+        if (!empty($filtros['registrado_por'])) {
+            $where .= " AND p.registrado_por = ?";
+            $params[] = intval($filtros['registrado_por']);
+            $types .= "i";
+        }
+
         $sql = "SELECT p.*, pol.numero_poliza as poliza_numero, c.nombre as cliente_nombre 
                 FROM pagos p
                 JOIN polizas pol ON p.poliza_id = pol.id

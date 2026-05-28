@@ -36,8 +36,8 @@ class APIClient {
             const response = await fetch(`${this.baseURL}${endpoint}`, opciones);
             const data = await response.json();
 
-            // Si la respuesta es 401 solo redirigir si es en un endpoint de autenticación
-            if (!response.ok && response.status === 401 && endpoint.includes('/auth/')) {
+            // Si la respuesta es 401, limpiar sesión y redirigir al login
+            if (!response.ok && response.status === 401) {
                 this.limpiarSesion();
                 window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
             }
@@ -235,3 +235,70 @@ class APIClient {
 
 // Instancia global del cliente
 const api = new APIClient();
+
+// =========================================================================
+// SISTEMA DE PERMISOS GRANULARES NOFTRAB - EJECUCIÓN AUTOMÁTICA EN IFRAMES
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    window.MQF_CAN_CREATE = true;
+    window.MQF_CAN_EDIT = true;
+    window.MQF_CAN_DELETE = true;
+    
+    try {
+        if (window.parent && window.parent.MQF_PERMISOS) {
+            const permisos = window.parent.MQF_PERMISOS;
+            const path = window.location.pathname.toLowerCase();
+            
+            const idToCode = {
+                1: 'dashboard', 2: 'clientes', 3: 'polizas', 4: 'fianzas',
+                5: 'pagos', 6: 'cotizaciones', 7: 'productos', 8: 'configuracion',
+                9: 'reportes', 10: 'siniestros', 11: 'usuarios'
+            };
+            
+            let currentModId = null;
+            for (const [id, code] of Object.entries(idToCode)) {
+                if (path.includes(code)) {
+                    currentModId = parseInt(id);
+                    break;
+                }
+            }
+            
+            if (currentModId) {
+                const modulePerms = permisos.filter(p => parseInt(p.modulo_id) === currentModId);
+                if (modulePerms.length > 0) {
+                    window.MQF_CAN_CREATE = modulePerms.some(p => parseInt(p.crear_datos) === 1);
+                    window.MQF_CAN_EDIT = modulePerms.some(p => parseInt(p.editar_datos) === 1);
+                    window.MQF_CAN_DELETE = modulePerms.some(p => parseInt(p.eliminar_datos) === 1);
+                    window.MQF_CAN_IMPORT = modulePerms.some(p => parseInt(p.importar_datos) === 1);
+                    window.MQF_CAN_PRINT = modulePerms.some(p => parseInt(p.imprimir_datos) === 1);
+                    
+                    // Inyectar CSS dinámico (Global por módulo) para asegurar NOFTRAB Compliance en renderizados asíncronos
+                    let cssRules = '';
+                    if (!window.MQF_CAN_CREATE) {
+                        cssRules += '[onclick*="abrirModal"], [onclick*="abrirAsistente"], .btn-crear { display: none !important; }\n';
+                    }
+                    if (!window.MQF_CAN_EDIT) {
+                        cssRules += '[onclick*="editar"], [onclick*="Editar"], .btn-editar { display: none !important; }\n';
+                    }
+                    if (!window.MQF_CAN_DELETE) {
+                        cssRules += '[onclick*="eliminar"], [onclick*="Eliminar"], [onclick*="borrar"], .btn-danger { display: none !important; }\n';
+                    }
+                    if (!window.MQF_CAN_IMPORT) {
+                        cssRules += '[onclick*="importar"], [onclick*="Importar"], .btn-importar { display: none !important; }\n';
+                    }
+                    if (!window.MQF_CAN_PRINT) {
+                        cssRules += '[onclick*="imprimir"], [onclick*="Imprimir"], [onclick*="pdf"], [onclick*="PDF"], .btn-imprimir { display: none !important; }\n';
+                    }
+                    
+                    if (cssRules) {
+                        const style = document.createElement('style');
+                        style.textContent = cssRules;
+                        document.head.appendChild(style);
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('Error validando permisos granulares NOFTRAB:', e);
+    }
+});
