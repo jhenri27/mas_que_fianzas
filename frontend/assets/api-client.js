@@ -36,10 +36,14 @@ class APIClient {
             const response = await fetch(`${this.baseURL}${endpoint}`, opciones);
             const data = await response.json();
 
-            // Si la respuesta es 401, limpiar sesión y redirigir al login
+            // Si la respuesta es 401, limpiar sesión y redirigir al login (manejando iframe breakout)
             if (!response.ok && response.status === 401) {
                 this.limpiarSesion();
-                window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                if (window.top) {
+                    window.top.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                } else {
+                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                }
             }
 
             return {

@@ -62,65 +62,18 @@ if (!$usuario_id) {
     exit;
 }
 
-// ─── Helpers de permisos ─────────────────────────────────────────────────────
-
-/**
- * Obtiene el perfil_id del usuario dado.
- */
-function getPerfilId($db, int $usuario_id): int {
-    $stmt = $db->prepare("SELECT perfil_id FROM usuarios WHERE id = ? LIMIT 1");
-    if (!$stmt) return 0;
-    $stmt->bind_param("i", $usuario_id);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    return (int)($row['perfil_id'] ?? 0);
-}
-
-/**
- * Verifica si el usuario tiene un permiso (codigo_funcion) habilitado.
- * Fallback: perfil_id = 1 (Admin) siempre tiene todos los permisos COM_*.
- */
-function tienePermiso($db, int $usuario_id, string $codigo_funcion): bool {
-    $perfil_id = getPerfilId($db, $usuario_id);
-
-    // Fallback Admin (perfil_id = 1)
-    if ($perfil_id === 1 && str_starts_with($codigo_funcion, 'COM_')) {
-        return true;
-    }
-
-    // Buscar en permisos_perfil via funciones_modulo
-    $sql = "SELECT pp.puede_ejecutar
-            FROM permisos_perfil pp
-            JOIN funciones_modulo fm ON fm.id = pp.funcion_id
-            WHERE pp.perfil_id = ?
-              AND fm.codigo    = ?
-            LIMIT 1";
-    $stmt = $db->prepare($sql);
-    if (!$stmt) {
-        // Si la tabla no existe aún, solo Admin tiene acceso
-        return ($perfil_id === 1);
-    }
-    $stmt->bind_param("is", $perfil_id, $codigo_funcion);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    return isset($row['puede_ejecutar']) && (int)$row['puede_ejecutar'] === 1;
-}
-
 // ─── Verificar permiso base COM_PANEL_VER ────────────────────────────────────
 
 $db = Database::getInstance()->getConnection();
 
-if (!tienePermiso($db, $usuario_id, 'COM_PANEL_VER')) {
+if (!tienePermiso($usuario_id, 'COM_PANEL_VER')) {
     http_response_code(403);
     echo json_encode(["exito" => false, "mensaje" => "Sin permiso para acceder al Panel de Comisiones"]);
     exit;
 }
 
 // ¿Tiene acceso global?
-$es_global = tienePermiso($db, $usuario_id, 'COM_PANEL_GLOBAL');
+$es_global = tienePermiso($usuario_id, 'COM_PANEL_GLOBAL');
 
 // ─── Parámetros comunes ───────────────────────────────────────────────────────
 
@@ -169,6 +122,49 @@ try {
             case 'proyeccion_mensual':
                 $datos = $mgr->obtenerProyeccionMensual($uid_target, $mes, $anio, $es_global);
                 echo json_encode(["exito" => true, "datos" => $datos, "mensaje" => ""]);
+                break;
+
+            // Obtener lista de códigos de función autorizados para el usuario actual
+            case 'mis_permisos':
+                $db_temp = Database::getInstance()->getConnection();
+                if ($usuario_id === 1) {
+                    $res = $db_temp->query("SELECT codigo_funcion FROM funciones_modulo");
+                } else {
+                    $stmt_perms = $db_temp->prepare(
+                        "SELECT fm.codigo_funcion 
+                         FROM usuarios u
+                         INNER JOIN permisos_perfil pp ON u.perfil_id = pp.perfil_id
+                         INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id
+                         WHERE u.id = ? AND pp.puede_ejecutar = 1"
+                    );
+                    $res = null;
+                    if ($stmt_perms) {
+                        $stmt_perms->bind_param("i", $usuario_id);
+                        $stmt_perms->execute();
+                        $res = $stmt_perms->get_result();
+                        $stmt_perms->close();
+                    }
+                }
+                $permisos = [];
+                if ($res) {
+                    while ($row = $res->fetch_assoc()) {
+                        $permisos[] = $row['codigo_funcion'];
+                    }
+                }
+                echo json_encode(["exito" => true, "permisos" => $permisos, "mensaje" => ""]);
+                break;
+
+            // Listar todos los agentes (usuarios) para el filtro global
+            case 'listar_agentes':
+                $db_temp = Database::getInstance()->getConnection();
+                $res = $db_temp->query("SELECT id, nombre FROM usuarios ORDER BY nombre ASC");
+                $agentes = [];
+                if ($res) {
+                    while ($row = $res->fetch_assoc()) {
+                        $agentes[] = $row;
+                    }
+                }
+                echo json_encode(["exito" => true, "agentes" => $agentes, "mensaje" => ""]);
                 break;
 
             default:

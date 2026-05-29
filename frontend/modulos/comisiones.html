@@ -359,11 +359,45 @@
         }
         .pg-btn:hover { background:#f0f0ff; }
 
-        /* Print only modal content */
+        /* Print styles - Adaptive Layout */
         @media print {
-            body > *:not(#modal-detalle-com) { display:none!important; }
-            #modal-detalle-com { position:static!important; display:block!important; }
-            .modal-footer, .close-btn { display:none!important; }
+            /* If printing the detail modal, hide everything else */
+            body.modal-print-active > *:not(#modal-detalle-com) {
+                display: none !important;
+            }
+            body.modal-print-active #modal-detalle-com {
+                position: static !important;
+                display: block !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                background: white !important;
+                color: black !important;
+            }
+            body.modal-print-active .modal-footer, 
+            body.modal-print-active .close-btn {
+                display: none !important;
+            }
+
+            /* If printing the full dashboard panel, hide interactive elements */
+            body:not(.modal-print-active) .periodo-bar,
+            body:not(.modal-print-active) .header-actions,
+            body:not(.modal-print-active) .accion,
+            body:not(.modal-print-active) .pagination-bar,
+            body:not(.modal-print-active) .modal-overlay,
+            body:not(.modal-print-active) #f-buscar-poliza,
+            body:not(.modal-print-active) #f-estado-pago {
+                display: none !important;
+            }
+            body:not(.modal-print-active) .content-area {
+                background: white !important;
+                padding: 0 !important;
+            }
+            body:not(.modal-print-active) .panel-section {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                page-break-inside: avoid;
+            }
         }
 
         /* Skeleton loader */
@@ -761,6 +795,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('inp-anio').value = periodoAnio;
     actualizarPeriodoDisplay();
     initPanel();
+
+    // Listeners de impresión limpia de modales bajo norma NOFTRAB
+    window.addEventListener('beforeprint', () => {
+        const modal = document.getElementById('modal-detalle-com');
+        if (modal && modal.classList.contains('open')) {
+            document.body.classList.add('modal-print-active');
+        }
+    });
+    window.addEventListener('afterprint', () => {
+        document.body.classList.remove('modal-print-active');
+    });
 });
 
 async function initPanel() {
@@ -792,8 +837,8 @@ async function cargarPermisos() {
             return;
         }
 
-        // Llamada al API de permisos
-        const res = await api.solicitud('/perfiles.php?action=mis_permisos', 'GET');
+        // Llamada al API de permisos dedicado del panel de comisiones
+        const res = await api.solicitud('/comisiones_panel.php?action=mis_permisos', 'GET');
         if (res.exito && Array.isArray(res.permisos)) {
             PERMISOS = res.permisos;
         } else {
@@ -863,7 +908,7 @@ async function cargarPanel() {
     const agenteId = tienePermiso('COM_PANEL_GLOBAL')
         ? document.getElementById('sel-agente').value : '';
 
-    const qp = `?mes=${periodoMes}&anio=${periodoAnio}${agenteId ? '&agente_id=' + agenteId : ''}`;
+    const qp = `?mes=${periodoMes}&anio=${periodoAnio}${agenteId ? '&usuario_filtro=' + agenteId : ''}`;
 
     // Mostrar loading en KPIs
     ['kpi-cobrado','kpi-transito','kpi-proyeccion','kpi-polizas'].forEach(id => {
@@ -889,14 +934,35 @@ async function cargarPanel() {
         const cxc        = resultados[2]?.value;
         const proyeccion = tienePermiso('COM_VER_CXC') ? resultados[3]?.value : resultados[2]?.value;
 
-        // Caché global
-        datosPanel = { resumen, polizas, cxc, proyeccion };
-        polizasCache = (polizas?.polizas) || generarDatosDemoPolizas();
+        // Si la llamada principal falló o el servidor retornó un error, usar demo como fallback
+        const apiFallo = !resumen || resumen.exito === false || resumen.ok === false ||
+                         !polizas || polizas.exito === false || polizas.ok === false;
 
-        renderKPIs(resumen);
+        if (apiFallo) {
+            console.warn('API de Comisiones falló o no está disponible. Usando datos demo de fallback.');
+            usarDatosDemo();
+            return;
+        }
+
+        // Extraer los datos reales de la envoltura (.datos)
+        const resumenData    = resumen?.datos    || resumen;
+        const polizasData    = polizas?.datos    || polizas;
+        const cxcData        = cxc?.datos        || cxc;
+        const proyeccionData = proyeccion?.datos || proyeccion;
+
+        // Guardar en caché global
+        datosPanel = { resumen: resumenData, polizas: polizasData, cxc: cxcData, proyeccion: proyeccionData };
+        
+        // Obtener el listado de pólizas
+        polizasCache = Array.isArray(polizasData) ? polizasData : (polizasData?.polizas || polizasData?.datos || []);
+        if (!Array.isArray(polizasCache)) {
+            polizasCache = [];
+        }
+
+        renderKPIs(resumenData);
         renderTablaPolizas();
-        if (tienePermiso('COM_VER_CXC'))        renderCxC(cxc);
-        if (tienePermiso('COM_VER_PROYECCION'))  renderProyeccion(proyeccion, resumen);
+        if (tienePermiso('COM_VER_CXC'))        renderCxC(cxcData);
+        if (tienePermiso('COM_VER_PROYECCION'))  renderProyeccion(proyeccionData, resumenData);
 
     } catch(e) {
         console.error('Error cargando panel:', e);
@@ -1069,7 +1135,7 @@ function renderCxC(res) {
     const tbody = document.getElementById('tbody-cxc');
     if (!res) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:30px;">Sin datos disponibles</td></tr>'; return; }
 
-    const items = res.cxc || res.data || [];
+    const items = Array.isArray(res) ? res : (res.cxc || res.data || res.datos || []);
     if (items.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8">
             <div class="empty-state">
@@ -1186,7 +1252,12 @@ function abrirDetallePoliza(polizaData) {
 }
 
 function imprimirModalDetalle() {
+    document.body.classList.add('modal-print-active');
     window.print();
+    // Remover clase después de imprimir por si no se disparó el evento afterprint
+    setTimeout(() => {
+        document.body.classList.remove('modal-print-active');
+    }, 1000);
 }
 
 /* ─────────────────────────────────────────
@@ -1338,7 +1409,7 @@ async function exportarPDF() {
 
         // ── TABLA 2: CxC (si hay datos y permiso)
         if (tienePermiso('COM_VER_CXC') && datosPanel.cxc) {
-            const cxcItems = datosPanel.cxc?.cxc || datosPanel.cxc?.data || [];
+            const cxcItems = Array.isArray(datosPanel.cxc) ? datosPanel.cxc : (datosPanel.cxc?.cxc || datosPanel.cxc?.data || []);
             if (cxcItems.length > 0) {
                 doc.addPage();
                 // Re-header en nueva página
