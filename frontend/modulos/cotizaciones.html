@@ -1085,6 +1085,77 @@
     }
   });
 </script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// NOFTRAB Tab Guards — Cotizaciones v1.0
+// ═══════════════════════════════════════════════════════════
+const TAB_COTIZACIONES_GUARDS = [
+    { elementId: 'tab-seguros',   permiso: 'TAB_COT_SEGUROS' },
+    { elementId: 'tab-fianzas',   permiso: 'TAB_COT_FIANZAS' },
+    { elementId: 'tab-historial', permiso: 'TAB_COT_HISTORIAL' },
+];
+
+async function initTabGuardsCotizaciones() {
+    try {
+        // 1. Obtener token de sesión (api-client.js lo guarda en localStorage como 'token_sesion')
+        const token = localStorage.getItem('token_sesion') ||
+                      sessionStorage.getItem('mqf_token') ||
+                      sessionStorage.getItem('mqfToken');
+        if (!token) return; // Sin token — modo debug, mostrar todo
+
+        // 2. Intentar leer permisos desde el parent (dashboard ya los tiene cargados)
+        let codigosPermisos = [];
+        try {
+            if (window.parent && window.parent.MQF_PERMISOS_NOFTRAB) {
+                codigosPermisos = window.parent.MQF_PERMISOS_NOFTRAB;
+            }
+        } catch(pe) { /* cross-origin silenciado */ }
+
+        // 3. Si no hay permisos del parent, consultar el backend
+        if (codigosPermisos.length === 0) {
+            try {
+                const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/auth/validar-sesion?token=' + encodeURIComponent(token));
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const rawPermisos = data.permisos || data.datos || data.codigos || [];
+                    if (Array.isArray(rawPermisos)) {
+                        codigosPermisos = rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+                    }
+                }
+            } catch(fetchErr) {
+                console.warn('TabGuard Cotizaciones: no se pudo consultar permisos', fetchErr.message);
+                return; // Fallar silenciosamente — mostrar todo
+            }
+        }
+
+        // 4. Si la lista está vacía (sin granularidad configurada), mostrar todo
+        if (codigosPermisos.length === 0) return;
+
+        // 5. Ocultar tabs sin permiso
+        TAB_COTIZACIONES_GUARDS.forEach(guard => {
+            if (!codigosPermisos.includes(guard.permiso)) {
+                const el = document.getElementById(guard.elementId);
+                if (el) el.style.display = 'none';
+            }
+        });
+
+        // 6. Activar el primer tab visible
+        const tabIds = ['tab-seguros', 'tab-fianzas', 'tab-historial'];
+        for (const id of tabIds) {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none') {
+                el.click();
+                break;
+            }
+        }
+
+    } catch(e) {
+        console.warn('TabGuard Cotizaciones:', e.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initTabGuardsCotizaciones);
+</script>
 </body>
 </html>
-

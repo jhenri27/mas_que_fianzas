@@ -46,3 +46,51 @@
 [2026-05-28 09:49:57] [WARNING] [AUTH] Contraseña incorrecta | username: admin | ID: 1 | intento 1 de 5
 [2026-05-28 09:50:06] [WARNING] [AUTH] Contraseña incorrecta | username: pdv.prueba | ID: 12 | intento 1 de 5
 [2026-05-28 09:50:23] [WARNING] [AUTH] Contraseña incorrecta | username: admin | ID: 1 | intento 2 de 5
+[2026-05-28 23:41:29] [INFO] [RECOVERY] Token de recuperación generado | usuario ID: 1 | username: admin | email destino: ahenriquezmarte@gmail.com | expira: 2026-05-29 00:41:29
+[2026-05-28 23:41:29] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-28 23:41:29] [INFO] Iniciando envío → ahenriquezmarte@gmail.com
+[2026-05-28 23:41:29] [INFO] Servidor: smtp.gmail.com:587 | Cifrado: tls
+[2026-05-28 23:41:29] [INFO] EHLO hostname local: FAMILIA-HB
+[2026-05-28 23:41:29] [SMTP] S ← 220 smtp.gmail.com ESMTP 00721157ae682-7de67f31ebesm2117607b3.11 - gsmtp
+[2026-05-28 23:41:29] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-28 23:41:29] [SMTP] S ← 250-smtp.gmail.com at your service, [2001:1308:27ae:ca00:b133:fd30:e678:3c46]
+[2026-05-28 23:41:29] [SMTP] S ← 250-SIZE 35882577
+[2026-05-28 23:41:29] [SMTP] S ← 250-8BITMIME
+[2026-05-28 23:41:29] [SMTP] S ← 250-STARTTLS
+[2026-05-28 23:41:29] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-28 23:41:29] [SMTP] S ← 250-PIPELINING
+[2026-05-28 23:41:29] [SMTP] S ← 250-CHUNKING
+[2026-05-28 23:41:29] [SMTP] S ← 250 SMTPUTF8
+[2026-05-28 23:41:29] [INFO] Enviando STARTTLS...
+[2026-05-28 23:41:29] [SMTP] C → STARTTLS
+[2026-05-28 23:41:29] [SMTP] S ← 220 2.0.0 Ready to start TLS
+[2026-05-28 23:41:29] [SUCCESS] Cifrado TLS establecido.
+[2026-05-28 23:41:29] [SMTP] C → EHLO FAMILIA-HB
+[2026-05-28 23:41:29] [SMTP] S ← 250-smtp.gmail.com at your service, [2001:1308:27ae:ca00:b133:fd30:e678:3c46]
+[2026-05-28 23:41:29] [SMTP] S ← 250-SIZE 35882577
+[2026-05-28 23:41:29] [SMTP] S ← 250-8BITMIME
+[2026-05-28 23:41:29] [SMTP] S ← 250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+[2026-05-28 23:41:29] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-05-28 23:41:29] [SMTP] S ← 250-PIPELINING
+[2026-05-28 23:41:29] [SMTP] S ← 250-CHUNKING
+[2026-05-28 23:41:29] [SMTP] S ← 250 SMTPUTF8
+[2026-05-28 23:41:29] [SMTP] C → AUTH LOGIN
+[2026-05-28 23:41:29] [SMTP] S ← 334 VXNlcm5hbWU6
+[2026-05-28 23:41:29] [SMTP] C → cGFzdG9yYW5kZXJzb25oZW5yaXF1ZXpAZ21haWwuY29t
+[2026-05-28 23:41:29] [SMTP] S ← 334 UGFzc3dvcmQ6
+[2026-05-28 23:41:29] [SMTP] C → [PASSWORD OCULTA]
+[2026-05-28 23:41:29] [SMTP] S ← 235 2.7.0 Accepted
+[2026-05-28 23:41:29] [SUCCESS] Autenticación exitosa.
+[2026-05-28 23:41:29] [SMTP] C → MAIL FROM:<pastorandersonhenriquez@gmail.com>
+[2026-05-28 23:41:29] [SMTP] S ← 250 2.1.0 OK 00721157ae682-7de67f31ebesm2117607b3.11 - gsmtp
+[2026-05-28 23:41:29] [SMTP] C → RCPT TO:<ahenriquezmarte@gmail.com>
+[2026-05-28 23:41:30] [SMTP] S ← 250 2.1.5 OK 00721157ae682-7de67f31ebesm2117607b3.11 - gsmtp
+[2026-05-28 23:41:30] [SMTP] C → DATA
+[2026-05-28 23:41:30] [SMTP] S ← 354 Go ahead 00721157ae682-7de67f31ebesm2117607b3.11 - gsmtp
+[2026-05-28 23:41:31] [SMTP] S ← 250 2.0.0 OK  1780026090 00721157ae682-7de67f31ebesm2117607b3.11 - gsmtp
+[2026-05-28 23:41:31] [SMTP] C → QUIT
+[2026-05-28 23:41:31] [SUCCESS] ✔ Correo enviado exitosamente a ahenriquezmarte@gmail.com
+[2026-05-28 23:41:31] [INFO]   Message-ID: <mqf.6a190aeaaabe58.97594347@smtp.gmail.com>
+[2026-05-28 23:41:31] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-28 23:44:46] [INFO] [RECOVERY] Token válido recibido | usuario ID: 1 | username: admin — procesando reset de contraseña
+[2026-05-28 23:44:46] [SUCCESS] [RECOVERY] Contraseña restablecida EXITOSAMENTE vía token | usuario ID: 1 | username: admin | cuenta desbloqueada, intentos reseteados

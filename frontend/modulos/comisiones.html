@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Panel de Comisiones — MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- MQF Assets -->
+    <script src="../assets/api-client.js?v=9.0"></script>
+    <script src="../assets/components.js?v=9.0"></script>
+    <script src="../assets/logo_b64.js?v=9.0"></script>
+
+    <style>
+        /* ── Módulo embebido en iframe ── */
+        .sidebar { display:none!important; }
+        .top-navbar { display:none!important; }
+        .main-content { margin-left:0!important; width:100%!important; padding-top:0!important; }
+        .content-area { padding:0!important; margin-top:0!important; min-height:100vh; background:#f4f6fb; box-sizing:border-box; }
+
+        /* ── Header Color Fix ── */
+        .mqf-module-header h1,
+        .mqf-module-header h2,
+        .mqf-module-header h3,
+        .mqf-module-header__title { color:#ffffff!important; }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle { color:rgba(255,255,255,.85)!important; }
+
+        /* ══════════════════════════════════════════
+           HEADER CONTROLES DE PERÍODO
+        ══════════════════════════════════════════ */
+        .periodo-bar {
+            display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+            margin-top:14px; padding-top:14px;
+            border-top:1px solid rgba(255,255,255,.2);
+        }
+        .periodo-bar label {
+            color:rgba(255,255,255,.8); font-size:11px; font-weight:600;
+            text-transform:uppercase; letter-spacing:.05em;
+        }
+        .periodo-bar select, .periodo-bar input[type="number"] {
+            padding:7px 12px; border:1px solid rgba(255,255,255,.3);
+            border-radius:8px; background:rgba(255,255,255,.15);
+            color:#fff; font-size:13px; outline:none;
+            transition:all .2s;
+        }
+        .periodo-bar select:focus, .periodo-bar input:focus {
+            background:rgba(255,255,255,.25); border-color:rgba(255,255,255,.7);
+        }
+        .periodo-bar select option { background:#4f46e5; color:#fff; }
+        .btn-actualizar {
+            padding:8px 18px; background:rgba(255,255,255,.22);
+            border:1px solid rgba(255,255,255,.4); color:#fff;
+            border-radius:8px; cursor:pointer; font-size:13px; font-weight:600;
+            display:flex; align-items:center; gap:6px; transition:all .2s;
+        }
+        .btn-actualizar:hover { background:rgba(255,255,255,.35); transform:translateY(-1px); }
+
+        /* Header Action Buttons */
+        .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .mqf-btn-header {
+            padding:8px 16px; border:none; border-radius:8px; cursor:pointer;
+            font-size:12px; font-weight:600; display:inline-flex;
+            align-items:center; gap:6px; transition:all .2s;
+        }
+        .mqf-btn-header-primary {
+            background:rgba(255,255,255,.25); color:#fff;
+            border:1px solid rgba(255,255,255,.4);
+        }
+        .mqf-btn-header-primary:hover { background:rgba(255,255,255,.38); transform:translateY(-1px); }
+        .mqf-btn-header-secondary {
+            background:rgba(255,255,255,.12); color:rgba(255,255,255,.85);
+            border:1px solid rgba(255,255,255,.25);
+        }
+        .mqf-btn-header-secondary:hover { background:rgba(255,255,255,.22); }
+
+        /* ══════════════════════════════════════════
+           KPI GRID
+        ══════════════════════════════════════════ */
+        .kpi-grid {
+            display:grid; grid-template-columns:repeat(4,1fr);
+            gap:18px; padding:22px 24px 0;
+        }
+        @media(max-width:900px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+        @media(max-width:520px) { .kpi-grid { grid-template-columns:1fr; } }
+
+        .kpi-card {
+            border-radius:16px; padding:22px 24px; cursor:pointer;
+            box-shadow:0 8px 24px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+            position:relative; overflow:hidden;
+            transition:transform .22s ease, box-shadow .22s ease;
+        }
+        .kpi-card:hover {
+            transform:translateY(-4px) scale(1.02);
+            box-shadow:0 18px 40px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.08);
+        }
+        .kpi-card::before {
+            content:''; position:absolute; right:-20px; top:-20px;
+            width:90px; height:90px; border-radius:50%;
+            background:rgba(255,255,255,.12);
+        }
+        .kpi-card::after {
+            content:''; position:absolute; right:15px; bottom:-30px;
+            width:60px; height:60px; border-radius:50%;
+            background:rgba(255,255,255,.08);
+        }
+        .kpi-cobrado    { background:linear-gradient(135deg,#10b981 0%,#059669 100%); }
+        .kpi-transito   { background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%); }
+        .kpi-proyeccion { background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); }
+        .kpi-polizas    { background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%); }
+
+        .kpi-icon {
+            font-size:26px; margin-bottom:10px; display:block;
+            filter:drop-shadow(0 2px 4px rgba(0,0,0,.2));
+        }
+        .kpi-label {
+            font-size:11px; font-weight:700; color:rgba(255,255,255,.82);
+            text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px;
+        }
+        .kpi-value {
+            font-size:26px; font-weight:800; color:#fff;
+            letter-spacing:-.5px; line-height:1;
+            text-shadow:0 2px 4px rgba(0,0,0,.15);
+        }
+        .kpi-sub {
+            font-size:11px; color:rgba(255,255,255,.7);
+            margin-top:6px; font-weight:500;
+        }
+
+        /* ══════════════════════════════════════════
+           PANEL SECTIONS
+        ══════════════════════════════════════════ */
+        .panel-body { padding:20px 24px 32px; }
+
+        .panel-section {
+            background:#fff; border-radius:14px; padding:24px;
+            margin-bottom:22px;
+            box-shadow:0 4px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.05);
+            animation:sectionFadeIn .35s ease;
+        }
+        @keyframes sectionFadeIn {
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .panel-section h3 {
+            font-size:15px; font-weight:700; color:#1e293b;
+            margin:0 0 18px; display:flex; align-items:center; gap:8px;
+            padding-bottom:14px; border-bottom:2px solid #f1f5f9;
+        }
+
+        /* ── Tabla ── */
+        .tbl-wrap { overflow-x:auto; border-radius:0 0 10px 10px; }
+        .data-table { width:100%; border-collapse:collapse; min-width:900px; }
+        .data-table th {
+            padding:11px 12px; background:var(--mqf-primary-light);
+            color:var(--mqf-primary-dark); font-weight:700;
+            font-size:var(--mqf-text-xs); text-transform:uppercase;
+            letter-spacing:.04em; text-align:left;
+            border-bottom:2px solid var(--mqf-border); white-space:nowrap;
+        }
+        .data-table td {
+            padding:11px 12px; border-bottom:1px solid #f1f5f9;
+            color:var(--mqf-text-secondary); font-size:var(--mqf-text-sm);
+        }
+        .data-table tr:hover td { background:#fafbff; }
+        .data-table tr:last-child td { border-bottom:none; }
+
+        /* Badges */
+        .badge {
+            display:inline-block; padding:3px 10px;
+            border-radius:var(--mqf-radius-full);
+            font-size:var(--mqf-text-xs); font-weight:700;
+        }
+        .badge-cobrado   { color:#065f46; background:#d1fae5; }
+        .badge-pendiente { color:#92400e; background:#fef3c7; }
+        .badge-transito  { color:#1e40af; background:#dbeafe; }
+        .badge-cancelado { color:#991b1b; background:#fee2e2; }
+
+        /* Acciones */
+        .accion {
+            cursor:pointer; color:#6366f1; font-size:15px;
+            margin:0 4px; transition:all .2s; border:none; background:none;
+            padding:4px; border-radius:6px;
+        }
+        .accion:hover { color:#4338ca; transform:scale(1.2); background:#eef2ff; }
+        .accion-verde:hover  { color:#16a34a; background:#f0fdf4; }
+        .accion-naranja:hover{ color:#d97706; background:#fffbeb; }
+        .accion-rojo:hover   { color:#dc2626; background:#fef2f2; }
+
+        /* ── Barra de progreso proyección ── */
+        .progress-wrap {
+            background:#f1f5f9; border-radius:10px; height:22px;
+            overflow:hidden; margin:16px 0 8px; position:relative;
+        }
+        .progress-bar {
+            height:100%; border-radius:10px;
+            background:linear-gradient(90deg,#10b981 0%,#3b82f6 100%);
+            transition:width 1.2s cubic-bezier(.4,0,.2,1);
+            position:relative;
+        }
+        .progress-bar::after {
+            content:''; position:absolute; right:0; top:0; bottom:0;
+            width:3px; background:rgba(255,255,255,.6); border-radius:0 10px 10px 0;
+        }
+        .progress-label {
+            position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+            font-size:11px; font-weight:700; color:#1e293b; z-index:1; white-space:nowrap;
+        }
+        .proy-desglose {
+            display:grid; grid-template-columns:1fr 1fr 1fr;
+            gap:14px; margin-top:20px;
+        }
+        .proy-item {
+            background:#f8fafc; border-radius:10px; padding:16px;
+            border-left:4px solid var(--color, #4f46e5);
+            text-align:center;
+        }
+        .proy-item .pi-label { font-size:11px; color:#64748b; font-weight:600; margin-bottom:6px; }
+        .proy-item .pi-value { font-size:20px; font-weight:800; color:var(--color,#4f46e5); }
+        .proy-mensaje {
+            background:linear-gradient(135deg,#f0f0ff,#faf5ff);
+            border:1px solid #e0e7ff; border-radius:10px;
+            padding:16px 20px; margin-top:18px;
+            font-size:13px; color:#4f46e5; font-weight:500;
+            display:flex; align-items:center; gap:10px;
+        }
+
+        /* ── Filtro bar header section ── */
+        .section-header-bar {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:18px; flex-wrap:wrap; gap:10px;
+        }
+        .section-header-bar h3 { margin:0; padding:0; border:none; }
+
+        /* ══════════════════════════════════════════
+           MODAL ESTILOS
+        ══════════════════════════════════════════ */
+        .modal-overlay {
+            display:none; position:fixed; inset:0;
+            background:rgba(15,23,42,.65); backdrop-filter:blur(5px);
+            z-index:9000; align-items:center; justify-content:center;
+        }
+        .modal-overlay.open { display:flex; animation:fadeIn .25s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        .modal-box {
+            background:#fff; border-radius:18px; width:93%; max-width:820px;
+            max-height:92vh; overflow-y:auto;
+            box-shadow:0 30px 70px rgba(0,0,0,.25), 0 10px 25px rgba(0,0,0,.12);
+        }
+        .modal-header {
+            padding:22px 26px; border-bottom:1px solid #f1f5f9;
+            display:flex; justify-content:space-between; align-items:center;
+            background:var(--mqf-gradient); border-radius:18px 18px 0 0;
+        }
+        .modal-header h3 { color:#fff; font-size:16px; margin:0; display:flex; align-items:center; gap:8px; }
+        .close-btn {
+            background:rgba(255,255,255,.2); border:none; color:#fff;
+            width:34px; height:34px; border-radius:50%; cursor:pointer;
+            font-size:16px; display:flex; align-items:center; justify-content:center;
+            transition:all .2s;
+        }
+        .close-btn:hover { background:rgba(255,255,255,.35); transform:scale(1.1); }
+        .modal-body { padding:26px; }
+        .modal-footer {
+            padding:18px 26px; border-top:1px solid #f1f5f9;
+            display:flex; gap:10px; justify-content:flex-end;
+        }
+
+        /* Detail grid (modal detalle) */
+        .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; }
+        .detail-item .di-label {
+            font-size:10px; color:#94a3b8; font-weight:700;
+            text-transform:uppercase; letter-spacing:.06em;
+        }
+        .detail-item .di-value {
+            font-size:14px; color:#1e293b; font-weight:600; margin-top:3px;
+        }
+
+        /* QR section */
+        .qr-section {
+            display:flex; flex-direction:column; align-items:center;
+            padding:20px; background:#f8fafc; border-radius:12px;
+            border:1px solid #e0e7ff; margin-top:20px;
+        }
+        .qr-section p { font-size:11px; color:#64748b; margin-top:10px; text-align:center; }
+
+        /* Email modal */
+        .email-check-group { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+        .email-check-item {
+            display:flex; align-items:center; gap:10px;
+            padding:10px 14px; border-radius:8px;
+            border:1px solid #e0e7ff; cursor:pointer;
+            transition:all .18s;
+        }
+        .email-check-item:hover { background:#f0f0ff; border-color:#818cf8; }
+        .email-check-item input[type=checkbox] { width:16px; height:16px; cursor:pointer; }
+        .email-check-item label { font-size:13px; color:#374151; font-weight:500; cursor:pointer; }
+
+        /* Buttons */
+        .btn {
+            padding:9px 18px; border:none; border-radius:9px; cursor:pointer;
+            font-size:13px; font-weight:600; display:inline-flex;
+            align-items:center; gap:7px; transition:all .2s;
+        }
+        .btn-primary   { background:var(--mqf-primary); color:#fff; }
+        .btn-primary:hover { background:var(--mqf-primary-dark); transform:translateY(-1px); box-shadow:var(--mqf-shadow-primary); }
+        .btn-success   { background:#10b981; color:#fff; }
+        .btn-success:hover { background:#059669; transform:translateY(-1px); }
+        .btn-secondary { background:#f1f5f9; color:#475569; }
+        .btn-secondary:hover { background:#e2e8f0; }
+        .btn-outline   { background:#fff; color:var(--mqf-primary); border:1.5px solid var(--mqf-primary); }
+        .btn-outline:hover { background:#f0f0ff; }
+        .btn-sm { padding:6px 12px; font-size:12px; }
+        .btn-warning { background:#f59e0b; color:#fff; }
+        .btn-warning:hover { background:#d97706; }
+
+        /* Form elements (modales) */
+        .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+        .form-group label { font-size:12px; font-weight:600; color:#475569; }
+        .form-group input, .form-group select, .form-group textarea {
+            padding:10px 13px; border:1px solid #e2e8f0; border-radius:9px;
+            font-size:13px; color:#1e293b; outline:none; transition:border-color .2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color:var(--mqf-primary);
+            box-shadow:0 0 0 3px rgba(79,70,229,.08);
+        }
+
+        /* Estado vacío */
+        .empty-state { text-align:center; padding:50px 20px; color:#94a3b8; }
+        .empty-state i { font-size:44px; margin-bottom:14px; display:block; opacity:.6; }
+        .empty-state h3 { font-size:15px; color:#64748b; margin:0 0 6px; }
+        .empty-state p  { font-size:12px; margin:0; }
+
+        /* Loading spinner */
+        .loading-row td { text-align:center; padding:40px; color:#94a3b8; }
+
+        /* Pagination */
+        .pagination-bar {
+            padding:12px 16px; display:flex; justify-content:space-between;
+            align-items:center; font-size:12px; color:#64748b;
+            border-top:1px solid #f1f5f9;
+        }
+        .pg-btn {
+            border:1px solid #e0e7ff; background:#fff; color:#4f46e5;
+            padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px;
+            transition:all .15s;
+        }
+        .pg-btn:hover { background:#f0f0ff; }
+
+        /* Print only modal content */
+        @media print {
+            body > *:not(#modal-detalle-com) { display:none!important; }
+            #modal-detalle-com { position:static!important; display:block!important; }
+            .modal-footer, .close-btn { display:none!important; }
+        }
+
+        /* Skeleton loader */
+        .skeleton {
+            background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+            background-size:200% 100%;
+            animation:skeletonShimmer 1.4s infinite;
+            border-radius:6px; display:inline-block;
+        }
+        @keyframes skeletonShimmer {
+            0% { background-position:200% 0; }
+            100% { background-position:-200% 0; }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+<main class="main-content">
+<div class="content-area">
+
+    <!-- ════════════════════════════════════════
+         HEADER MÓDULO
+    ════════════════════════════════════════ -->
+    <div class="mqf-module-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h1 class="mqf-module-header__title">
+                    <i class="fa-solid fa-hand-holding-dollar"></i> Panel de Comisiones
+                </h1>
+                <p class="mqf-module-header__subtitle">
+                    Comisiones &middot; Cuentas por Cobrar &middot; Proyección Mensual
+                </p>
+            </div>
+            <div class="header-actions" id="header-actions">
+                <button id="btn-exportar-pdf" class="mqf-btn-header mqf-btn-header-primary" onclick="exportarPDF()">
+                    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+                </button>
+                <button id="btn-enviar-email" class="mqf-btn-header mqf-btn-header-primary" onclick="abrirModalEmail()">
+                    <i class="fa-solid fa-envelope"></i> Enviar por Email
+                </button>
+                <button id="btn-imprimir" class="mqf-btn-header mqf-btn-header-secondary" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+
+        <!-- Controles de Período -->
+        <div class="periodo-bar">
+            <label><i class="fa-solid fa-calendar-days"></i> Período:</label>
+            <select id="sel-mes" title="Mes">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+            <input type="number" id="inp-anio" value="2026" min="2020" max="2035" style="width:80px;" title="Año">
+            <span id="filtro-agente-wrap" style="display:none;align-items:center;gap:8px;">
+                <label>Agente:</label>
+                <select id="sel-agente" style="min-width:160px;">
+                    <option value="">— Todos los Agentes —</option>
+                </select>
+            </span>
+            <button class="btn-actualizar" onclick="cargarPanel()">
+                <i class="fa-solid fa-rotate-right"></i> Actualizar
+            </button>
+            <span id="periodo-display" style="color:rgba(255,255,255,.7);font-size:12px;margin-left:6px;"></span>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         KPI CARDS
+    ════════════════════════════════════════ -->
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-cobrado" onclick="scrollToSeccion('seccion-polizas')">
+            <span class="kpi-icon">💰</span>
+            <div class="kpi-label">Comisiones Cobradas</div>
+            <div class="kpi-value" id="kpi-cobrado">RD$ 0</div>
+            <div class="kpi-sub" id="kpi-cobrado-cnt">— pólizas pagadas</div>
+        </div>
+        <div class="kpi-card kpi-transito" onclick="scrollToSeccion('seccion-cxc')">
+            <span class="kpi-icon">⏳</span>
+            <div class="kpi-label">En Tránsito (CxC)</div>
+            <div class="kpi-value" id="kpi-transito">RD$ 0</div>
+            <div class="kpi-sub" id="kpi-transito-cnt">— pendientes de cobro</div>
+        </div>
+        <div class="kpi-card kpi-proyeccion" onclick="scrollToSeccion('seccion-proyeccion')">
+            <span class="kpi-icon">📈</span>
+            <div class="kpi-label">Proyección Mensual</div>
+            <div class="kpi-value" id="kpi-proyeccion">RD$ 0</div>
+            <div class="kpi-sub" id="kpi-proy-pct">—% del mes completado</div>
+        </div>
+        <div class="kpi-card kpi-polizas" onclick="scrollToSeccion('seccion-polizas')">
+            <span class="kpi-icon">📋</span>
+            <div class="kpi-label">Pólizas Emitidas</div>
+            <div class="kpi-value" id="kpi-polizas">0</div>
+            <div class="kpi-sub" id="kpi-polizas-sub">en este período</div>
+        </div>
+    </div>
+
+    <!-- BODY PRINCIPAL -->
+    <div class="panel-body">
+
+        <!-- ════════════════════════════════════════
+             SECCIÓN 1: PÓLIZAS EMITIDAS
+        ════════════════════════════════════════ -->
+        <div id="seccion-polizas" class="panel-section">
+            <div class="section-header-bar">
+                <h3><i class="fa-solid fa-list-check" style="color:#4f46e5;"></i> Pólizas Emitidas — Prima Neta y Comisión</h3>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="text" id="f-buscar-poliza" placeholder="Buscar póliza..." 
+                           oninput="filtrarTabla()" 
+                           style="padding:7px 12px;border:1px solid #e0e7ff;border-radius:8px;font-size:12px;width:180px;">
+                    <select id="f-estado-pago" onchange="filtrarTabla()"
+                            style="padding:7px 12px;border:1px solid #e0e7ff;border-radius:8px;font-size:12px;">
+                        <option value="">Todos los estados</option>
+                        <option value="cobrado">Cobrado</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="transito">En Tránsito</option>
+                    </select>
+                </div>
+            </div>
+            <div class="tbl-wrap">
+                <table class="data-table" id="tabla-polizas-com">
+                    <thead>
+                        <tr>
+                            <th>N° Póliza</th>
+                            <th>Tipo</th>
+                            <th>Asegurado</th>
+                            <th>Prima Neta</th>
+                            <th>% Com.</th>
+                            <th>Comisión</th>
+                            <th>Estado Pago</th>
+                            <th>Agente</th>
+                            <th style="text-align:center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-polizas-com">
+                        <tr class="loading-row">
+                            <td colspan="9">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;"></i>
+                                Cargando pólizas...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination-bar">
+                    <div id="pg-info-polizas">— registros</div>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <button class="pg-btn" onclick="cambiarPagina(-1,'polizas')">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="pg-num-polizas" style="font-weight:600;font-size:12px;">1</span>
+                        <button class="pg-btn" onclick="cambiarPagina(1,'polizas')">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div>
+                        Mostrar
+                        <select id="pg-size-polizas" onchange="renderTablaPolizas()"
+                                style="padding:4px;border:1px solid #e0e7ff;border-radius:5px;margin:0 4px;">
+                            <option>10</option><option selected>20</option><option>50</option>
+                        </select>
+                        por página
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════
+             SECCIÓN 2: CUENTAS POR COBRAR
+        ════════════════════════════════════════ -->
+        <div id="seccion-cxc" class="panel-section" style="display:none;">
+            <div class="section-header-bar">
+                <h3><i class="fa-solid fa-hourglass-half" style="color:#f59e0b;"></i> Comisiones en Tránsito — Cuentas por Cobrar</h3>
+            </div>
+            <div class="tbl-wrap">
+                <table class="data-table" id="tabla-cxc">
+                    <thead>
+                        <tr>
+                            <th>N° Póliza</th>
+                            <th>Asegurado</th>
+                            <th>Monto Pendiente</th>
+                            <th>Comisión en Tránsito</th>
+                            <th>Días Pendiente</th>
+                            <th>Vencimiento</th>
+                            <th>Agente</th>
+                            <th style="text-align:center;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-cxc">
+                        <tr class="loading-row">
+                            <td colspan="8">
+                                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:18px;"></i>
+                                Cargando cuentas por cobrar...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════
+             SECCIÓN 3: PROYECCIÓN MENSUAL
+        ════════════════════════════════════════ -->
+        <div id="seccion-proyeccion" class="panel-section" style="display:none;">
+            <h3><i class="fa-solid fa-chart-line" style="color:#3b82f6;"></i> Proyección del Mes Actual</h3>
+
+            <div style="margin-bottom:10px;font-size:13px;color:#64748b;font-weight:500;">
+                Progreso del período: <strong id="proy-label-pct" style="color:#4f46e5;">0%</strong>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progress-bar-proy" style="width:0%"></div>
+                <span class="progress-label" id="progress-bar-label">RD$ 0 / RD$ 0</span>
+            </div>
+
+            <div class="proy-desglose">
+                <div class="proy-item" style="--color:#10b981;">
+                    <div class="pi-label">✅ Cobrado</div>
+                    <div class="pi-value" id="proy-cobrado">RD$ 0</div>
+                </div>
+                <div class="proy-item" style="--color:#f59e0b;">
+                    <div class="pi-label">⏳ Pendiente CxC</div>
+                    <div class="pi-value" id="proy-pendiente">RD$ 0</div>
+                </div>
+                <div class="proy-item" style="--color:#3b82f6;">
+                    <div class="pi-label">📈 Total Proyectado</div>
+                    <div class="pi-value" id="proy-total">RD$ 0</div>
+                </div>
+            </div>
+
+            <div class="proy-mensaje">
+                <i class="fa-solid fa-lightbulb" style="font-size:20px;color:#f59e0b;"></i>
+                <span id="proy-mensaje-txt">Si se cobran todas las CxC del mes, recibirías <strong>RD$ 0.00</strong> en comisiones.</span>
+            </div>
+        </div>
+
+    </div><!-- /panel-body -->
+</div><!-- /content-area -->
+</main>
+
+<!-- ════════════════════════════════════════
+     MODAL DETALLE PÓLIZA
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-detalle-com">
+    <div class="modal-box" style="max-width:760px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-file-shield"></i> Detalle de Póliza — Comisión</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-detalle-com')">✕</button>
+        </div>
+        <div class="modal-body">
+            <!-- Grid de datos -->
+            <div class="detail-grid" id="detalle-com-grid">
+                <div class="detail-item">
+                    <div class="di-label">N° Póliza</div>
+                    <div class="di-value" id="dc-num-poliza">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Tipo de Seguro</div>
+                    <div class="di-value" id="dc-tipo">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Asegurado</div>
+                    <div class="di-value" id="dc-asegurado">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Agente</div>
+                    <div class="di-value" id="dc-agente">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Prima Neta</div>
+                    <div class="di-value" id="dc-prima-neta" style="color:#4f46e5;font-size:16px;">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">% Comisión</div>
+                    <div class="di-value" id="dc-pct-com">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Monto Comisión</div>
+                    <div class="di-value" id="dc-monto-com" style="color:#10b981;font-size:18px;font-weight:800;">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Estado Pago</div>
+                    <div class="di-value" id="dc-estado-pago">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Vigencia Inicio</div>
+                    <div class="di-value" id="dc-vigencia-inicio">—</div>
+                </div>
+                <div class="detail-item">
+                    <div class="di-label">Vigencia Fin</div>
+                    <div class="di-value" id="dc-vigencia-fin">—</div>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="qr-section">
+                <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">
+                    <i class="fa-solid fa-qrcode"></i> Código QR de Verificación
+                </div>
+                <div id="qr-poliza" style="display:flex;justify-content:center;"></div>
+                <p id="qr-poliza-url" style="word-break:break-all;">—</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline btn-sm" onclick="imprimirModalDetalle()">
+                <i class="fa-solid fa-print"></i> Imprimir
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-detalle-com')">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MODAL ENVIAR EMAIL
+════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-email-com">
+    <div class="modal-box" style="max-width:500px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-envelope-open-text"></i> Enviar Reporte por Email</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-email-com')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label><i class="fa-solid fa-at"></i> Email de destino <span style="color:#dc2626">*</span></label>
+                <input type="email" id="email-destino" placeholder="ejemplo@correo.com">
+            </div>
+
+            <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">
+                Secciones a incluir:
+            </div>
+            <div class="email-check-group">
+                <label class="email-check-item">
+                    <input type="checkbox" id="chk-s1" checked>
+                    <label for="chk-s1">📋 Sección 1: Pólizas Emitidas y Comisiones</label>
+                </label>
+                <label class="email-check-item">
+                    <input type="checkbox" id="chk-s2" checked>
+                    <label for="chk-s2">⏳ Sección 2: Cuentas por Cobrar</label>
+                </label>
+                <label class="email-check-item">
+                    <input type="checkbox" id="chk-s3" checked>
+                    <label for="chk-s3">📈 Sección 3: Proyección Mensual</label>
+                </label>
+            </div>
+
+            <div style="background:#f0f0ff;border:1px solid #e0e7ff;border-radius:10px;padding:14px;margin-top:10px;">
+                <div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Preview del período:</div>
+                <div style="font-size:14px;color:#4f46e5;font-weight:700;margin-top:4px;" id="email-periodo-preview">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-email-com')">Cancelar</button>
+            <button class="btn btn-primary" onclick="enviarEmail()">
+                <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT PRINCIPAL
+════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────
+   VARIABLES GLOBALES
+───────────────────────────────────────── */
+let PERMISOS = [];
+let periodoMes  = new Date().getMonth() + 1;
+let periodoAnio = new Date().getFullYear();
+let datosPanel  = {};           // caché de datos del panel
+let polizasCache= [];           // todas las pólizas para filtrado local
+let paginaPolizas = 1;
+let qrInstance = null;          // instancia actual de QRCode
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+/* ─────────────────────────────────────────
+   INICIALIZACIÓN
+───────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    // Set defaults de período
+    periodoMes  = new Date().getMonth() + 1;
+    periodoAnio = new Date().getFullYear();
+    document.getElementById('sel-mes').value  = periodoMes;
+    document.getElementById('inp-anio').value = periodoAnio;
+    actualizarPeriodoDisplay();
+    initPanel();
+});
+
+async function initPanel() {
+    await cargarPermisos();
+    aplicarGuardsUI();
+    await cargarPanel();
+}
+
+/* ─────────────────────────────────────────
+   PERMISOS
+───────────────────────────────────────── */
+async function cargarPermisos() {
+    try {
+        // Intentar obtener permisos del usuario en sesión
+        const token = localStorage.getItem('token_sesion');
+        if (!token) {
+            // Fallback: admin con todos los permisos
+            PERMISOS = [
+                'COM_PANEL_VER','COM_VER_CXC','COM_VER_PROYECCION',
+                'COM_EXPORTAR_PDF','COM_ENVIAR_EMAIL','COM_IMPRIMIR',
+                'COM_PANEL_GLOBAL'
+            ];
+            return;
+        }
+
+        // Intentar desde parent iframe si existe
+        if (window.parent && window.parent.MQF_PERMISOS_COMISIONES) {
+            PERMISOS = window.parent.MQF_PERMISOS_COMISIONES;
+            return;
+        }
+
+        // Llamada al API de permisos
+        const res = await api.solicitud('/perfiles.php?action=mis_permisos', 'GET');
+        if (res.exito && Array.isArray(res.permisos)) {
+            PERMISOS = res.permisos;
+        } else {
+            // Fallback graceful: dar acceso básico
+            PERMISOS = ['COM_PANEL_VER','COM_VER_CXC','COM_VER_PROYECCION',
+                        'COM_EXPORTAR_PDF','COM_ENVIAR_EMAIL','COM_IMPRIMIR'];
+        }
+    } catch (e) {
+        console.warn('Permisos no disponibles, usando fallback completo:', e);
+        PERMISOS = ['COM_PANEL_VER','COM_VER_CXC','COM_VER_PROYECCION',
+                    'COM_EXPORTAR_PDF','COM_ENVIAR_EMAIL','COM_IMPRIMIR',
+                    'COM_PANEL_GLOBAL'];
+    }
+}
+
+function tienePermiso(perm) {
+    return PERMISOS.includes(perm);
+}
+
+function aplicarGuardsUI() {
+    // Secciones
+    if (!tienePermiso('COM_VER_CXC'))
+        document.getElementById('seccion-cxc').style.display = 'none';
+    if (!tienePermiso('COM_VER_PROYECCION'))
+        document.getElementById('seccion-proyeccion').style.display = 'none';
+
+    // Botones header
+    if (!tienePermiso('COM_EXPORTAR_PDF'))
+        document.getElementById('btn-exportar-pdf').style.display = 'none';
+    if (!tienePermiso('COM_ENVIAR_EMAIL'))
+        document.getElementById('btn-enviar-email').style.display = 'none';
+    if (!tienePermiso('COM_IMPRIMIR'))
+        document.getElementById('btn-imprimir').style.display = 'none';
+
+    // Selector de agente (solo GLOBAL)
+    if (tienePermiso('COM_PANEL_GLOBAL')) {
+        document.getElementById('filtro-agente-wrap').style.display = 'flex';
+        cargarListaAgentes();
+    }
+}
+
+async function cargarListaAgentes() {
+    try {
+        const res = await api.solicitud('/comisiones_panel.php?action=listar_agentes', 'GET');
+        if (res.exito && Array.isArray(res.agentes)) {
+            const sel = document.getElementById('sel-agente');
+            res.agentes.forEach(ag => {
+                const opt = document.createElement('option');
+                opt.value = ag.id;
+                opt.textContent = ag.nombre;
+                sel.appendChild(opt);
+            });
+        }
+    } catch(e) {
+        console.warn('No se pudo cargar lista de agentes');
+    }
+}
+
+/* ─────────────────────────────────────────
+   CARGA DEL PANEL
+───────────────────────────────────────── */
+async function cargarPanel() {
+    periodoMes  = parseInt(document.getElementById('sel-mes').value);
+    periodoAnio = parseInt(document.getElementById('inp-anio').value);
+    actualizarPeriodoDisplay();
+
+    const agenteId = tienePermiso('COM_PANEL_GLOBAL')
+        ? document.getElementById('sel-agente').value : '';
+
+    const qp = `?mes=${periodoMes}&anio=${periodoAnio}${agenteId ? '&agente_id=' + agenteId : ''}`;
+
+    // Mostrar loading en KPIs
+    ['kpi-cobrado','kpi-transito','kpi-proyeccion','kpi-polizas'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.innerHTML = '<span class="skeleton" style="width:80px;height:22px;">&nbsp;</span>'; }
+    });
+
+    try {
+        // Cargas en paralelo
+        const promesas = [
+            api.solicitud(`/comisiones_panel.php${qp}&action=panel_resumen`, 'GET'),
+            api.solicitud(`/comisiones_panel.php${qp}&action=polizas_comision`, 'GET'),
+        ];
+        if (tienePermiso('COM_VER_CXC'))
+            promesas.push(api.solicitud(`/comisiones_panel.php${qp}&action=cuentas_por_cobrar`, 'GET'));
+        if (tienePermiso('COM_VER_PROYECCION'))
+            promesas.push(api.solicitud(`/comisiones_panel.php${qp}&action=proyeccion_mensual`, 'GET'));
+
+        const resultados = await Promise.allSettled(promesas);
+
+        const resumen    = resultados[0]?.value;
+        const polizas    = resultados[1]?.value;
+        const cxc        = resultados[2]?.value;
+        const proyeccion = tienePermiso('COM_VER_CXC') ? resultados[3]?.value : resultados[2]?.value;
+
+        // Caché global
+        datosPanel = { resumen, polizas, cxc, proyeccion };
+        polizasCache = (polizas?.polizas) || generarDatosDemoPolizas();
+
+        renderKPIs(resumen);
+        renderTablaPolizas();
+        if (tienePermiso('COM_VER_CXC'))        renderCxC(cxc);
+        if (tienePermiso('COM_VER_PROYECCION'))  renderProyeccion(proyeccion, resumen);
+
+    } catch(e) {
+        console.error('Error cargando panel:', e);
+        // Usar datos demo si el backend no responde
+        usarDatosDemo();
+    }
+}
+
+/* ─────────────────────────────────────────
+   DATOS DEMO (fallback sin backend)
+───────────────────────────────────────── */
+function generarDatosDemoPolizas() {
+    return [
+        { numero_poliza:'POL-2026-0001', tipo:'Seguro de Ley - Vehículo Liviano', asegurado:'Carlos Ramírez', prima_neta:4500, pct_comision:15, monto_comision:675, estado_pago:'cobrado', agente:'Juan Pérez', vigencia_inicio:'2026-01-15', vigencia_fin:'2027-01-15' },
+        { numero_poliza:'POL-2026-0002', tipo:'Seguro de Ley - Motocicleta',       asegurado:'María Gómez',   prima_neta:2200, pct_comision:15, monto_comision:330, estado_pago:'pendiente', agente:'Ana López',  vigencia_inicio:'2026-02-01', vigencia_fin:'2027-02-01' },
+        { numero_poliza:'POL-2026-0003', tipo:'Fianza de Fidelidad',               asegurado:'Luis Herrera',  prima_neta:8000, pct_comision:12, monto_comision:960, estado_pago:'cobrado', agente:'Juan Pérez', vigencia_inicio:'2026-03-10', vigencia_fin:'2027-03-10' },
+        { numero_poliza:'POL-2026-0004', tipo:'Seguro Casco Todo Riesgo',          asegurado:'Rosa Matos',    prima_neta:12500,pct_comision:10, monto_comision:1250,estado_pago:'transito', agente:'Pedro Díaz', vigencia_inicio:'2026-04-05', vigencia_fin:'2027-04-05' },
+        { numero_poliza:'POL-2026-0005', tipo:'Fianza Judicial',                   asegurado:'Pedro Santos',  prima_neta:6000, pct_comision:12, monto_comision:720, estado_pago:'pendiente', agente:'Ana López',  vigencia_inicio:'2026-04-20', vigencia_fin:'2027-04-20' },
+        { numero_poliza:'POL-2026-0006', tipo:'Seguro de Ley - Vehículo Pesado',  asegurado:'Empresa ABC',   prima_neta:9800, pct_comision:14, monto_comision:1372,estado_pago:'cobrado', agente:'Juan Pérez', vigencia_inicio:'2026-05-01', vigencia_fin:'2027-05-01' },
+    ];
+}
+
+function usarDatosDemo() {
+    polizasCache = generarDatosDemoPolizas();
+
+    const totalCobrado    = polizasCache.filter(p=>p.estado_pago==='cobrado').reduce((s,p)=>s+p.monto_comision,0);
+    const totalTransito   = polizasCache.filter(p=>p.estado_pago==='transito'||p.estado_pago==='pendiente').reduce((s,p)=>s+p.monto_comision,0);
+    const totalProyeccion = totalCobrado + totalTransito;
+
+    renderKPIs({ cobrado: totalCobrado, transito: totalTransito, proyeccion: totalProyeccion, total_polizas: polizasCache.length, polizas_cobradas: polizasCache.filter(p=>p.estado_pago==='cobrado').length, polizas_pendientes: polizasCache.filter(p=>p.estado_pago!=='cobrado').length });
+    renderTablaPolizas();
+
+    if (tienePermiso('COM_VER_CXC')) {
+        const cxcDemo = polizasCache.filter(p=>p.estado_pago==='transito'||p.estado_pago==='pendiente').map(p=>({
+            ...p, monto_pendiente: p.prima_neta, comision_transito: p.monto_comision,
+            dias_pendiente: Math.floor(Math.random()*45)+5
+        }));
+        renderCxC({ cxc: cxcDemo });
+    }
+
+    if (tienePermiso('COM_VER_PROYECCION')) {
+        renderProyeccion(
+            { cobrado: totalCobrado, pendiente: totalTransito, proyeccion_total: totalProyeccion },
+            { cobrado: totalCobrado }
+        );
+    }
+}
+
+/* ─────────────────────────────────────────
+   RENDER KPIs
+───────────────────────────────────────── */
+function renderKPIs(res) {
+    if (!res) { res = {}; }
+
+    const cobrado   = parseFloat(res.cobrado    || 0);
+    const transito  = parseFloat(res.transito   || 0);
+    const proy      = parseFloat(res.proyeccion || (cobrado + transito));
+    const polizas   = parseInt(res.total_polizas || polizasCache.length || 0);
+    const cobPct    = proy > 0 ? Math.round((cobrado / proy) * 100) : 0;
+
+    animarContador('kpi-cobrado',   cobrado,  true);
+    animarContador('kpi-transito',  transito, true);
+    animarContador('kpi-proyeccion',proy,     true);
+    animarContador('kpi-polizas',   polizas,  false);
+
+    const cnts = document.getElementById('kpi-cobrado-cnt');
+    if (cnts) cnts.textContent = `${res.polizas_cobradas||0} pólizas pagadas`;
+    const cntT = document.getElementById('kpi-transito-cnt');
+    if (cntT) cntT.textContent = `${res.polizas_pendientes||0} pendientes de cobro`;
+    const cntP = document.getElementById('kpi-proy-pct');
+    if (cntP) cntP.textContent = `${cobPct}% del mes completado`;
+}
+
+/* ─────────────────────────────────────────
+   ANIMACIÓN COUNT-UP
+───────────────────────────────────────── */
+function animarContador(elementId, valorFinal, esDinero = true) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const duracion   = 1200; // ms
+    const inicio     = Date.now();
+    const inicio_val = 0;
+
+    function tick() {
+        const elapsed  = Date.now() - inicio;
+        const progress = Math.min(elapsed / duracion, 1);
+        // easeOutCubic
+        const ease   = 1 - Math.pow(1 - progress, 3);
+        const current= inicio_val + (valorFinal - inicio_val) * ease;
+
+        el.textContent = esDinero ? formatDinero(current) : Math.round(current).toLocaleString('es-DO');
+
+        if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+/* ─────────────────────────────────────────
+   RENDER TABLA PÓLIZAS
+───────────────────────────────────────── */
+function renderTablaPolizas() {
+    const tbody = document.getElementById('tbody-polizas-com');
+    const buscar = (document.getElementById('f-buscar-poliza')?.value || '').toLowerCase();
+    const estado = document.getElementById('f-estado-pago')?.value || '';
+    const pgSize = parseInt(document.getElementById('pg-size-polizas')?.value || 20);
+
+    let filtrados = polizasCache.filter(p => {
+        const matchBuscar = !buscar || (p.numero_poliza||'').toLowerCase().includes(buscar)
+            || (p.asegurado||'').toLowerCase().includes(buscar)
+            || (p.tipo||'').toLowerCase().includes(buscar);
+        const matchEstado = !estado || p.estado_pago === estado;
+        return matchBuscar && matchEstado;
+    });
+
+    const total  = filtrados.length;
+    const offset = (paginaPolizas - 1) * pgSize;
+    const page   = filtrados.slice(offset, offset + pgSize);
+
+    document.getElementById('pg-info-polizas').textContent =
+        `${total} registro${total !== 1 ? 's' : ''}`;
+    document.getElementById('pg-num-polizas').textContent = paginaPolizas;
+
+    if (page.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9">
+            <div class="empty-state">
+                <i class="fa-solid fa-inbox"></i>
+                <h3>Sin pólizas en este período</h3>
+                <p>Ajuste los filtros o el período seleccionado</p>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = page.map(p => `
+        <tr>
+            <td><strong style="color:#4f46e5;">${esc(p.numero_poliza)}</strong></td>
+            <td><span style="font-size:11px;">${esc(p.tipo)}</span></td>
+            <td>${esc(p.asegurado)}</td>
+            <td style="font-weight:600;">${formatDinero(p.prima_neta)}</td>
+            <td style="text-align:center;">${p.pct_comision}%</td>
+            <td style="font-weight:700;color:#10b981;">${formatDinero(p.monto_comision)}</td>
+            <td>${badgeEstadoPago(p.estado_pago)}</td>
+            <td style="font-size:12px;">${esc(p.agente||'—')}</td>
+            <td style="text-align:center;">
+                <button class="accion" title="Ver detalle" onclick='abrirDetallePoliza(${JSON.stringify(p)})'>
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filtrarTabla() {
+    paginaPolizas = 1;
+    renderTablaPolizas();
+}
+
+function cambiarPagina(dir, tabla) {
+    if (tabla === 'polizas') {
+        paginaPolizas = Math.max(1, paginaPolizas + dir);
+        renderTablaPolizas();
+    }
+}
+
+/* ─────────────────────────────────────────
+   RENDER CxC
+───────────────────────────────────────── */
+function renderCxC(res) {
+    const tbody = document.getElementById('tbody-cxc');
+    if (!res) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:30px;">Sin datos disponibles</td></tr>'; return; }
+
+    const items = res.cxc || res.data || [];
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8">
+            <div class="empty-state">
+                <i class="fa-solid fa-check-circle" style="color:#10b981;"></i>
+                <h3>¡Sin cuentas pendientes!</h3>
+                <p>Todas las comisiones del período están cobradas</p>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = items.map(c => {
+        const dias = parseInt(c.dias_pendiente || 0);
+        const diasColor = dias > 30 ? '#dc2626' : dias > 15 ? '#d97706' : '#374151';
+        return `<tr>
+            <td><strong style="color:#4f46e5;">${esc(c.numero_poliza)}</strong></td>
+            <td>${esc(c.asegurado||'—')}</td>
+            <td style="font-weight:600;">${formatDinero(c.monto_pendiente)}</td>
+            <td style="font-weight:700;color:#f59e0b;">${formatDinero(c.comision_transito)}</td>
+            <td style="font-weight:700;color:${diasColor};">${dias} días</td>
+            <td>${esc(c.fecha_vencimiento||'—')}</td>
+            <td style="font-size:12px;">${esc(c.agente||'—')}</td>
+            <td style="text-align:center;">
+                <button class="accion accion-naranja" title="Ver detalle" onclick='abrirDetallePoliza(${JSON.stringify(c)})'>
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+/* ─────────────────────────────────────────
+   RENDER PROYECCIÓN
+───────────────────────────────────────── */
+function renderProyeccion(res, resumen) {
+    if (!res) return;
+
+    const cobrado   = parseFloat(res.cobrado   || resumen?.cobrado   || 0);
+    const pendiente = parseFloat(res.pendiente || resumen?.transito  || 0);
+    const total     = parseFloat(res.proyeccion_total || (cobrado + pendiente));
+    const pct       = total > 0 ? Math.round((cobrado / total) * 100) : 0;
+
+    document.getElementById('proy-label-pct').textContent = `${pct}%`;
+
+    // Barra de progreso animada
+    setTimeout(() => {
+        const bar = document.getElementById('progress-bar-proy');
+        if (bar) bar.style.width = `${pct}%`;
+        const lbl = document.getElementById('progress-bar-label');
+        if (lbl) lbl.textContent = `${formatDinero(cobrado)} / ${formatDinero(total)}`;
+    }, 300);
+
+    animarContadorTexto('proy-cobrado',   cobrado,  true);
+    animarContadorTexto('proy-pendiente', pendiente,true);
+    animarContadorTexto('proy-total',     total,    true);
+
+    const msg = document.getElementById('proy-mensaje-txt');
+    if (msg) msg.innerHTML = `Si se cobran todas las CxC del mes, recibirías <strong>${formatDinero(total)}</strong> en comisiones este mes.`;
+}
+
+function animarContadorTexto(elementId, valor, esDinero) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const dur = 1000;
+    const ini = Date.now();
+    function tick() {
+        const p = Math.min((Date.now()-ini)/dur, 1);
+        const e = 1 - Math.pow(1-p, 3);
+        el.textContent = esDinero ? formatDinero(valor*e) : Math.round(valor*e).toLocaleString('es-DO');
+        if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+/* ─────────────────────────────────────────
+   MODAL DETALLE PÓLIZA
+───────────────────────────────────────── */
+function abrirDetallePoliza(polizaData) {
+    // Limpiar QR anterior
+    const qrDiv = document.getElementById('qr-poliza');
+    qrDiv.innerHTML = '';
+    if (qrInstance) { try { qrInstance.clear(); } catch(e){} qrInstance = null; }
+
+    // Rellenar campos
+    document.getElementById('dc-num-poliza').textContent      = polizaData.numero_poliza || '—';
+    document.getElementById('dc-tipo').textContent            = polizaData.tipo           || '—';
+    document.getElementById('dc-asegurado').textContent       = polizaData.asegurado      || '—';
+    document.getElementById('dc-agente').textContent          = polizaData.agente         || '—';
+    document.getElementById('dc-prima-neta').textContent      = formatDinero(polizaData.prima_neta || 0);
+    document.getElementById('dc-pct-com').textContent         = `${polizaData.pct_comision || 0}%`;
+    document.getElementById('dc-monto-com').textContent       = formatDinero(polizaData.monto_comision || 0);
+    document.getElementById('dc-estado-pago').innerHTML       = badgeEstadoPago(polizaData.estado_pago);
+    document.getElementById('dc-vigencia-inicio').textContent = polizaData.vigencia_inicio || '—';
+    document.getElementById('dc-vigencia-fin').textContent    = polizaData.vigencia_fin    || '—';
+
+    // Generar QR
+    const urlQR = `${window.location.protocol}//${window.location.host}/PLATAFORMA_INTEGRADA/frontend/verificar-poliza.html?n=${encodeURIComponent(polizaData.numero_poliza||'')}`;
+    document.getElementById('qr-poliza-url').textContent = urlQR;
+
+    try {
+        qrInstance = new QRCode(qrDiv, {
+            text:   urlQR,
+            width:  130,
+            height: 130,
+            colorDark:  '#1e293b',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    } catch(e) {
+        qrDiv.innerHTML = '<span style="color:#94a3b8;font-size:12px;">QR no disponible</span>';
+    }
+
+    abrirModal('modal-detalle-com');
+}
+
+function imprimirModalDetalle() {
+    window.print();
+}
+
+/* ─────────────────────────────────────────
+   MODAL EMAIL
+───────────────────────────────────────── */
+function abrirModalEmail() {
+    const mes  = MESES[periodoMes - 1];
+    document.getElementById('email-periodo-preview').textContent =
+        `Panel de Comisiones — ${mes} ${periodoAnio}`;
+    // Pre-fill con email del usuario actual
+    const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+    if (usuario.email) document.getElementById('email-destino').value = usuario.email;
+    abrirModal('modal-email-com');
+}
+
+async function enviarEmail() {
+    const email = document.getElementById('email-destino').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (typeof MQF !== 'undefined' && MQF.toast) {
+            MQF.toast('Por favor ingrese un email válido', 'warning');
+        } else { alert('Por favor ingrese un email válido'); }
+        return;
+    }
+
+    const payload = {
+        email_destino: email,
+        mes: periodoMes,
+        anio: periodoAnio,
+        incluir_s1: document.getElementById('chk-s1').checked,
+        incluir_s2: document.getElementById('chk-s2').checked,
+        incluir_s3: document.getElementById('chk-s3').checked,
+        agente_id:  tienePermiso('COM_PANEL_GLOBAL') ? document.getElementById('sel-agente').value : ''
+    };
+
+    const btnEnviar = document.querySelector('#modal-email-com .btn-primary');
+    btnEnviar.disabled = true;
+    btnEnviar.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Enviando...';
+
+    try {
+        const res = await api.solicitud('/comisiones_panel.php?action=enviar_reporte', 'POST', payload);
+        cerrarModal('modal-email-com');
+        if (typeof MQF !== 'undefined' && MQF.toast) {
+            MQF.toast(res.mensaje || '✅ Reporte enviado correctamente', res.exito ? 'success' : 'error');
+        } else {
+            alert(res.mensaje || 'Reporte enviado');
+        }
+    } catch(e) {
+        if (typeof MQF !== 'undefined' && MQF.toast) {
+            MQF.toast('Error al enviar el reporte', 'error');
+        }
+    } finally {
+        btnEnviar.disabled = false;
+        btnEnviar.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Reporte';
+    }
+}
+
+/* ─────────────────────────────────────────
+   EXPORTAR PDF (jsPDF + AutoTable)
+───────────────────────────────────────── */
+async function exportarPDF() {
+    const btnPDF = document.getElementById('btn-exportar-pdf');
+    if (btnPDF) { btnPDF.disabled = true; btnPDF.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Generando...'; }
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        const mes     = MESES[periodoMes - 1];
+        const periodo = `${mes} ${periodoAnio}`;
+
+        // ── Paleta de colores MQF
+        const C_INDIGO  = [79, 70, 229];
+        const C_WHITE   = [255, 255, 255];
+        const C_LIGHT   = [238, 242, 255];
+        const C_DARK    = [30, 41, 59];
+        const C_MUTED   = [100, 116, 139];
+
+        // ── HEADER
+        doc.setFillColor(...C_INDIGO);
+        doc.roundedRect(10, 8, 277, 28, 4, 4, 'F');
+
+        // Logo (si está disponible)
+        try {
+            if (window.LOGO_MQF_B64) {
+                doc.addImage(window.LOGO_MQF_B64, 'PNG', 14, 11, 22, 22);
+            }
+        } catch(e) { /* sin logo */ }
+
+        doc.setTextColor(...C_WHITE);
+        doc.setFontSize(16); doc.setFont('helvetica','bold');
+        doc.text('MAS QUE FIANZAS — Panel de Comisiones', 42, 18);
+        doc.setFontSize(10); doc.setFont('helvetica','normal');
+        doc.text(`Período: ${periodo}  |  Generado: ${new Date().toLocaleDateString('es-DO')} ${new Date().toLocaleTimeString('es-DO',{hour:'2-digit',minute:'2-digit'})}`, 42, 26);
+
+        // Usuario
+        const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+        if (usuario.nombre_completo) {
+            doc.text(`Usuario: ${usuario.nombre_completo}`, 42, 32);
+        }
+
+        // ── KPI Summary boxes
+        let y = 44;
+        const kpiData = [
+            { label:'Cobradas',   value: document.getElementById('kpi-cobrado')?.textContent   || 'RD$ 0', color:[16,185,129] },
+            { label:'En Tránsito',value: document.getElementById('kpi-transito')?.textContent  || 'RD$ 0', color:[245,158,11] },
+            { label:'Proyección', value: document.getElementById('kpi-proyeccion')?.textContent|| 'RD$ 0', color:[59,130,246] },
+            { label:'Pólizas',    value: document.getElementById('kpi-polizas')?.textContent   || '0',     color:[139,92,246] },
+        ];
+        const boxW = 66;
+        kpiData.forEach((k, i) => {
+            const x = 10 + i * (boxW + 3);
+            doc.setFillColor(...k.color);
+            doc.roundedRect(x, y, boxW, 18, 3, 3, 'F');
+            doc.setTextColor(...C_WHITE);
+            doc.setFontSize(8); doc.setFont('helvetica','bold');
+            doc.text(k.label.toUpperCase(), x+4, y+7);
+            doc.setFontSize(11);
+            doc.text(k.value, x+4, y+14);
+        });
+
+        // ── TABLA 1: Pólizas
+        y = 70;
+        doc.setTextColor(...C_DARK);
+        doc.setFontSize(11); doc.setFont('helvetica','bold');
+        doc.text('📋 Pólizas Emitidas — Prima Neta y Comisión', 10, y);
+        y += 4;
+
+        const colsS1 = ['N° Póliza','Tipo','Asegurado','Prima Neta','% Com.','Comisión','Estado Pago','Agente'];
+        const rowsS1 = polizasCache.map(p => [
+            p.numero_poliza || '', shortText(p.tipo||'',28), p.asegurado||'',
+            formatDinero(p.prima_neta), `${p.pct_comision||0}%`,
+            formatDinero(p.monto_comision), (p.estado_pago||'').toUpperCase(), p.agente||''
+        ]);
+
+        doc.autoTable({
+            startY: y,
+            head: [colsS1],
+            body: rowsS1,
+            theme: 'grid',
+            styles: { fontSize:8, cellPadding:2.5, textColor:C_DARK },
+            headStyles: { fillColor:C_INDIGO, textColor:C_WHITE, fontStyle:'bold', fontSize:7.5 },
+            alternateRowStyles: { fillColor:C_LIGHT },
+            columnStyles: {
+                0:{ fontStyle:'bold', textColor:C_INDIGO },
+                3:{ halign:'right' }, 4:{ halign:'center' }, 5:{ halign:'right', fontStyle:'bold' }
+            },
+            margin:{ left:10, right:10 }
+        });
+
+        // ── TABLA 2: CxC (si hay datos y permiso)
+        if (tienePermiso('COM_VER_CXC') && datosPanel.cxc) {
+            const cxcItems = datosPanel.cxc?.cxc || datosPanel.cxc?.data || [];
+            if (cxcItems.length > 0) {
+                doc.addPage();
+                // Re-header en nueva página
+                doc.setFillColor(...C_INDIGO);
+                doc.roundedRect(10, 8, 277, 14, 3, 3, 'F');
+                doc.setTextColor(...C_WHITE);
+                doc.setFontSize(10); doc.setFont('helvetica','bold');
+                doc.text(`MAS QUE FIANZAS — Panel de Comisiones | ${periodo}`, 14, 17);
+
+                y = 30;
+                doc.setTextColor(...C_DARK);
+                doc.setFontSize(11); doc.setFont('helvetica','bold');
+                doc.text('⏳ Comisiones en Tránsito — Cuentas por Cobrar', 10, y);
+                y += 4;
+
+                const colsS2 = ['N° Póliza','Asegurado','Monto Pendiente','Comisión en Tránsito','Días Pendiente','Agente'];
+                const rowsS2 = cxcItems.map(c => [
+                    c.numero_poliza||'', c.asegurado||'',
+                    formatDinero(c.monto_pendiente), formatDinero(c.comision_transito),
+                    `${c.dias_pendiente||0} días`, c.agente||''
+                ]);
+
+                doc.autoTable({
+                    startY: y,
+                    head: [colsS2],
+                    body: rowsS2,
+                    theme: 'grid',
+                    styles: { fontSize:8, cellPadding:2.5, textColor:C_DARK },
+                    headStyles: { fillColor:[245,158,11], textColor:C_WHITE, fontStyle:'bold' },
+                    alternateRowStyles: { fillColor:[255,251,235] },
+                    columnStyles: {
+                        0:{ fontStyle:'bold', textColor:C_INDIGO },
+                        2:{ halign:'right' }, 3:{ halign:'right', fontStyle:'bold', textColor:[245,158,11] },
+                        4:{ halign:'center', textColor:[220,38,38] }
+                    },
+                    margin:{ left:10, right:10 }
+                });
+            }
+        }
+
+        // ── Footer en todas las páginas
+        const totalPgs = doc.getNumberOfPages();
+        for (let i = 1; i <= totalPgs; i++) {
+            doc.setPage(i);
+            doc.setFillColor(...C_LIGHT);
+            doc.rect(0, doc.internal.pageSize.height - 10, doc.internal.pageSize.width, 10, 'F');
+            doc.setFontSize(7); doc.setTextColor(...C_MUTED);
+            doc.text(`MAS QUE FIANZAS — Documento confidencial | Página ${i} de ${totalPgs}`,
+                doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 4, { align:'center' });
+        }
+
+        // Guardar
+        doc.save(`Comisiones_${mes}_${periodoAnio}.pdf`);
+        if (typeof MQF !== 'undefined' && MQF.toast)
+            MQF.toast('✅ PDF generado correctamente', 'success');
+
+    } catch(e) {
+        console.error('Error generando PDF:', e);
+        if (typeof MQF !== 'undefined' && MQF.toast)
+            MQF.toast('Error al generar el PDF', 'error');
+        else alert('Error al generar el PDF: ' + e.message);
+    } finally {
+        if (btnPDF) {
+            btnPDF.disabled = false;
+            btnPDF.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Exportar PDF';
+        }
+    }
+}
+
+/* ─────────────────────────────────────────
+   UTILIDADES
+───────────────────────────────────────── */
+function abrirModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function cerrarModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// Cerrar modal al click en overlay
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) cerrarModal(m.id); });
+});
+
+function scrollToSeccion(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function actualizarPeriodoDisplay() {
+    const el = document.getElementById('periodo-display');
+    if (el) el.textContent = `${MESES[periodoMes-1]} ${periodoAnio}`;
+}
+
+function formatDinero(valor) {
+    const n = parseFloat(valor) || 0;
+    return 'RD$ ' + n.toLocaleString('es-DO', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function badgeEstadoPago(estado) {
+    const map = {
+        cobrado:   '<span class="badge badge-cobrado">✅ Cobrado</span>',
+        pendiente: '<span class="badge badge-pendiente">⏳ Pendiente</span>',
+        transito:  '<span class="badge badge-transito">🔄 En Tránsito</span>',
+        cancelado: '<span class="badge badge-cancelado">❌ Cancelado</span>',
+    };
+    return map[estado?.toLowerCase()] || `<span class="badge" style="background:#f1f5f9;color:#64748b;">${esc(estado||'—')}</span>`;
+}
+
+function esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function shortText(str, max) {
+    return str.length > max ? str.substring(0,max) + '…' : str;
+}
+
+// Tecla Escape para cerrar modales
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        ['modal-detalle-com','modal-email-com'].forEach(id => {
+            const m = document.getElementById(id);
+            if (m && m.classList.contains('open')) cerrarModal(id);
+        });
+    }
+});
+</script>
+</body>
+</html>

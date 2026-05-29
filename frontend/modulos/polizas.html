@@ -227,10 +227,10 @@
                 <p class="mqf-module-header__subtitle">Seguros de Ley — Emisión, consulta y comisiones</p>
             </div>
             <div style="display:flex;gap:8px;padding-top:4px;">
-                <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="exportarPolizas()">
+                <button id="btn-pol-exportar" class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="exportarPolizas()">
                     <i class="fa-solid fa-file-export"></i> Exportar
                 </button>
-                <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
+                <button id="btn-pol-nueva" class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
                     <i class="fa-solid fa-plus"></i> Nueva Póliza
                 </button>
             </div>
@@ -242,7 +242,7 @@
             <button class="mqf-module-tab" id="tab-btn-nueva" onclick="abrirTab('tab-nueva'); iniciarWizard()">
                 <i class="fa-solid fa-file-circle-plus"></i> Nueva Póliza
             </button>
-            <button class="mqf-module-tab" id="tab-btn-comisiones" onclick="abrirTab('tab-comisiones'); cargarComisiones()">
+            <button class="mqf-module-tab" id="tab-btn-comisiones" onclick="abrirTab('tab-comisiones'); try { document.getElementById('comisiones-iframe').contentWindow.cargarPanel(); } catch(e) {}">
                 <i class="fa-solid fa-hand-holding-dollar"></i> Comisiones
             </button>
         </div>
@@ -570,24 +570,13 @@
     <!-- ════════════════════════════════════
          TAB 3: COMISIONES
     ════════════════════════════════════ -->
-    <div id="tab-comisiones" class="tab-panel">
-        <br>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="margin:0;color:#1e293b;">Panel de Comisiones</h3>
-            <div style="display:flex;gap:10px;">
-                <select id="f-com-estado" onchange="cargarComisiones()" style="padding:8px 12px;border:1px solid #e0e7ff;border-radius:7px;font-size:13px;">
-                    <option value="">Todos los estados</option>
-                    <option value="pendiente">Pendientes</option>
-                    <option value="pagado">Pagadas</option>
-                </select>
-            </div>
-        </div>
-        <div id="comisiones-lista">
-            <div class="empty-state">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
-                <h3>Cargando comisiones...</h3>
-            </div>
-        </div>
+    <div id="tab-comisiones" class="tab-panel" style="padding:0; overflow:hidden;">
+        <iframe
+            id="comisiones-iframe"
+            src="comisiones.html"
+            style="width:100%; height:calc(100vh - 160px); border:none; display:block;"
+            title="Panel de Comisiones Premium">
+        </iframe>
     </div>
 
     </div><!-- /padding wrapper -->
@@ -1854,6 +1843,81 @@ document.addEventListener('DOMContentLoaded', () => {
   })();
 </script>
 <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
+
+<script>
+// ═══════════════════════════════════════════════════
+// NOFTRAB Tab Guards — Pólizas v1.0
+// ═══════════════════════════════════════════════════
+const TAB_POLIZAS_GUARDS = [
+    { elementId: 'tab-btn-consultar',  permiso: 'TAB_POL_CONSULTAR' },
+    { elementId: 'tab-btn-nueva',      permiso: 'TAB_POL_NUEVA' },
+    { elementId: 'tab-btn-comisiones', permiso: 'TAB_POL_COMISIONES' },
+    { elementId: 'btn-pol-exportar',   permiso: 'POLIZAS_EXPORTAR' },
+    { elementId: 'btn-pol-nueva',      permiso: 'TAB_POL_NUEVA' },
+];
+
+async function initTabGuardsPolizas() {
+    try {
+        // 1. Obtener token de sesión (el api-client lo guarda en localStorage como 'token_sesion')
+        const token = localStorage.getItem('token_sesion') ||
+                      sessionStorage.getItem('mqf_token') ||
+                      sessionStorage.getItem('mqfToken');
+        if (!token) return; // Sin token — modo debug, mostrar todo
+
+        // 2. Intentar leer permisos desde el parent (dashboard ya los tiene cargados)
+        let codigosPermisos = [];
+        try {
+            if (window.parent && window.parent.MQF_PERMISOS_NOFTRAB) {
+                codigosPermisos = window.parent.MQF_PERMISOS_NOFTRAB;
+            }
+        } catch(pe) { /* cross-origin silenciado */ }
+
+        // 3. Si no hay permisos del parent, consultar el backend
+        if (codigosPermisos.length === 0) {
+            try {
+                const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/auth/validar-sesion?token=' + encodeURIComponent(token));
+                if (resp.ok) {
+                    const data = await resp.json();
+                    // Los permisos pueden venir en data.permisos (array de objetos o strings)
+                    const rawPermisos = data.permisos || data.datos || data.codigos || [];
+                    if (Array.isArray(rawPermisos)) {
+                        codigosPermisos = rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+                    }
+                }
+            } catch(fetchErr) {
+                console.warn('TabGuard Pólizas: no se pudo consultar permisos', fetchErr.message);
+                return; // Fallar silenciosamente — mostrar todo
+            }
+        }
+
+        // 4. Si la lista de permisos está vacía (sin granularidad configurada), mostrar todo
+        if (codigosPermisos.length === 0) return;
+
+        // 5. Ocultar elementos sin permiso
+        TAB_POLIZAS_GUARDS.forEach(guard => {
+            if (!codigosPermisos.includes(guard.permiso)) {
+                const el = document.getElementById(guard.elementId);
+                if (el) el.style.display = 'none';
+            }
+        });
+
+        // 6. Activar el primer tab de módulo que sea visible
+        const tabBtns = ['tab-btn-consultar', 'tab-btn-nueva', 'tab-btn-comisiones'];
+        for (const id of tabBtns) {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none') {
+                el.click();
+                break;
+            }
+        }
+
+    } catch(e) {
+        console.warn('TabGuard Pólizas:', e.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initTabGuardsPolizas);
+</script>
 </body>
 </html>
 

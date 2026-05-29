@@ -328,16 +328,16 @@
                     <div class="config-layout">
                         <!-- Sidebar de Configuración -->
                         <div class="config-sidebar">
-                            <button class="config-nav-btn active" data-target="config-generales">
+                            <button id="btn-conf-generales" class="config-nav-btn active" data-target="config-generales">
                                 <span>🌐</span> Generales
                             </button>
-                            <button class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp();">
+                            <button id="btn-conf-seguridad" class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp();">
                                 <span>🔐</span> Seguridad y Accesos
                             </button>
-                            <button class="config-nav-btn" data-target="config-perfiles" onclick="dashboard.cargarRejillaPerfiles();">
+                            <button id="btn-conf-perfiles" class="config-nav-btn" data-target="config-perfiles" onclick="dashboard.cargarRejillaPerfiles();">
                                 <span>🛡️</span> Perfiles y Permisos
                             </button>
-                            <button class="config-nav-btn" data-target="config-ux-skins" onclick="cargarIframeUxSkins()">
+                            <button id="btn-conf-skins" class="config-nav-btn" data-target="config-ux-skins" onclick="cargarIframeUxSkins()">
                                 <span>🎨</span> UX / Apariencia
                             </button>
                         </div>
@@ -1037,5 +1037,95 @@
       });
     });
     </script>
+
+<script>
+// ═══════════════════════════════════════════════════
+// NOFTRAB Tab Guards — Configuración Dashboard v1.0
+// ═══════════════════════════════════════════════════
+const TAB_CONFIG_GUARDS = [
+    { elementId: 'btn-conf-generales', permiso: 'TAB_CONF_GENERALES' },
+    { elementId: 'btn-conf-seguridad', permiso: 'TAB_CONF_SEGURIDAD' },
+    { elementId: 'btn-conf-perfiles',  permiso: 'TAB_CONF_PERFILES' },
+    { elementId: 'btn-conf-skins',     permiso: 'TAB_CONF_SKINS' },
+];
+
+async function initTabGuardsConfig() {
+    try {
+        // 1. Obtener token de sesión (guardado por api-client.js en localStorage)
+        const token = localStorage.getItem('token_sesion') ||
+                      sessionStorage.getItem('mqf_token') ||
+                      sessionStorage.getItem('mqfToken');
+        if (!token) return; // Sin token — mostrar todo
+
+        // 2. En dashboard.html leer MQF_PERMISOS (variable propia de esta página)
+        let codigosPermisos = [];
+        if (typeof window.MQF_PERMISOS !== 'undefined' && Array.isArray(window.MQF_PERMISOS)) {
+            codigosPermisos = window.MQF_PERMISOS.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+        }
+
+        // 3. Si no hay permisos locales, consultar el backend
+        if (codigosPermisos.length === 0) {
+            try {
+                const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/auth/validar-sesion?token=' + encodeURIComponent(token));
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const rawPermisos = data.permisos || data.datos || data.codigos || [];
+                    if (Array.isArray(rawPermisos)) {
+                        codigosPermisos = rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+                    }
+                }
+            } catch(fetchErr) {
+                console.warn('TabGuard Config: no se pudo consultar permisos', fetchErr.message);
+                return; // Fallar silenciosamente — mostrar todo
+            }
+        }
+
+        // 4. Si la lista está vacía (sin granularidad configurada), mostrar todo
+        if (codigosPermisos.length === 0) return;
+
+        // 5. Ocultar botones sin permiso
+        TAB_CONFIG_GUARDS.forEach(guard => {
+            if (!codigosPermisos.includes(guard.permiso)) {
+                const el = document.getElementById(guard.elementId);
+                if (el) el.style.display = 'none';
+            }
+        });
+
+        // 6. Activar el primer botón visible del config-sidebar
+        const configBtnIds = ['btn-conf-generales', 'btn-conf-seguridad', 'btn-conf-perfiles', 'btn-conf-skins'];
+        for (const id of configBtnIds) {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none') {
+                // Solo hacer clic si el módulo de configuración está activo
+                // para no interferir con la navegación actual
+                el.classList.add('active');
+                const target = el.getAttribute('data-target');
+                if (target) {
+                    document.querySelectorAll('.config-panel').forEach(p => p.classList.remove('active'));
+                    const panel = document.getElementById(target);
+                    if (panel) panel.classList.add('active');
+                }
+                break;
+            }
+        }
+
+    } catch(e) {
+        console.warn('TabGuard Config:', e.message);
+    }
+}
+
+// Ejecutar guards cuando se navega al módulo de configuración
+document.addEventListener('DOMContentLoaded', () => {
+    // Escuchar navegación al módulo configuración para aplicar guards en ese momento
+    const navConfItem = document.querySelector('[data-module="configuracion"]');
+    if (navConfItem) {
+        navConfItem.addEventListener('click', () => {
+            setTimeout(initTabGuardsConfig, 100);
+        });
+    }
+    // También correr al cargar por si la URL ya apunta a configuración
+    initTabGuardsConfig();
+});
+</script>
 </body>
 </html>
