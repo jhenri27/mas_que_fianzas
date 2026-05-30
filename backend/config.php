@@ -163,7 +163,7 @@ function tienePermiso($usuario_id, $funcion_codigo) {
             INNER JOIN perfiles p ON u.perfil_id = p.id
             INNER JOIN permisos_perfil pp ON p.id = pp.perfil_id
             INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id
-            WHERE u.id = ? AND fm.codigo_funcion = ? AND pp.puede_ejecutar = 1
+            WHERE u.id = ? AND fm.codigo_funcion = ? AND (pp.puede_ejecutar = 1 OR pp.ver_datos = 1 OR pp.ver_reportes = 1)
             LIMIT 1";
     
     $stmt = $db->prepare($sql);

@@ -210,7 +210,7 @@ try {
                          FROM usuarios u
                          INNER JOIN permisos_perfil pp ON u.perfil_id = pp.perfil_id
                          INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id
-                         WHERE u.id = ? AND pp.puede_ejecutar = 1"
+                         WHERE u.id = ? AND (pp.puede_ejecutar = 1 OR pp.ver_datos = 1 OR pp.ver_reportes = 1)"
                     );
                     $res = null;
                     if ($stmt_perms) {
