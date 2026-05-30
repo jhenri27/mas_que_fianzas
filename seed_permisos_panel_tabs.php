@@ -46,6 +46,7 @@ $modulos_def = [
     'polizas'      => ['icono' => '📋', 'ruta' => '/modulos/polizas.php',      'orden' => 3],
     'cotizaciones' => ['icono' => '📈', 'ruta' => '/modulos/cotizaciones.php', 'orden' => 6],
     'configuracion'=> ['icono' => '⚙️', 'ruta' => '/modulos/configuracion.php','orden' => 8],
+    'reportes'     => ['icono' => '📊', 'ruta' => '/modulos/reportes.php',      'orden' => 9],
 ];
 
 /**
@@ -81,6 +82,10 @@ $funciones_def = [
         ['TAB_CONF_PERFILES',  'Subpanel Perfiles y Permisos',       'editar'   ],
         ['TAB_CONF_SKINS',     'Subpanel UX y Apariencia',           'editar'   ],
     ],
+    'reportes' => [
+        ['TAB_REP_MODELADOR',  'Pestaña Modelador PDF-DOCS',        'consultar'],
+        ['TAB_REP_GENERALES',  'Pestaña Reportes Generales',        'reportes' ],
+    ],
 ];
 
 /**
@@ -107,6 +112,8 @@ $malla = [
     'TAB_CONF_SEGURIDAD' => [1, 1, 0, 0, 0, 0, 1, 0],
     'TAB_CONF_PERFILES'  => [1, 0, 0, 0, 0, 0, 1, 0],
     'TAB_CONF_SKINS'     => [1, 1, 0, 1, 0, 0, 1, 0],
+    'TAB_REP_MODELADOR'  => [1, 1, 0, 1, 1, 0, 1, 1],
+    'TAB_REP_GENERALES'  => [1, 1, 1, 1, 0, 0, 1, 0],
 ];
 
 // Orden de perfiles para la malla (índice 0 = perfil_id 1, etc.)

@@ -321,6 +321,54 @@
     <script src="../assets/modelador-pdf.js"></script>
 
 <script>
+// ═══════════════════════════════════════════════════
+// NOFTRAB Tab Guards — Reportes v1.0
+// ═══════════════════════════════════════════════════
+const TAB_REPORTES_GUARDS = [
+    { elementId: 'tab-modelador', permiso: 'TAB_REP_MODELADOR', panelId: 'panel-modelador' },
+    { elementId: 'tab-futuros',   permiso: 'TAB_REP_GENERALES', panelId: 'panel-futuros' }
+];
+
+async function initTabGuardsReportes() {
+    try {
+        const token = localStorage.getItem('token_sesion') || 
+                      sessionStorage.getItem('mqf_token') || 
+                      sessionStorage.getItem('mqfToken');
+        if (!token) return; // Si no hay token, no ocultar (desarrollo/debug)
+
+        // Consultar mis permisos
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/comisiones_panel.php?action=mis_permisos&token_sesion=' + encodeURIComponent(token));
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const rawPermisos = data.permisos || data.datos || [];
+        const codigosPermisos = rawPermisos.map ? rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p)) : [];
+
+        // Si la lista de permisos no está vacía (usuario real con roles cargados)
+        if (codigosPermisos.length > 0) {
+            TAB_REPORTES_GUARDS.forEach(guard => {
+                if (!codigosPermisos.includes(guard.permiso)) {
+                    const el = document.getElementById(guard.elementId);
+                    if (el) el.style.display = 'none';
+                    const panel = document.getElementById(guard.panelId);
+                    if (panel) panel.classList.remove('active');
+                }
+            });
+
+            // Activar el primer tab visible
+            const primerTab = document.querySelector('.mqf-module-tab:not([style*="none"])');
+            if (primerTab) {
+                primerTab.click();
+            }
+        }
+    } catch(e) {
+        console.warn('TabGuard Reportes:', e.message);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initTabGuardsReportes);
+</script>
+
+<script>
   /* ── UX-SKINS boot: aplicar skin desde localStorage al cargar ── */
   (function(){
     var s = localStorage.getItem('mqf-skin') || 'indigo';

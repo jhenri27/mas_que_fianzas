@@ -109,13 +109,88 @@ try {
             // Lista de pólizas del mes con prima_neta y monto_comision
             case 'polizas_comision':
                 $datos = $mgr->obtenerPolizasConComision($uid_target, $mes, $anio, $es_global);
-                echo json_encode(["exito" => true, "datos" => $datos, "mensaje" => ""]);
+                $normalizadas = [];
+                if (is_array($datos)) {
+                    foreach ($datos as $d) {
+                        $normalizadas[] = [
+                            'poliza_id'       => (int)($d['poliza_id'] ?? 0),
+                            'numero_poliza'   => $d['numero_poliza'] ?? '',
+                            'tipo'            => $d['tipo_seguro'] ?? '',
+                            'asegurado'       => $d['nombre_asegurado'] ?? '',
+                            'prima_neta'      => (float)($d['prima_neta'] ?? 0),
+                            'pct_comision'    => (float)($d['porcentaje_comision'] ?? 0),
+                            'monto_comision'  => (float)($d['monto_comision'] ?? 0),
+                            'estado_pago'     => $d['estado_pago_comision'] ?? '',
+                            'agente'          => $d['nombre_agente'] ?? '',
+                            'vigencia_inicio' => !empty($d['fecha_emision']) ? date('Y-m-d', strtotime($d['fecha_emision'])) : '',
+                            'vigencia_fin'    => !empty($d['fecha_vencimiento']) ? date('Y-m-d', strtotime($d['fecha_vencimiento'])) : '',
+                        ];
+                    }
+                }
+                echo json_encode(["exito" => true, "datos" => $normalizadas, "mensaje" => ""]);
                 break;
 
             // Pólizas con pagos pendientes y comisión en tránsito
             case 'cuentas_por_cobrar':
                 $datos = $mgr->obtenerCuentasPorCobrar($uid_target, $mes, $anio, $es_global);
-                echo json_encode(["exito" => true, "datos" => $datos, "mensaje" => ""]);
+                $normalizadas = [];
+                if (is_array($datos)) {
+                    foreach ($datos as $d) {
+                        // Calcular días pendiente
+                        $dias = 0;
+                        if (!empty($d['fecha_emision'])) {
+                            $diff = time() - strtotime($d['fecha_emision']);
+                            $dias = max(0, (int)floor($diff / (60 * 60 * 24)));
+                        }
+                        $normalizadas[] = [
+                            'poliza_id'         => (int)($d['poliza_id'] ?? 0),
+                            'numero_poliza'     => $d['numero_poliza'] ?? '',
+                            'tipo'              => $d['tipo_seguro'] ?? '',
+                            'asegurado'         => $d['nombre_asegurado'] ?? '',
+                            'monto_pendiente'   => (float)($d['monto_pago_pendiente'] ?? $d['prima_neta'] ?? 0),
+                            'comision_transito' => (float)($d['monto_comision'] ?? 0),
+                            'dias_pendiente'    => $dias,
+                            'fecha_vencimiento' => !empty($d['fecha_vencimiento']) ? date('Y-m-d', strtotime($d['fecha_vencimiento'])) : '',
+                            'agente'            => $d['nombre_agente'] ?? '',
+                            // Para rellenar modal si se clica desde aquí:
+                            'pct_comision'      => (float)($d['porcentaje_comision'] ?? 0),
+                            'monto_comision'    => (float)($d['monto_comision'] ?? 0),
+                            'prima_neta'        => (float)($d['prima_neta'] ?? 0),
+                            'estado_pago'       => 'pendiente',
+                            'vigencia_inicio'   => !empty($d['fecha_emision']) ? date('Y-m-d', strtotime($d['fecha_emision'])) : '',
+                            'vigencia_fin'      => !empty($d['fecha_vencimiento']) ? date('Y-m-d', strtotime($d['fecha_vencimiento'])) : '',
+                        ];
+                    }
+                }
+                echo json_encode(["exito" => true, "datos" => $normalizadas, "mensaje" => ""]);
+                break;
+
+            // Historial de pagos realizados para una póliza
+            case 'pagos_poliza':
+                $pol_id = isset($_GET['poliza_id']) ? (int)$_GET['poliza_id'] : 0;
+                if ($pol_id <= 0) {
+                    echo json_encode(["exito" => false, "mensaje" => "ID de póliza inválido o no especificado"]);
+                    break;
+                }
+                $db_temp = Database::getInstance()->getConnection();
+                $stmt_pagos = $db_temp->prepare("SELECT id, monto, fecha_pago, estado_pago, tipo_pago FROM pagos WHERE poliza_id = ? ORDER BY fecha_pago DESC, id DESC");
+                $pagos = [];
+                if ($stmt_pagos) {
+                    $stmt_pagos->bind_param("i", $pol_id);
+                    $stmt_pagos->execute();
+                    $res = $stmt_pagos->get_result();
+                    while ($row = $res->fetch_assoc()) {
+                        $pagos[] = [
+                            'id'          => (int)$row['id'],
+                            'monto'       => (float)$row['monto'],
+                            'fecha_pago'  => $row['fecha_pago'],
+                            'estado_pago' => $row['estado_pago'],
+                            'tipo_pago'   => $row['tipo_pago'],
+                        ];
+                    }
+                    $stmt_pagos->close();
+                }
+                echo json_encode(["exito" => true, "datos" => $pagos, "mensaje" => ""]);
                 break;
 
             // Proyección: cobrado, pendiente, proyeccion_total, porcentaje_cobrado

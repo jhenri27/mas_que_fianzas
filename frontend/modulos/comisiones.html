@@ -699,6 +699,28 @@
                 </div>
             </div>
 
+            <!-- Historial de Pagos Section -->
+            <div class="payments-section" style="margin-top:24px; border-top:1px solid #e2e8f0; padding-top:20px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">
+                    <i class="fa-solid fa-credit-card"></i> Historial de Pagos Realizados
+                </div>
+                <div class="table-responsive" style="max-height: 180px; overflow-y: auto;">
+                    <table class="data-table" style="width:100%; font-size:12px; margin-bottom: 0;">
+                        <thead>
+                            <tr style="background:#f8fafc;">
+                                <th style="padding:8px 10px;">Fecha Pago</th>
+                                <th style="padding:8px 10px;">Método</th>
+                                <th style="padding:8px 10px; text-align:right;">Monto</th>
+                                <th style="padding:8px 10px; text-align:center;">Estado Pago</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dc-pagos-body">
+                            <tr><td colspan="4" style="text-align:center; opacity:0.6; padding: 15px;">Cargando pagos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- QR Code -->
             <div class="qr-section">
                 <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">
@@ -1248,7 +1270,55 @@ function abrirDetallePoliza(polizaData) {
         qrDiv.innerHTML = '<span style="color:#94a3b8;font-size:12px;">QR no disponible</span>';
     }
 
+    // Cargar pagos de la póliza
+    document.getElementById('dc-pagos-body').innerHTML = '<tr><td colspan="4" style="text-align:center; opacity:0.6; padding: 15px;">Cargando pagos...</td></tr>';
+    cargarPagosPolizaModal(polizaData.poliza_id || polizaData.id);
+
     abrirModal('modal-detalle-com');
+}
+
+async function cargarPagosPolizaModal(polizaId) {
+    const tbody = document.getElementById('dc-pagos-body');
+    if (!polizaId) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; opacity:0.6; padding: 15px;">Sin pagos registrados</td></tr>';
+        return;
+    }
+    try {
+        const res = await api.solicitud('/comisiones_panel.php?action=pagos_poliza&poliza_id=' + polizaId, 'GET');
+        if (res.exito && Array.isArray(res.datos)) {
+            if (res.datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; opacity:0.6; padding: 15px;">Sin pagos registrados</td></tr>';
+            } else {
+                tbody.innerHTML = res.datos.map(pg => {
+                    let badgeHtml = '';
+                    const est = pg.estado_pago?.toLowerCase();
+                    if (est === 'procesado') {
+                        badgeHtml = '<span class="badge badge-cobrado" style="display:inline-block; padding: 2px 6px; font-size:10px;">✅ Procesado</span>';
+                    } else if (est === 'pendiente') {
+                        badgeHtml = '<span class="badge badge-pendiente" style="display:inline-block; padding: 2px 6px; font-size:10px;">⏳ Pendiente</span>';
+                    } else if (est === 'registrado') {
+                        badgeHtml = '<span class="badge badge-transito" style="display:inline-block; padding: 2px 6px; font-size:10px;">🔄 Registrado</span>';
+                    } else {
+                        badgeHtml = `<span class="badge" style="background:#f1f5f9;color:#64748b;display:inline-block; padding: 2px 6px; font-size:10px;">${esc(pg.estado_pago || '—')}</span>`;
+                    }
+                    
+                    return `
+                        <tr>
+                            <td style="padding:6px 10px;">${esc(pg.fecha_pago || '—')}</td>
+                            <td style="padding:6px 10px; text-transform:capitalize;">${esc(pg.tipo_pago || '—')}</td>
+                            <td style="padding:6px 10px; text-align:right; font-weight:600;">${formatDinero(pg.monto || 0)}</td>
+                            <td style="padding:6px 10px; text-align:center;">${badgeHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444; padding: 15px;">Error al obtener pagos</td></tr>';
+        }
+    } catch(e) {
+        console.error('Error cargando pagos modal:', e);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444; padding: 15px;">Error de red</td></tr>';
+    }
 }
 
 function imprimirModalDetalle() {
