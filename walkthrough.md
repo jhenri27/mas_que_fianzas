@@ -105,3 +105,28 @@ Al abrir el script por el navegador, si las credenciales de Google Drive no est�
 2. **Refresh Token**: Obtenido en 2 minutos mediante Google OAuth Playground con los scopes de `Drive API v3`.
 Presiona **Guardar y Vincular** y el sistema grabará de forma atómica el archivo de configuración en `backend/config/google_drive.json` (excluido de Git para protección de credenciales) y comenzará las sincronizaciones en la nube de forma 100% automatizada.
 
+---
+
+## 🔍 6. Ficha de Auditoría Técnica y Verificación de Pólizas Simétrica (Norma NOFTRAB)
+
+Se ha incorporado un panel interactivo premium de **Auditoría Técnica (QR)** y el generador de la **Ficha Oficial de Auditoría Técnica** en PDF, de manera 100% simétrica en los modales de pólizas:
+
+### 1. API de Verificación Ampliada [`backend/api/verificar_poliza.php`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/verificar_poliza.php) [MODIFY]
+* Ahora expone el valor inmutable de la base de datos para la columna `validada` (`Si`/`No`) de forma explícita dentro del nodo de respuesta JSON.
+* Permite al frontend conocer el estado de aprobación técnica real e inalterable, evitando discrepancias operativas.
+
+### 2. Módulo de Comisiones [`frontend/modulos/comisiones.html`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/comisiones.html) [MODIFY]
+* **Sub-Panel Técnico `#dc-tech-section`**: Agregado debajo del código QR con estilos translúcidos, cargador en tiempo real e indicadores de color/badges de estado dinámicos.
+* **Botón Premium "Auditoría Técnica (QR)"**: Inyectado en el pie del modal con distribución flexbox adaptada.
+* **Generación de Ficha Técnica (PDF)**: Permite exportar la Ficha Oficial de Auditoría en formato PDF directamente a impresión física o digital con logotipo oficial, desglose técnico de prima total anual, placa de vehículo e indicador de validez.
+
+### 3. Módulo de Pólizas [`frontend/modulos/polizas.html`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html) [MODIFY]
+* **Sincronía Operativa Simétrica**: Inyectado el sub-panel técnico `#det-tech-section` (`#det-tech-loading` y tabla `#det-tech-content`) idéntico dentro del modal de detalle de pólizas.
+* **Rediseño del Footer del Modal**: Configurado `.modal-footer` con distribución `justify-content: space-between` e integrado el botón `"Auditoría Técnica (QR)"` alineado a la izquierda.
+* **Integración JavaScript**:
+  - Función `verDetalle()` adaptada para reiniciar el estado del panel técnico (oculto por defecto) al visualizar nuevas pólizas.
+  - Función `toggleEstadoTecnicoDet()` para desplegar la sección técnica con un desplazamiento suave.
+  - Función `cargarAuditoriaTecnicaDet()` que realiza la petición a la API de verificación y formatea la prima total utilizando el formateador nativo `fmtMoneda()`.
+  - Función `imprimirFichaAuditoriaDet()` que abre la ventana de impresión limpia y estilizada optimizada para PDF con membrete corporativo sin fondos oscuros.
+
+
