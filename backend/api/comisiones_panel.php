@@ -66,7 +66,7 @@ if (!$usuario_id) {
 
 $db = Database::getInstance()->getConnection();
 
-if (!tienePermiso($usuario_id, 'COM_PANEL_VER')) {
+if (($_GET['action'] ?? '') !== 'mis_permisos' && !tienePermiso($usuario_id, 'COM_PANEL_VER')) {
     http_response_code(403);
     echo json_encode(["exito" => false, "mensaje" => "Sin permiso para acceder al Panel de Comisiones"]);
     exit;

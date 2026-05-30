@@ -749,7 +749,7 @@ function imprimirReporte() {
                 </div>
             </div>
             
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
             <script>
                 new QRCode(document.getElementById('print-qr'), {
                     text: '${verificationUrl}',
@@ -761,7 +761,7 @@ function imprimirReporte() {
                         window.close();
                     }, 600);
                 }
-            </script>
+            <\/script>
         </body>
         </html>
     `;
@@ -864,13 +864,22 @@ async function initTabGuardsReportes() {
         const token = localStorage.getItem('token_sesion') || 
                       sessionStorage.getItem('mqf_token') || 
                       sessionStorage.getItem('mqfToken');
-        if (!token) return;
 
-        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/comisiones_panel.php?action=mis_permisos&token_sesion=' + encodeURIComponent(token));
-        if (!resp.ok) return;
-        const data = await resp.json();
-        const rawPermisos = data.permisos || data.datos || [];
-        const codigosPermisos = rawPermisos.map ? rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p)) : [];
+        let codigosPermisos = [];
+        try {
+            if (window.parent && window.parent.MQF_PERMISOS_NOFTRAB) {
+                codigosPermisos = window.parent.MQF_PERMISOS_NOFTRAB;
+            }
+        } catch(pe) { /* cross-origin silenciado */ }
+
+        if (codigosPermisos.length === 0 && token) {
+            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/comisiones_panel.php?action=mis_permisos&token_sesion=' + encodeURIComponent(token));
+            if (resp.ok) {
+                const data = await resp.json();
+                const rawPermisos = data.permisos || data.datos || [];
+                codigosPermisos = rawPermisos.map ? rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p)) : [];
+            }
+        }
 
         if (codigosPermisos.length > 0) {
             TAB_REPORTES_GUARDS.forEach(guard => {
@@ -889,12 +898,14 @@ async function initTabGuardsReportes() {
 
             // Aplicar guards a los subreportes dinámicos
             aplicarGuardsSubreportes(codigosPermisos);
-            inicializarFiltrosReporte();
-            cargarReporteActivo();
         }
     } catch(e) {
         console.warn('TabGuard Reportes:', e.message);
     }
+
+    // SIEMPRE inicializar filtros y cargar reporte activo
+    inicializarFiltrosReporte();
+    cargarReporteActivo();
 }
 
 document.addEventListener('DOMContentLoaded', initTabGuardsReportes);
