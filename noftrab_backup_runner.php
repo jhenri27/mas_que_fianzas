@@ -18,7 +18,7 @@ require_once 'backend/config.php';
 require_once 'backend/Mailer.php';
 
 // Definir constante del folder de Google Drive destino
-define('GOOGLE_DRIVE_FOLDER_ID', '1KtHXSYTzO5GB2PeDuwSxRSNIVrveLLqf');
+define('GOOGLE_DRIVE_FOLDER_ID', '1twjGFJZSYEdsWZDfxaNoHq7yc9bglr5A');
 $config_path = dirname(__FILE__) . '/backend/config/google_drive.json';
 
 // Detectar entorno (CLI vs Browser)
@@ -155,7 +155,7 @@ try {
     // ════ 3. COMPRESIÓN DEL PROYECTO (ZIP) ════
     addLog($logs, "Paso 3: Comprimiendo el código del proyecto para el Google Drive...");
     
-    $zip_filename = 'masque_fianzas_backup_' . date('Ymd_His') . '.zip';
+    $zip_filename = 'masque_fianzas_backup.zip';
     $zip_file_path = sys_get_temp_dir() . '/' . $zip_filename;
     
     $zip = new ZipArchive();
@@ -244,53 +244,114 @@ try {
         }
         
         addLog($logs, "Token de acceso obtenido con éxito.", "success");
-        addLog($logs, "Iniciando subida multipart de $zip_filename a Google Drive...");
+        addLog($logs, "Buscando si existe un respaldo previo 'masque_fianzas_backup.zip' en la carpeta destino de Google Drive...");
         
-        // 2. Subida Multipart del Archivo ZIP
-        $metadata = [
-            'name' => $zip_filename,
-            'parents' => [GOOGLE_DRIVE_FOLDER_ID]
-        ];
+        $q = "name = 'masque_fianzas_backup.zip' and '" . GOOGLE_DRIVE_FOLDER_ID . "' in parents and trashed = false";
+        $search_url = 'https://www.googleapis.com/drive/v3/files?q=' . urlencode($q) . '&fields=files(id)';
         
-        $boundary = '-------314159265358979323846';
-        $delimiter = "\r\n--" . $boundary . "\r\n";
-        $closeBoundary = "\r\n--" . $boundary . "--\r\n";
-
-        $metadataPart = "Content-Type: application/json; charset=UTF-8\r\n\r\n" . json_encode($metadata);
-        $mediaPartHeader = "Content-Type: application/zip\r\n\r\n";
-        
-        $body = $delimiter . $metadataPart . $delimiter . $mediaPartHeader . file_get_contents($zip_file_path) . $closeBoundary;
-
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        curl_setopt($ch, CURLOPT_URL, $search_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $access_token,
-            'Content-Type: multipart/related; boundary=' . $boundary,
-            'Content-Length: ' . strlen($body)
+            'Authorization: Bearer ' . $access_token
         ]);
-        
-        $t_start = microtime(true);
-        $upload_resp = curl_exec($ch);
-        $t_end = microtime(true);
-        $latency = round(($t_end - $t_start) * 1000);
-        
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $search_resp = curl_exec($ch);
+        $search_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
-        $upload_result = json_decode($upload_resp, true);
+        $search_result = json_decode($search_resp, true);
+        $existing_file_id = null;
         
-        if ($http_code === 200 && isset($upload_result['id'])) {
-            addLog($logs, "¡Respaldo subido a Google Drive exitosamente! (ID: {$upload_result['id']}, Latencia: {$latency}ms).", "success");
-            
-            // Eliminar archivo temporal local para no acumular basura
-            unlink($zip_file_path);
-            addLog($logs, "Archivo temporal eliminado de la máquina local.", "success");
+        if ($search_code === 200 && !empty($search_result['files'])) {
+            $existing_file_id = $search_result['files'][0]['id'];
+            addLog($logs, "Respaldo existente encontrado en Drive (ID: $existing_file_id). Se actualizará mediante versionado nativo...");
         } else {
-            throw new Exception("Error al subir a Google Drive (HTTP $http_code): " . ($upload_result['error']['message'] ?? $upload_resp));
+            addLog($logs, "No se encontró un respaldo previo. Se creará un nuevo archivo en la carpeta destino.");
+        }
+        
+        if ($existing_file_id) {
+            // Actualizar archivo existente (PATCH)
+            addLog($logs, "Iniciando actualización (PATCH) de $zip_filename en Google Drive...");
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/upload/drive/v3/files/' . $existing_file_id . '?uploadType=media');
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, file_get_contents($zip_file_path));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $access_token,
+                'Content-Type: application/zip',
+                'Content-Length: ' . filesize($zip_file_path)
+            ]);
+            
+            $t_start = microtime(true);
+            $upload_resp = curl_exec($ch);
+            $t_end = microtime(true);
+            $latency = round(($t_end - $t_start) * 1000);
+            
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $upload_result = json_decode($upload_resp, true);
+            
+            if ($http_code === 200 && isset($upload_result['id'])) {
+                addLog($logs, "¡Respaldo actualizado en Google Drive exitosamente! (ID: {$upload_result['id']}, Latencia: {$latency}ms).", "success");
+                
+                // Eliminar archivo temporal local para no acumular basura
+                unlink($zip_file_path);
+                addLog($logs, "Archivo temporal eliminado de la máquina local.", "success");
+            } else {
+                throw new Exception("Error al actualizar archivo en Google Drive (HTTP $http_code): " . ($upload_result['error']['message'] ?? $upload_resp));
+            }
+        } else {
+            // Cargar archivo nuevo (POST)
+            addLog($logs, "Iniciando carga inicial (POST multipart) de $zip_filename a Google Drive...");
+            $metadata = [
+                'name' => $zip_filename,
+                'parents' => [GOOGLE_DRIVE_FOLDER_ID]
+            ];
+            
+            $boundary = '-------314159265358979323846';
+            $delimiter = "\r\n--" . $boundary . "\r\n";
+            $closeBoundary = "\r\n--" . $boundary . "--\r\n";
+
+            $metadataPart = "Content-Type: application/json; charset=UTF-8\r\n\r\n" . json_encode($metadata);
+            $mediaPartHeader = "Content-Type: application/zip\r\n\r\n";
+            
+            $body = $delimiter . $metadataPart . $delimiter . $mediaPartHeader . file_get_contents($zip_file_path) . $closeBoundary;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $access_token,
+                'Content-Type: multipart/related; boundary=' . $boundary,
+                'Content-Length: ' . strlen($body)
+            ]);
+            
+            $t_start = microtime(true);
+            $upload_resp = curl_exec($ch);
+            $t_end = microtime(true);
+            $latency = round(($t_end - $t_start) * 1000);
+            
+            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            $upload_result = json_decode($upload_resp, true);
+            
+            if ($http_code === 200 && isset($upload_result['id'])) {
+                addLog($logs, "¡Respaldo subido a Google Drive exitosamente! (ID: {$upload_result['id']}, Latencia: {$latency}ms).", "success");
+                
+                // Eliminar archivo temporal local para no acumular basura
+                unlink($zip_file_path);
+                addLog($logs, "Archivo temporal eliminado de la máquina local.", "success");
+            } else {
+                throw new Exception("Error al subir a Google Drive (HTTP $http_code): " . ($upload_result['error']['message'] ?? $upload_resp));
+            }
         }
     }
 
