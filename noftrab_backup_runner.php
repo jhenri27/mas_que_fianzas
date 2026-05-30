@@ -23,6 +23,51 @@ $config_path = dirname(__FILE__) . '/backend/config/google_drive.json';
 
 // Detectar entorno (CLI vs Browser)
 $is_cli = php_sapi_name() === 'cli';
+
+// ─── ENDPOINT AUXILIAR: Guardar Configuración de Google Drive (Debe procesarse antes de cualquier validación) ────────────────
+if (!$is_cli && isset($_GET['action']) && $_GET['action'] === 'save_google_config') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(["exito" => false, "mensaje" => "Método no permitido"]);
+        exit;
+    }
+    
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $client_id = trim($input['client_id'] ?? '');
+        $client_secret = trim($input['client_secret'] ?? '');
+        $refresh_token = trim($input['refresh_token'] ?? '');
+        
+        if (empty($client_id) || empty($client_secret) || empty($refresh_token)) {
+            throw new Exception("Todos los campos son obligatorios.");
+        }
+        
+        // Crear carpeta de configuración si no existe
+        $config_dir = dirname($config_path);
+        if (!file_exists($config_dir)) {
+            mkdir($config_dir, 0777, true);
+        }
+        
+        // Guardar configuración en JSON
+        $saved = file_put_contents($config_path, json_encode([
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+            'refresh_token' => $refresh_token
+        ], JSON_PRETTY_PRINT));
+        
+        if ($saved === false) {
+            throw new Exception("No se pudo escribir en el archivo de configuración.");
+        }
+        
+        echo json_encode(["exito" => true, "mensaje" => "Credenciales vinculadas correctamente."]);
+        
+    } catch(Exception $e) {
+        http_response_code(500);
+        echo json_encode(["exito" => false, "mensaje" => $e->getMessage()]);
+    }
+    exit;
+}
+
 $commit_msg = '';
 
 if ($is_cli) {
@@ -597,46 +642,4 @@ function renderBrowserUI($logs, $exito, $mensaje_adicional = '') {
     <?php
 }
 
-// ─── ENDPOINT AUXILIAR: Guardar Configuración de Google Drive ────────────────
-if (!$is_cli && isset($_GET['action']) && $_GET['action'] === 'save_google_config') {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(["exito" => false, "mensaje" => "Método no permitido"]);
-        exit;
-    }
-    
-    try {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $client_id = trim($input['client_id'] ?? '');
-        $client_secret = trim($input['client_secret'] ?? '');
-        $refresh_token = trim($input['refresh_token'] ?? '');
-        
-        if (empty($client_id) || empty($client_secret) || empty($refresh_token)) {
-            throw new Exception("Todos los campos son obligatorios.");
-        }
-        
-        // Crear carpeta de configuración si no existe
-        $config_dir = dirname($config_path);
-        if (!file_exists($config_dir)) {
-            mkdir($config_dir, 0777, true);
-        }
-        
-        // Guardar configuración en JSON
-        $saved = file_put_contents($config_path, json_encode([
-            'client_id' => $client_id,
-            'client_secret' => $client_secret,
-            'refresh_token' => $refresh_token
-        ], JSON_PRETTY_PRINT));
-        
-        if ($saved === false) {
-            throw new Exception("No se pudo escribir en el archivo de configuración.");
-        }
-        
-        echo json_encode(["exito" => true, "mensaje" => "Credenciales vinculadas correctamente."]);
-        
-    } catch(Exception $e) {
-        http_response_code(500);
-        echo json_encode(["exito" => false, "mensaje" => $e->getMessage()]);
-    }
-    exit;
-}
+

@@ -69,6 +69,7 @@ try {
         "datos" => [
             "numero_poliza"   => $poliza['numero_poliza'],
             "estado"          => strtoupper($poliza['estado']),
+            "validada"        => $poliza['validada'],
             "es_valida"       => $poliza['estado'] === 'activa' && $poliza['validada'] === 'Si',
             "vigente"         => $vigente,
             "asegurado"       => $poliza['asegurado'],

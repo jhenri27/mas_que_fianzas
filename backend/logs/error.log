@@ -9972,3 +9972,150 @@ Stack trace:
 [30-May-2026 02:43:14 America/Santo_Domingo] PHP Warning:  Undefined array key "mensaje" in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auth.php on line 103
 [30-May-2026 02:43:14 America/Santo_Domingo] PHP Stack trace:
 [30-May-2026 02:43:14 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auth.php:0
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:02:36 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:06:04 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:06:09 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:26:58 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 03:27:01 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:01:00 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 89
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:01:04 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:89
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 134
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:134
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 134
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:03:58 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:134
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 134
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'nothing to commit') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:134
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php on line 134
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:0
+[30-May-2026 09:07:28 America/Santo_Domingo] PHP   2. strpos($haystack = NULL, $needle = 'sin cambios') C:\wamp64\www\PLATAFORMA_INTEGRADA\noftrab_backup_runner.php:134
+[30-May-2026 09:12:24 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 09:12:24 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:12:24 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 09:12:24 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 09:12:24 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 09:12:28 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 09:12:28 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:12:28 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 09:12:28 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 09:12:28 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 09:12:32 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 09:12:32 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:12:32 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 09:12:32 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 09:12:32 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 09:12:56 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 09:12:56 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:12:56 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 09:12:56 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 09:12:56 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 09:13:16 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 09:13:16 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 09:13:16 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 09:13:16 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 09:13:16 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:18:35 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:18:35 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:18:35 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:18:35 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:18:35 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:18:37 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:18:37 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:18:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:18:37 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:18:37 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:19:01 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:19:01 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:19:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:19:01 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:19:01 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:19:05 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:19:05 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:19:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:19:05 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:19:05 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:19:22 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:19:22 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:19:22 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:19:22 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:19:22 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:53:25 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:53:25 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:53:25 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:53:25 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:55:30 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:55:30 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:55:30 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:55:30 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:55:30 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:55:31 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:55:31 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:55:31 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:55:31 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:55:31 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:55:36 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:55:36 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:55:36 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:55:36 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:55:36 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[30-May-2026 14:55:47 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[30-May-2026 14:55:47 America/Santo_Domingo] PHP Stack trace:
+[30-May-2026 14:55:47 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[30-May-2026 14:55:47 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[30-May-2026 14:55:47 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
