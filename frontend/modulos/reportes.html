@@ -295,10 +295,98 @@
 
     <!-- PESTAÑA: REPORTES GENERALES -->
     <div class="cot-panel" id="panel-futuros">
-        <div style="padding: 40px; text-align: center; color: #6b7280;">
-            <i class="fa-solid fa-chart-column" style="font-size: 48px; color: #cbd5e1; margin-bottom: 20px;"></i>
-            <h2>Reportes y Analíticas</h2>
-            <p>Este espacio está reservado para los futuros reportes gráficos y de datos generados por Pólizas, Clientes y Facturación.</p>
+        <div style="padding: 24px;">
+            <!-- Controles y Filtros de Reportes -->
+            <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:16px 24px; border-radius:12px; box-shadow:0 4px 6px rgba(0,0,0,0.05); margin-bottom:24px; border:1px solid var(--border); flex-wrap:wrap; gap:15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <label style="font-size:13px; font-weight:600; color:var(--text-dark);"><i class="fa-solid fa-file-invoice"></i> Reporte:</label>
+                    <select id="rep-activo-selector" class="form-control" style="width:280px; padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; font-weight:600; height:38px;" onchange="cambiarReporteActivo()">
+                        <option value="ventas_generales" id="opt-ventas-generales">📊 Reporte de Ventas Generales</option>
+                        <option value="ventas_logradas" id="opt-ventas-logradas">📈 Reporte de Ventas Logradas (Meta vs Real)</option>
+                        <option value="margen_comercial" id="opt-margen-comercial">💰 Reporte de Margen Comercial</option>
+                    </select>
+                </div>
+                
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <label style="font-size:13px; font-weight:500; color:var(--text-dark);">Período:</label>
+                        <select id="filtro-mes" class="form-control" style="width:110px; padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; height:38px;" onchange="cargarReporteActivo()">
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <input type="number" id="filtro-anio" class="form-control" style="width:80px; padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px; height:38px;" value="2026" min="2020" max="2100" onchange="cargarReporteActivo()">
+                    </div>
+                    
+                    <button class="mqf-btn mqf-btn--secondary" onclick="cargarReporteActivo()" style="border-radius:8px; height:38px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;">
+                        <i class="fa-solid fa-rotate"></i> Actualizar
+                    </button>
+                    <button class="mqf-btn mqf-btn--secondary" onclick="imprimirReporte()" style="border-radius:8px; height:38px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#1e293b; border-color:#d1d5db;">
+                        <i class="fa-solid fa-print"></i> Imprimir
+                    </button>
+                    <button class="mqf-btn mqf-btn--secondary" onclick="abrirModalEmailReporte()" style="border-radius:8px; height:38px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#4f46e5; border-color:#a5b4fc;">
+                        <i class="fa-solid fa-envelope"></i> Enviar Correo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cargando Spinner -->
+            <div id="rep-cargando" style="text-align:center; padding:50px 0; display:none; background:white; border-radius:12px; border:1px solid var(--border);">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size:32px; color:var(--primary); margin-bottom:12px;"></i>
+                <p style="margin:0; font-size:14px; color:var(--text-muted); font-weight:500;">Generando reporte en tiempo real...</p>
+            </div>
+
+            <!-- Contenedor del Reporte Activo -->
+            <div id="rep-contenido-wrapper" style="display:none;">
+                
+                <!-- KPI GRID -->
+                <div class="kpi-grid" id="rep-kpis-wrapper" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+                    <!-- Se carga dinámicamente -->
+                </div>
+
+                <!-- TABLE / DATA DETAILS -->
+                <div style="background:white; padding:24px; border-radius:12px; border:1px solid var(--border); box-shadow:0 4px 6px rgba(0,0,0,0.02);" id="rep-tabla-container">
+                    <h3 style="margin:0 0 15px 0; font-size:15px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;" id="rep-titulo-tabla">
+                        <!-- Título dinámico -->
+                    </h3>
+                    <div class="table-responsive" id="rep-tabla-wrapper" style="overflow-x:auto;">
+                        <!-- Tabla dinámica -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ENVIAR REPORTE POR EMAIL -->
+    <div class="modal-overlay" id="modal-email-reporte" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); display:none; justify-content:center; align-items:center; z-index:9999; backdrop-filter:blur(4px);">
+        <div class="modal-box" style="background:white; border-radius:16px; max-width:460px; width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow:hidden;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid #f1f5f9; background:linear-gradient(135deg, #4f46e5, #4338ca); color:white;">
+                <h3 style="margin:0; font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-paper-plane"></i> Enviar Reporte por Correo</h3>
+                <button onclick="cerrarModalEmailReporte()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; font-weight:bold;">✕</button>
+            </div>
+            <div class="modal-body" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+                <p style="margin:0; font-size:13px; color:#475569; line-height:1.5;">Complete la dirección de correo electrónico a la que desea hacer llegar este informe con formato formal corporativo.</p>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:12px; font-weight:600; color:#1e293b;">Email del Destinatario:</label>
+                    <input type="email" id="rep-email-destino" class="form-control" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:13px;" placeholder="ejemplo@empresa.com">
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:16px 24px; border-top:1px solid #f1f5f9; background:#f8fafc; display:flex; justify-content:flex-end; gap:10px;">
+                <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="cerrarModalEmailReporte()" style="height:36px; padding:0 14px; border-radius:8px;">Cancelar</button>
+                <button class="mqf-btn mqf-btn--primary mqf-btn--sm" id="btn-rep-enviar-email" onclick="enviarReportePorEmail()" style="height:36px; padding:0 14px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -321,6 +409,448 @@
     <script src="../assets/modelador-pdf.js"></script>
 
 <script>
+// ═══════════════════════════════════════
+// REPORTES GENERALES PREMIUM INTERACTIVOS
+// ═══════════════════════════════════════
+const BASE_API = '/PLATAFORMA_INTEGRADA/backend/api';
+let subreporteActivo = 'ventas_generales';
+let cacheDatosReporte = {};
+
+const fmtDOP = (v) => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(v);
+const formatFecha = (f) => f ? new Date(f.replace(/-/g, '/')).toLocaleDateString('es-DO') : 'N/A';
+
+async function inicializarFiltrosReporte() {
+    const hoy = new Date();
+    const mesSelect = document.getElementById('filtro-mes');
+    const anioInput = document.getElementById('filtro-anio');
+    if (mesSelect) mesSelect.value = hoy.getMonth() + 1;
+    if (anioInput) anioInput.value = hoy.getFullYear();
+    
+    // Configurar el email por defecto
+    const inputDestino = document.getElementById('rep-email-destino');
+    if (inputDestino) inputDestino.value = 'pastorandersonhenriquez@gmail.com';
+}
+
+function aplicarGuardsSubreportes(codigosPermisos) {
+    const select = document.getElementById('rep-activo-selector');
+    const optGen = document.getElementById('opt-ventas-generales');
+    const optLog = document.getElementById('opt-ventas-logradas');
+    const optMarg = document.getElementById('opt-margen-comercial');
+
+    if (codigosPermisos.length > 0) {
+        if (!codigosPermisos.includes('REP_VENTAS_GENERALES') && optGen) optGen.remove();
+        if (!codigosPermisos.includes('REP_VENTAS_LOGRADAS') && optLog) optLog.remove();
+        if (!codigosPermisos.includes('REP_MARGEN_COMERCIAL') && optMarg) optMarg.remove();
+    }
+
+    if (select && select.options.length > 0) {
+        select.selectedIndex = 0;
+        subreporteActivo = select.value;
+    }
+}
+
+function cambiarReporteActivo() {
+    subreporteActivo = document.getElementById('rep-activo-selector').value;
+    cargarReporteActivo();
+}
+
+async function cargarReporteActivo() {
+    const cargando = document.getElementById('rep-cargando');
+    const wrapper = document.getElementById('rep-contenido-wrapper');
+
+    if (!cargando || !wrapper) return;
+
+    cargando.style.display = 'block';
+    wrapper.style.display = 'none';
+
+    const mes = document.getElementById('filtro-mes').value;
+    const anio = document.getElementById('filtro-anio').value;
+
+    try {
+        const url = `${BASE_API}/reportes_panel.php?action=reporte_${subreporteActivo}&mes=${mes}&anio=${anio}`;
+        const r = await fetch(url);
+        const res = await r.json();
+
+        if (res.exito) {
+            cacheDatosReporte = res.datos;
+            renderReporte(subreporteActivo, res.datos);
+            wrapper.style.display = 'block';
+        } else {
+            alert(res.mensaje || 'Error al generar el reporte');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error de conexión con el servidor de reportes.');
+    } finally {
+        cargando.style.display = 'none';
+    }
+}
+
+function renderReporte(tipo, datos) {
+    const kpisWrapper = document.getElementById('rep-kpis-wrapper');
+    const tablaWrapper = document.getElementById('rep-tabla-wrapper');
+    const tituloTabla = document.getElementById('rep-titulo-tabla');
+
+    if (!kpisWrapper || !tablaWrapper || !tituloTabla) return;
+
+    kpisWrapper.innerHTML = '';
+    tablaWrapper.innerHTML = '';
+
+    if (tipo === 'ventas_generales') {
+        tituloTabla.innerHTML = `<i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Desglose Detallado de Ventas`;
+        
+        const k = datos.kpis;
+        kpisWrapper.innerHTML = `
+            <div style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">1. Ventas Emitidas (Total)</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.monto_emitido)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-file-shield"></i> ${k.total_emitidas} pólizas emitidas</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">2. Ventas Cobradas (Efectivo)</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.monto_cobrado)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-circle-check"></i> ${k.total_cobradas} conciliadas</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">3. Cuentas Pendientes (Cobros)</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.monto_pendiente)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-clock"></i> ${k.total_pendientes} pendientes</div>
+            </div>
+        `;
+
+        let trs = datos.polizas.map(p => {
+            let badge = '';
+            if (p.estado_cobro === 'cobrada') badge = '<span style="background:#d1fae5; color:#065f46; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">CONCILIADA</span>';
+            else if (p.estado_cobro === 'parcial') badge = '<span style="background:#fef3c7; color:#92400e; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">COBRO PARCIAL</span>';
+            else badge = '<span style="background:#fee2e2; color:#991b1b; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700;">PENDIENTE</span>';
+
+            return `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:12px; font-weight:600; color:#4f46e5;">${p.numero_poliza}</td>
+                    <td style="padding:12px; font-size:12px;">${p.tipo_seguro}</td>
+                    <td style="padding:12px; font-size:12px;">${p.aseguradora}</td>
+                    <td style="padding:12px; font-weight:600;">${p.cliente}</td>
+                    <td style="padding:12px; font-size:11px;">${formatFecha(p.fecha_emision)}</td>
+                    <td style="padding:12px; font-weight:600;">${fmtDOP(p.prima_total)}</td>
+                    <td style="padding:12px; font-weight:600; color:#16a34a;">${fmtDOP(p.total_pagado)}</td>
+                    <td style="padding:12px; text-align:center;">${badge}</td>
+                </tr>
+            `;
+        }).join('');
+
+        if (datos.polizas.length === 0) {
+            trs = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No se registraron pólizas emitidas en este período.</td></tr>`;
+        }
+
+        tablaWrapper.innerHTML = `
+            <table class="data-table" style="width:100%; border-collapse:collapse; min-width:800px;">
+                <thead>
+                    <tr style="background:#f8fafc; border-bottom:1px solid #e5e7eb;">
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">N° Póliza</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Tipo</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Aseguradora</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Asegurado</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Emisión</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Prima Bruta</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Recaudado</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; text-align:center;">Estado Cobro</th>
+                    </tr>
+                </thead>
+                <tbody>${trs}</tbody>
+            </table>
+        `;
+
+    } else if (tipo === 'ventas_logradas') {
+        tituloTabla.innerHTML = `<i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Nivel de Cumplimiento por Producto`;
+        
+        const k = datos.kpis;
+        kpisWrapper.innerHTML = `
+            <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Meta de Ventas Planificada</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${k.total_proyectado} pólizas</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-bullseye"></i> Objetivos físicos del mes</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Ventas Físicas Reales</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${k.total_real} pólizas</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-file-shield"></i> Emitidas en el período</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Grado de Cumplimiento</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${k.cumplimiento_general}%</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-chart-line"></i> Meta global lograda</div>
+            </div>
+        `;
+
+        let trs = datos.desglose.map(p => {
+            const barWidth = Math.min(100, p.porcentaje);
+            let barColor = 'linear-gradient(90deg, #ef4444, #f57c00)';
+            if (p.porcentaje >= 100) barColor = 'linear-gradient(90deg, #10b981, #059669)';
+            else if (p.porcentaje >= 50) barColor = 'linear-gradient(90deg, #3b82f6, #4f46e5)';
+
+            return `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:14px; font-weight:600; color:var(--text-dark);">${p.producto}</td>
+                    <td style="padding:14px; font-weight:700; font-size:14px; text-align:center; color:#6b7280;">${p.proyectado}</td>
+                    <td style="padding:14px; font-weight:700; font-size:14px; text-align:center; color:var(--primary);">${p.real}</td>
+                    <td style="padding:14px; font-weight:800; font-size:14px; text-align:center; color:${p.porcentaje >= 100 ? '#10b981' : p.porcentaje >= 50 ? '#4f46e5' : '#ef4444'};">${p.porcentaje}%</td>
+                    <td style="padding:14px; width:250px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="background:#e5e7eb; border-radius:8px; height:12px; flex:1; overflow:hidden; border: 1px solid #d1d5db;">
+                                <div style="background:${barColor}; height:100%; width:${barWidth}%; border-radius:8px;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        tablaWrapper.innerHTML = `
+            <table class="data-table" style="width:100%; border-collapse:collapse; min-width:600px;">
+                <thead>
+                    <tr style="background:#f8fafc; border-bottom:1px solid #e5e7eb;">
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Producto / Ramo</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; text-align:center;">Meta de Ventas</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; text-align:center;">Ventas Reales</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; text-align:center;">Logro (%)</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Rendimiento Gráfico</th>
+                    </tr>
+                </thead>
+                <tbody>${trs}</tbody>
+            </table>
+        `;
+
+    } else if (tipo === 'margen_comercial') {
+        tituloTabla.innerHTML = `<i class="fa-solid fa-filter-circle-dollar" style="color:var(--primary);"></i> Pólizas y Fianzas con Pago Completo Conciliado`;
+        
+        const k = datos.kpis;
+        kpisWrapper.innerHTML = `
+            <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Total Recaudado (Bruto)</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.total_prima_bruta)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-coins"></i> Prima comercial cobrada</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Costo Aseguradoras (Neto)</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.total_prima_neta)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-file-invoice-dollar"></i> Prima neta registrada</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);">
+                <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; opacity: 0.85; letter-spacing: 0.5px;">Margen de Utilidad</div>
+                <div style="font-size: 20px; font-weight: 800; margin-top: 5px;">${fmtDOP(k.total_margen)}</div>
+                <div style="font-size: 12px; margin-top: 5px; opacity: 0.9;"><i class="fa-solid fa-arrow-trend-up"></i> ${k.margen_promedio_porcentaje}% de margen prom.</div>
+            </div>
+        `;
+
+        let trs = datos.polizas.map(p => {
+            return `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:12px; font-weight:600; color:#4f46e5;">${p.numero_poliza}</td>
+                    <td style="padding:12px; font-size:12px;">${p.tipo_seguro}</td>
+                    <td style="padding:12px; font-weight:600;">${p.cliente}</td>
+                    <td style="padding:12px; font-size:11px;">${formatFecha(p.fecha_emision)}</td>
+                    <td style="padding:12px; font-weight:600;">${fmtDOP(p.prima_bruta)}</td>
+                    <td style="padding:12px; font-weight:600; color:#475569;">${fmtDOP(p.prima_neta)}</td>
+                    <td style="padding:12px; font-weight:700; color:#10b981;">+${fmtDOP(p.margen)}</td>
+                    <td style="padding:12px; font-weight:800; color:#059669; text-align:center;">${p.margen_porcentaje}%</td>
+                </tr>
+            `;
+        }).join('');
+
+        if (datos.polizas.length === 0) {
+            trs = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No se registran pólizas conciliadas con pago total en este período.</td></tr>`;
+        }
+
+        tablaWrapper.innerHTML = `
+            <table class="data-table" style="width:100%; border-collapse:collapse; min-width:800px;">
+                <thead>
+                    <tr style="background:#f8fafc; border-bottom:1px solid #e5e7eb;">
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">N° Póliza</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Tipo</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Asegurado</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Emisión</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Prima Bruta (Ingreso)</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Prima Neta (Costo)</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Margen (Utilidad)</th>
+                        <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; text-align:center;">Margen (%)</th>
+                    </tr>
+                </thead>
+                <tbody>${trs}</tbody>
+            </table>
+        `;
+    }
+}
+
+// ═══════════════════════════════════════
+// IMPRESIÓN Y QR
+// ═══════════════════════════════════════
+function tituloReporteActivo() {
+    if (subreporteActivo === 'ventas_generales') return 'Reporte de Ventas Generales';
+    if (subreporteActivo === 'ventas_logradas') return 'Reporte de Ventas Logradas (Meta vs Real)';
+    if (subreporteActivo === 'margen_comercial') return 'Reporte de Margen Comercial';
+    return 'Reporte Corporativo';
+}
+
+function imprimirReporte() {
+    const rActivo = subreporteActivo;
+    const mesVal = document.getElementById('filtro-mes').value;
+    const mesText = document.getElementById('filtro-mes').options[document.getElementById('filtro-mes').selectedIndex].text;
+    const anio = document.getElementById('filtro-anio').value;
+    
+    const verificationUrl = `${window.location.origin}/PLATAFORMA_INTEGRADA/frontend/modulos/verificar_pago.html?ref=REP-${rActivo.toUpperCase()}-${mesVal}-${anio}`;
+
+    let htmlContent = `
+        <html>
+        <head>
+            <title>Impresión de Reporte - MAS QUE FIANZAS</title>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1e293b; }
+                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; }
+                .logo { font-size: 22px; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px; }
+                h1 { margin: 0; font-size: 24px; color: #0f172a; }
+                .periodo { font-size: 14px; color: #64748b; margin-top: 5px; font-weight: 500; }
+                .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 25px; }
+                .kpi-card { padding: 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+                .kpi-title { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+                .kpi-val { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 5px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+                th { background: #f8fafc; padding: 12px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0; color: #475569; }
+                td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; }
+                .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; }
+                .qr-container { display: flex; align-items: center; gap: 15px; }
+                .qr-val { width: 90px; height: 90px; border: 1px solid #e2e8f0; padding: 4px; border-radius: 6px; background:white; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div>
+                    <h1>${tituloReporteActivo()}</h1>
+                    <div class="periodo">Período: ${mesText} de ${anio}</div>
+                </div>
+                <div class="logo">MÁS QUE FIANZAS</div>
+            </div>
+            
+            <div class="kpis">
+                ${document.getElementById('rep-kpis-wrapper').innerHTML}
+            </div>
+            
+            <div>
+                ${document.getElementById('rep-tabla-wrapper').innerHTML}
+            </div>
+            
+            <div class="footer">
+                <div>Generado electrónicamente por el Sistema Integrado MÁS QUE FIANZAS el ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
+                <div class="qr-container">
+                    <div style="text-align:right;">
+                        <strong style="color:#0f172a; display:block; margin-bottom:2px;">CERTIFICACIÓN DIGITAL</strong>
+                        Escanea para verificar validez
+                    </div>
+                    <div id="print-qr" class="qr-val"></div>
+                </div>
+            </div>
+            
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+            <script>
+                new QRCode(document.getElementById('print-qr'), {
+                    text: '${verificationUrl}',
+                    width: 90, height: 90
+                });
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                        window.close();
+                    }, 600);
+                }
+            </script>
+        </body>
+        </html>
+    `;
+    
+    const win = window.open('', '_blank');
+    win.document.write(htmlContent);
+    win.document.close();
+}
+
+// ═══════════════════════════════════════
+// ENVÍO DE EMAIL
+// ═══════════════════════════════════════
+function abrirModalEmailReporte() {
+    document.getElementById('modal-email-reporte').style.display = 'flex';
+}
+
+function cerrarModalEmailReporte() {
+    document.getElementById('modal-email-reporte').style.display = 'none';
+}
+
+async function enviarReportePorEmail() {
+    const email = document.getElementById('rep-email-destino').value.trim();
+    if (!email) {
+        alert('Por favor ingrese un correo válido.');
+        return;
+    }
+
+    const btn = document.getElementById('btn-rep-enviar-email');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+    btn.disabled = true;
+
+    const mesText = document.getElementById('filtro-mes').options[document.getElementById('filtro-mes').selectedIndex].text;
+    const anio = document.getElementById('filtro-anio').value;
+    const titulo = `${tituloReporteActivo()} — Período: ${mesText} / ${anio}`;
+
+    const htmlReporte = `
+        <div style="font-family:'Segoe UI',Arial,sans-serif; max-width:800px; margin:0 auto; padding:30px; border:1px solid #e2e8f0; border-radius:16px; background:#ffffff; color:#1e293b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #4f46e5; padding-bottom:15px; margin-bottom:25px;">
+                <div>
+                    <h1 style="margin:0; font-size:22px; color:#0f172a;">${tituloReporteActivo()}</h1>
+                    <p style="margin:5px 0 0 0; font-size:14px; color:#64748b; font-weight:500;">Período: ${mesText} de ${anio}</p>
+                </div>
+                <div style="font-size:20px; font-weight:800; color:#4f46e5; text-transform:uppercase;">MÁS QUE FIANZAS</div>
+            </div>
+            
+            <h3 style="color:#4f46e5; border-bottom:1px solid #f1f5f9; padding-bottom:8px; margin-bottom:15px;">Resumen Corporativo</h3>
+            <div style="margin-bottom:25px;">
+                ${document.getElementById('rep-kpis-wrapper').innerHTML}
+            </div>
+
+            <h3 style="color:#4f46e5; border-bottom:1px solid #f1f5f9; padding-bottom:8px; margin-bottom:15px;">Detalle de Registro</h3>
+            <div style="margin-bottom:30px; overflow-x:auto;">
+                ${document.getElementById('rep-tabla-wrapper').innerHTML}
+            </div>
+
+            <div style="margin-top:40px; border-top:1px solid #e2e8f0; padding-top:20px; font-size:12px; color:#64748b; text-align:center;">
+                <p style="margin:0;">Este correo electrónico se ha generado automáticamente desde el Sistema Integrado MÁS QUE FIANZAS.</p>
+                <p style="margin:5px 0 0 0; font-weight:600; color:#4f46e5;">© 2026 MÁS QUE FIANZAS, S.R.L. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    `;
+
+    try {
+        const r = await fetch(`${BASE_API}/reportes_panel.php?action=enviar_reporte`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                html_reporte: htmlReporte,
+                titulo_reporte: titulo
+            })
+        });
+        const res = await r.json();
+
+        if (res.exito) {
+            alert('¡El reporte ha sido enviado con éxito por correo electrónico!');
+            cerrarModalEmailReporte();
+        } else {
+            alert(res.mensaje || 'Error al enviar el reporte por correo.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error al conectar con el servidor de correo.');
+    } finally {
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar';
+        btn.disabled = false;
+    }
+}
+
 // ═══════════════════════════════════════════════════
 // NOFTRAB Tab Guards — Reportes v1.0
 // ═══════════════════════════════════════════════════
@@ -334,16 +864,14 @@ async function initTabGuardsReportes() {
         const token = localStorage.getItem('token_sesion') || 
                       sessionStorage.getItem('mqf_token') || 
                       sessionStorage.getItem('mqfToken');
-        if (!token) return; // Si no hay token, no ocultar (desarrollo/debug)
+        if (!token) return;
 
-        // Consultar mis permisos
         const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/comisiones_panel.php?action=mis_permisos&token_sesion=' + encodeURIComponent(token));
         if (!resp.ok) return;
         const data = await resp.json();
         const rawPermisos = data.permisos || data.datos || [];
         const codigosPermisos = rawPermisos.map ? rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p)) : [];
 
-        // Si la lista de permisos no está vacía (usuario real con roles cargados)
         if (codigosPermisos.length > 0) {
             TAB_REPORTES_GUARDS.forEach(guard => {
                 if (!codigosPermisos.includes(guard.permiso)) {
@@ -354,11 +882,15 @@ async function initTabGuardsReportes() {
                 }
             });
 
-            // Activar el primer tab visible
             const primerTab = document.querySelector('.mqf-module-tab:not([style*="none"])');
             if (primerTab) {
                 primerTab.click();
             }
+
+            // Aplicar guards a los subreportes dinámicos
+            aplicarGuardsSubreportes(codigosPermisos);
+            inicializarFiltrosReporte();
+            cargarReporteActivo();
         }
     } catch(e) {
         console.warn('TabGuard Reportes:', e.message);

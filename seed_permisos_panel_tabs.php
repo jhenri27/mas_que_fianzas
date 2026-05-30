@@ -70,6 +70,7 @@ $funciones_def = [
         ['TAB_POL_CONSULTAR',  'Pestaña Consultar Pólizas',         'consultar'],
         ['TAB_POL_NUEVA',      'Pestaña Nueva Póliza (Wizard)',     'crear'    ],
         ['TAB_POL_COMISIONES', 'Pestaña Comisiones en Pólizas',    'reportes' ],
+        ['TAB_POL_PROYECCION_VENTAS', 'Configurar Proyección de Ventas', 'editar'],
     ],
     'cotizaciones' => [
         ['TAB_COT_SEGUROS',    'Pestaña Cotización Seguros de Ley', 'consultar'],
@@ -85,6 +86,9 @@ $funciones_def = [
     'reportes' => [
         ['TAB_REP_MODELADOR',  'Pestaña Modelador PDF-DOCS',        'consultar'],
         ['TAB_REP_GENERALES',  'Pestaña Reportes Generales',        'reportes' ],
+        ['REP_VENTAS_GENERALES', 'Ver Reporte de Ventas Generales',  'reportes' ],
+        ['REP_VENTAS_LOGRADAS',  'Ver Reporte de Ventas Logradas',   'reportes' ],
+        ['REP_MARGEN_COMERCIAL', 'Ver Reporte de Margen Comercial',  'reportes' ],
     ],
 ];
 
@@ -105,6 +109,7 @@ $malla = [
     'TAB_POL_CONSULTAR'  => [1, 1, 1, 1, 1, 0, 1, 1],
     'TAB_POL_NUEVA'      => [1, 1, 0, 1, 0, 0, 0, 0],
     'TAB_POL_COMISIONES' => [1, 1, 1, 1, 1, 0, 1, 1],
+    'TAB_POL_PROYECCION_VENTAS' => [1, 1, 0, 1, 0, 0, 1, 0],
     'TAB_COT_SEGUROS'    => [1, 1, 0, 1, 1, 0, 1, 1],
     'TAB_COT_FIANZAS'    => [1, 1, 0, 1, 1, 0, 1, 1],
     'TAB_COT_HISTORIAL'  => [1, 1, 1, 1, 1, 0, 1, 1],
@@ -114,6 +119,9 @@ $malla = [
     'TAB_CONF_SKINS'     => [1, 1, 0, 1, 0, 0, 1, 0],
     'TAB_REP_MODELADOR'  => [1, 1, 0, 1, 1, 0, 1, 1],
     'TAB_REP_GENERALES'  => [1, 1, 1, 1, 0, 0, 1, 0],
+    'REP_VENTAS_GENERALES' => [1, 1, 1, 1, 0, 0, 1, 0],
+    'REP_VENTAS_LOGRADAS'  => [1, 1, 1, 1, 0, 0, 1, 0],
+    'REP_MARGEN_COMERCIAL' => [1, 0, 1, 1, 0, 0, 1, 0],
 ];
 
 // Orden de perfiles para la malla (índice 0 = perfil_id 1, etc.)
