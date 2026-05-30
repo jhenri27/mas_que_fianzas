@@ -88,7 +88,7 @@ He diseñado y programado el script [`noftrab_backup_runner.php`](file:///C:/wam
 1. **Automatización de Git**: Agrega todos los archivos modificados/nuevos (`git add -A`), realiza el commit atómico utilizando el mensaje ingresado y empuja los cambios de forma automática al repositorio remoto en GitHub.
 2. **Copia SMTP (Email)**: Lee de forma dinámica el último `walkthrough.md` e inicia un despacho por SMTP en HTML premium a la cuenta `pastorandersonhenriquez@gmail.com`.
 3. **Empaquetado Seguro (ZIP)**: Comprime en tiempo real todos los archivos del proyecto excluyendo logs temporales, archivos `.git` y cargas pesadas para mantener la eficiencia del almacenamiento.
-4. **Google Drive Sync (Multipart API)**: Solicita tokens de acceso refrescados a Google OAuth2 y realiza una carga del archivo ZIP directamente a la carpeta compartida: `1KtHXSYTzO5GB2PeDuwSxRSNIVrveLLqf`.
+4. **Google Drive Sync (Búsqueda y Actualización / Versionado Nativo)**: Solicita tokens de acceso refrescados a Google OAuth2, busca si ya existe un respaldo previo (`masque_fianzas_backup.zip`) en la carpeta compartida (`1twjGFJZSYEdsWZDfxaNoHq7yc9bglr5A`) y, en caso positivo, realiza un `PATCH` (overwrite con historial de versiones nativo de Google Drive) para actualizar su contenido de forma limpia. Si es la primera ejecución, realiza un `POST` multipart inicial.
 
 ### Cómo ejecutar el script:
 * **Por Navegador (Recomendado - Wow factor UI)**:
@@ -97,10 +97,11 @@ He diseñado y programado el script [`noftrab_backup_runner.php`](file:///C:/wam
   *Desplegará una consola terminal oscura glassmorphic interactiva detallando en tiempo real cada paso de la sincronización.*
 * **Por Línea de Comandos (CLI)**:
   Ejecuta desde la terminal:
-  `php noftrab_backup_runner.php -m "Mensaje de commit"`
+  `C:\wamp64\bin\php\php8.2.29\php.exe noftrab_backup_runner.php -m "Mensaje de commit"`
 
 ### Configuración de Google Drive (OAuth2 en 2 Pasos):
 Al abrir el script por el navegador, si las credenciales de Google Drive no están cargadas aún, el sistema desplegará un **Setup Box interactivo** solicitando:
 1. **Client ID** & **Client Secret**: Proporcionados por tu proyecto en Google Cloud Console.
 2. **Refresh Token**: Obtenido en 2 minutos mediante Google OAuth Playground con los scopes de `Drive API v3`.
 Presiona **Guardar y Vincular** y el sistema grabará de forma atómica el archivo de configuración en `backend/config/google_drive.json` (excluido de Git para protección de credenciales) y comenzará las sincronizaciones en la nube de forma 100% automatizada.
+
