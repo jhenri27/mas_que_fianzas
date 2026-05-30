@@ -1374,7 +1374,7 @@ async function cargarAuditoriaTecnica() {
     content.style.display = 'none';
 
     try {
-        const r = await fetch(`../backend/api/verificar_poliza.php?n=${encodeURIComponent(numPoliza)}`);
+        const r = await fetch(`../../backend/api/verificar_poliza.php?n=${encodeURIComponent(numPoliza)}`);
         const d = await r.json();
 
         if (!d.exito) {
