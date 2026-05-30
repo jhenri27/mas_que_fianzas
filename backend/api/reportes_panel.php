@@ -130,17 +130,25 @@ try {
                     exit;
                 }
 
-                // Query de pólizas del mes
-                $stmt = $db->prepare(
-                    "SELECT p.id, p.numero_poliza, p.tipo_seguro, p.aseguradora, p.prima_total, p.prima_neta, p.fecha_emision, p.estado, 
-                            c.nombre as cliente_nombre,
-                            COALESCE((SELECT SUM(pag.monto) FROM pagos pag WHERE pag.poliza_id = p.id AND pag.estado_pago = 'procesado'), 0) as total_pagado
-                     FROM polizas p
-                     LEFT JOIN clientes c ON p.cliente_id = c.id
-                     WHERE MONTH(p.fecha_emision) = ? AND YEAR(p.fecha_emision) = ?
-                     ORDER BY p.fecha_emision DESC"
-                );
-                $stmt->bind_param('ii', $mes, $anio);
+                // Query de pólizas del mes con soporte de restricción granular Solo Propios (NOFTRAB)
+                $solo_propios = restringirSoloPropios($usuario_id, 'reportes');
+                $sql = "SELECT p.id, p.numero_poliza, p.tipo_seguro, p.aseguradora, p.prima_total, p.prima_neta, p.fecha_emision, p.estado, 
+                               c.nombre as cliente_nombre,
+                               COALESCE((SELECT SUM(pag.monto) FROM pagos pag WHERE pag.poliza_id = p.id AND pag.estado_pago = 'procesado'), 0) as total_pagado
+                        FROM polizas p
+                        LEFT JOIN clientes c ON p.cliente_id = c.id
+                        WHERE MONTH(p.fecha_emision) = ? AND YEAR(p.fecha_emision) = ?";
+                if ($solo_propios) {
+                    $sql .= " AND p.emitida_por = ?";
+                }
+                $sql .= " ORDER BY p.fecha_emision DESC";
+
+                $stmt = $db->prepare($sql);
+                if ($solo_propios) {
+                    $stmt->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt->bind_param('ii', $mes, $anio);
+                }
                 $stmt->execute();
                 $res = $stmt->get_result();
 
@@ -231,14 +239,22 @@ try {
                 }
                 $stmt->close();
 
-                // Cargar ventas reales físicas (pólizas emitidas) agrupadas por tipo_seguro
-                $stmt_real = $db->prepare(
-                    "SELECT tipo_seguro, COUNT(*) as cantidad_real
-                     FROM polizas
-                     WHERE MONTH(fecha_emision) = ? AND YEAR(fecha_emision) = ?
-                     GROUP BY tipo_seguro"
-                );
-                $stmt_real->bind_param('ii', $mes, $anio);
+                // Cargar ventas reales físicas (pólizas emitidas) con soporte de restricción granular Solo Propios (NOFTRAB)
+                $solo_propios = restringirSoloPropios($usuario_id, 'reportes');
+                $sql_real = "SELECT tipo_seguro, COUNT(*) as cantidad_real
+                             FROM polizas
+                             WHERE MONTH(fecha_emision) = ? AND YEAR(fecha_emision) = ?";
+                if ($solo_propios) {
+                    $sql_real .= " AND emitida_por = ?";
+                }
+                $sql_real .= " GROUP BY tipo_seguro";
+
+                $stmt_real = $db->prepare($sql_real);
+                if ($solo_propios) {
+                    $stmt_real->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt_real->bind_param('ii', $mes, $anio);
+                }
                 $stmt_real->execute();
                 $res_real = $stmt_real->get_result();
                 $real_map = [];
@@ -301,18 +317,26 @@ try {
                     exit;
                 }
 
-                // Obtener pólizas emitidas en el periodo que cuenten con pago procesado completo
-                $stmt = $db->prepare(
-                    "SELECT p.id, p.numero_poliza, p.tipo_seguro, p.aseguradora, p.prima_total, p.prima_neta, p.fecha_emision,
-                            c.nombre as cliente_nombre,
-                            (SELECT SUM(pag.monto) FROM pagos pag WHERE pag.poliza_id = p.id AND pag.estado_pago = 'procesado') as total_pagado
-                     FROM polizas p
-                     LEFT JOIN clientes c ON p.cliente_id = c.id
-                     WHERE MONTH(p.fecha_emision) = ? AND YEAR(p.fecha_emision) = ?
-                     HAVING COALESCE(total_pagado, 0) >= p.prima_total
-                     ORDER BY p.fecha_emision DESC"
-                );
-                $stmt->bind_param('ii', $mes, $anio);
+                // Obtener pólizas emitidas en el periodo con soporte de restricción granular Solo Propios (NOFTRAB)
+                $solo_propios = restringirSoloPropios($usuario_id, 'reportes');
+                $sql = "SELECT p.id, p.numero_poliza, p.tipo_seguro, p.aseguradora, p.prima_total, p.prima_neta, p.fecha_emision,
+                               c.nombre as cliente_nombre,
+                               (SELECT SUM(pag.monto) FROM pagos pag WHERE pag.poliza_id = p.id AND pag.estado_pago = 'procesado') as total_pagado
+                        FROM polizas p
+                        LEFT JOIN clientes c ON p.cliente_id = c.id
+                        WHERE MONTH(p.fecha_emision) = ? AND YEAR(p.fecha_emision) = ?";
+                if ($solo_propios) {
+                    $sql .= " AND p.emitida_por = ?";
+                }
+                $sql .= " HAVING COALESCE(total_pagado, 0) >= p.prima_total
+                          ORDER BY p.fecha_emision DESC";
+
+                $stmt = $db->prepare($sql);
+                if ($solo_propios) {
+                    $stmt->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt->bind_param('ii', $mes, $anio);
+                }
                 $stmt->execute();
                 $res = $stmt->get_result();
 
