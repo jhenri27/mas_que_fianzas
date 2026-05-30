@@ -1212,6 +1212,14 @@
     <script src="assets/api-client.js?v=5.0.0"></script>
     <script src="assets/dashboard.js?v=5.0.0"></script>
     <script>
+    // Helper para abrir modales si no está definido globalmente
+    function abrirModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // CONTROLLER: COMPAÑÍAS Y CENTRO DE INTEGRACIÓN DE APIS (NOFTRAB PREMIUM)
     // ══════════════════════════════════════════════════════════════════════════
