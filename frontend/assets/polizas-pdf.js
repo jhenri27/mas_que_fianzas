@@ -320,7 +320,8 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
         }
 
         if (opts && opts.returnBase64) {
-            return doc.output('base64');
+            const dataUri = doc.output('datauristring');
+            return dataUri.split(',')[1];
         }
         if (!opts.returnDoc) {
             doc.save(`Marbete_${String(poliza.numero_poliza||'PROVISIONAL').replace(/[^a-z0-9]/gi,'_')}.pdf`);
@@ -659,13 +660,20 @@ async function generarFacturaPDF(poliza, cliente, pago, opts = {}) {
  * @param {Object} data       - Contexto de datos { cliente:{}, poliza:{}, vehiculo:{}, general:{} }
  */
 async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
-    // Cargar pdf-lib dinámicamente si no está disponible
+    // Cargar pdf-lib dinámicamente si no está disponible (con fallback a local/CDN)
     if (typeof PDFLib === 'undefined') {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+            script.src = '../assets/lib/pdf-lib.min.js';
             script.onload = resolve;
-            script.onerror = () => reject(new Error('No se pudo cargar pdf-lib'));
+            script.onerror = () => {
+                console.warn('[pdf-lib] Local load failed, trying unpkg CDN...');
+                const cdnScript = document.createElement('script');
+                cdnScript.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+                cdnScript.onload = resolve;
+                cdnScript.onerror = () => reject(new Error('No se pudo cargar pdf-lib desde origen local ni desde CDN.'));
+                document.head.appendChild(cdnScript);
+            };
             document.head.appendChild(script);
         });
     }

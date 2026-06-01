@@ -893,7 +893,7 @@
 if (typeof window.LOGOS === 'undefined') window.LOGOS = {};
 console.log('Logos Cargados:', Object.keys(window.LOGOS));
 </script>
-<script src="../assets/polizas-pdf.js?v=9"></script>
+<script src="../assets/polizas-pdf.js?v=10"></script>
 <script>
 'use strict';
 
@@ -1807,7 +1807,8 @@ async function enviarDocumentos(id) {
                 const docResult = await generarMarbetePDF(p, vehiculo, { returnDoc: true });
                 // docResult puede ser un objeto jsPDF con método output()
                 if (docResult && typeof docResult.output === 'function') {
-                    pdfBase64 = docResult.output('base64');
+                    const dataUri = docResult.output('datauristring');
+                    pdfBase64 = dataUri.split(',')[1];
                 }
             } catch(e2) {
                 console.warn('[enviarDocumentos] returnDoc también falló:', e2.message);
