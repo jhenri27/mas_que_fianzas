@@ -124,6 +124,9 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
         }
 
         // ── FALLBACK jsPDF ────────────────────────────────────────────────
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error('La librería jsPDF no está disponible. Verifique que ../assets/lib/jspdf.umd.min.js esté accesible.');
+        }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
