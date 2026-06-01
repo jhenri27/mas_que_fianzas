@@ -103,10 +103,15 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
                             };
                             if (opts && opts.returnBase64) {
                                 const pdfBytes = await generarDocumentoDinamicoPDF(jF.data, ctx, { returnBytes: true });
+                                // Validar que realmente es un Uint8Array con contenido
+                                if (!pdfBytes || !(pdfBytes instanceof Uint8Array) || pdfBytes.byteLength === 0) {
+                                    throw new Error('[Marbete] generarDocumentoDinamicoPDF no retornó bytes válidos');
+                                }
+                                // Conversión segura a base64 por chunks (evita Maximum call stack con PDFs grandes)
                                 let binary = '';
-                                const len = pdfBytes.byteLength;
-                                for (let i = 0; i < len; i++) {
-                                    binary += String.fromCharCode(pdfBytes[i]);
+                                const chunkSize = 8192;
+                                for (let i = 0; i < pdfBytes.byteLength; i += chunkSize) {
+                                    binary += String.fromCharCode.apply(null, pdfBytes.subarray(i, i + chunkSize));
                                 }
                                 return window.btoa(binary);
                             } else {

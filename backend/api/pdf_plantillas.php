@@ -26,9 +26,14 @@ try {
                 echo json_encode(["exito" => false, "mensaje" => "Plantilla no encontrada"]);
             }
         } else {
-            // Listar todas
+            // Listar todas — solo las que tienen archivo físico presente
             $result = $db->query("SELECT * FROM pdf_plantillas ORDER BY id DESC");
-            echo json_encode(["exito" => true, "data" => $result->fetch_all(MYSQLI_ASSOC)]);
+            $all = $result->fetch_all(MYSQLI_ASSOC);
+            $uploadBase = dirname(__FILE__) . '/../../uploads/plantillas_pdf/';
+            $active = array_filter($all, function($row) use ($uploadBase) {
+                return !empty($row['archivo_base']) && file_exists($uploadBase . $row['archivo_base']);
+            });
+            echo json_encode(["exito" => true, "data" => array_values($active)]);
         }
     } elseif ($method === 'POST') {
         if (isset($_POST['action']) && $_POST['action'] === 'upload') {
