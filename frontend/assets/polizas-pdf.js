@@ -101,7 +101,17 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
                                 cliente: { nombre: poliza.cliente_nombre||'', cedula: poliza.cliente_cedula||'' },
                                 general: { hora_emision: new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) }
                             };
-                            return await generarDocumentoDinamicoPDF(jF.data, ctx);
+                            if (opts && opts.returnBase64) {
+                                const pdfBytes = await generarDocumentoDinamicoPDF(jF.data, ctx, { returnBytes: true });
+                                let binary = '';
+                                const len = pdfBytes.byteLength;
+                                for (let i = 0; i < len; i++) {
+                                    binary += String.fromCharCode(pdfBytes[i]);
+                                }
+                                return window.btoa(binary);
+                            } else {
+                                return await generarDocumentoDinamicoPDF(jF.data, ctx);
+                            }
                         }
                     }
                 }
@@ -301,6 +311,9 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
             doc.text('EN LÍNEA', BX2 - QR_SIZE/2 - 2, YCP + QR_SIZE + 7, { align: 'center' });
         }
 
+        if (opts && opts.returnBase64) {
+            return doc.output('base64');
+        }
         if (!opts.returnDoc) {
             doc.save(`Marbete_${String(poliza.numero_poliza||'PROVISIONAL').replace(/[^a-z0-9]/gi,'_')}.pdf`);
         }
@@ -637,7 +650,7 @@ async function generarFacturaPDF(poliza, cliente, pago, opts = {}) {
  * @param {Object} plantilla  - Objeto de plantilla con { id, nombre, archivo_base, tipo_archivo, ancho_mm, alto_mm, campos[] }
  * @param {Object} data       - Contexto de datos { cliente:{}, poliza:{}, vehiculo:{}, general:{} }
  */
-async function generarDocumentoDinamicoPDF(plantilla, data) {
+async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
     // Cargar pdf-lib dinámicamente si no está disponible
     if (typeof PDFLib === 'undefined') {
         await new Promise((resolve, reject) => {
@@ -802,6 +815,9 @@ async function generarDocumentoDinamicoPDF(plantilla, data) {
         }
 
         const pdfBytes = await pdfDoc.save();
+        if (opts && opts.returnBytes) {
+            return pdfBytes;
+        }
         const blob = new Blob([pdfBytes], { type: 'application/pdf' });
         const url  = URL.createObjectURL(blob);
 

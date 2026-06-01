@@ -132,6 +132,92 @@ try {
                 $ok = $polizaManager->cambiarEstado($id, $estado);
                 echo json_encode(["exito" => $ok, "mensaje" => $ok ? "Estado actualizado" : "Error al actualizar estado"]);
             }
+            elseif ($action === 'enviar_correo') {
+                $email = trim($datos['email'] ?? '');
+                $pdf_base64 = $datos['pdf_base64'] ?? '';
+                $num_poliza = trim($datos['numero_poliza'] ?? '');
+                
+                if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    http_response_code(422);
+                    echo json_encode(["exito" => false, "mensaje" => "Correo electrónico inválido"]);
+                    break;
+                }
+                if (empty($pdf_base64)) {
+                    http_response_code(422);
+                    echo json_encode(["exito" => false, "mensaje" => "Documento PDF requerido"]);
+                    break;
+                }
+                if (empty($num_poliza)) {
+                    http_response_code(422);
+                    echo json_encode(["exito" => false, "mensaje" => "Número de póliza requerido"]);
+                    break;
+                }
+                
+                require_once '../Mailer.php';
+                $mailer = new Mailer();
+                
+                $subject = "Póliza Digital Emisión Oficial – N° {$num_poliza}";
+                
+                // Formatear un cuerpo de correo corporativo premium en HTML
+                $message = "
+                <html>
+                <head>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; color: #334155; line-height: 1.6; background-color: #f8fafc; margin: 0; padding: 20px; }
+                        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+                        .header { background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 30px; text-align: center; color: #ffffff; }
+                        .header h1 { margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+                        .body { padding: 30px; }
+                        .policy-card { background: #f1f5f9; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #4f46e5; }
+                        .policy-item { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 8px 0; font-size: 13px; }
+                        .policy-item:last-child { border-bottom: none; }
+                        .label { font-weight: 700; color: #64748b; }
+                        .value { font-weight: 600; color: #1e293b; }
+                        .btn { display: inline-block; background: #4f46e5; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; text-align: center; margin: 20px 0; }
+                        .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>MAS QUE FIANZAS</h1>
+                        </div>
+                        <div class='body'>
+                            <p>Estimado Cliente,</p>
+                            <p>Nos complace informarle que su póliza de seguro ha sido emitida con éxito a través de nuestra plataforma autorizada. Adjunto a este correo electrónico encontrará su **Marbete Digital Oficial** en formato PDF listo para imprimir o portar en su dispositivo móvil.</p>
+                            
+                            <div class='policy-card'>
+                                <div class='policy-item'><span class='label'>Número de Póliza:</span><span class='value'>{$num_poliza}</span></div>
+                                <div class='policy-item'><span class='label'>Aseguradora:</span><span class='value'>MULTISEGUROS</span></div>
+                                <div class='policy-item'><span class='label'>Tipo de Seguro:</span><span class='value'>Seguro de Ley</span></div>
+                            </div>
+                            
+                            <p>También puede verificar el estado técnico de su póliza en tiempo real o descargar sus certificados en línea haciendo clic en el siguiente botón:</p>
+                            
+                            <div style='text-align: center;'>
+                                <a href='http://localhost/PLATAFORMA_INTEGRADA/frontend/verificar-poliza.html?n={$num_poliza}' class='btn'>Verificar Póliza en Línea</a>
+                            </div>
+                            
+                            <p>Si tiene alguna pregunta o necesita asistencia adicional, no dude en contactarnos.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>Este correo electrónico fue generado automáticamente por la plataforma MAS QUE FIANZAS.</p>
+                            <p>&copy; " . date('Y') . " MAS QUE FIANZAS, S.R.L. | Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+                
+                $filename = "Marbete_{$num_poliza}.pdf";
+                $enviado = $mailer->enviarConAdjunto($email, $subject, $message, $pdf_base64, $filename, true);
+                
+                if ($enviado) {
+                    echo json_encode(["exito" => true, "mensaje" => "Póliza enviada exitosamente a {$email}"]);
+                } else {
+                    http_response_code(502);
+                    echo json_encode(["exito" => false, "mensaje" => "Error al enviar el correo. Revise el smtp.log"]);
+                }
+            }
             else {
                 http_response_code(400);
                 echo json_encode(["exito" => false, "mensaje" => "Acción POST no válida"]);

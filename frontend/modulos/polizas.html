@@ -1766,9 +1766,51 @@ async function enviarDocumentos(id) {
     if (!p) return;
     const email = prompt(`Enviar documentos de la póliza ${p.numero_poliza} por email.\nDestino (email del cliente):`, p.cliente_email || '');
     if (email) {
-        mostrarToast('Función de envío por email en integración. Generando PDF...', 'info');
-        polizaActual = p;
-        await generarMarbetePDF(p, { placa: p.vehiculo_placa, marca: p.vehiculo_marca, modelo: p.vehiculo_modelo });
+        if (!email.trim() || !email.includes('@')) {
+            mostrarToast('Por favor, introduzca una dirección de correo válida.', 'error');
+            return;
+        }
+
+        mostrarToast('Generando PDF del marbete...', 'info');
+        
+        try {
+            polizaActual = p;
+            // Generar el PDF en formato base64 directamente
+            const pdfBase64 = await generarMarbetePDF(p, { 
+                placa: p.vehiculo_placa, 
+                marca: p.vehiculo_marca, 
+                modelo: p.vehiculo_modelo 
+            }, { returnBase64: true });
+            
+            if (!pdfBase64) {
+                throw new Error('No se pudo generar la codificación Base64 del marbete.');
+            }
+            
+            mostrarToast('Enviando correo con el marbete adjunto...', 'info');
+            
+            const r = await fetch(`${BASE_API}/polizas.php?action=enviar_correo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: p.id,
+                    email: email.trim(),
+                    numero_poliza: p.numero_poliza,
+                    pdf_base64: pdfBase64
+                })
+            });
+            
+            const res = await r.json();
+            if (res.exito) {
+                mostrarToast(`✅ Póliza enviada correctamente a ${email}`, 'success');
+            } else {
+                mostrarToast(`❌ Error al enviar: ${res.mensaje}`, 'error');
+            }
+        } catch (e) {
+            console.error('Error en enviarDocumentos:', e);
+            mostrarToast(`❌ Error de conexión: ${e.message}`, 'error');
+        }
     }
 }
 

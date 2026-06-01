@@ -255,5 +255,152 @@ class Mailer {
         }
         return true;
     }
+
+    /** Envía un correo electrónico con un archivo adjunto en formato Base64 */
+    public function enviarConAdjunto($to, $subject, $message, $attachmentBase64, $attachmentName, $isHtml = true) {
+        $NL = "\r\n";
+
+        // Limpiar el base64 del adjunto si viene con cabecera dataURI
+        if (strpos($attachmentBase64, ',') !== false) {
+            $parts = explode(',', $attachmentBase64);
+            $attachmentBase64 = end($parts);
+        }
+
+        // Método de cifrado más amplio posible
+        $crypto = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+        if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) $crypto |= STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+        if (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT')) $crypto |= STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT;
+
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+                'crypto_method'     => $crypto
+            ]
+        ]);
+
+        $localHostname = gethostname() ?: 'localhost';
+
+        $this->log_message("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'INFO');
+        $this->log_message("Iniciando envío con adjunto ({$attachmentName}) → {$to}", 'INFO');
+        $this->log_message("Servidor: {$this->server}:{$this->port} | Cifrado: {$this->encryption}", 'INFO');
+        $this->log_message("EHLO hostname local: {$localHostname}", 'INFO');
+
+        $protocol = ($this->encryption === 'ssl') ? "ssl://" : "";
+        $socket   = @stream_socket_client(
+            "{$protocol}{$this->server}:{$this->port}",
+            $errno, $errstr,
+            $this->timeout,
+            STREAM_CLIENT_CONNECT,
+            $context
+        );
+
+        if (!$socket) {
+            $lastErr = error_get_last();
+            $this->log_message("FALLO DE CONEXIÓN TCP CON ADJUNTO: [{$errno}] {$errstr}", 'ERROR');
+            if ($lastErr) $this->log_message("PHP detail: " . $lastErr['message'], 'DEBUG');
+            return false;
+        }
+
+        stream_set_timeout($socket, $this->timeout);
+
+        // Saludo del servidor
+        if (!$this->server_parse($socket, "220", "GREETING")) return false;
+
+        $this->smtp_write($socket, "EHLO {$localHostname}", $NL);
+        if (!$this->server_parse($socket, "250", "EHLO")) return false;
+
+        // STARTTLS si es TLS explícito (puerto 587)
+        if ($this->encryption === 'tls') {
+            $this->log_message("Enviando STARTTLS...", 'INFO');
+            $this->smtp_write($socket, "STARTTLS", $NL);
+            if (!$this->server_parse($socket, "220", "STARTTLS")) return false;
+
+            if (!stream_socket_enable_crypto($socket, true, $crypto)) {
+                $this->log_message("Fallo al negociar TLS (Handshake).", 'ERROR');
+                return false;
+            }
+            $this->log_message("Cifrado TLS establecido.", 'SUCCESS');
+
+            // Re-EHLO después del cifrado
+            $this->smtp_write($socket, "EHLO {$localHostname}", $NL);
+            if (!$this->server_parse($socket, "250", "EHLO post-TLS")) return false;
+        }
+
+        // Autenticación
+        $this->smtp_write($socket, "AUTH LOGIN", $NL);
+        if (!$this->server_parse($socket, "334", "AUTH LOGIN")) return false;
+
+        $this->smtp_write($socket, base64_encode($this->username), $NL);
+        if (!$this->server_parse($socket, "334", "USERNAME")) return false;
+
+        $this->smtp_write($socket, base64_encode($this->password), $NL);
+        if (!$this->server_parse($socket, "235", "PASSWORD")) {
+            $this->log_message("Credenciales incorrectas en envío con adjunto.", 'ERROR');
+            return false;
+        }
+        $this->log_message("Autenticación exitosa.", 'SUCCESS');
+
+        // Sobre del mensaje
+        $this->smtp_write($socket, "MAIL FROM:<{$this->username}>", $NL);
+        if (!$this->server_parse($socket, "250", "MAIL FROM")) return false;
+
+        $this->smtp_write($socket, "RCPT TO:<{$to}>", $NL);
+        if (!$this->server_parse($socket, "250", "RCPT TO")) return false;
+
+        $this->smtp_write($socket, "DATA", $NL);
+        if (!$this->server_parse($socket, "354", "DATA")) return false;
+
+        // Cabeceras
+        $subjectEncoded  = "=?UTF-8?B?" . base64_encode($subject) . "?=";
+        $fromNameEncoded = "=?UTF-8?B?" . base64_encode($this->fromName) . "?=";
+        $messageId       = '<' . uniqid('mqf.', true) . '@' . $this->server . '>';
+        $date            = date('r');
+        $boundary        = md5(uniqid(time()));
+
+        $headers  = "From: {$fromNameEncoded} <{$this->username}>" . $NL;
+        $headers .= "To: {$to}" . $NL;
+        $headers .= "Reply-To: {$this->username}" . $NL;
+        $headers .= "Date: {$date}" . $NL;
+        $headers .= "Message-ID: {$messageId}" . $NL;
+        $headers .= "Subject: {$subjectEncoded}" . $NL;
+        $headers .= "MIME-Version: 1.0" . $NL;
+        $headers .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"" . $NL;
+        $headers .= "X-Mailer: MasQueFianzas-Mailer/2.1" . $NL;
+        $headers .= "X-Priority: 3" . $NL;
+
+        // Cuerpo en base64
+        $contentType = $isHtml ? "text/html; charset=UTF-8" : "text/plain; charset=UTF-8";
+        $bodyLines   = chunk_split(base64_encode($message), 76, $NL);
+
+        $mimeBody  = "--{$boundary}" . $NL;
+        $mimeBody .= "Content-Type: {$contentType}" . $NL;
+        $mimeBody .= "Content-Transfer-Encoding: base64" . $NL . $NL;
+        $mimeBody .= $bodyLines . $NL;
+
+        // Adjunto
+        $attachLines = chunk_split($attachmentBase64, 76, $NL);
+        $mimeBody .= "--{$boundary}" . $NL;
+        $mimeBody .= "Content-Type: application/pdf; name=\"{$attachmentName}\"" . $NL;
+        $mimeBody .= "Content-Transfer-Encoding: base64" . $NL;
+        $mimeBody .= "Content-Disposition: attachment; filename=\"{$attachmentName}\"" . $NL . $NL;
+        $mimeBody .= $attachLines . $NL;
+        $mimeBody .= "--{$boundary}--" . $NL;
+
+        fputs($socket, $headers . $NL . $mimeBody . $NL . "." . $NL);
+        if (!$this->server_parse($socket, "250", "END DATA")) {
+            $this->log_message("Servidor rechazó el mensaje tras DATA.", 'ERROR');
+            return false;
+        }
+
+        $this->smtp_write($socket, "QUIT", $NL);
+        fclose($socket);
+
+        $this->log_message("✔ Correo con adjunto enviado exitosamente a {$to}", 'SUCCESS');
+        $this->log_message("  Message-ID: {$messageId}", 'INFO');
+        $this->log_message("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", 'INFO');
+        return true;
+    }
 }
 ?>
