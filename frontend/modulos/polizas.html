@@ -893,7 +893,7 @@
 if (typeof window.LOGOS === 'undefined') window.LOGOS = {};
 console.log('Logos Cargados:', Object.keys(window.LOGOS));
 </script>
-<script src="../assets/polizas-pdf.js?v=7"></script>
+<script src="../assets/polizas-pdf.js?v=8"></script>
 <script>
 'use strict';
 
@@ -1764,7 +1764,7 @@ async function validarPoliza(id) {
 async function enviarDocumentos(id) {
     const p = polizasData.find(x => x.id == id);
     if (!p) return;
-    const email = prompt(`Enviar documentos de la póliza ${p.numero_poliza} por email.\nDestino (email del cliente):`, p.cliente_email || '');
+    const email = prompt(`Enviar marbete de la póliza ${p.numero_poliza} por email.\nDestino (email del cliente):`, p.cliente_email || '');
     if (!email) return;
 
     const emailTrim = email.trim();
@@ -1773,36 +1773,62 @@ async function enviarDocumentos(id) {
         return;
     }
 
-    mostrarToast('Generando PDF del marbete...', 'info');
+    mostrarToast('⏳ Generando marbete PDF...', 'info');
 
     try {
         polizaActual = p;
 
-        // Construir objeto vehiculo completo requerido por generarMarbetePDF
+        // Construir objeto vehiculo completo
         const vehiculo = {
-            placa:          p.vehiculo_placa   || '',
-            marca:          p.vehiculo_marca   || '',
-            modelo:         p.vehiculo_modelo  || '',
-            anio:           p.vehiculo_anio    || '',
-            chasis:         p.vehiculo_chasis  || '',
-            uso:            p.vehiculo_uso     || 'PRIVADO',
-            tipo_vehiculo:  p.vehiculo_tipo_vehiculo || 'AUTOMOVIL'
+            placa:         p.vehiculo_placa          || '',
+            marca:         p.vehiculo_marca          || '',
+            modelo:        p.vehiculo_modelo         || '',
+            anio:          p.vehiculo_anio           || '',
+            chasis:        p.vehiculo_chasis         || '',
+            uso:           p.vehiculo_uso            || 'PRIVADO',
+            tipo_vehiculo: p.vehiculo_tipo_vehiculo  || 'AUTOMOVIL'
         };
 
-        // Generar el PDF en formato base64 directamente (sin descarga)
-        const pdfBase64 = await generarMarbetePDF(p, vehiculo, { returnBase64: true });
-
-        if (!pdfBase64) {
-            throw new Error('No se pudo generar la codificación Base64 del marbete.');
+        // ─── ESTRATEGIA ROBUSTA DE BASE64 ───────────────────────────────
+        // 1. Intentar con returnBase64 nativo (ruta rápida)
+        let pdfBase64 = null;
+        let errorB64 = null;
+        try {
+            pdfBase64 = await generarMarbetePDF(p, vehiculo, { returnBase64: true });
+        } catch(e1) {
+            errorB64 = e1.message;
+            console.warn('[enviarDocumentos] returnBase64 falló:', e1.message);
         }
 
-        // Guardia de tamaño: base64 del PDF no debe superar 22MB (~16MB PDF)
-        const MAX_B64_BYTES = 22 * 1024 * 1024; // 22 MB en caracteres base64
+        // 2. Si la ruta rápida no produjo base64 válido, usar returnDoc + output('base64')
+        if (!pdfBase64 || typeof pdfBase64 !== 'string' || pdfBase64.length < 100) {
+            console.warn('[enviarDocumentos] Intentando con returnDoc fallback...');
+            try {
+                const docResult = await generarMarbetePDF(p, vehiculo, { returnDoc: true });
+                // docResult puede ser un objeto jsPDF con método output()
+                if (docResult && typeof docResult.output === 'function') {
+                    pdfBase64 = docResult.output('base64');
+                }
+            } catch(e2) {
+                console.warn('[enviarDocumentos] returnDoc también falló:', e2.message);
+                throw new Error(`Error generando PDF: ${errorB64 || e2.message}`);
+            }
+        }
+
+        // 3. Validación final
+        if (!pdfBase64 || typeof pdfBase64 !== 'string' || pdfBase64.length < 100) {
+            throw new Error('No se pudo generar el PDF del marbete. Por favor intente nuevamente.');
+        }
+
+        console.log(`[enviarDocumentos] PDF generado OK (base64 length: ${pdfBase64.length})`);
+
+        // Guardia de tamaño: base64 del PDF no debe superar 22MB
+        const MAX_B64_BYTES = 22 * 1024 * 1024;
         if (pdfBase64.length > MAX_B64_BYTES) {
-            throw new Error(`El PDF generado es demasiado grande para enviarse por correo (${(pdfBase64.length / 1024 / 1024).toFixed(1)} MB). Descárgalo manualmente.`);
+            throw new Error(`El PDF es demasiado grande (${(pdfBase64.length/1024/1024).toFixed(1)} MB). Descárgalo manualmente.`);
         }
 
-        mostrarToast('Enviando correo con el marbete adjunto...', 'info');
+        mostrarToast('📧 Enviando correo con el marbete adjunto...', 'info');
 
         const r = await fetch(`${BASE_API}/polizas.php?action=enviar_correo`, {
             method: 'POST',
@@ -1815,9 +1841,8 @@ async function enviarDocumentos(id) {
             })
         });
 
-        // HTTP 413: el servidor rechazó el body porque era demasiado grande
         if (r.status === 413) {
-            throw new Error('El archivo supera el límite del servidor. Contacte al administrador para aumentar post_max_size.');
+            throw new Error('El archivo supera el límite del servidor (post_max_size). Contacte al administrador.');
         }
 
         let res;
@@ -1830,10 +1855,11 @@ async function enviarDocumentos(id) {
             console.error('[enviarDocumentos] Respuesta API:', res);
         }
     } catch (e) {
-        console.error('[enviarDocumentos] Error:', e);
+        console.error('[enviarDocumentos] Error final:', e);
         mostrarToast(`❌ ${e.message}`, 'error');
     }
 }
+
 
 
 // ═══════════════════════════════════════
