@@ -92,7 +92,22 @@ try {
             break;
 
         case 'POST':
-            $datos = json_decode(file_get_contents('php://input'), true);
+            // Detectar desbordamiento silencioso de post_max_size:
+            // cuando el body excede el límite, PHP vacía php://input y $_POST queda vacío
+            $rawBody = file_get_contents('php://input');
+            if (empty($rawBody) && isset($_SERVER['CONTENT_LENGTH']) && (int)$_SERVER['CONTENT_LENGTH'] > 0) {
+                $postMaxSize = ini_get('post_max_size');
+                http_response_code(413);
+                echo json_encode([
+                    "exito"   => false,
+                    "mensaje" => "El archivo PDF es demasiado grande para ser enviado (límite actual: {$postMaxSize}). Contacte al administrador.",
+                    "codigo"  => "POST_MAX_SIZE_EXCEEDED",
+                    "limit"   => $postMaxSize,
+                    "sent"    => (int)$_SERVER['CONTENT_LENGTH']
+                ]);
+                exit;
+            }
+            $datos = json_decode($rawBody, true);
             
             if ($action === 'emitir') {
                 if (!$datos || empty($datos['cliente_id'])) {

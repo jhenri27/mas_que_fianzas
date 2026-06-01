@@ -1765,54 +1765,76 @@ async function enviarDocumentos(id) {
     const p = polizasData.find(x => x.id == id);
     if (!p) return;
     const email = prompt(`Enviar documentos de la póliza ${p.numero_poliza} por email.\nDestino (email del cliente):`, p.cliente_email || '');
-    if (email) {
-        if (!email.trim() || !email.includes('@')) {
-            mostrarToast('Por favor, introduzca una dirección de correo válida.', 'error');
-            return;
+    if (!email) return;
+
+    const emailTrim = email.trim();
+    if (!emailTrim || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
+        mostrarToast('Por favor, introduzca una dirección de correo electrónico válida.', 'error');
+        return;
+    }
+
+    mostrarToast('Generando PDF del marbete...', 'info');
+
+    try {
+        polizaActual = p;
+
+        // Construir objeto vehiculo completo requerido por generarMarbetePDF
+        const vehiculo = {
+            placa:          p.vehiculo_placa   || '',
+            marca:          p.vehiculo_marca   || '',
+            modelo:         p.vehiculo_modelo  || '',
+            anio:           p.vehiculo_anio    || '',
+            chasis:         p.vehiculo_chasis  || '',
+            uso:            p.vehiculo_uso     || 'PRIVADO',
+            tipo_vehiculo:  p.vehiculo_tipo_vehiculo || 'AUTOMOVIL'
+        };
+
+        // Generar el PDF en formato base64 directamente (sin descarga)
+        const pdfBase64 = await generarMarbetePDF(p, vehiculo, { returnBase64: true });
+
+        if (!pdfBase64) {
+            throw new Error('No se pudo generar la codificación Base64 del marbete.');
         }
 
-        mostrarToast('Generando PDF del marbete...', 'info');
-        
-        try {
-            polizaActual = p;
-            // Generar el PDF en formato base64 directamente
-            const pdfBase64 = await generarMarbetePDF(p, { 
-                placa: p.vehiculo_placa, 
-                marca: p.vehiculo_marca, 
-                modelo: p.vehiculo_modelo 
-            }, { returnBase64: true });
-            
-            if (!pdfBase64) {
-                throw new Error('No se pudo generar la codificación Base64 del marbete.');
-            }
-            
-            mostrarToast('Enviando correo con el marbete adjunto...', 'info');
-            
-            const r = await fetch(`${BASE_API}/polizas.php?action=enviar_correo`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: p.id,
-                    email: email.trim(),
-                    numero_poliza: p.numero_poliza,
-                    pdf_base64: pdfBase64
-                })
-            });
-            
-            const res = await r.json();
-            if (res.exito) {
-                mostrarToast(`✅ Póliza enviada correctamente a ${email}`, 'success');
-            } else {
-                mostrarToast(`❌ Error al enviar: ${res.mensaje}`, 'error');
-            }
-        } catch (e) {
-            console.error('Error en enviarDocumentos:', e);
-            mostrarToast(`❌ Error de conexión: ${e.message}`, 'error');
+        // Guardia de tamaño: base64 del PDF no debe superar 22MB (~16MB PDF)
+        const MAX_B64_BYTES = 22 * 1024 * 1024; // 22 MB en caracteres base64
+        if (pdfBase64.length > MAX_B64_BYTES) {
+            throw new Error(`El PDF generado es demasiado grande para enviarse por correo (${(pdfBase64.length / 1024 / 1024).toFixed(1)} MB). Descárgalo manualmente.`);
         }
+
+        mostrarToast('Enviando correo con el marbete adjunto...', 'info');
+
+        const r = await fetch(`${BASE_API}/polizas.php?action=enviar_correo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id:            p.id,
+                email:         emailTrim,
+                numero_poliza: p.numero_poliza,
+                pdf_base64:    pdfBase64
+            })
+        });
+
+        // HTTP 413: el servidor rechazó el body porque era demasiado grande
+        if (r.status === 413) {
+            throw new Error('El archivo supera el límite del servidor. Contacte al administrador para aumentar post_max_size.');
+        }
+
+        let res;
+        try { res = await r.json(); } catch(_) { res = { exito: false, mensaje: `Error HTTP ${r.status}` }; }
+
+        if (res.exito) {
+            mostrarToast(`✅ Marbete enviado correctamente a ${emailTrim}`, 'success');
+        } else {
+            mostrarToast(`❌ Error al enviar: ${res.mensaje}`, 'error');
+            console.error('[enviarDocumentos] Respuesta API:', res);
+        }
+    } catch (e) {
+        console.error('[enviarDocumentos] Error:', e);
+        mostrarToast(`❌ ${e.message}`, 'error');
     }
 }
+
 
 // ═══════════════════════════════════════
 // COMISIONES

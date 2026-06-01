@@ -4,3 +4,15 @@
     Header set Pragma "no-cache"
     Header set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
 </FilesMatch>
+
+# Aumentar límites PHP para soportar envíos de PDF en base64 (hasta ~18MB de PDF ≈ 25MB base64 + JSON)
+<IfModule mod_php.c>
+    php_value post_max_size 30M
+    php_value upload_max_filesize 25M
+    php_value memory_limit 256M
+</IfModule>
+<IfModule mod_php8.c>
+    php_value post_max_size 30M
+    php_value upload_max_filesize 25M
+    php_value memory_limit 256M
+</IfModule>

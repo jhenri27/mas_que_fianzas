@@ -129,4 +129,27 @@ Se ha incorporado un panel interactivo premium de **Auditoría Técnica (QR)** y
   - Función `cargarAuditoriaTecnicaDet()` que realiza la petición a la API de verificación y formatea la prima total utilizando el formateador nativo `fmtMoneda()`.
   - Función `imprimirFichaAuditoriaDet()` que abre la ventana de impresión limpia y estilizada optimizada para PDF con membrete corporativo sin fondos oscuros.
 
+---
+
+## 📬 7. Envío de Pólizas por Correo con Adjuntos Reales (Norma NOFTRAB)
+
+Se ha reemplazado el comportamiento simulado ("mock") por un motor SMTP funcional en sockets para enviar marbetes adjuntos por correo electrónico directamente desde el módulo de Pólizas:
+
+### 1. Bóveda de Envío SMTP con Adjuntos [`backend/Mailer.php`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/backend/Mailer.php) [MODIFY]
+* **Método `enviarConAdjunto()` [NEW]**: Soporta la composición e inyección nativa de archivos binarios codificados en Base64 utilizando un formato de mensaje multiparte (`multipart/mixed`) con delimitadores (`boundary`).
+* Conserva la negociación TLS/SSL, la autenticación segura LOGIN SMTP y el logging detallado en `logs/smtp.log`.
+
+### 2. API de Pólizas [`backend/api/polizas.php`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/polizas.php) [MODIFY]
+* **Acción `enviar_correo` [NEW]**: Recibe por POST `{ email, pdf_base64, numero_poliza }`.
+* Genera una plantilla premium en HTML con gradientes corporativos y un enlace directo de verificación pública en tiempo real de la póliza.
+* Invoca la transmisión del correo con el marbete adjunto y devuelve respuestas transaccionales en JSON.
+
+### 3. Motor de PDFs [`frontend/assets/polizas-pdf.js`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/assets/polizas-pdf.js) [MODIFY]
+* **`generarDocumentoDinamicoPDF`**: Añadido soporte de retorno directo de bytes (`returnBytes`) al invocar la plantilla.
+* **`generarMarbetePDF`**: Añadido parámetro `opts.returnBase64` para retornar directamente la cadena Base64 del PDF del marbete (tanto en intercepción de plantilla como en el generador clásico jsPDF) sin forzar una descarga local física en el navegador.
+
+### 4. Módulo de Pólizas [`frontend/modulos/polizas.html`](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html) [MODIFY]
+* **`enviarDocumentos(id)`**: Reescrita para generar el PDF del marbete en Base64 de forma silenciosa, despachar la petición fetch por POST a la API de pólizas de forma asíncrona, y notificar visualmente el progreso con toasts de carga e indicaciones de éxito.
+
+
 
