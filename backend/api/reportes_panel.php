@@ -201,6 +201,61 @@ try {
                 }
                 $stmt->close();
 
+                // Cargar también las fianzas del mes (Integración Fianzas — NOFTRAB)
+                $sql_fz = "SELECT f.id, f.numero_fianza, f.tipo_fianza, fa.nombre as aseguradora, f.total, f.prima_base, f.fecha_inicio, f.estado, 
+                                  f.cliente_nombre
+                           FROM fianzas f
+                           INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
+                           WHERE MONTH(f.fecha_inicio) = ? AND YEAR(f.fecha_inicio) = ?";
+                if ($solo_propios) {
+                    $sql_fz .= " AND f.creado_por = ?";
+                }
+                $sql_fz .= " ORDER BY f.fecha_inicio DESC";
+
+                $stmt_fz = $db->prepare($sql_fz);
+                if ($solo_propios) {
+                    $stmt_fz->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt_fz->bind_param('ii', $mes, $anio);
+                }
+                $stmt_fz->execute();
+                $res_fz = $stmt_fz->get_result();
+
+                while ($row_fz = $res_fz->fetch_assoc()) {
+                    $total = (float)$row_fz['total'];
+                    // Para fianzas vigentes/emitidas asumimos cobro total
+                    $total_pagado = ($row_fz['estado'] === 'vigente') ? $total : 0.00;
+                    $fecha_emision = !empty($row_fz['fecha_inicio']) ? date('Y-m-d', strtotime($row_fz['fecha_inicio'])) : '';
+
+                    if ($total_pagado >= $total) {
+                        $estado_cobro = 'cobrada';
+                        $kpis['total_cobradas']++;
+                        $kpis['monto_cobrado'] += $total;
+                    } else {
+                        $estado_cobro = 'pendiente';
+                        $kpis['total_pendientes']++;
+                        $kpis['monto_pendiente'] += $total;
+                    }
+
+                    $kpis['total_emitidas']++;
+                    $kpis['monto_emitido'] += $total;
+
+                    $polizas[] = [
+                        'id' => (int)$row_fz['id'],
+                        'numero_poliza' => $row_fz['numero_fianza'],
+                        'tipo_seguro' => 'Fianza: ' . $row_fz['tipo_fianza'],
+                        'aseguradora' => $row_fz['aseguradora'],
+                        'cliente' => $row_fz['cliente_nombre'],
+                        'fecha_emision' => $fecha_emision,
+                        'prima_total' => $total,
+                        'prima_neta' => (float)$row_fz['prima_base'],
+                        'total_pagado' => $total_pagado,
+                        'estado_cobro' => $estado_cobro,
+                        'estado_poliza' => $row_fz['estado']
+                    ];
+                }
+                $stmt_fz->close();
+
                 echo json_encode([
                     "exito" => true,
                     "datos" => [
@@ -262,6 +317,24 @@ try {
                     $real_map[$row['tipo_seguro']] = (int)$row['cantidad_real'];
                 }
                 $stmt_real->close();
+
+                // Contar también fianzas reales del mes (Integración Fianzas — NOFTRAB)
+                $sql_fz_real = "SELECT COUNT(*) as cantidad_real FROM fianzas WHERE estado = 'vigente' AND MONTH(fecha_inicio) = ? AND YEAR(fecha_inicio) = ?";
+                if ($solo_propios) {
+                    $sql_fz_real .= " AND creado_por = ?";
+                }
+                $stmt_fz_real = $db->prepare($sql_fz_real);
+                if ($solo_propios) {
+                    $stmt_fz_real->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt_fz_real->bind_param('ii', $mes, $anio);
+                }
+                $stmt_fz_real->execute();
+                $qty_fz = (int)($stmt_fz_real->get_result()->fetch_assoc()['cantidad_real'] ?? 0);
+                $stmt_fz_real->close();
+
+                // Agregar al map de reales con clave 'Fianzas' para emparejar con el producto 'Fianzas'
+                $real_map['Fianzas'] = $qty_fz;
 
                 // Fusionar metas y realidades
                 $logrados = [];
@@ -374,6 +447,56 @@ try {
                     ];
                 }
                 $stmt->close();
+
+                // Obtener fianzas del periodo (vigentes) (Integración Fianzas — NOFTRAB)
+                $sql_fz = "SELECT f.id, f.numero_fianza, f.tipo_fianza, fa.nombre as aseguradora, f.total, f.prima_base, f.itbis, f.fecha_inicio,
+                                  f.cliente_nombre
+                           FROM fianzas f
+                           INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
+                           WHERE f.estado = 'vigente' AND MONTH(f.fecha_inicio) = ? AND YEAR(f.fecha_inicio) = ?";
+                if ($solo_propios) {
+                    $sql_fz .= " AND f.creado_por = ?";
+                }
+                $sql_fz .= " ORDER BY f.fecha_inicio DESC";
+
+                $stmt_fz = $db->prepare($sql_fz);
+                if ($solo_propios) {
+                    $stmt_fz->bind_param('iii', $mes, $anio, $usuario_id);
+                } else {
+                    $stmt_fz->bind_param('ii', $mes, $anio);
+                }
+                $stmt_fz->execute();
+                $res_fz = $stmt_fz->get_result();
+
+                while ($row_fz = $res_fz->fetch_assoc()) {
+                    $bruta = (float)$row_fz['total'];
+                    $pbase = (float)$row_fz['prima_base'];
+                    $itbis = (float)$row_fz['itbis'];
+
+                    // Comisión del 15% es el margen real de MQF para fianzas
+                    $margen = $pbase * 0.15;
+                    $neta = $bruta - $margen; // Costo para MQF (lo que se le debe pagar a la aseguradora + itbis)
+                    $fecha_emision = !empty($row_fz['fecha_inicio']) ? date('Y-m-d', strtotime($row_fz['fecha_inicio'])) : '';
+
+                    $kpis['total_polizas']++;
+                    $kpis['total_prima_bruta'] += $bruta;
+                    $kpis['total_prima_neta'] += $neta;
+                    $kpis['total_margen'] += $margen;
+
+                    $polizas[] = [
+                        'id' => (int)$row_fz['id'],
+                        'numero_poliza' => $row_fz['numero_fianza'],
+                        'tipo_seguro' => 'Fianza: ' . $row_fz['tipo_fianza'],
+                        'aseguradora' => $row_fz['aseguradora'],
+                        'cliente' => $row_fz['cliente_nombre'],
+                        'fecha_emision' => $fecha_emision,
+                        'prima_bruta' => $bruta,
+                        'prima_neta' => $neta,
+                        'margen' => $margen,
+                        'margen_porcentaje' => ($bruta > 0) ? round(($margen / $bruta) * 100, 1) : 0
+                    ];
+                }
+                $stmt_fz->close();
 
                 $kpis['margen_promedio_porcentaje'] = ($kpis['total_prima_bruta'] > 0) ? round(($kpis['total_margen'] / $kpis['total_prima_bruta']) * 100, 1) : 0;
 

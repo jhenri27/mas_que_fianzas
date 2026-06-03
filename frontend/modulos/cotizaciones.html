@@ -106,16 +106,15 @@
         <div class="form-group"><label>Teléfono</label><input type="tel" id="f_telefono" placeholder="(809) 000-0000"></div>
         <div class="form-group"><label>Correo</label><input type="email" id="f_email" placeholder="correo@email.com"></div>
         <div class="form-group">
+          <label>Compañía Aseguradora *</label>
+          <select id="f_aseguradora" onchange="cargarTiposFianzaSimple()">
+            <option value="">Cargando...</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label>Tipo de Fianza *</label>
           <select id="f_tipo" onchange="calcularFianza()">
-            <option value="">Seleccione...</option>
-            <option value="judicial">Fianza Judicial (3.0%)</option>
-            <option value="contractual">Fianza Contractual (2.5%)</option>
-            <option value="aduanal">Fianza Aduanal (2.0%)</option>
-            <option value="cumplimiento">Fiel Cumplimiento (2.5%)</option>
-            <option value="licitacion">Licitación (1.5%)</option>
-            <option value="anticipo">Anticipo (3.5%)</option>
-            <option value="garantia">Garantía de Pago (2.0%)</option>
+            <option value="">Seleccione aseguradora primero</option>
           </select>
         </div>
         <div class="form-group">
@@ -129,6 +128,10 @@
             <option value="24">24 meses</option>
             <option value="36">36 meses</option>
           </select>
+        </div>
+        <div class="form-group">
+          <label>Tasa Especial Manual (%) <span style="color:#9ca3af;">(opcional)</span></label>
+          <input type="number" id="f_tasa_manual" placeholder="Ej: 3.0" step="0.01" min="0" oninput="calcularFianza()">
         </div>
         <div class="form-group full"><label>Monto Afianzado (DOP) *</label><input type="number" id="f_monto" placeholder="0.00" oninput="calcularFianza()"></div>
         <div class="form-group full"><label>Beneficiario</label><input type="text" id="f_beneficiario" placeholder="Nombre de la entidad"></div>
@@ -193,91 +196,189 @@
     // === FORMAT CURRENCY ===
     function fmt(n) { return Number(n).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' }); }
 
-    // === FIANZAS LOGIC ===
-    const TASAS = { judicial:0.030, contractual:0.025, aduanal:0.020, cumplimiento:0.025, licitacion:0.015, anticipo:0.035, garantia:0.020 };
-    const TIPO_LABELS = { judicial:'Fianza Judicial', contractual:'Fianza Contractual', aduanal:'Fianza Aduanal', cumplimiento:'Fiel Cumplimiento', licitacion:'Licitación', anticipo:'Anticipo', garantia:'Garantía de Pago' };
-    
-    // Coberturas por tipo de fianza
-    const FIANZA_COBERTURAS = {
-      judicial: [
-        { label: 'Fianza Judicial de Appearance', amount: 50000 },
-        { label: 'Fianza Judicial de Payment', amount: 50000 },
-        { label: 'Garantía de Caución', amount: 50000 }
-      ],
-      contractual: [
-        { label: 'Cumplimiento de Contrato', amount: 100000 },
-        { label: 'Buena Calidad', amount: 75000 },
-        { label: 'Anticipo', amount: 50000 }
-      ],
-      aduanal: [
-        { label: 'Garantía Aduanera', amount: 100000 },
-        { label: 'Devolución de Garantía', amount: 75000 },
-        { label: 'Garantía de Pago', amount: 50000 }
-      ],
-      cumplimiento: [
-        { label: 'Fiel Cumplimiento', amount: 150000 },
-        { label: 'Buena Ejecución', amount: 100000 },
-        { label: 'Garantía de Mantenimiento', amount: 50000 }
-      ],
-      licitacion: [
-        { label: 'Seriedad de Oferta', amount: 50000 },
-        { label: 'Fianza de Mantenimiento de Oferta', amount: 75000 },
-        { label: 'Garantía de Suspensión', amount: 50000 }
-      ],
-      anticipo: [
-        { label: 'Reembolso de Anticipo', amount: 100000 },
-        { label: 'Correcta Inversión del Anticipo', amount: 75000 },
-        { label: 'Garantía de Anticipo', amount: 50000 }
-      ],
-      garantia: [
-        { label: 'Garantía de Pago', amount: 100000 },
-        { label: 'Garantía de Proveedor', amount: 75000 },
-        { label: 'Aval Financiero', amount: 50000 }
-      ]
-    };
+    // === FIANZAS LOGIC (NOFTRAB PREMIUM CAJA NEGRA) ===
+    window._aseguradorasSimplesList = [];
+    window._tiposSimplesList = [];
 
-    function calcularFianza() {
-      const tipo = document.getElementById('f_tipo').value;
+    async function cargarAseguradorasSimple() {
+      const select = document.getElementById('f_aseguradora');
+      if (!select) return;
+      select.innerHTML = '<option value="">Cargando...</option>';
+
+      try {
+        const res = await api.solicitud('/fianza_tarifarios.php?action=listar_aseguradoras', 'GET');
+        if (res.exito && res.datos) {
+          window._aseguradorasSimplesList = res.datos;
+          select.innerHTML = '<option value="">Seleccione...</option>';
+          res.datos.forEach(a => {
+            const option = document.createElement('option');
+            option.value = a.id;
+            option.textContent = a.nombre;
+            select.appendChild(option);
+          });
+        } else {
+          select.innerHTML = '<option value="">Error al cargar aseguradoras</option>';
+        }
+      } catch (err) {
+        select.innerHTML = '<option value="">Error de conexión</option>';
+      }
+    }
+
+    async function cargarTiposFianzaSimple(callback) {
+      const aseguradoraId = document.getElementById('f_aseguradora').value;
+      const select = document.getElementById('f_tipo');
+      if (!select) return;
+
+      if (!aseguradoraId) {
+        select.innerHTML = '<option value="">Seleccione aseguradora primero</option>';
+        window._tiposSimplesList = [];
+        return;
+      }
+
+      select.innerHTML = '<option value="">Cargando tipos...</option>';
+
+      try {
+        const res = await api.solicitud('/fianza_tarifarios.php?action=listar_tipos&aseguradora_id=' + aseguradoraId, 'GET');
+        if (res.exito && res.datos) {
+          window._tiposSimplesList = res.datos;
+          select.innerHTML = '<option value="">Seleccione...</option>';
+          res.datos.forEach(t => {
+            const option = document.createElement('option');
+            option.value = t.id;
+            // IMPORTANTE: NO mostrar porcentaje/tasa en el label (NOFTRAB R1 & R5)
+            option.textContent = t.tipo_fianza;
+            select.appendChild(option);
+          });
+          if (typeof callback === 'function') callback();
+        } else {
+          select.innerHTML = '<option value="">Error al cargar tipos</option>';
+        }
+      } catch (err) {
+        select.innerHTML = '<option value="">Error de conexión</option>';
+      }
+      calcularFianza();
+    }
+
+    function obtenerCoberturasPorNombre(nombreTipo, monto) {
+      const nombre = (nombreTipo || '').toLowerCase();
+      const amount1 = Math.round(monto * 0.10);
+      const amount2 = Math.round(monto * 0.05);
+      
+      if (nombre.includes('judicial')) {
+        return [
+          { label: 'Fianza Judicial de Appearance', amount: amount1 || 50000 },
+          { label: 'Fianza Judicial de Payment', amount: amount1 || 50000 },
+          { label: 'Garantía de Caución', amount: amount2 || 25000 }
+        ];
+      } else if (nombre.includes('contractual')) {
+        return [
+          { label: 'Cumplimiento de Contrato', amount: amount1 || 100000 },
+          { label: 'Buena Calidad', amount: amount2 || 75000 },
+          { label: 'Anticipo', amount: amount2 || 50000 }
+        ];
+      } else if (nombre.includes('aduanal') || nombre.includes('aduana')) {
+        return [
+          { label: 'Garantía Aduanera', amount: amount1 || 100000 },
+          { label: 'Devolución de Garantía', amount: amount2 || 75000 },
+          { label: 'Garantía de Pago', amount: amount2 || 50000 }
+        ];
+      } else if (nombre.includes('cumplimiento')) {
+        return [
+          { label: 'Fiel Cumplimiento', amount: amount1 || 150000 },
+          { label: 'Buena Ejecución', amount: amount2 || 100000 },
+          { label: 'Garantía de Mantenimiento', amount: amount2 || 50000 }
+        ];
+      } else if (nombre.includes('licitación') || nombre.includes('licitacion') || nombre.includes('oferta') || nombre.includes('propuesta')) {
+        return [
+          { label: 'Seriedad de Oferta', amount: amount1 || 50000 },
+          { label: 'Fianza de Mantenimiento de Oferta', amount: amount2 || 75000 },
+          { label: 'Garantía de Suspensión', amount: amount2 || 50000 }
+        ];
+      } else if (nombre.includes('anticipo')) {
+        return [
+          { label: 'Reembolso de Anticipo', amount: amount1 || 100000 },
+          { label: 'Correcta Inversión del Anticipo', amount: amount2 || 75000 },
+          { label: 'Garantía de Anticipo', amount: amount2 || 50000 }
+        ];
+      } else {
+        return [
+          { label: 'Garantía de Pago', amount: amount1 || 100000 },
+          { label: 'Garantía de Proveedor', amount: amount2 || 75000 },
+          { label: 'Aval Financiero', amount: amount2 || 50000 }
+        ];
+      }
+    }
+
+    async function calcularFianza() {
+      const tipoId = document.getElementById('f_tipo').value;
       const monto = parseFloat(document.getElementById('f_monto').value) || 0;
       const plazo = parseInt(document.getElementById('f_plazo').value) || 12;
       const body = document.getElementById('resultado-body');
+      const f_tasa_manual = document.getElementById('f_tasa_manual');
+      const tasaManualVal = f_tasa_manual ? parseFloat(f_tasa_manual.value) : 0;
 
-      if (!tipo || monto <= 0) {
+      if (!tipoId || monto <= 0) {
         body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;">Seleccione tipo e ingrese monto</p>';
         return;
       }
 
-      const tasa = TASAS[tipo];
-      const prima = monto * tasa * (plazo / 12);
-      const impuesto = prima * 0.18;
-      const total = prima + impuesto;
-      const numCot = window._editingFianzaNum || ('F-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
-      
-      // Mostrar coberturas
-      const coberturas = FIANZA_COBERTURAS[tipo] || [];
-      let coberturaHTML = '';
-      if (coberturas.length > 0) {
-        coberturaHTML = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e0e7ff;"><div style="font-size:13px;font-weight:600;color:#4338ca;margin-bottom:10px;">Coberturas Incluidas:</div>';
-        coberturas.forEach(c => {
-          coberturaHTML += '<div class="result-row"><span class="label">' + c.label + '</span><span class="value">' + fmt(c.amount) + '</span></div>';
-        });
-        coberturaHTML += '</div>';
+      body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Calculando...</p>';
+
+      try {
+        const payload = {
+          tarifario_id: parseInt(tipoId),
+          monto_afianzado: monto,
+          plazo_meses: plazo
+        };
+        if (!isNaN(tasaManualVal) && tasaManualVal > 0) {
+          payload.tasa_manual = tasaManualVal;
+        }
+
+        const res = await api.solicitud('/fianzas.php?action=calcular', 'POST', payload);
+        if (res.exito && res.datos) {
+          const calc = res.datos;
+          const numCot = window._editingFianzaNum || ('F-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
+          
+          const selectedOption = document.getElementById('f_tipo').selectedOptions[0];
+          const tipoNombre = selectedOption ? selectedOption.textContent : 'Fianza';
+
+          const coberturas = obtenerCoberturasPorNombre(tipoNombre, monto);
+          let coberturaHTML = '';
+          if (coberturas.length > 0) {
+            coberturaHTML = '<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e0e7ff;"><div style="font-size:13px;font-weight:600;color:#4338ca;margin-bottom:10px;">Coberturas Incluidas:</div>';
+            coberturas.forEach(c => {
+              coberturaHTML += '<div class="result-row"><span class="label">' + c.label + '</span><span class="value">' + fmt(c.amount) + '</span></div>';
+            });
+            coberturaHTML += '</div>';
+          }
+
+          body.innerHTML = '<div class="result-row"><span class="label">N° Cotización</span><span class="value">' + numCot + '</span></div>' +
+            '<div class="result-row"><span class="label">Tipo</span><span class="value">' + tipoNombre + '</span></div>' +
+            '<div class="result-row"><span class="label">Monto</span><span class="value">' + fmt(monto) + '</span></div>' +
+            '<div class="result-row"><span class="label">Plazo</span><span class="value">' + plazo + ' meses</span></div>' +
+            '<div class="result-row"><span class="label">Prima Base</span><span class="value">' + fmt(calc.prima_base) + '</span></div>' +
+            '<div class="result-row"><span class="label">ITBIS (18%)</span><span class="value">' + fmt(calc.itbis) + '</span></div>' +
+            (calc.prima_minima_aplicada ? '<div class="result-row" style="color:#d97706;font-weight:500;"><span class="label">⚠️ Prima Mínima</span><span class="value">Aplicada</span></div>' : '') +
+            coberturaHTML +
+            '<div class="result-row" style="border-top:2px solid #c7d2fe;margin-top:8px;padding-top:12px;"><span class="label" style="font-weight:600;">Total</span><span class="amount">' + fmt(calc.total) + '</span></div>';
+
+          window.currentCot = {
+            numero: numCot,
+            tipo: tipoNombre,
+            monto: monto,
+            plazo: plazo,
+            prima: calc.prima_base,
+            impuesto: calc.itbis,
+            total: calc.total,
+            coberturas: coberturas,
+            tasa_manual: tasaManualVal || null
+          };
+        } else {
+          body.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">❌ Error al calcular: ' + (res.mensaje || 'Respuesta inválida') + '</p>';
+        }
+      } catch (err) {
+        body.innerHTML = '<p style="color:#ef4444;text-align:center;padding:20px;">❌ Error de conexión al calcular: ' + err.message + '</p>';
       }
-
-      body.innerHTML = '<div class="result-row"><span class="label">N° Cotización</span><span class="value">' + numCot + '</span></div>' +
-        '<div class="result-row"><span class="label">Tipo</span><span class="value">' + TIPO_LABELS[tipo] + '</span></div>' +
-        '<div class="result-row"><span class="label">Monto</span><span class="value">' + fmt(monto) + '</span></div>' +
-        '<div class="result-row"><span class="label">Plazo</span><span class="value">' + plazo + ' meses</span></div>' +
-        '<div class="result-row"><span class="label">Prima</span><span class="value">' + fmt(prima) + '</span></div>' +
-        '<div class="result-row"><span class="label">ITBIS (18%)</span><span class="value">' + fmt(impuesto) + '</span></div>' +
-        coberturaHTML +
-        '<div class="result-row" style="border-top:2px solid #c7d2fe;margin-top:8px;padding-top:12px;"><span class="label" style="font-weight:600;">Total</span><span class="amount">' + fmt(total) + '</span></div>';
-
-      window.currentCot = { 
-        numero: numCot, 
-        tipo: TIPO_LABELS[tipo], 
-        monto, plazo, prima, impuesto, total, coberturas: coberturas 
-      };
     }
 
     async function guardarCotizacion() {
@@ -285,38 +386,70 @@
       const cedula = document.getElementById('f_cedula').value.trim();
       const telefono = document.getElementById('f_telefono').value.trim();
       const email = document.getElementById('f_email').value.trim();
-      const tipo = document.getElementById('f_tipo').value;
+      const tipoId = document.getElementById('f_tipo').value;
+      const aseguradoraId = document.getElementById('f_aseguradora').value;
       const monto = parseFloat(document.getElementById('f_monto').value) || 0;
       const beneficiario = document.getElementById('f_beneficiario').value.trim();
 
-      if (!nombre || !tipo || monto <= 0) {
+      if (!nombre || !tipoId || monto <= 0) {
         MQF.toast('Complete: Nombre, Tipo de fianza y Monto', 'warning');
         return;
       }
 
-      if (!window.currentCot) calcularFianza();
+      // En modo edición: si no se recalculó, pre-poblar currentCot con datos del registro guardado
+      if (!window.currentCot && window._editingFianzaId && window.cotizacionesData) {
+        const existing = window.cotizacionesData.find(c => String(c.id) === String(window._editingFianzaId));
+        if (existing) {
+          window.currentCot = {
+            numero:   existing.numero,
+            tipo:     existing.subtipo || existing.tipo,
+            plazo:    existing.plazo || 12,
+            prima:    parseFloat(existing.prima_base || 0),
+            impuesto: parseFloat(existing.impuesto   || 0),
+            total:    parseFloat(existing.total       || 0),
+            coberturas: existing.cobertura ? 
+              (typeof existing.cobertura === 'string' ? 
+                JSON.parse(existing.cobertura || '[]') : 
+                existing.cobertura) : 
+              (existing.servicios_opcionales ? 
+                (typeof existing.servicios_opcionales === 'string' ? 
+                  JSON.parse(existing.servicios_opcionales || '[]') : 
+                  existing.servicios_opcionales) : []),
+            tasa_manual: existing.tasa_manual || null
+          };
+        }
+      }
+
+      if (!window.currentCot) {
+        // Intentar calcular primero
+        await calcularFianza();
+      }
+      if (!window.currentCot) {
+        MQF.toast('Recalcule la prima antes de guardar', 'warning');
+        return;
+      }
       const cot = window.currentCot;
 
-      // Parsear coberturas si son string
-      let coberturasArr = cot.coberturas || [];
-      if (typeof coberturasArr === 'string') { try { coberturasArr = JSON.parse(coberturasArr); } catch(e) { coberturasArr = []; } }
+      const aseguradoraOption = document.getElementById('f_aseguradora').selectedOptions[0];
+      const aseguradoraNombre = aseguradoraOption ? aseguradoraOption.textContent : '';
 
       const data = {
         tipo: 'FIANZA',
         subtipo: cot.tipo,
-        numero: cot.numero,
+        numero: window._editingFianzaNum || cot.numero,
         cliente: nombre,
         cedula: cedula,
         telefono: telefono,
         email: email,
+        aseguradora: aseguradoraNombre,
         monto_afianzado: monto,
         plazo: cot.plazo,
         prima_base: cot.prima,
         impuesto: cot.impuesto,
         total: cot.total,
-        cobertura: JSON.stringify(coberturasArr),
-        tasa: TASAS[tipo],
+        cobertura: JSON.stringify(cot.coberturas),
         beneficiario: beneficiario,
+        tasa_manual: cot.tasa_manual,
         fecha: new Date().toISOString(),
         usar_ncf: document.getElementById('f_usar_ncf').checked
       };
@@ -328,10 +461,8 @@
         const res = await api.solicitud(`/cotizaciones.php?action=${action}`, 'POST', data);
 
         if (res.exito) {
-          console.log("Guardado exitoso:", res);
           MQF.toast(window._editingFianzaId ? '✅ Fianza actualizada correctamente' : '✅ Cotización guardada: ' + cot.numero, 'success');
           
-          // Presentar PDF (asegurar beneficiario impreso)
           generarPDFFianzaProfesional(data);
           
           window._editingFianzaId = null;
@@ -342,24 +473,23 @@
           document.getElementById('f_cedula').value = '';
           document.getElementById('f_telefono').value = '';
           document.getElementById('f_email').value = '';
-          document.getElementById('f_tipo').value = '';
+          document.getElementById('f_aseguradora').value = '';
+          document.getElementById('f_tipo').innerHTML = '<option value="">Seleccione aseguradora primero</option>';
           document.getElementById('f_plazo').value = '12';
           document.getElementById('f_monto').value = '';
           document.getElementById('f_beneficiario').value = '';
+          if (document.getElementById('f_tasa_manual')) document.getElementById('f_tasa_manual').value = '';
           document.getElementById('resultado-body').innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;">Complete el formulario para ver el resultado</p>';
           window.currentCot = null;
           
-          // Recargar historial después de un breve delay
           setTimeout(() => {
             cargarHistorial();
             showTab('historial');
           }, 1000);
         } else {
-          console.error("Error API:", res);
           MQF.toast('Error al guardar: ' + (res.mensaje || 'Respuesta inválida del servidor'), 'error');
         }
       } catch (e) {
-        console.error("Error de conexión:", e);
         MQF.toast('Error de conexión con el servidor: ' + e.message, 'error');
       }
     }
@@ -372,35 +502,90 @@
     function generarPDFFianzaProfesional(data) {
       try {
         const { jsPDF } = window.jspdf;
+        if (!jsPDF) { MQF.toast('Motor PDF no disponible', 'error'); return; }
         const doc = new jsPDF();
-        // Normalizar datos para dibujarCotizacionPDF (nombre del campo coberturas → cobertura string)
+        // Normalizar datos: coberturas → string para dibujarCotizacionPDF
         const dataNorm = Object.assign({}, data);
-        if (Array.isArray(dataNorm.cobertura)) { dataNorm.cobertura = ''; }
-        // Llamar al motor profesional con logo MQF en Base64
-        if (typeof dibujarCotizacionPDF === 'function') {
-          dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || null, null);
-        } else {
-          console.error('dibujarCotizacionPDF no disponible — verifica data-export.js');
-          doc.text('Sin motor PDF', 14, 20);
+        // Normalizar campos de nombre cruzado
+        dataNorm.cliente    = dataNorm.cliente    || dataNorm.cliente_nombre || dataNorm.nombre || '';
+        dataNorm.telefono   = dataNorm.telefono   || dataNorm.cliente_telefono || '';
+        dataNorm.email      = dataNorm.email      || dataNorm.cliente_email    || '';
+        dataNorm.beneficiario = dataNorm.beneficiario || '';
+        dataNorm.aseguradora  = dataNorm.aseguradora  || dataNorm.aseguradora_nombre || '';
+        dataNorm.subtipo      = dataNorm.subtipo      || dataNorm.tipo_fianza || '';
+        dataNorm.prima_base   = parseFloat(dataNorm.prima_base  || dataNorm.prima || 0);
+        dataNorm.impuesto     = parseFloat(dataNorm.impuesto    || dataNorm.itbis || dataNorm.prima_base * 0.18);
+        dataNorm.total        = parseFloat(dataNorm.total || 0);
+        dataNorm.monto_afianzado = parseFloat(dataNorm.monto_afianzado || dataNorm.valor_afianzado || 0);
+        // Coberturas: asegurar que sea string vacío si es array, y parsear si es JSON string
+        if (typeof dataNorm.cobertura === 'string' && dataNorm.cobertura.trim().startsWith('[')) {
+          try {
+            dataNorm.coberturas = JSON.parse(dataNorm.cobertura);
+          } catch(e) {
+            dataNorm.coberturas = [];
+          }
+        } else if (Array.isArray(dataNorm.cobertura)) {
+          dataNorm.coberturas = dataNorm.cobertura;
+          dataNorm.cobertura = '';
         }
-      } catch (e) { console.error('PDF Error:', e); }
+        if (Array.isArray(dataNorm.coberturas)) {
+          dataNorm.coberturas = dataNorm.coberturas.map(c => typeof c === 'object' ? (c.nombre || c.tipo || c.label || '') : c);
+        }
+        if (typeof dibujarCotizacionPDF === 'function') {
+          dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || null, null);
+          MQF.toast('✅ PDF generado correctamente', 'success');
+        } else {
+          MQF.toast('Motor PDF no cargado (data-export.js)', 'error');
+          console.error('dibujarCotizacionPDF no disponible — verifica data-export.js');
+        }
+      } catch (e) {
+        MQF.toast('Error al generar PDF: ' + e.message, 'error');
+        console.error('PDF Error:', e);
+      }
     }
 
     function cargarHistorial() {
       const body = document.getElementById('historial-body');
       body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando...</p>';
 
-      api.solicitud('/cotizaciones.php?action=listar')
-        .then(res => {
-          if (res.exito && res.datos && res.datos.length > 0) {
-            // Guardar en variable global para exportarListado()
-            window.cotizacionesData = res.datos;
-            const countLabel = document.getElementById('hist-count-label');
-            if (countLabel) countLabel.textContent = res.datos.length + ' cotizaciones registradas';
+      // Cargar desde ambas fuentes en paralelo
+      Promise.all([
+        api.solicitud('/cotizaciones.php?action=listar'),
+        api.solicitud('/fianzas.php?action=listar&limit=200')
+      ]).then(([resCot, resFz]) => {
+          // Fuente 1: cotizaciones (todos los tipos)
+          const cotData = (resCot.exito && Array.isArray(resCot.datos)) ? resCot.datos : [];
+          cotData.forEach(c => { c._origen = 'cotizaciones'; });
 
+          // Fuente 2: fianzas del wizard (tabla fianzas) — solo tipo FIANZA
+          const fzRaw = (resFz.exito && resFz.datos)
+            ? (Array.isArray(resFz.datos) ? resFz.datos : (Array.isArray(resFz.datos.fianzas) ? resFz.datos.fianzas : []))
+            : [];
+          const fzData = fzRaw.map(f => ({
+            ...f,
+            _origen:  'fianzas',
+            tipo:     'FIANZA',
+            numero:   f.numero || f.numero_fianza,
+            cliente:  f.cliente || f.cliente_nombre,
+            total:    f.total || 0,
+            fecha:    f.fecha_inicio || f.creado_en || f.fecha,
+            subtipo:  f.tipo_fianza || f.subtipo,
+            aseguradora: f.aseguradora || f.aseguradora_nombre
+          }));
+
+          // Unificar: cotizaciones primero, luego fianzas del wizard
+          // Evitar duplicados: si una cotizacion ya referencia una fianza por numero, omitir
+          const numerosEnCot = new Set(cotData.filter(c => (c.tipo||'').toUpperCase()==='FIANZA').map(c => c.numero).filter(Boolean));
+          const fzNuevos = fzData.filter(f => !numerosEnCot.has(f.numero));
+
+          window.cotizacionesData = [...cotData, ...fzNuevos];
+
+          const countLabel = document.getElementById('hist-count-label');
+          if (countLabel) countLabel.textContent = window.cotizacionesData.length + ' registros encontrados';
+
+          if (window.cotizacionesData.length > 0) {
             renderizarTablaHistorial(window.cotizacionesData);
           } else {
-            window.cotizacionesData = [];
             body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:30px;">No hay cotizaciones guardadas aún.</p>';
           }
         })
@@ -447,29 +632,42 @@
       let html = '<table><thead><tr>' +
         '<th>N°</th><th>Tipo</th><th>Cliente</th>' +
         '<th style="text-align:right;">Total</th>' +
-        '<th>Fecha</th>' +
+        '<th>Fecha</th><th>Origen</th>' +
         '<th style="text-align:center;">Acciones</th>' +
         '</tr></thead><tbody>';
 
       datos.forEach((c) => {
-        // Pasar el ID como string entre comillas para evitar errores de evaluación
         const qId = c.id;
-        const htmlFila = '<tr>' +
+        const origen = c._origen || 'cotizaciones';
+        // Badge de origen visual
+        const badgeOrigen = origen === 'fianzas'
+          ? '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>'
+          : '<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 6px;border-radius:8px;">⚡ Cotizador</span>';
+        // Tipo badge
+        const tipoBadge = '<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span>';
+        // Fecha unificada
+        const fecha = c.fecha || c.fecha_inicio || c.creado_en || '';
+        const fechaStr = fecha ? new Date(fecha).toLocaleDateString('es-DO') : '-';
+
+        // Botones: Editar solo para cotizaciones del cotizador, PDF disponible para todos
+        let btns = '';
+        if (origen === 'cotizaciones') {
+          btns += '<button class="btn-edit-row" onclick="editarCotizacion(\'' + qId + '\')" title="Editar"><i class="fa-solid fa-pen"></i> Editar</button>';
+          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="PDF"><i class="fa-solid fa-print"></i> PDF</button>';
+        } else {
+          // Fianzas del wizard: link al módulo de fianzas para editar
+          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\', \'fianzas\')" title="PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>';
+        }
+
+        html += '<tr>' +
           '<td><strong>' + (c.numero || '-') + '</strong></td>' +
-          '<td><span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span></td>' +
+          '<td>' + tipoBadge + '</td>' +
           '<td>' + (c.cliente || 'N/A') + '</td>' +
           '<td style="text-align:right;font-weight:bold;color:#1e40af;">' + fmt(c.total || 0) + '</td>' +
-          '<td>' + (c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO') : '-') + '</td>' +
-          '<td style="text-align:center;">' +
-            '<button class="btn-edit-row" onclick="editarCotizacion(\'' + qId + '\')" title="Editar">' +
-              '<i class="fa-solid fa-pen"></i> Editar' +
-            '</button>' +
-            '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="Imprimir PDF">' +
-              '<i class="fa-solid fa-print"></i> PDF' +
-            '</button>' +
-          '</td>' +
-        '</tr>';
-        html += htmlFila;
+          '<td>' + fechaStr + '</td>' +
+          '<td>' + badgeOrigen + '</td>' +
+          '<td style="text-align:center;">' + btns + '</td>' +
+          '</tr>';
       });
 
       html += '</tbody></table>';
@@ -477,11 +675,17 @@
     }
 
     // Imprimir una cotización individual del historial
-    function imprimirCotizacion(id) {
+    // origen: 'cotizaciones' (por defecto) | 'fianzas' (wizard)
+    function imprimirCotizacion(id, origen) {
       if (!window.cotizacionesData) return;
-      const c = window.cotizacionesData.find(item => item.id == id);
+      const c = window.cotizacionesData.find(item => String(item.id) === String(id));
       if (!c) {
         MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return;
+      }
+      // Si es del wizard de fianzas, usar generarPDFFianzaProfesional
+      if ((origen || c._origen) === 'fianzas') {
+        generarPDFFianzaProfesional(c);
+        return;
       }
       if (typeof dibujarCotizacionPDF === 'function') {
         const { jsPDF } = window.jspdf;
@@ -520,14 +724,48 @@
         document.getElementById('f_cedula').value = c.cedula || '';
         document.getElementById('f_telefono').value = c.telefono || '';
         document.getElementById('f_email').value = c.email || '';
-        // Mapear el tipo de fianza (subtipo) al valor del select
-        const labelToValue = Object.entries(TIPO_LABELS).find(([v, l]) => l === c.subtipo);
-        if (labelToValue) document.getElementById('f_tipo').value = labelToValue[0];
         document.getElementById('f_plazo').value = c.plazo || 12;
         document.getElementById('f_monto').value = c.monto_afianzado || 0;
         document.getElementById('f_beneficiario').value = c.beneficiario || '';
         
-        calcularFianza();
+        if (document.getElementById('f_tasa_manual')) {
+          document.getElementById('f_tasa_manual').value = c.tasa_manual || '';
+        }
+
+        // Buscar Aseguradora ID por nombre en la lista global cargada
+        let aseguradoraEncontrada = null;
+        if (window._aseguradorasSimplesList && window._aseguradorasSimplesList.length > 0) {
+          const storedAseg = (c.aseguradora || '').toLowerCase().trim();
+          aseguradoraEncontrada = window._aseguradorasSimplesList.find(a => 
+            (a.nombre || '').toLowerCase().trim() === storedAseg || storedAseg.includes((a.nombre || '').toLowerCase().trim())
+          );
+        }
+
+        if (aseguradoraEncontrada) {
+          document.getElementById('f_aseguradora').value = aseguradoraEncontrada.id;
+          
+          // Cargar tipos de fianza de forma asíncrona y luego mapear el tipo
+          cargarTiposFianzaSimple(function() {
+            if (window._tiposSimplesList && window._tiposSimplesList.length > 0) {
+              const storedTipo = (c.subtipo || '').toLowerCase().trim();
+              const tipoEncontrado = window._tiposSimplesList.find(t => {
+                const nombreT = (t.tipo_fianza || t.nombre || '').toLowerCase().trim();
+                return storedTipo.includes(nombreT) || nombreT.includes(storedTipo);
+              });
+              if (tipoEncontrado) {
+                document.getElementById('f_tipo').value = tipoEncontrado.id;
+              } else {
+                document.getElementById('f_tipo').value = '';
+              }
+            }
+            calcularFianza();
+          });
+        } else {
+          document.getElementById('f_aseguradora').value = '';
+          document.getElementById('f_tipo').innerHTML = '<option value="">Seleccione aseguradora primero</option>';
+          calcularFianza();
+        }
+
         showTab('fianzas');
       }
     }
@@ -642,8 +880,7 @@
         return [];
       }, [type, uso, optionsRows]);
 
-      React.useEffect(()=>{ setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setSelectedCoverage(''); }, [type]);
-      React.useEffect(()=>{ setCapacidad(''); setInsurer(''); setPrice(0); }, [uso]);
+      // NOFTRAB R5: Resets de formulario movidos a los eventos onChange nativos del usuario en JSX para evitar que la carga asíncrona de datos desde el historial de cotizaciones sea borrada.
 
       React.useEffect(()=>{
         if(!type || !uso || !capacidad) return;
@@ -940,7 +1177,7 @@
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo *</label>
-                  <select value={type} onChange={e=>setType(e.target.value)} className="mt-1 w-full p-3 border rounded">
+                  <select value={type} onChange={e=>{ setType(e.target.value); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setSelectedCoverage(''); }} className="mt-1 w-full p-3 border rounded">
                     <option value="">Seleccione Tipo...</option>
                     {tipos.map(t=> <option key={t} value={t}>{t}</option>)}
                   </select>
@@ -948,7 +1185,7 @@
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Uso *</label>
-                  <select value={uso} onChange={e=>setUso(e.target.value)} disabled={!type} className="mt-1 w-full p-3 border rounded">
+                  <select value={uso} onChange={e=>{ setUso(e.target.value); setCapacidad(''); setInsurer(''); setPrice(0); }} disabled={!type} className="mt-1 w-full p-3 border rounded">
                     <option value="">Seleccione Uso...</option>
                     {usos.map(u=> <option key={u} value={u}>{u}</option>)}
                   </select>
@@ -1155,7 +1392,10 @@ async function initTabGuardsCotizaciones() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initTabGuardsCotizaciones);
+document.addEventListener('DOMContentLoaded', () => {
+    initTabGuardsCotizaciones();
+    cargarAseguradorasSimple();
+});
 </script>
 </body>
 </html>

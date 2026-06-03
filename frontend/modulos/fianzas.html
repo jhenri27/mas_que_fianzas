@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fianzas - MAS QUE FIANZAS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+  <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+  <link rel="stylesheet" href="../assets/components.css?v=9.0">
+  <!-- jsPDF + AutoTable -->
+  <script src="../assets/lib/jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
+  <script src="../assets/lib/jspdf.plugin.autotable.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js';document.head.appendChild(s);"></script>
+  <!-- SheetJS para Excel/CSV -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Logo MQF en Base64 -->
+  <script src="../assets/logo_b64.js?v=4"></script>
+  <!-- API Client -->
+  <script src="../assets/api-client.js?v=8.0.0"></script>
+  <!-- Components Utility -->
+  <script src="../assets/components.js?v=9.0"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
+
+    /* =====================================================
+       HEADER CONTRAST FIX — inline para garantía
+       ===================================================== */
+    .mqf-module-header h1,
+    .mqf-module-header h2,
+    .mqf-module-header h3,
+    .mqf-module-header__title { color: #ffffff !important; }
+    .mqf-module-header p,
+    .mqf-module-header__subtitle { color: rgba(255,255,255,0.85) !important; }
+
+    /* =====================================================
+       PANEL SYSTEM
+       ===================================================== */
+    .fz-panel { display: none; padding: 24px; }
+    .fz-panel.active { display: block; }
+
+    /* =====================================================
+       CARDS & SECTIONS
+       ===================================================== */
+    .section-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e1b4b;
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* =====================================================
+       KPI CARDS
+       ===================================================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: #fff;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: box-shadow 0.2s;
+    }
+    .kpi-card:hover { box-shadow: 0 4px 16px rgba(79,70,229,0.10); }
+    .kpi-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .kpi-icon.indigo { background: #eef2ff; color: #4f46e5; }
+    .kpi-icon.green  { background: #f0fdf4; color: #16a34a; }
+    .kpi-icon.red    { background: #fef2f2; color: #dc2626; }
+    .kpi-icon.amber  { background: #fffbeb; color: #d97706; }
+    .kpi-label { font-size: 12px; color: #6b7280; margin-bottom: 2px; }
+    .kpi-value { font-size: 22px; font-weight: 700; color: #1e1b4b; }
+
+    /* =====================================================
+       TOOLBAR & FILTERS
+       ===================================================== */
+    .fz-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .fz-toolbar input, .fz-toolbar select {
+      padding: 9px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .fz-toolbar input:focus, .fz-toolbar select:focus { border-color: #4f46e5; }
+
+    /* =====================================================
+       TABLES
+       ===================================================== */
+    .fz-table-wrap { overflow-x: auto; }
+    table.fz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.fz-table th {
+      background: #f5f3ff;
+      padding: 10px 14px;
+      text-align: left;
+      color: #4338ca;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    table.fz-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    table.fz-table tr:hover td { background: #f9fafb; }
+
+    /* =====================================================
+       BADGES
+       ===================================================== */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-cotizacion { background: #f3f4f6; color: #374151; }
+    .badge-pendiente  { background: #fffbeb; color: #92400e; }
+    .badge-vigente    { background: #f0fdf4; color: #15803d; }
+    .badge-vencida    { background: #fef2f2; color: #b91c1c; }
+    .badge-cancelada  { background: #fef2f2; color: #b91c1c; }
+    .badge-renovada   { background: #eff6ff; color: #1d4ed8; }
+
+    /* =====================================================
+       ACTION BUTTONS
+       ===================================================== */
+    .btn-action {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px;
+      border: none; border-radius: 6px;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-action:hover { opacity: 0.82; }
+    .btn-pdf    { background: #dbeafe; color: #1d4ed8; }
+    .btn-ok     { background: #dcfce7; color: #15803d; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-edit   { background: #fef3c7; color: #92400e; }
+    .btn-primary-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px;
+      background: #4f46e5; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary-sm:hover { background: #4338ca; }
+    .btn-secondary-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px;
+      background: #f3f4f6; color: #374151;
+      border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-secondary-sm:hover { background: #e5e7eb; }
+    .btn-success-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px;
+      background: #16a34a; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-success-sm:hover { background: #15803d; }
+
+    /* FAB */
+    .fab-btn {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      width: 56px; height: 56px;
+      background: #4f46e5;
+      color: #fff;
+      border: none; border-radius: 50%;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.4);
+      cursor: pointer;
+      display: none;
+      align-items: center; justify-content: center;
+      transition: background 0.15s, transform 0.15s;
+      z-index: 50;
+    }
+    .fab-btn:hover { background: #4338ca; transform: scale(1.08); }
+    .fab-btn.visible { display: flex; }
+
+    /* Export dropdown */
+    .dropdown-export { position: relative; display: inline-block; }
+    .export-menu {
+      display: none; position: absolute; top: 100%; left: 0;
+      background: #fff;
+      border: 1.5px solid #e5e7eb; border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100; min-width: 180px; padding: 6px 0;
+    }
+    .export-menu.open { display: block; }
+    .export-menu button {
+      display: block; width: 100%; text-align: left;
+      padding: 9px 16px; border: none; background: none;
+      cursor: pointer; font-size: 13px; color: #374151;
+    }
+    .export-menu button:hover { background: #f5f3ff; color: #4f46e5; }
+    .count-badge {
+      font-size: 13px; color: #6b7280;
+      margin-left: auto;
+      background: #f3f4f6;
+      padding: 6px 12px; border-radius: 20px;
+      font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: #9ca3af;
+    }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state p { font-size: 15px; margin: 0; }
+
+    /* =====================================================
+       MODAL BACKDROP & MODAL
+       ===================================================== */
+    .fz-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.50);
+      backdrop-filter: blur(3px);
+      z-index: 900; /* inferior a toast container (999999) */
+      align-items: center; justify-content: center;
+    }
+    /* Toast siempre visible sobre el wizard */
+    #mqf-toast-container {
+      z-index: 999999 !important;
+    }
+    .fz-backdrop.open { display: flex; }
+    .fz-modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      display: flex; flex-direction: column;
+    }
+    .fz-modal--xl { max-width: 780px; }
+    .fz-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1.5px solid #e5e7eb;
+    }
+    .fz-modal-title { font-size: 17px; font-weight: 700; color: #1e1b4b; margin: 0; }
+    .fz-modal-close {
+      background: none; border: none; font-size: 18px;
+      color: #6b7280; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .fz-modal-close:hover { background: #f3f4f6; color: #111827; }
+    .fz-modal-body { padding: 24px; flex: 1; }
+    .fz-modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      padding: 16px 24px;
+      border-top: 1.5px solid #e5e7eb;
+    }
+
+    /* =====================================================
+       FORM ELEMENTS
+       ===================================================== */
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { margin-bottom: 0; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: #374151; margin-bottom: 5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #e5e7eb; border-radius: 8px;
+      font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color: #4f46e5; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+
+    /* Estilo de alto contraste para las opciones en selectores */
+    select option {
+      background-color: #ffffff !important;
+      color: #1f2937 !important;
+    }
+    [data-skin="obsidian"] select option,
+    [data-skin="obsidian-classic"] select option {
+      background-color: #0d1527 !important;
+      color: #ffffff !important;
+    }
+
+    /* =====================================================
+       WIZARD STYLES
+       ===================================================== */
+    .wizard-progress {
+      display: flex; align-items: center;
+      padding: 0 24px 20px;
+      gap: 0;
+    }
+    .wiz-step {
+      display: flex; flex-direction: column; align-items: center;
+      flex: 1; position: relative;
+    }
+    .wiz-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 18px; left: 50%;
+      width: 100%; height: 2px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+    .wiz-step.done:not(:last-child)::after { background: #4f46e5; }
+    .wiz-dot {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #9ca3af;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
+      z-index: 1; position: relative;
+      transition: background 0.2s, color 0.2s;
+    }
+    .wiz-step.active .wiz-dot { background: #4f46e5; color: #fff; }
+    .wiz-step.done .wiz-dot { background: #4f46e5; color: #fff; }
+    .wiz-label { font-size: 11px; color: #6b7280; margin-top: 4px; text-align: center; }
+    .wiz-step.active .wiz-label { color: #4f46e5; font-weight: 600; }
+
+    /* Wizard panels */
+    .wiz-panel { display: none; }
+    .wiz-panel.active { display: block; }
+
+    /* Declaration banner */
+    .decl-banner {
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8) !important;
+      color: #ffffff !important;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+    .decl-banner-logo {
+      font-size: 22px; font-weight: 800; letter-spacing: 0.04em;
+      margin-bottom: 4px;
+      color: #ffffff !important;
+    }
+    .decl-banner p, 
+    .decl-banner strong, 
+    .decl-banner span, 
+    .decl-banner em, 
+    .decl-banner i {
+      color: #ffffff !important;
+    }
+    .decl-banner p { font-size: 13px; opacity: 0.95; margin: 4px 0; }
+    .decl-banner .timing {
+      display: inline-block;
+      background: rgba(255,255,255,0.2) !important;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      margin-top: 8px;
+      color: #ffffff !important;
+    }
+
+    /* Radio groups */
+    .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+    .radio-option {
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer;
+      font-size: 14px; color: #374151;
+    }
+    .radio-option input[type="radio"] { accent-color: #4f46e5; }
+
+    /* Declaration text expandable */
+    .decl-section {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #f9fafb;
+    }
+    .decl-label {
+      font-size: 12px; font-weight: 700;
+      color: #374151; margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .decl-text {
+      font-size: 12px; color: #6b7280;
+      line-height: 1.7;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 0;
+    }
+    .decl-text.open {
+      max-height: 300px;
+      padding-top: 10px;
+    }
+
+    /* =====================================================
+       CALCULATION RESULT PANEL — glassmorphism
+       ===================================================== */
+    .result-glass {
+      background: linear-gradient(135deg, rgba(238,242,255,0.95), rgba(245,243,255,0.95));
+      border: 1.5px solid #c7d2fe;
+      border-radius: 14px;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      margin-top: 16px;
+    }
+    .result-glass-title {
+      font-size: 13px; font-weight: 700; color: #4338ca;
+      margin: 0 0 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .result-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #e0e7ff;
+      font-size: 13px;
+    }
+    .result-row .r-label { color: #6b7280; }
+    .result-row .r-value { font-weight: 600; color: #1e1b4b; }
+    .result-row.total-row {
+      border-top: 2px solid #c7d2fe;
+      border-bottom: none;
+      margin-top: 8px; padding-top: 12px;
+    }
+    .result-row.total-row .r-value {
+      font-size: 20px; font-weight: 700; color: #4f46e5;
+    }
+    .prima-minima-alert {
+      display: flex; align-items: center; gap: 8px;
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 12px; color: #92400e;
+      margin-top: 10px;
+    }
+
+    /* =====================================================
+       RESUMEN STEP 4
+       ===================================================== */
+    .summary-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .summary-item { font-size: 13px; }
+    .summary-item .s-label { color: #6b7280; font-size: 11px; margin-bottom: 2px; }
+    .summary-item .s-value { font-weight: 600; color: #1e1b4b; }
+
+    /* =====================================================
+       THANK YOU SCREEN
+       ===================================================== */
+    .thanks-screen {
+      text-align: center; padding: 40px 20px;
+    }
+    .thanks-screen .thanks-logo {
+      font-size: 36px; font-weight: 900;
+      color: #4f46e5; margin-bottom: 8px;
+    }
+    .thanks-screen h2 {
+      font-size: 28px; font-weight: 800;
+      color: #1e1b4b; margin: 0 0 8px;
+    }
+    .thanks-screen p {
+      font-size: 14px; color: #6b7280;
+      max-width: 420px; margin: 0 auto 24px;
+    }
+
+    /* =====================================================
+       TARIFARIOS TAB
+       ===================================================== */
+    .justif-char-count { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 2px; }
+
+    /* =====================================================
+       SPINNER
+       ===================================================== */
+    .spinner-center {
+      text-align: center; padding: 40px;
+      color: #9ca3af; font-size: 14px;
+    }
+    .spinner-center i { font-size: 28px; margin-bottom: 8px; display: block; }
+
+    /* =====================================================
+       MODO CALCULO FIELDS
+       ===================================================== */
+    .modo-a-fields, .modo-b-fields { display: none; }
+    .modo-a-fields.visible, .modo-b-fields.visible { display: contents; }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════
+       MODULE HEADER
+  ══════════════════════════════════════════════════════ -->
+  <div class="mqf-module-header">
+    <h1 class="mqf-module-header__title"><i class="fa-solid fa-shield-halved"></i> Módulo de Fianzas</h1>
+    <p class="mqf-module-header__subtitle">Gestión completa de fianzas y garantías — MAS QUE FIANZAS +QF</p>
+    <div class="mqf-module-tabs">
+      <button class="mqf-module-tab active" onclick="showFzTab('empresas')"    id="tab-empresas">🏢 Mis Empresas</button>
+      <button class="mqf-module-tab"        onclick="showFzTab('cotizaciones')" id="tab-cotizaciones">📋 Mis Cotizaciones</button>
+      <button class="mqf-module-tab"        onclick="showFzTab('fianzas')"      id="tab-fianzas">📄 Mis Fianzas</button>
+      <button class="mqf-module-tab"        onclick="showFzTab('historial')"    id="tab-historial">📜 Historial</button>
+      <button class="mqf-module-tab"        onclick="showFzTab('tarifarios')"   id="tab-tarifarios" style="display:none;">⚙️ Tarifarios</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 1 — MIS EMPRESAS
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-panel active" id="panel-empresas">
+    <div class="section-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div class="section-title" style="margin:0;">🏢 Mis Empresas Registradas</div>
+        <button class="btn-primary-sm" onclick="abrirModalEmpresa()">
+          <i class="fa-solid fa-plus"></i> Nueva Empresa
+        </button>
+      </div>
+      <div class="fz-table-wrap">
+        <div id="empresas-body">
+          <div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando empresas...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 2 — MIS COTIZACIONES
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-panel" id="panel-cotizaciones">
+    <div class="section-card">
+      <div class="section-title">📋 Mis Cotizaciones de Fianza</div>
+      <div class="fz-table-wrap">
+        <div id="cotizaciones-body">
+          <div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 3 — MIS FIANZAS ACTIVAS
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-panel" id="panel-fianzas">
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon indigo"><i class="fa-solid fa-shield-halved"></i></div>
+        <div><div class="kpi-label">Total Fianzas</div><div class="kpi-value" id="kpi-total">—</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div><div class="kpi-label">Vigentes</div><div class="kpi-value" id="kpi-vigentes">—</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon red"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div><div class="kpi-label">Vencidas</div><div class="kpi-value" id="kpi-vencidas">—</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon amber"><i class="fa-solid fa-coins"></i></div>
+        <div><div class="kpi-label">Ingresos del Mes</div><div class="kpi-value" id="kpi-ingresos">—</div></div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:16px; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:12px;">
+        <div class="section-title" style="margin-bottom:0;"><i class="fa-solid fa-shield-halved"></i> Fianzas Vigentes</div>
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <button class="mqf-btn mqf-btn--primary" onclick="abrirWizard()" style="display:flex; align-items:center; gap:8px; height:36px; padding:0 16px; font-size:13px; font-weight:600; border-radius:8px;">
+            <i class="fa-solid fa-plus"></i> Nueva Fianza
+          </button>
+          
+          <!-- Dropdown Exportar -->
+          <div style="position:relative; display:inline-block;" class="dropdown-export">
+            <button class="mqf-btn mqf-btn--secondary" onclick="toggleExportMenuFianzas(event)" style="display:flex; align-items:center; gap:8px; height:36px; padding:0 16px; font-size:13px; font-weight:600; border-radius:8px;">
+              <i class="fa-solid fa-file-export"></i> Exportar <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+            </button>
+            <div class="export-menu" id="exportMenuFianzas" style="display:none; position:absolute; right:0; top:calc(100% + 4px); background:#ffffff; border:1px solid rgba(99, 102, 241, 0.15); border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:150px; z-index:100; overflow:hidden;">
+              <button onclick="exportarFianzas('pdf', _fianzasActivas.filter(f => (f.estado || '').toLowerCase() === 'vigente'))" style="width:100%; border:none; background:transparent; padding:10px 14px; text-align:left; font-size:12px; color:#374151; display:flex; align-items:center; gap:8px; cursor:pointer;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                <i class="fa-solid fa-file-pdf" style="color:#e53935; width:14px; text-align:center;"></i> PDF
+              </button>
+              <button onclick="exportarFianzas('excel', _fianzasActivas.filter(f => (f.estado || '').toLowerCase() === 'vigente'))" style="width:100%; border:none; background:transparent; padding:10px 14px; text-align:left; font-size:12px; color:#374151; display:flex; align-items:center; gap:8px; cursor:pointer;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                <i class="fa-solid fa-file-excel" style="color:#1d6f42; width:14px; text-align:center;"></i> Excel
+              </button>
+              <button onclick="exportarFianzas('csv', _fianzasActivas.filter(f => (f.estado || '').toLowerCase() === 'vigente'))" style="width:100%; border:none; background:transparent; padding:10px 14px; text-align:left; font-size:12px; color:#374151; display:flex; align-items:center; gap:8px; cursor:pointer;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                <i class="fa-solid fa-file-csv" style="color:#0d9488; width:14px; text-align:center;"></i> CSV
+              </button>
+            </div>
+          </div>
+          
+          <!-- Filtro rápido / búsqueda -->
+          <div style="position:relative; width:200px;">
+            <input type="text" id="buscar-fianzas-activas" placeholder="🔍 Buscar fianza activa..." oninput="filtrarFianzasActivas()" class="mqf-input" style="width:100%; height:36px; padding:0 12px; font-size:13px; border-radius:8px;">
+          </div>
+        </div>
+      </div>
+      <div class="fz-table-wrap">
+        <div id="fianzas-body">
+          <div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando fianzas...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab-btn visible" id="fab-nueva-fianza" onclick="abrirWizard()" title="Nueva Fianza">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 4 — HISTORIAL
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-panel" id="panel-historial">
+    <div class="section-card">
+      <div class="section-title">📜 Historial Completo de Fianzas</div>
+      <div class="fz-toolbar">
+        <select id="hist-filtro-estado" onchange="filtrarHistorialFz()" style="min-width:140px;">
+          <option value="">Todos los estados</option>
+          <option value="cotizacion">Cotización</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="vigente">Vigente</option>
+          <option value="vencida">Vencida</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="renovada">Renovada</option>
+        </select>
+        <select id="hist-filtro-aseg" onchange="filtrarHistorialFz()" style="min-width:160px;">
+          <option value="">Todas las aseguradoras</option>
+        </select>
+        <input type="text" id="hist-search-fz" placeholder="🔍 Buscar N°, Cliente, Tipo..." oninput="filtrarHistorialFz()" style="flex:1; min-width:220px;">
+        <div class="dropdown-export">
+          <button class="btn-primary-sm" onclick="toggleExportMenuFz()">
+            <i class="fa-solid fa-file-export"></i> Exportar <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+          </button>
+          <div class="export-menu" id="exportMenuFz">
+            <button onclick="exportarFianzas('pdf')"><i class="fa-solid fa-file-pdf" style="color:#e53935;width:18px;"></i> PDF</button>
+            <button onclick="exportarFianzas('excel')"><i class="fa-solid fa-file-excel" style="color:#1d6f42;width:18px;"></i> Excel (.xlsx)</button>
+            <button onclick="exportarFianzas('csv')"><i class="fa-solid fa-file-csv" style="color:#0d9488;width:18px;"></i> CSV</button>
+          </div>
+        </div>
+        <span class="count-badge" id="hist-fz-count"></span>
+      </div>
+      <div class="fz-table-wrap">
+        <div id="historial-fz-body">
+          <div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando historial...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       TAB 5 — TARIFARIOS (ADMIN)
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-panel" id="panel-tarifarios">
+    <div class="section-card">
+      <div class="section-title">⚙️ Tarifarios de Fianzas</div>
+      <div class="fz-table-wrap">
+        <div id="tarifarios-body">
+          <div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando tarifarios...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       MODAL — EMPRESA
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-backdrop" id="modal-empresa-backdrop">
+    <div class="fz-modal">
+      <div class="fz-modal-header">
+        <h3 class="fz-modal-title" id="modal-empresa-titulo">Nueva Empresa</h3>
+        <button class="fz-modal-close" onclick="cerrarModalEmpresa()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="fz-modal-body">
+        <div class="form-grid-2">
+          <div class="form-group full">
+            <label>Razón Social *</label>
+            <input type="text" id="emp-razon" placeholder="Nombre legal de la empresa">
+          </div>
+          <div class="form-group">
+            <label>RNC *</label>
+            <input type="text" id="emp-rnc" placeholder="000-00000-0">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" id="emp-tel" placeholder="(809) 000-0000">
+          </div>
+          <div class="form-group full">
+            <label>Correo Electrónico</label>
+            <input type="email" id="emp-email" placeholder="contacto@empresa.com">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="emp-estado">
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="fz-modal-footer">
+        <button class="btn-secondary-sm" onclick="cerrarModalEmpresa()">Cancelar</button>
+        <button class="btn-primary-sm" onclick="guardarEmpresa()"><i class="fa-solid fa-save"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       MODAL — TARIFARIO EDITAR
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-backdrop" id="modal-tarifa-backdrop">
+    <div class="fz-modal">
+      <div class="fz-modal-header">
+        <h3 class="fz-modal-title">Editar Tarifa</h3>
+        <button class="fz-modal-close" onclick="cerrarModalTarifa()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="fz-modal-body">
+        <input type="hidden" id="tarifa-id">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Tipo de Fianza</label>
+            <input type="text" id="tarifa-tipo" disabled style="background:#f9fafb;">
+          </div>
+          <div class="form-group">
+            <label>Aseguradora</label>
+            <input type="text" id="tarifa-aseg" disabled style="background:#f9fafb;">
+          </div>
+          <div class="form-group">
+            <label>Nueva Tasa (%) *</label>
+            <input type="number" id="tarifa-tasa" step="0.001" min="0" max="100" placeholder="Ej: 2.5">
+          </div>
+          <div class="form-group">
+            <label>Prima Mínima (DOP)</label>
+            <input type="number" id="tarifa-prima-min" step="0.01" min="0" placeholder="Ej: 5000">
+          </div>
+          <div class="form-group full">
+            <label>Justificación del cambio * <span style="color:#9ca3af;">(mín. 15 caracteres)</span></label>
+            <textarea id="tarifa-justif" rows="3" placeholder="Explique el motivo del cambio de tasa..." oninput="contarCaracteres()"></textarea>
+            <div class="justif-char-count"><span id="justif-count">0</span> / 15 caracteres mínimos</div>
+          </div>
+        </div>
+      </div>
+      <div class="fz-modal-footer">
+        <button class="btn-secondary-sm" onclick="cerrarModalTarifa()">Cancelar</button>
+        <button class="btn-primary-sm" onclick="guardarTarifa()"><i class="fa-solid fa-save"></i> Guardar Tarifa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       MODAL — WIZARD NUEVA FIANZA
+  ══════════════════════════════════════════════════════ -->
+  <div class="fz-backdrop" id="modal-wizard-backdrop">
+    <div class="fz-modal fz-modal--xl">
+      <div class="fz-modal-header">
+        <h3 class="fz-modal-title" id="wizard-modal-title"><i class="fa-solid fa-shield-halved"></i> Nueva Cotización de Fianza</h3>
+        <button class="fz-modal-close" onclick="cerrarWizard()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="wizard-progress" id="wizard-progress-bar">
+        <div class="wiz-step active" id="wstep-1">
+          <div class="wiz-dot">1</div>
+          <div class="wiz-label">Declaraciones</div>
+        </div>
+        <div class="wiz-step" id="wstep-2">
+          <div class="wiz-dot">2</div>
+          <div class="wiz-label">Cliente</div>
+        </div>
+        <div class="wiz-step" id="wstep-3">
+          <div class="wiz-dot">3</div>
+          <div class="wiz-label">Fianza</div>
+        </div>
+        <div class="wiz-step" id="wstep-4">
+          <div class="wiz-dot">4</div>
+          <div class="wiz-label">Confirmar</div>
+        </div>
+      </div>
+
+      <div class="fz-modal-body" style="padding-top:0;">
+
+        <!-- ── PASO 1: DECLARACIONES ── -->
+        <div class="wiz-panel active" id="wpanel-1">
+          <div class="decl-banner">
+            <div class="decl-banner-logo">+ QUE FIANZAS "Cotización"</div>
+            <p>Somos <strong>MAS QUE FIANZAS +QF, SRL</strong>, Corredores de Seguros, registrados bajo el <strong>RNC: 133-53573-4</strong> y con <strong>Licencia No. CMS-1561-A</strong></p>
+            <p>¡¡Gracias por llegar hasta aquí.. Ya Puedes realizar la cotización de tu fianza!!</p>
+            <p>Para mejorar tu experiencia debes tener la información de: <em>Pliego de Licitación o Contrato</em></p>
+            <span class="timing"><i class="fa-regular fa-clock"></i> Tiempo aproximado: 3 a 5 minutos</span>
+          </div>
+
+          <!-- Declaración 1 -->
+          <div class="decl-section">
+            <div class="decl-label">DECLARACIÓN DE VERACIDAD Y AUTORIZACIÓN DE VERIFICACIÓN Y CONSULTA DE LA INFORMACIÓN SUMINISTRADA *</div>
+            <div class="radio-group" style="margin-bottom:10px;">
+              <label class="radio-option">
+                <input type="radio" name="decl1" value="acepto" id="decl1-acepto" onchange="verificarDeclaraciones()">
+                <span>Si, Acepto.</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="decl1" value="ver" onchange="toggleDecl('decl1-text', this)">
+                <span>Ver Declaración.</span>
+              </label>
+            </div>
+            <div class="decl-text" id="decl1-text">
+              Yo, el abajo firmante, declaro bajo fe de juramento que toda la información suministrada en este formulario de solicitud es verdadera, correcta y completa. Autorizo expresamente a MAS QUE FIANZAS +QF, SRL a verificar, consultar y corroborar cualquier dato o información proporcionada a través de las fuentes que estime conveniente, incluyendo instituciones financieras, registros públicos, referencias comerciales y cualquier otra entidad pertinente. Entiendo que cualquier falsedad o inexactitud en la información suministrada puede resultar en la anulación de la póliza y en acciones legales correspondientes.
+            </div>
+          </div>
+
+          <!-- Declaración 2 -->
+          <div class="decl-section">
+            <div class="decl-label">AUTORIZACIÓN DE ADMINISTRACIÓN Y CESIÓN DE INFORMACIÓN SUMINISTRADA *</div>
+            <div class="radio-group" style="margin-bottom:10px;">
+              <label class="radio-option">
+                <input type="radio" name="decl2" value="acepto" id="decl2-acepto" onchange="verificarDeclaraciones()">
+                <span>Si, Acepto.</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="decl2" value="ver" onchange="toggleDecl('decl2-text', this)">
+                <span>Ver Declaración.</span>
+              </label>
+            </div>
+            <div class="decl-text" id="decl2-text">
+              Autorizo a MAS QUE FIANZAS +QF, SRL a administrar, procesar y ceder la información suministrada a las compañías aseguradoras, reaseguradoras y demás entidades que intervengan en la contratación y gestión de la póliza de fianza solicitada, para los fines exclusivos relacionados con la emisión, administración y cobro de la misma. Esta autorización se otorga de conformidad con la Ley No. 172-13 sobre Protección de Datos Personales de la República Dominicana. Me reservo el derecho de revocar esta autorización en cualquier momento, lo que podría implicar la imposibilidad de continuar con los servicios contratados.
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 2: CLIENTE ── -->
+        <div class="wiz-panel" id="wpanel-2">
+          <div class="form-grid-2">
+            <div class="form-group full">
+              <label>Nombre o Razón Social *</label>
+              <input type="text" id="wiz-nombre" placeholder="Nombre completo o razón social de la empresa">
+            </div>
+            <div class="form-group">
+              <label>Número de Teléfono *</label>
+              <input type="tel" id="wiz-telefono" placeholder="(000) 000-0000" oninput="formatearTelefono(this)">
+            </div>
+            <div class="form-group">
+              <label>Correo Electrónico *</label>
+              <input type="email" id="wiz-email" placeholder="correo@empresa.com">
+            </div>
+            <div class="form-group full">
+              <label>Nombre, Objeto o Referencia del Proyecto u Obligación *</label>
+              <input type="text" id="wiz-proyecto" placeholder="Descripción del proyecto o contrato">
+            </div>
+            <div class="form-group full">
+              <label>Beneficiario *</label>
+              <input type="text" id="wiz-beneficiario" placeholder="Entidad o persona a favor de quien se emite la fianza">
+            </div>
+            <div class="form-group full">
+              <label>¿Es a Primer Requerimiento? *</label>
+              <div class="radio-group" style="margin-top:6px;">
+                <label class="radio-option">
+                  <input type="radio" name="primer-req" value="si" id="primer-req-si">
+                  <span>Sí, es a primer requerimiento</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="primer-req" value="no" id="primer-req-no">
+                  <span>No</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 3: DATOS DE LA FIANZA ── -->
+        <div class="wiz-panel" id="wpanel-3">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Compañía Aseguradora *</label>
+              <select id="wiz-aseguradora" onchange="cargarTiposFianza()">
+                <option value="">Cargando...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tipo de Fianza *</label>
+              <select id="wiz-tipo" onchange="onTipoFianzaChange()">
+                <option value="">Seleccione aseguradora primero</option>
+              </select>
+            </div>
+
+            <!-- MODO A: Monto Contrato + % a Afianzar -->
+            <div class="form-group modo-a-fields" id="campo-monto-contrato">
+              <label>Monto del Contrato (DOP) *</label>
+              <input type="number" id="wiz-monto-contrato" placeholder="0.00" oninput="calcularValorAfianzar()" min="0">
+            </div>
+            <div class="form-group modo-a-fields" id="campo-porc-afianzar">
+              <label>% a Afianzar *</label>
+              <input type="number" id="wiz-porc-afianzar" placeholder="Ej: 20" step="0.01" min="0" max="100" oninput="calcularValorAfianzar()">
+            </div>
+            <div class="form-group modo-a-fields" id="campo-valor-calculado">
+              <label>Valor a Afianzar (calculado)</label>
+              <input type="text" id="wiz-valor-calculado" disabled style="background:#f9fafb; font-weight:600; color:#4f46e5;">
+            </div>
+
+            <!-- MODO B: Valor directo -->
+            <div class="form-group modo-b-fields" id="campo-valor-directo">
+              <label>Valor a Afianzar (DOP) *</label>
+              <input type="number" id="wiz-valor-directo" placeholder="0.00" min="0">
+            </div>
+
+            <div class="form-group">
+              <label>Cédula / RNC del Asegurado</label>
+              <input type="text" id="wiz-cedula" placeholder="000-0000000-0">
+            </div>
+            <div class="form-group">
+              <label>Tasa Especial Manual (%) <span style="color:#9ca3af;">(opcional)</span></label>
+              <input type="number" id="wiz-tasa-manual" placeholder="Ej: 3.0" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label>Plazo de la Fianza *</label>
+              <select id="wiz-plazo">
+                <option value="1">1 mes</option>
+                <option value="3">3 meses</option>
+                <option value="6">6 meses</option>
+                <option value="12" selected>12 meses</option>
+                <option value="18">18 meses</option>
+                <option value="24">24 meses</option>
+                <option value="36">36 meses</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fecha de Inicio *</label>
+              <input type="date" id="wiz-fecha-inicio">
+            </div>
+            <div class="form-group">
+              <label>N° de Contrato / Licitación <span style="color:#9ca3af;">(opcional)</span></label>
+              <input type="text" id="wiz-num-contrato" placeholder="Número de referencia">
+            </div>
+            <div class="form-group full" style="display:flex; align-items:center; gap:10px; margin-top:4px;">
+              <input type="checkbox" id="wiz-ncf" style="width:auto; accent-color:#4f46e5;">
+              <label for="wiz-ncf" style="margin:0; cursor:pointer; font-size:13px;">Generar NCF (Comprobante Fiscal B02)</label>
+            </div>
+            <div class="form-group full">
+              <label>Observaciones <span style="color:#9ca3af;">(opcional)</span></label>
+              <textarea id="wiz-observaciones" placeholder="Información adicional relevante..."></textarea>
+            </div>
+          </div>
+
+          <!-- Botón calcular -->
+          <div style="margin-top:8px; display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary-sm" onclick="calcularFianzaWizard()" id="btn-calcular-wiz">
+              <i class="fa-solid fa-calculator"></i> Calcular Prima
+            </button>
+            <span style="font-size:12px; color:#9ca3af;" id="calc-hint">Complete los campos y presione Calcular</span>
+          </div>
+
+          <!-- Panel de resultado -->
+          <div class="result-glass" id="result-glass-panel" style="display:none;">
+            <div class="result-glass-title"><i class="fa-solid fa-receipt"></i> Desglose de Prima</div>
+            <div class="result-row">
+              <span class="r-label">Valor a Afianzar</span>
+              <span class="r-value" id="rg-monto-afianzado">—</span>
+            </div>
+            <div class="result-row">
+              <span class="r-label">Prima Base</span>
+              <span class="r-value" id="rg-prima-base">—</span>
+            </div>
+            <div class="result-row">
+              <span class="r-label">ITBIS (18%)</span>
+              <span class="r-value" id="rg-itbis">—</span>
+            </div>
+            <div class="result-row total-row">
+              <span class="r-label" style="font-weight:700;">TOTAL A PAGAR</span>
+              <span class="r-value" id="rg-total">—</span>
+            </div>
+            <div class="prima-minima-alert" id="prima-minima-alert" style="display:none;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>⚠️ Prima mínima aplicada para este tipo de fianza</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PASO 4: RESUMEN ── -->
+        <div class="wiz-panel" id="wpanel-4">
+          <div style="background:#f9fafb; border-radius:12px; padding:20px; margin-bottom:16px;">
+            <div class="section-title" style="margin-bottom:16px;">✅ Resumen de la Cotización</div>
+            <div class="summary-grid" id="resumen-grid">
+              <!-- Se genera dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Checklist -->
+          <div style="background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:10px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:13px; font-weight:700; color:#15803d; margin-bottom:10px;"><i class="fa-solid fa-clipboard-check"></i> Verificación</div>
+            <div id="checklist-items" style="font-size:13px; display:grid; gap:6px;">
+              <!-- Items del checklist generados dinámicamente -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PANTALLA DE GRACIAS ── -->
+        <div class="wiz-panel" id="wpanel-gracias">
+          <div class="thanks-screen">
+            <div class="thanks-logo">+QF</div>
+            <h2>¡ Gracias !</h2>
+            <p>Sus datos han sido recibidos.<br>Puede ver su cotización en el buzón de entrada de su correo o descárgala aquí.</p>
+            <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+              <button class="btn-success-sm" id="btn-descargar-pdf-gracias" onclick="descargarPDFActual()">
+                <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+              </button>
+              <button class="btn-secondary-sm" onclick="reiniciarWizard()">
+                <i class="fa-solid fa-rotate"></i> Realizar Otra Cotización
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /fz-modal-body -->
+
+      <!-- WIZARD FOOTER (navigation) -->
+      <div class="fz-modal-footer" id="wizard-footer">
+        <button class="btn-secondary-sm" id="btn-wiz-atras" onclick="wizAtras()" style="display:none;">
+          <i class="fa-solid fa-arrow-left"></i> Atrás
+        </button>
+        <div style="flex:1;"></div>
+        <button class="btn-primary-sm" id="btn-wiz-siguiente" onclick="wizSiguiente()">
+          Siguiente <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <!-- Paso 4 buttons -->
+        <button class="btn-secondary-sm" id="btn-guardar-cotiz" onclick="procesarFianza('cotizacion')" style="display:none;">
+          <i class="fa-solid fa-save"></i> Guardar Cotización
+        </button>
+        <button class="btn-success-sm" id="btn-procesar-pdf" onclick="procesarFianza('vigente')" style="display:none;">
+          <i class="fa-solid fa-file-pdf"></i> Procesar y Descargar PDF
+        </button>
+      </div>
+
+    </div><!-- /fz-modal -->
+  </div><!-- /fz-backdrop wizard -->
+
+
+  <!-- ══════════════════════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════════════════════ -->
+  <script>
+  // ═══════════════════════════════════════════════════════
+  // UTILS
+  // ═══════════════════════════════════════════════════════
+  function fmt(n) {
+    return Number(n).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+  }
+
+  function fmtFecha(str) {
+    if (!str) return '—';
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? str : d.toLocaleDateString('es-DO');
+  }
+
+  function badgeEstado(estado) {
+    const map = {
+      cotizacion: 'badge-cotizacion',
+      pendiente:  'badge-pendiente',
+      vigente:    'badge-vigente',
+      vencida:    'badge-vencida',
+      cancelada:  'badge-cancelada',
+      renovada:   'badge-renovada'
+    };
+    const cls = map[(estado || '').toLowerCase()] || 'badge-cotizacion';
+    return `<span class="badge ${cls}">${estado || '—'}</span>`;
+  }
+
+  function spinnerHTML() {
+    return '<div class="spinner-center"><i class="fa-solid fa-spinner fa-spin"></i>Cargando...</div>';
+  }
+
+  function emptyHTML(msg) {
+    return `<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>${msg}</p></div>`;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // TAB SWITCHING
+  // ═══════════════════════════════════════════════════════
+  function showFzTab(name) {
+    document.querySelectorAll('.fz-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+
+    // FAB solo visible en tab fianzas
+    const fab = document.getElementById('fab-nueva-fianza');
+    if (fab) fab.classList.toggle('visible', name === 'fianzas');
+
+    // Lazy load
+    if (name === 'empresas')    cargarEmpresas();
+    if (name === 'cotizaciones') cargarCotizacionesTab();
+    if (name === 'fianzas')     cargarFianzasActivas();
+    if (name === 'historial')   cargarHistorialCompleto();
+    if (name === 'tarifarios')  cargarTarifarios();
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // EMPRESAS
+  // ═══════════════════════════════════════════════════════
+  let _empresas = [];
+  let _editingEmpresaId = null;
+
+  async function cargarEmpresas() {
+    const body = document.getElementById('empresas-body');
+    body.innerHTML = spinnerHTML();
+    try {
+      const res = await api.solicitud('/fianza_empresas.php?action=listar', 'GET');
+      _empresas = (res.exito && res.datos) ? res.datos : [];
+      renderTablaEmpresas(_empresas);
+    } catch(e) {
+      _empresas = [];
+      body.innerHTML = emptyHTML('No se pudieron cargar las empresas. ' + e.message);
+    }
+  }
+
+  function renderTablaEmpresas(datos) {
+    const body = document.getElementById('empresas-body');
+    if (!datos || datos.length === 0) {
+      body.innerHTML = emptyHTML('No hay empresas registradas. Agregue la primera.');
+      return;
+    }
+    let html = `<table class="fz-table"><thead><tr>
+      <th>Razón Social</th><th>RNC</th><th>Teléfono</th><th>Email</th><th>Estado</th><th style="text-align:center;">Acciones</th>
+    </tr></thead><tbody>`;
+    datos.forEach(e => {
+      html += `<tr>
+        <td><strong>${e.razon_social || e.nombre || '—'}</strong></td>
+        <td>${e.rnc || '—'}</td>
+        <td>${e.telefono || '—'}</td>
+        <td>${e.email || '—'}</td>
+        <td>${badgeEstado(e.estado || 'activo')}</td>
+        <td style="text-align:center;">
+          <button class="btn-action btn-edit" onclick="editarEmpresa(${e.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+
+  function abrirModalEmpresa(id) {
+    _editingEmpresaId = id || null;
+    document.getElementById('modal-empresa-titulo').textContent = id ? 'Editar Empresa' : 'Nueva Empresa';
+    document.getElementById('emp-razon').value = '';
+    document.getElementById('emp-rnc').value = '';
+    document.getElementById('emp-tel').value = '';
+    document.getElementById('emp-email').value = '';
+    document.getElementById('emp-estado').value = 'activo';
+
+    if (id) {
+      const emp = _empresas.find(e => e.id == id);
+      if (emp) {
+        document.getElementById('emp-razon').value = emp.razon_social || emp.nombre || '';
+        document.getElementById('emp-rnc').value = emp.rnc || '';
+        document.getElementById('emp-tel').value = emp.telefono || '';
+        document.getElementById('emp-email').value = emp.email || '';
+        document.getElementById('emp-estado').value = emp.estado || 'activo';
+      }
+    }
+    document.getElementById('modal-empresa-backdrop').classList.add('open');
+  }
+
+  function editarEmpresa(id) { abrirModalEmpresa(id); }
+
+  function cerrarModalEmpresa() {
+    document.getElementById('modal-empresa-backdrop').classList.remove('open');
+    _editingEmpresaId = null;
+  }
+
+  async function guardarEmpresa() {
+    const razon = document.getElementById('emp-razon').value.trim();
+    const rnc   = document.getElementById('emp-rnc').value.trim();
+    if (!razon || !rnc) { MQF.toast('Complete Razón Social y RNC', 'warning'); return; }
+
+    const data = {
+      razon_social: razon,
+      rnc,
+      telefono: document.getElementById('emp-tel').value.trim(),
+      email:    document.getElementById('emp-email').value.trim(),
+      estado:   document.getElementById('emp-estado').value
+    };
+    if (_editingEmpresaId) data.id = _editingEmpresaId;
+
+    try {
+      const res = await api.solicitud('/fianza_empresas.php?action=guardar', 'POST', data);
+      if (res.exito) {
+        MQF.toast(_editingEmpresaId ? '✅ Empresa actualizada' : '✅ Empresa registrada', 'success');
+        cerrarModalEmpresa();
+        cargarEmpresas();
+      } else {
+        MQF.toast('Error: ' + (res.mensaje || 'No se pudo guardar'), 'error');
+      }
+    } catch(e) {
+      MQF.toast('Error de conexión: ' + e.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // COTIZACIONES TAB (estado = cotizacion)
+  // ═══════════════════════════════════════════════════════
+  let _cotizacionesTab = [];
+
+  async function cargarCotizacionesTab() {
+    const body = document.getElementById('cotizaciones-body');
+    body.innerHTML = spinnerHTML();
+    try {
+      // Pestaña "Mis Cotizaciones" = SOLO registros del wizard (tabla fianzas, estado=cotizacion)
+      // Las cotizaciones del cotizador rápido aparecen en la pestaña Historial
+      const r1 = await api.solicitud('/fianzas.php?action=listar&estado=cotizacion', 'GET');
+      const fianzasCot = (r1.exito && r1.datos)
+        ? (Array.isArray(r1.datos) ? r1.datos : (Array.isArray(r1.datos.fianzas) ? r1.datos.fianzas : []))
+        : [];
+      fianzasCot.forEach(f => {
+        f._origen = 'fianzas';
+        f.numero  = f.numero || f.numero_fianza;
+        f.cliente = f.cliente || f.cliente_nombre;
+      });
+      _cotizacionesTab = fianzasCot;
+      renderTablaCotizaciones(_cotizacionesTab);
+    } catch(e) {
+      body.innerHTML = emptyHTML('Error al cargar cotizaciones: ' + e.message);
+    }
+  }
+
+  function renderTablaCotizaciones(datos) {
+    const body = document.getElementById('cotizaciones-body');
+    if (!datos || datos.length === 0) {
+      body.innerHTML = emptyHTML('No hay cotizaciones. Use el botón ➕ para crear una nueva fianza.');
+      return;
+    }
+    let html = `<table class="fz-table"><thead><tr>
+      <th>N° Fianza</th><th>Cliente</th><th>Tipo</th><th>Aseguradora</th>
+      <th style="text-align:right;">Total</th><th>Fecha</th><th>Origen</th><th style="text-align:center;">Acciones</th>
+    </tr></thead><tbody>`;
+    datos.forEach(f => {
+      const origen = f._origen || 'fianzas';
+      const badgeOrigen = origen === 'cotizaciones'
+        ? '<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;">⚡ Cotizador</span>'
+        : '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>';
+      html += `<tr>
+        <td><strong>${f.numero || f.numero_fianza || '—'}</strong></td>
+        <td>${f.cliente || f.cliente_nombre || f.nombre || '—'}</td>
+        <td>${f.tipo_fianza || f.subtipo || '—'}</td>
+        <td>${f.aseguradora || f.aseguradora_nombre || '—'}</td>
+        <td style="text-align:right; font-weight:700; color:#1e40af;">${fmt(f.total || 0)}</td>
+        <td>${fmtFecha(f.fecha_inicio || f.fecha_emision || f.fecha)}</td>
+        <td>${badgeOrigen}</td>
+        <td style="text-align:center; white-space:nowrap;">
+          <button class="btn-action btn-edit" onclick="editarCotizacionFz(${f.id}, '${origen}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-action btn-pdf"    onclick="imprimirFianzaPDF(${f.id}, '${origen}')" title="PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+          ${origen === 'fianzas' ? `<button class="btn-action btn-ok" onclick="convertirVigente(${f.id})" title="Convertir a Vigente"><i class="fa-solid fa-circle-check"></i> Vigente</button>` : ''}
+          ${origen === 'fianzas' ? `<button class="btn-action btn-danger" onclick="eliminarFianza(${f.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>` : ''}
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+
+  async function convertirVigente(id) {
+    if (!confirm('¿Convertir esta cotización en una fianza vigente?')) return;
+    try {
+      const res = await api.solicitud('/fianzas.php?action=actualizar_estado', 'POST', { 
+        fianza_id: id, 
+        estado: 'vigente',
+        justificacion: 'Aprobación y emisión de fianza'
+      });
+      if (res.exito) {
+        MQF.toast('✅ Fianza marcada como vigente', 'success');
+        cargarCotizacionesTab();
+      } else {
+        MQF.toast('Error: ' + (res.mensaje || 'No se pudo actualizar'), 'error');
+      }
+    } catch(e) {
+      MQF.toast('Error: ' + e.message, 'error');
+    }
+  }
+
+  async function eliminarFianza(id) {
+    if (!confirm('¿Eliminar esta fianza permanentemente? Esta acción no se puede deshacer.')) return;
+    try {
+      const res = await api.solicitud('/fianzas.php?action=eliminar', 'POST', { id });
+      if (res.exito) {
+        MQF.toast('Fianza eliminada', 'info');
+        cargarCotizacionesTab();
+        cargarHistorialCompleto();
+      } else {
+        MQF.toast('Error: ' + (res.mensaje || 'No se pudo eliminar'), 'error');
+      }
+    } catch(e) {
+      MQF.toast('Error: ' + e.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // FIANZAS ACTIVAS + KPIs
+  // ═══════════════════════════════════════════════════════
+  let _fianzasActivas = [];
+
+  async function cargarFianzasActivas() {
+    const body = document.getElementById('fianzas-body');
+    body.innerHTML = spinnerHTML();
+    try {
+      const res = await api.solicitud('/fianzas.php?action=listar', 'GET');
+      let todas = [];
+      if (res.exito && res.datos) {
+        todas = Array.isArray(res.datos) ? res.datos : (Array.isArray(res.datos.fianzas) ? res.datos.fianzas : []);
+      }
+      _fianzasActivas = todas;
+      calcularKPIs(todas);
+      const vigentes = todas.filter(f => (f.estado || '').toLowerCase() === 'vigente');
+      renderTablaFianzasActivas(vigentes);
+    } catch(e) {
+      body.innerHTML = emptyHTML('Error al cargar: ' + e.message);
+    }
+  }
+
+  function calcularKPIs(datos) {
+    const ahora = new Date();
+    const mesActual = ahora.getMonth();
+    const anyoActual = ahora.getFullYear();
+
+    const vigentes  = datos.filter(f => (f.estado || '').toLowerCase() === 'vigente');
+    const vencidas  = datos.filter(f => (f.estado || '').toLowerCase() === 'vencida');
+    const ingresosMes = datos
+      .filter(f => {
+        const d = new Date(f.fecha_emision || f.fecha);
+        return !isNaN(d) && d.getMonth() === mesActual && d.getFullYear() === anyoActual;
+      })
+      .reduce((s, f) => s + parseFloat(f.total || 0), 0);
+
+    document.getElementById('kpi-total').textContent    = datos.length;
+    document.getElementById('kpi-vigentes').textContent = vigentes.length;
+    document.getElementById('kpi-vencidas').textContent = vencidas.length;
+    document.getElementById('kpi-ingresos').textContent = fmt(ingresosMes);
+  }
+
+  function renderTablaFianzasActivas(datos) {
+    const body = document.getElementById('fianzas-body');
+    if (!datos || datos.length === 0) {
+      body.innerHTML = emptyHTML('No hay fianzas vigentes. Presione ➕ para crear una.');
+      return;
+    }
+    let html = `<table class="fz-table"><thead><tr>
+      <th>N° Fianza</th><th>Cliente</th><th>Tipo</th><th>Aseguradora</th>
+      <th>Vencimiento</th><th style="text-align:right;">Monto</th><th>Estado</th><th style="text-align:center;">PDF</th>
+    </tr></thead><tbody>`;
+    datos.forEach(f => {
+      html += `<tr>
+        <td><strong>${f.numero || f.numero_fianza || '—'}</strong></td>
+        <td>${f.cliente || f.cliente_nombre || f.nombre || '—'}</td>
+        <td>${f.tipo_fianza || f.subtipo || '—'}</td>
+        <td>${f.aseguradora || '—'}</td>
+        <td>${fmtFecha(f.fecha_vencimiento)}</td>
+        <td style="text-align:right; font-weight:700; color:#1e40af;">${fmt(f.monto_afianzado || 0)}</td>
+        <td>${badgeEstado(f.estado)}</td>
+        <td style="text-align:center;">
+          <button class="btn-action btn-pdf" onclick="imprimirFianzaPDF(${f.id})"><i class="fa-solid fa-file-pdf"></i></button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // HISTORIAL COMPLETO
+  // ═══════════════════════════════════════════════════════
+  let _historialFz = [];
+
+  async function cargarHistorialCompleto() {
+    const body = document.getElementById('historial-fz-body');
+    body.innerHTML = spinnerHTML();
+    try {
+      // Fuente 1: tabla fianzas (todos los estados) — wizard
+      const r1 = await api.solicitud('/fianzas.php?action=listar&limit=200', 'GET');
+      const fianzasList = (r1.exito && r1.datos)
+        ? (Array.isArray(r1.datos) ? r1.datos : (Array.isArray(r1.datos.fianzas) ? r1.datos.fianzas : []))
+        : [];
+      fianzasList.forEach(f => {
+        f._origen = 'fianzas';
+        f.numero  = f.numero || f.numero_fianza;
+        f.cliente = f.cliente || f.cliente_nombre;
+      });
+
+      // Fuente 2: tabla cotizaciones (tipo=FIANZA) — cotizador rápido
+      const r2 = await api.solicitud('/cotizaciones.php?action=listar', 'GET');
+      const cotFianzas = (r2.exito && Array.isArray(r2.datos))
+        ? r2.datos.filter(c => (c.tipo || '').toUpperCase() === 'FIANZA')
+        : [];
+      cotFianzas.forEach(c => {
+        c._origen = 'cotizaciones';
+        c.estado  = c.estado || 'cotizacion';
+        c.aseguradora_nombre = c.aseguradora;
+        c.tipo_fianza = c.subtipo || c.tipo;
+        c.cliente_nombre = c.cliente;
+        c.monto_afianzado = c.monto_afianzado || 0;
+        c.plazo_meses = c.plazo || 0;
+        c.itbis = c.impuesto || 0;
+      });
+
+      _historialFz = [...fianzasList, ...cotFianzas];
+      poblarFiltroAseguradoras();
+      filtrarHistorialFz();
+    } catch(e) {
+      body.innerHTML = emptyHTML('Error: ' + e.message);
+    }
+  }
+
+  function poblarFiltroAseguradoras() {
+    const sel = document.getElementById('hist-filtro-aseg');
+    const current = sel.value;
+    const aseguradoras = [...new Set(_historialFz.map(f => f.aseguradora).filter(Boolean))];
+    sel.innerHTML = '<option value="">Todas las aseguradoras</option>';
+    aseguradoras.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a; opt.textContent = a;
+      sel.appendChild(opt);
+    });
+    sel.value = current;
+  }
+
+  function filtrarHistorialFz() {
+    const estado = document.getElementById('hist-filtro-estado').value;
+    const aseg   = document.getElementById('hist-filtro-aseg').value;
+    const search = (document.getElementById('hist-search-fz').value || '').toLowerCase().trim();
+
+    let datos = _historialFz;
+    if (estado) datos = datos.filter(f => (f.estado || '').toLowerCase() === estado);
+    if (aseg)   datos = datos.filter(f => (f.aseguradora || '') === aseg);
+    if (search) datos = datos.filter(f => {
+      try { return JSON.stringify(f).toLowerCase().includes(search); } catch(e) { return false; }
+    });
+
+    document.getElementById('hist-fz-count').textContent = datos.length + ' registros';
+    renderTablaHistorialFz(datos);
+  }
+
+  function renderTablaHistorialFz(datos) {
+    const body = document.getElementById('historial-fz-body');
+    if (!datos || datos.length === 0) {
+      body.innerHTML = emptyHTML('No se encontraron registros con los filtros actuales.');
+      return;
+    }
+    const canEdit = !window._permisosFz || window._permisosFz.includes('FIANZAS_EDITAR');
+    let html = `<table class="fz-table"><thead><tr>
+      <th>N° Fianza</th><th>Cliente</th><th>Tipo</th><th>Aseguradora</th>
+      <th>Estado</th><th style="text-align:right;">Total</th><th>Fecha</th><th>Origen</th><th style="text-align:center;">Acciones</th>
+    </tr></thead><tbody>`;
+    datos.forEach(f => {
+      const origen = f._origen || 'fianzas';
+      const badgeOrigen = origen === 'cotizaciones'
+        ? '<span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:8px;">⚡ Cotizador</span>'
+        : '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>';
+      const esCotizacion = (f.estado || '').toLowerCase() === 'cotizacion';
+      html += `<tr>
+        <td><strong>${f.numero || f.numero_fianza || '—'}</strong></td>
+        <td>${f.cliente || f.cliente_nombre || f.nombre || '—'}</td>
+        <td>${f.tipo_fianza || f.subtipo || '—'}</td>
+        <td>${f.aseguradora || f.aseguradora_nombre || '—'}</td>
+        <td>${badgeEstado(f.estado)}</td>
+        <td style="text-align:right; font-weight:700; color:#1e40af;">${fmt(f.total || 0)}</td>
+        <td>${fmtFecha(f.fecha_inicio || f.fecha_emision || f.fecha)}</td>
+        <td>${badgeOrigen}</td>
+        <td style="text-align:center; white-space:nowrap;">
+          ${canEdit && esCotizacion ? `<button class="btn-action btn-edit" onclick="editarCotizacionFz(${f.id}, '${origen}')" title="Editar cotización"><i class="fa-solid fa-pen"></i></button>` : ''}
+          <button class="btn-action btn-pdf" onclick="imprimirFianzaPDF(${f.id}, '${origen}')"><i class="fa-solid fa-file-pdf"></i></button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+
+  function toggleExportMenuFz() {
+    document.getElementById('exportMenuFz').classList.toggle('open');
+  }
+  
+  function toggleExportMenuFianzas(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('exportMenuFianzas');
+    if (menu) {
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+  }
+
+  function filtrarFianzasActivas() {
+    const search = (document.getElementById('buscar-fianzas-activas').value || '').toLowerCase().trim();
+    const vigentes = _fianzasActivas.filter(f => (f.estado || '').toLowerCase() === 'vigente');
+    if (!search) {
+      renderTablaFianzasActivas(vigentes);
+      return;
+    }
+    const filtered = vigentes.filter(f => {
+      try { return JSON.stringify(f).toLowerCase().includes(search); } catch(e) { return false; }
+    });
+    renderTablaFianzasActivas(filtered);
+  }
+
+  document.addEventListener('click', function(e) {
+    const m = document.getElementById('exportMenuFz');
+    if (m && !e.target.closest('.dropdown-export')) m.classList.remove('open');
+    const m2 = document.getElementById('exportMenuFianzas');
+    if (m2 && !e.target.closest('.dropdown-export')) m2.style.display = 'none';
+  });
+
+  function exportarFianzas(tipo, datosCustom = null) {
+    const m = document.getElementById('exportMenuFz');
+    if (m) m.classList.remove('open');
+    const m2 = document.getElementById('exportMenuFianzas');
+    if (m2) m2.style.display = 'none';
+
+    const datos = datosCustom || _historialFz;
+    if (!datos || datos.length === 0) { MQF.toast('No hay datos para exportar', 'warning'); return; }
+
+    if (tipo === 'pdf') {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape');
+        const logo = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+        let startY = 20;
+        if (logo) { try { doc.addImage(logo, 'PNG', 14, 8, 30, 12); } catch(e){} startY = 26; }
+        doc.setFontSize(14); doc.setFont(undefined, 'bold');
+        doc.text('MAS QUE FIANZAS — Historial de Fianzas', 50, 16);
+        doc.setFontSize(9); doc.setFont(undefined, 'normal');
+        doc.text('Generado: ' + new Date().toLocaleDateString('es-DO'), 50, 22);
+        const cols = ['N° Fianza','Cliente','Tipo','Aseguradora','Estado','Total','Fecha'];
+        const rows = datos.map(f => [
+          f.numero || '—',
+          f.cliente || f.nombre || '—',
+          f.tipo_fianza || f.subtipo || '—',
+          f.aseguradora || '—',
+          f.estado || '—',
+          fmt(f.total || 0),
+          fmtFecha(f.fecha_emision || f.fecha)
+        ]);
+        doc.autoTable({ head: [cols], body: rows, startY, styles: { fontSize: 9 }, headStyles: { fillColor: [79,70,229] } });
+        doc.save('fianzas_historial.pdf');
+      } catch(e) { MQF.toast('Error generando PDF: ' + e.message, 'error'); }
+
+    } else if (tipo === 'csv') {
+      const cols = ['numero','cliente','tipo_fianza','aseguradora','estado','total','fecha_emision'];
+      const header = cols.join(',');
+      const rows = datos.map(f => cols.map(c => `"${(f[c] || '').toString().replace(/"/g, '""')}"`).join(','));
+      const csv = [header, ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'fianzas.csv'; a.click();
+
+    } else if (tipo === 'excel') {
+      if (typeof XLSX === 'undefined') { MQF.toast('SheetJS no disponible', 'error'); return; }
+      const ws = XLSX.utils.json_to_sheet(datos.map(f => ({
+        'N° Fianza': f.numero || '', 'Cliente': f.cliente || f.nombre || '',
+        'Tipo': f.tipo_fianza || f.subtipo || '', 'Aseguradora': f.aseguradora || '',
+        'Estado': f.estado || '', 'Total': f.total || 0,
+        'Fecha': fmtFecha(f.fecha_emision || f.fecha)
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Fianzas');
+      XLSX.writeFile(wb, 'fianzas.xlsx');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // TARIFARIOS (ADMIN)
+  // ═══════════════════════════════════════════════════════
+  let _tarifarios = [];
+
+  async function cargarTarifarios() {
+    const body = document.getElementById('tarifarios-body');
+    body.innerHTML = spinnerHTML();
+    try {
+      const res = await api.solicitud('/fianza_tarifarios.php?action=listar_admin', 'GET');
+      _tarifarios = (res.exito && res.datos) ? res.datos : [];
+      renderTablaTarifarios(_tarifarios);
+    } catch(e) {
+      body.innerHTML = emptyHTML('Error al cargar tarifarios: ' + e.message);
+    }
+  }
+
+  function renderTablaTarifarios(datos) {
+    const body = document.getElementById('tarifarios-body');
+    if (!datos || datos.length === 0) {
+      body.innerHTML = emptyHTML('No hay tarifarios configurados.');
+      return;
+    }
+    let html = `<table class="fz-table"><thead><tr>
+      <th>Tipo de Fianza</th><th>Aseguradora</th><th>Modo</th>
+      <th style="text-align:right;">Tasa (%)</th><th style="text-align:right;">Prima Mínima</th>
+      <th style="text-align:center;">Acciones</th>
+    </tr></thead><tbody>`;
+    datos.forEach(t => {
+      html += `<tr>
+        <td><strong>${t.nombre || t.tipo || '—'}</strong></td>
+        <td>${t.aseguradora || '—'}</td>
+        <td><span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600;">Modo ${t.modo_calculo || '—'}</span></td>
+        <td style="text-align:right; font-weight:700; color:#4f46e5;">${t.tasa ? Number(t.tasa).toFixed(3) + '%' : '—'}</td>
+        <td style="text-align:right;">${t.prima_minima ? fmt(t.prima_minima) : '—'}</td>
+        <td style="text-align:center;">
+          <button class="btn-action btn-edit" onclick="abrirModalTarifa(${t.id})"><i class="fa-solid fa-pen"></i> Editar</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    body.innerHTML = html;
+  }
+
+  function abrirModalTarifa(id) {
+    const t = _tarifarios.find(x => x.id == id);
+    if (!t) return;
+    document.getElementById('tarifa-id').value = id;
+    document.getElementById('tarifa-tipo').value = t.nombre || t.tipo || '';
+    document.getElementById('tarifa-aseg').value = t.aseguradora || '';
+    document.getElementById('tarifa-tasa').value = t.tasa || '';
+    document.getElementById('tarifa-prima-min').value = t.prima_minima || '';
+    document.getElementById('tarifa-justif').value = '';
+    document.getElementById('justif-count').textContent = '0';
+    document.getElementById('modal-tarifa-backdrop').classList.add('open');
+  }
+
+  function cerrarModalTarifa() {
+    document.getElementById('modal-tarifa-backdrop').classList.remove('open');
+  }
+
+  function contarCaracteres() {
+    const v = document.getElementById('tarifa-justif').value.length;
+    document.getElementById('justif-count').textContent = v;
+    document.getElementById('justif-count').style.color = v >= 15 ? '#16a34a' : '#9ca3af';
+  }
+
+  async function guardarTarifa() {
+    const id        = document.getElementById('tarifa-id').value;
+    const tasa      = parseFloat(document.getElementById('tarifa-tasa').value);
+    const primaMin  = parseFloat(document.getElementById('tarifa-prima-min').value) || 0;
+    const justif    = document.getElementById('tarifa-justif').value.trim();
+
+    if (!tasa || isNaN(tasa)) { MQF.toast('Ingrese una tasa válida', 'warning'); return; }
+    if (justif.length < 15) { MQF.toast('La justificación debe tener al menos 15 caracteres', 'warning'); return; }
+
+    try {
+      const res = await api.solicitud('/fianza_tarifarios.php?action=actualizar_tasa', 'POST', {
+        id, tasa, prima_minima: primaMin, justificacion: justif
+      });
+      if (res.exito) {
+        MQF.toast('✅ Tarifa actualizada correctamente', 'success');
+        cerrarModalTarifa();
+        cargarTarifarios();
+      } else {
+        MQF.toast('Error: ' + (res.mensaje || 'No se pudo guardar'), 'error');
+      }
+    } catch(e) {
+      MQF.toast('Error: ' + e.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // WIZARD — ESTADO GLOBAL
+  // ═══════════════════════════════════════════════════════
+  let _wizStep = 1;
+  let _wizData = {};          // datos acumulados
+  let _wizCalcResult = null;  // resultado del servidor
+  let _wizAseguradoras = [];
+  let _wizTipos = [];
+  let _editingFianzaId = null; // ID de fianza en modo edición (null = nueva)
+  let _editingFianzaOrigen = 'fianzas'; // 'fianzas' o 'cotizaciones'
+
+  function abrirWizard() {
+    _editingFianzaId = null;
+    _editingFianzaOrigen = 'fianzas';
+    reiniciarWizardInterno();
+    document.getElementById('modal-wizard-backdrop').classList.add('open');
+    // Título: modo creación
+    const t = document.getElementById('wizard-modal-title');
+    if (t) t.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Nueva Cotización de Fianza';
+    cargarAseguradorasWizard();
+  }
+
+  // Alias público para botón "+ Nueva Fianza"
+  function abrirWizardNuevaFianza() { abrirWizard(); }
+
+  function cerrarWizard() {
+    document.getElementById('modal-wizard-backdrop').classList.remove('open');
+    _editingFianzaId = null;
+    _editingFianzaOrigen = 'fianzas';
+  }
+
+  function reiniciarWizard() {
+    _editingFianzaId = null;
+    _editingFianzaOrigen = 'fianzas';
+    reiniciarWizardInterno();
+    cargarAseguradorasWizard();
+    const t = document.getElementById('wizard-modal-title');
+    if (t) t.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Nueva Cotización de Fianza';
+  }
+
+  function reiniciarWizardInterno() {
+    _wizStep = 1;
+    _wizData = {};
+    _wizCalcResult = null;
+    actualizarProgressBar(1);
+    mostrarWizPanel(1);
+    actualizarBotonesWizard();
+    // Limpiar formularios
+    ['decl1-acepto','decl2-acepto'].forEach(id => { const el = document.getElementById(id); if(el) el.checked = false; });
+    document.querySelectorAll('input[name="decl1"], input[name="decl2"]').forEach(r => r.checked = false);
+    ['wiz-nombre','wiz-telefono','wiz-email','wiz-proyecto','wiz-beneficiario','wiz-cedula','wiz-tasa-manual','wiz-num-contrato','wiz-observaciones'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    document.querySelectorAll('input[name="primer-req"]').forEach(r => r.checked = false);
+    const fd = document.getElementById('wiz-fecha-inicio');
+    if(fd) fd.value = new Date().toISOString().split('T')[0];
+    const ncf = document.getElementById('wiz-ncf'); if(ncf) ncf.checked = false;
+    const rg = document.getElementById('result-glass-panel'); if(rg) rg.style.display = 'none';
+    const pm = document.getElementById('prima-minima-alert'); if(pm) pm.style.display = 'none';
+    // Ocultar modo fields
+    document.querySelectorAll('.modo-a-fields, .modo-b-fields').forEach(el => el.classList.remove('visible'));
+    const btn = document.getElementById('btn-wiz-siguiente');
+    if(btn) { btn.disabled = true; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // EDITAR COTIZACIÓN DE FIANZA DESDE HISTORIAL / COTIZACIONES
+  // Abre el wizard en Paso 2 con los datos precargados
+  // origen: 'fianzas' (tabla fianzas) | 'cotizaciones' (tabla cotizaciones)
+  // ═══════════════════════════════════════════════════════
+  function editarCotizacionFz(id, origen) {
+    // Buscar en ambas listas
+    const fuentes = [...(_historialFz || []), ...(_cotizacionesTab || [])];
+    const f = fuentes.find(x => String(x.id) === String(id) && (x._origen || 'fianzas') === origen);
+    if (!f) {
+      MQF.toast('Registro no encontrado (ID: ' + id + ')', 'error');
+      return;
+    }
+
+    // Verificar permiso de edición (guardia de UI)
+    if (window._permisosFz && !window._permisosFz.includes('FIANZAS_EDITAR')) {
+      MQF.toast('No tiene permiso para editar cotizaciones de fianza', 'warning');
+      return;
+    }
+
+    _editingFianzaId = f.id;
+    _editingFianzaOrigen = origen || 'fianzas';
+
+    // Abrir modal
+    document.getElementById('modal-wizard-backdrop').classList.add('open');
+    const t = document.getElementById('wizard-modal-title');
+    if (t) t.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar Cotización: ' + (f.numero || f.numero_fianza || '#' + f.id);
+
+    // Inicializar sin limpiar declaraciones (en modo edición se consideran ya aceptadas)
+    _wizCalcResult = null;
+    _wizData = {
+      nombre:             f.cliente || f.cliente_nombre || '',
+      cedula:             f.cedula  || f.cliente_cedula  || '',
+      telefono:           f.telefono || f.cliente_telefono || '',
+      email:              f.email   || f.cliente_email   || '',
+      objeto_referencia:  f.objeto_referencia || '',
+      beneficiario:       f.beneficiario || '',
+      num_contrato:       f.numero_contrato || f.num_contrato || '',
+      observaciones:      f.observaciones || '',
+      fecha_inicio:       f.fecha_inicio || new Date().toISOString().split('T')[0],
+      plazo_meses:        f.plazo_meses || f.plazo || 12,
+      valor_afianzado:    parseFloat(f.monto_afianzado || 0),
+      aseguradora_id:     f.aseguradora_id || null,
+      aseguradora_nombre: f.aseguradora || '',
+      tipo_id:            f.categoria_id || null,
+      tipo_nombre:        f.tipo_fianza  || f.subtipo || '',
+      prima_base:         parseFloat(f.prima_base || 0),
+      itbis:              parseFloat(f.itbis || f.impuesto || 0),
+      total:              parseFloat(f.total || 0),
+      generar_ncf:        !!(f.ncf || f.usar_ncf)
+    };
+
+    // Ir directamente al Paso 2 (saltar declaraciones — ya fueron aceptadas)
+    // Marcar declaraciones como aceptadas en modo edición
+    const d1 = document.getElementById('decl1-acepto'); if(d1) d1.checked = true;
+    const d2 = document.getElementById('decl2-acepto'); if(d2) d2.checked = true;
+    _wizData.declaracion_veracidad = true;
+    _wizData.declaracion_cesion    = true;
+
+    // Precarga de campos del paso 2
+    const campos = {
+      'wiz-nombre':        _wizData.nombre,
+      'wiz-cedula':        _wizData.cedula,
+      'wiz-telefono':      _wizData.telefono,
+      'wiz-email':         _wizData.email,
+      'wiz-proyecto':      _wizData.objeto_referencia,
+      'wiz-beneficiario':  _wizData.beneficiario,
+      'wiz-num-contrato':  _wizData.num_contrato,
+      'wiz-observaciones': _wizData.observaciones,
+      'wiz-fecha-inicio':  _wizData.fecha_inicio,
+      'wiz-tasa-manual':   '' // tasa nunca se muestra - NOFTRAB R1
+    };
+    Object.entries(campos).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    });
+
+    // Plazo
+    const elPlazo = document.getElementById('wiz-plazo');
+    if (elPlazo) elPlazo.value = _wizData.plazo_meses;
+
+    // Mover a paso 2
+    _wizStep = 2;
+    actualizarProgressBar(2);
+    mostrarWizPanel(2);
+    actualizarBotonesWizard();
+
+    // Cargar aseguradoras para el paso 3 en background
+    cargarAseguradorasWizard();
+  }
+
+  function actualizarProgressBar(step) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('wstep-' + i);
+      if (!el) continue;
+      el.classList.remove('active', 'done');
+      if (i < step) el.classList.add('done');
+      if (i === step) el.classList.add('active');
+    }
+  }
+
+  function mostrarWizPanel(step) {
+    document.querySelectorAll('.wiz-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('wpanel-' + (step === 5 ? 'gracias' : step));
+    if (panel) panel.classList.add('active');
+    // Ocultar progress bar en pantalla de gracias
+    const pb = document.getElementById('wizard-progress-bar');
+    if (pb) pb.style.display = step === 5 ? 'none' : 'flex';
+    const footer = document.getElementById('wizard-footer');
+    if (footer) footer.style.display = step === 5 ? 'none' : 'flex';
+  }
+
+  function actualizarBotonesWizard() {
+    const btnAtras     = document.getElementById('btn-wiz-atras');
+    const btnSiguiente = document.getElementById('btn-wiz-siguiente');
+    const btnGuardar   = document.getElementById('btn-guardar-cotiz');
+    const btnProcesar  = document.getElementById('btn-procesar-pdf');
+
+    if (btnAtras)     btnAtras.style.display     = _wizStep > 1 ? 'inline-flex' : 'none';
+    if (btnSiguiente) btnSiguiente.style.display  = _wizStep < 4 ? 'inline-flex' : 'none';
+    if (btnGuardar)   btnGuardar.style.display    = _wizStep === 4 ? 'inline-flex' : 'none';
+    if (btnProcesar)  btnProcesar.style.display   = _wizStep === 4 ? 'inline-flex' : 'none';
+
+    // Paso 1: deshabilitar siguiente hasta que ambas declaraciones aceptadas
+    if (_wizStep === 1) {
+      verificarDeclaraciones();
+    } else if (_wizStep === 3) {
+      // Siguiente solo si ya calculó
+      if (btnSiguiente) btnSiguiente.disabled = !_wizCalcResult;
+    } else {
+      if (btnSiguiente) btnSiguiente.disabled = false;
+    }
+  }
+
+  function verificarDeclaraciones() {
+    const d1 = document.querySelector('input[name="decl1"]:checked');
+    const d2 = document.querySelector('input[name="decl2"]:checked');
+    const ok = (d1 && d1.value === 'acepto') && (d2 && d2.value === 'acepto');
+    const btn = document.getElementById('btn-wiz-siguiente');
+    if (btn && _wizStep === 1) btn.disabled = !ok;
+  }
+
+  function toggleDecl(textId, radio) {
+    const el = document.getElementById(textId);
+    if (!el) return;
+    if (radio.value === 'ver') {
+      el.classList.add('open');
+    } else {
+      el.classList.remove('open');
+    }
+    verificarDeclaraciones();
+  }
+
+  function wizSiguiente() {
+    if (_wizStep === 1) {
+      const d1 = document.querySelector('input[name="decl1"]:checked');
+      const d2 = document.querySelector('input[name="decl2"]:checked');
+      if (!(d1 && d1.value === 'acepto') || !(d2 && d2.value === 'acepto')) {
+        MQF.toast('Debe aceptar ambas declaraciones para continuar', 'warning');
+        return;
+      }
+    }
+    if (_wizStep === 2) {
+      if (!validarPaso2()) return;
+    }
+    if (_wizStep === 3) {
+      if (!_wizCalcResult) { MQF.toast('Debe calcular la prima antes de continuar', 'warning'); return; }
+      generarResumen();
+    }
+    if (_wizStep < 4) {
+      _wizStep++;
+      actualizarProgressBar(_wizStep);
+      mostrarWizPanel(_wizStep);
+      actualizarBotonesWizard();
+    }
+  }
+
+  function wizAtras() {
+    if (_wizStep > 1) {
+      _wizStep--;
+      actualizarProgressBar(_wizStep);
+      mostrarWizPanel(_wizStep);
+      actualizarBotonesWizard();
+    }
+  }
+
+  function validarPaso2() {
+    const nombre = document.getElementById('wiz-nombre').value.trim();
+    const tel    = document.getElementById('wiz-telefono').value.trim();
+    const email  = document.getElementById('wiz-email').value.trim();
+    const proy   = document.getElementById('wiz-proyecto').value.trim();
+    const benef  = document.getElementById('wiz-beneficiario').value.trim();
+    const primer = document.querySelector('input[name="primer-req"]:checked');
+
+    if (!nombre) { MQF.toast('Ingrese el nombre o razón social', 'warning'); return false; }
+    if (!tel)    { MQF.toast('Ingrese el número de teléfono', 'warning'); return false; }
+    if (!email)  { MQF.toast('Ingrese el correo electrónico', 'warning'); return false; }
+    if (!proy)   { MQF.toast('Ingrese el nombre o referencia del proyecto', 'warning'); return false; }
+    if (!benef)  { MQF.toast('Ingrese el beneficiario', 'warning'); return false; }
+    if (!primer) { MQF.toast('Indique si es a primer requerimiento', 'warning'); return false; }
+    return true;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // WIZARD — ASEGURADORAS & TIPOS
+  // ═══════════════════════════════════════════════════════
+  async function cargarAseguradorasWizard() {
+    const sel = document.getElementById('wiz-aseguradora');
+    sel.innerHTML = '<option value="">Cargando...</option>';
+    try {
+      const res = await api.solicitud('/fianza_tarifarios.php?action=listar_aseguradoras', 'GET');
+      _wizAseguradoras = (res.exito && res.datos) ? res.datos : [];
+      sel.innerHTML = '<option value="">Seleccione aseguradora...</option>';
+      _wizAseguradoras.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id || a.nombre;
+        opt.textContent = a.nombre || a.id;
+        sel.appendChild(opt);
+      });
+    } catch(e) {
+      sel.innerHTML = '<option value="">Error al cargar</option>';
+    }
+  }
+
+  async function cargarTiposFianza() {
+    const aseg = document.getElementById('wiz-aseguradora').value;
+    const sel  = document.getElementById('wiz-tipo');
+    sel.innerHTML = '<option value="">Cargando tipos...</option>';
+    _wizTipos = [];
+    _wizCalcResult = null;
+    document.getElementById('result-glass-panel').style.display = 'none';
+    actualizarBotonesWizard();
+
+    if (!aseg) { sel.innerHTML = '<option value="">Seleccione aseguradora primero</option>'; return; }
+
+    try {
+      const res = await api.solicitud(`/fianza_tarifarios.php?action=listar_tipos&aseguradora_id=${encodeURIComponent(aseg)}`, 'GET');
+      _wizTipos = (res.exito && res.datos) ? res.datos : [];
+      sel.innerHTML = '<option value="">Seleccione tipo de fianza...</option>';
+      _wizTipos.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        // NUNCA mostrar porcentaje/tasa en el label
+        opt.textContent = t.tipo_fianza || t.nombre || t.tipo || '';
+        opt.dataset.modo = t.modo_calculo || 'B';
+        sel.appendChild(opt);
+      });
+    } catch(e) {
+      sel.innerHTML = '<option value="">Error al cargar tipos</option>';
+    }
+  }
+
+  function onTipoFianzaChange() {
+    _wizCalcResult = null;
+    document.getElementById('result-glass-panel').style.display = 'none';
+    actualizarBotonesWizard();
+
+    const sel = document.getElementById('wiz-tipo');
+    const selected = sel.options[sel.selectedIndex];
+    const modo = selected ? (selected.dataset.modo || 'B') : 'B';
+
+    // Limpiar campos modo
+    document.querySelectorAll('.modo-a-fields').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.modo-b-fields').forEach(el => el.classList.remove('visible'));
+
+    if (modo === 'A') {
+      document.querySelectorAll('.modo-a-fields').forEach(el => el.classList.add('visible'));
+      // Limpiar campo directo
+      const vd = document.getElementById('wiz-valor-directo'); if(vd) vd.value = '';
+    } else {
+      document.querySelectorAll('.modo-b-fields').forEach(el => el.classList.add('visible'));
+      // Limpiar campos contrato
+      const mc = document.getElementById('wiz-monto-contrato'); if(mc) mc.value = '';
+      const pa = document.getElementById('wiz-porc-afianzar'); if(pa) pa.value = '';
+      const vc = document.getElementById('wiz-valor-calculado'); if(vc) vc.value = '';
+    }
+  }
+
+  function calcularValorAfianzar() {
+    const monto = parseFloat(document.getElementById('wiz-monto-contrato').value) || 0;
+    const porc  = parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0;
+    const valor = monto * (porc / 100);
+    const el    = document.getElementById('wiz-valor-calculado');
+    if (el) el.value = valor > 0 ? fmt(valor) : '';
+  }
+
+  function getValorAfianzado() {
+    const sel  = document.getElementById('wiz-tipo');
+    const selected = sel.options[sel.selectedIndex];
+    const modo = selected ? (selected.dataset.modo || 'B') : 'B';
+    if (modo === 'A') {
+      const monto = parseFloat(document.getElementById('wiz-monto-contrato').value) || 0;
+      const porc  = parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0;
+      return monto * (porc / 100);
+    } else {
+      return parseFloat(document.getElementById('wiz-valor-directo').value) || 0;
+    }
+  }
+
+  async function calcularFianzaWizard() {
+    const aseguradoraId = document.getElementById('wiz-aseguradora').value;
+    const tipoId        = document.getElementById('wiz-tipo').value;
+    const plazo         = document.getElementById('wiz-plazo').value;
+    const fechaInicio   = document.getElementById('wiz-fecha-inicio').value;
+    const valorAfianzado = getValorAfianzado();
+
+    if (!aseguradoraId) { MQF.toast('Seleccione una aseguradora', 'warning'); return; }
+    if (!tipoId) { MQF.toast('Seleccione el tipo de fianza', 'warning'); return; }
+    if (!valorAfianzado || valorAfianzado <= 0) { MQF.toast('Ingrese el valor a afianzar', 'warning'); return; }
+    if (!plazo) { MQF.toast('Seleccione el plazo', 'warning'); return; }
+    if (!fechaInicio) { MQF.toast('Seleccione la fecha de inicio', 'warning'); return; }
+
+    const btnCalc = document.getElementById('btn-calcular-wiz');
+    const hint    = document.getElementById('calc-hint');
+    if(btnCalc) { btnCalc.disabled = true; btnCalc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calculando...'; }
+    if(hint) hint.textContent = 'Consultando servidor...';
+
+    try {
+      const tasaManualVal = document.getElementById('wiz-tasa-manual') ? parseFloat(document.getElementById('wiz-tasa-manual').value) : 0;
+      const payload = {
+        aseguradora_id: aseguradoraId,
+        tipo_id: tipoId,
+        valor_afianzado: valorAfianzado,
+        plazo_meses: plazo,
+        fecha_inicio: fechaInicio,
+        tasa_manual: !isNaN(tasaManualVal) && tasaManualVal > 0 ? tasaManualVal : null
+      };
+      const res = await api.solicitud('/fianzas.php?action=calcular', 'POST', payload);
+      if (res.exito && res.datos) {
+        _wizCalcResult = res.datos;
+        mostrarResultadoCalculo(_wizCalcResult);
+        if(hint) hint.textContent = '✅ Cálculo completado';
+        actualizarBotonesWizard();
+      } else {
+        MQF.toast('Error al calcular: ' + (res.mensaje || 'Respuesta inválida'), 'error');
+        if(hint) hint.textContent = 'Error al calcular. Intente nuevamente.';
+      }
+    } catch(e) {
+      MQF.toast('Error de conexión: ' + e.message, 'error');
+      if(hint) hint.textContent = 'Error de conexión.';
+    } finally {
+      if(btnCalc) { btnCalc.disabled = false; btnCalc.innerHTML = '<i class="fa-solid fa-calculator"></i> Calcular Prima'; }
+    }
+  }
+
+  function mostrarResultadoCalculo(data) {
+    // NUNCA mostrar porcentaje/tasa
+    const panel = document.getElementById('result-glass-panel');
+    document.getElementById('rg-monto-afianzado').textContent = fmt(data.valor_afianzado || data.monto_afianzado || 0);
+    document.getElementById('rg-prima-base').textContent      = fmt(data.prima_base || data.prima || 0);
+    document.getElementById('rg-itbis').textContent           = fmt(data.itbis || (data.prima_base || data.prima || 0) * 0.18);
+    document.getElementById('rg-total').textContent           = fmt(data.total || 0);
+
+    const alertMin = document.getElementById('prima-minima-alert');
+    if (alertMin) alertMin.style.display = data.prima_minima_aplicada ? 'flex' : 'none';
+
+    panel.style.display = 'block';
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // WIZARD — RESUMEN PASO 4
+  // ═══════════════════════════════════════════════════════
+  function generarResumen() {
+    // Recolectar todos los datos
+    const asegSel  = document.getElementById('wiz-aseguradora');
+    const tipoSel  = document.getElementById('wiz-tipo');
+    const plazoSel = document.getElementById('wiz-plazo');
+    const asegNombre = asegSel.options[asegSel.selectedIndex]?.text || '';
+    const tipoNombre = tipoSel.options[tipoSel.selectedIndex]?.text || '';
+    const primer = document.querySelector('input[name="primer-req"]:checked');
+
+    _wizData = {
+      nombre:            document.getElementById('wiz-nombre').value.trim(),
+      telefono:          document.getElementById('wiz-telefono').value.trim(),
+      email:             document.getElementById('wiz-email').value.trim(),
+      objeto_referencia: document.getElementById('wiz-proyecto').value.trim(),
+      beneficiario:      document.getElementById('wiz-beneficiario').value.trim(),
+      primer_requerimiento: primer ? primer.value : 'no',
+      aseguradora_id:    document.getElementById('wiz-aseguradora').value,
+      aseguradora_nombre: asegNombre,
+      tipo_id:           document.getElementById('wiz-tipo').value,
+      tipo_nombre:       tipoNombre,
+      cedula:            document.getElementById('wiz-cedula').value.trim(),
+      plazo_meses:       document.getElementById('wiz-plazo').value,
+      fecha_inicio:      document.getElementById('wiz-fecha-inicio').value,
+      num_contrato:      document.getElementById('wiz-num-contrato').value.trim(),
+      generar_ncf:       document.getElementById('wiz-ncf').checked,
+      observaciones:     document.getElementById('wiz-observaciones').value.trim(),
+      valor_afianzado:   getValorAfianzado(),
+      monto_contrato:    parseFloat(document.getElementById('wiz-monto-contrato').value) || 0,
+      porc_afianzar:     parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0,
+      ..._wizCalcResult
+    };
+
+    // Calcular fecha vencimiento
+    if (_wizData.fecha_inicio && _wizData.plazo_meses) {
+      const fv = new Date(_wizData.fecha_inicio);
+      fv.setMonth(fv.getMonth() + parseInt(_wizData.plazo_meses));
+      _wizData.fecha_vencimiento = fv.toISOString().split('T')[0];
+    }
+
+    // Renderizar resumen grid
+    const grid = document.getElementById('resumen-grid');
+    const items = [
+      ['Cliente / Asegurado',  _wizData.nombre],
+      ['Teléfono',             _wizData.telefono],
+      ['Correo',               _wizData.email],
+      ['Proyecto / Objeto',    _wizData.objeto_referencia],
+      ['Beneficiario',         _wizData.beneficiario],
+      ['Primer Requerimiento', _wizData.primer_requerimiento === 'si' ? 'Sí' : 'No'],
+      ['Aseguradora',          _wizData.aseguradora_nombre],
+      ['Tipo de Fianza',       _wizData.tipo_nombre],
+      ['Cédula / RNC',         _wizData.cedula || '—'],
+      ['Plazo',                _wizData.plazo_meses + ' meses'],
+      ['Fecha Inicio',         fmtFecha(_wizData.fecha_inicio)],
+      ['Fecha Vencimiento',    fmtFecha(_wizData.fecha_vencimiento)],
+      ['N° Contrato',          _wizData.num_contrato || '—'],
+      ['Valor a Afianzar',     fmt(_wizData.valor_afianzado || 0)],
+      ['Prima Base',           fmt(_wizData.prima_base || _wizData.prima || 0)],
+      ['ITBIS (18%)',          fmt(_wizData.itbis || 0)],
+      ['TOTAL A PAGAR',        fmt(_wizData.total || 0)],
+      ['Generar NCF',          _wizData.generar_ncf ? 'Sí (B02)' : 'No'],
+    ];
+    grid.innerHTML = items.map(([l, v]) =>
+      `<div class="summary-item"><div class="s-label">${l}</div><div class="s-value">${v || '—'}</div></div>`
+    ).join('');
+
+    // Checklist
+    const checks = [
+      { ok: !!_wizData.nombre,            txt: 'Datos del cliente completos' },
+      { ok: !!_wizData.beneficiario,      txt: 'Beneficiario identificado' },
+      { ok: !!_wizData.aseguradora_id,    txt: 'Aseguradora seleccionada' },
+      { ok: !!_wizData.tipo_id,           txt: 'Tipo de fianza definido' },
+      { ok: (_wizData.valor_afianzado > 0), txt: 'Valor a afianzar válido' },
+      { ok: !!_wizCalcResult,             txt: 'Prima calculada por el servidor' },
+    ];
+    document.getElementById('checklist-items').innerHTML = checks.map(c =>
+      `<div style="display:flex; align-items:center; gap:8px; color:${c.ok ? '#15803d' : '#b91c1c'};">
+         <i class="fa-solid ${c.ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+         <span>${c.txt}</span>
+       </div>`
+    ).join('');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // WIZARD — PROCESAR / GUARDAR
+  // Soporta modo creación (action=crear) y modo edición (action=actualizar)
+  // ═══════════════════════════════════════════════════════
+  async function procesarFianza(estado) {
+    // Modo edición: _wizData puede existir incluso sin _wizCalcResult (si no recalculó)
+    if (!_wizData || (!_wizCalcResult && !_editingFianzaId)) {
+      MQF.toast('Complete todos los pasos del wizard', 'warning');
+      return;
+    }
+
+    const modoEdicion  = !!_editingFianzaId;
+    const origenEdicion = _editingFianzaOrigen || 'fianzas';
+
+    const tasaManualEl  = document.getElementById('wiz-tasa-manual');
+    const tasaManualVal = tasaManualEl ? parseFloat(tasaManualEl.value) : NaN;
+
+    const payload = {
+      cliente:              _wizData.nombre,
+      cliente_nombre:       _wizData.nombre,
+      cedula:               _wizData.cedula,
+      cliente_cedula:       _wizData.cedula,
+      telefono:             _wizData.telefono,
+      cliente_telefono:     _wizData.telefono,
+      email:                _wizData.email,
+      cliente_email:        _wizData.email,
+      objeto_referencia:    _wizData.objeto_referencia,
+      beneficiario:         _wizData.beneficiario,
+      primer_requerimiento: _wizData.primer_requerimiento,
+      aseguradora_id:       _wizData.aseguradora_id,
+      aseguradora:          _wizData.aseguradora_nombre,
+      tipo_id:              _wizData.tipo_id,
+      tarifario_id:         _wizData.tipo_id,
+      tipo_fianza:          _wizData.tipo_nombre,
+      plazo_meses:          _wizData.plazo_meses,
+      fecha_inicio:         _wizData.fecha_inicio,
+      fecha_vencimiento:    _wizData.fecha_vencimiento,
+      num_contrato:         _wizData.num_contrato,
+      numero_contrato:      _wizData.num_contrato,
+      generar_ncf:          _wizData.generar_ncf,
+      observaciones:        _wizData.observaciones,
+      valor_afianzado:      _wizData.valor_afianzado,
+      monto_afianzado:      _wizData.valor_afianzado,
+      tasa_manual:          !isNaN(tasaManualVal) && tasaManualVal > 0 ? tasaManualVal : null,
+      prima_base:           _wizCalcResult ? _wizCalcResult.prima_base  : (_wizData.prima_base || 0),
+      itbis:                _wizCalcResult ? _wizCalcResult.itbis        : (_wizData.itbis     || 0),
+      total:                _wizCalcResult ? _wizCalcResult.total        : (_wizData.total     || 0),
+      estado:               estado,
+      declaracion_veracidad: true,
+      declaracion_cesion:    true
+    };
+
+    // Modo edición: agregar ID y usar action correcto
+    let endpoint = '/fianzas.php?action=crear';
+    if (modoEdicion) {
+      payload.id = _editingFianzaId;
+      if (origenEdicion === 'cotizaciones') {
+        // Cotizaciones del cotizador rápido se actualizan en su propia tabla
+        endpoint = '/cotizaciones.php?action=actualizar';
+        // Normalizar campos para cotizaciones.php
+        payload.tipo    = 'FIANZA';
+        payload.subtipo = _wizData.tipo_nombre;
+        payload.cliente = _wizData.nombre;
+        payload.plazo   = _wizData.plazo_meses;
+        payload.impuesto = payload.itbis;
+      } else {
+        endpoint = '/fianzas.php?action=actualizar';
+      }
+    }
+
+    const btnG = document.getElementById('btn-guardar-cotiz');
+    const btnP = document.getElementById('btn-procesar-pdf');
+    if(btnG) btnG.disabled = true;
+    if(btnP) btnP.disabled = true;
+
+    try {
+      const res = await api.solicitud(endpoint, 'POST', payload);
+      if (res.exito) {
+        const numFianza = (res.datos && (res.datos.numero || res.datos.numero_fianza))
+          ? (res.datos.numero || res.datos.numero_fianza)
+          : (_wizData.numero_fianza || 'FZ-' + Date.now());
+        _wizData.numero_fianza = numFianza;
+        if (res.datos) Object.assign(_wizData, res.datos);
+
+        const msg = modoEdicion
+          ? '✅ Cotización actualizada: ' + numFianza
+          : '✅ ' + (estado === 'cotizacion' ? 'Cotización guardada' : 'Fianza procesada') + ': ' + numFianza;
+        MQF.toast(msg, 'success');
+
+        if (estado !== 'cotizacion' || modoEdicion) {
+          // En modo edición siempre genera PDF; en modo creación solo si es vigente
+          if (estado !== 'cotizacion' || modoEdicion) generarPDFFianza(_wizData);
+        }
+
+        // Limpiar modo edición
+        _editingFianzaId    = null;
+        _editingFianzaOrigen = 'fianzas';
+
+        // Ir a pantalla de gracias
+        _wizStep = 5;
+        mostrarWizPanel(5);
+        const footer = document.getElementById('wizard-footer');
+        if (footer) footer.style.display = 'none';
+        cargarFianzasActivas();
+        cargarHistorialCompleto();
+        cargarCotizacionesTab();
+      } else {
+        MQF.toast('Error: ' + (res.mensaje || 'No se pudo guardar'), 'error');
+      }
+    } catch(e) {
+      MQF.toast('Error: ' + e.message, 'error');
+    } finally {
+      if(btnG) btnG.disabled = false;
+      if(btnP) btnP.disabled = false;
+    }
+  }
+
+  function descargarPDFActual() {
+    if (_wizData) generarPDFFianza(_wizData);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PDF GENERATION
+  // origen: 'fianzas' (tabla fianzas) | 'cotizaciones' (cotizador rápido)
+  // ═══════════════════════════════════════════════════════
+  async function imprimirFianzaPDF(id, origen) {
+    const fuentes = [...(_fianzasActivas || []), ...(_historialFz || []), ...(_cotizacionesTab || [])];
+    let f = origen
+      ? fuentes.find(x => String(x.id) === String(id) && (x._origen || 'fianzas') === origen)
+      : fuentes.find(x => String(x.id) === String(id));
+
+    // Si no está en memoria, o si el nombre de la aseguradora es un ID o está vacío
+    const necesitaFetch = !f || !f.aseguradora || !isNaN(f.aseguradora);
+
+    if (necesitaFetch) {
+      try {
+        MQF.toast('Cargando detalles de la fianza...', 'info');
+        const res = await api.solicitud('/fianzas.php?action=obtener&id=' + id, 'GET');
+        if (res.exito && res.datos) {
+          f = res.datos;
+          f._origen = 'fianzas';
+          f.numero = f.numero || f.numero_fianza;
+          f.cliente = f.cliente || f.cliente_nombre;
+          f.aseguradora = f.aseguradora_nombre || f.aseguradora;
+        }
+      } catch(e) {
+        console.error('Error fetching fianza details:', e);
+      }
+    }
+
+    if (!f) { MQF.toast('No se encontró la fianza ID: ' + id, 'error'); return; }
+    generarPDFFianza(f);
+  }
+
+  function generarPDFFianza(data) {
+    try {
+      if (!window.jspdf) { MQF.toast('Motor PDF no cargado', 'error'); return; }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const logo = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+      const W = 210;
+      let y = 15;
+
+      // Normalizar campos con fallbacks seguros
+      const num        = data.numero || data.numero_fianza || ('FZ-' + Date.now());
+      const cliente    = data.cliente || data.cliente_nombre || data.nombre || '—';
+      const cedula     = data.cedula  || data.cliente_cedula  || '—';
+      const benef      = data.beneficiario || '—';
+      const objeto     = data.objeto_referencia || data.objeto || '—';
+      let aseguradora  = data.aseguradora || data.aseguradora_nombre || '—';
+      
+      // Si aseguradora es numérico, buscar fallback de nombre
+      if (!isNaN(aseguradora) && parseInt(aseguradora) > 0) {
+        const idBusqueda = parseInt(aseguradora);
+        const found = (window._wizAseguradoras || []).find(a => parseInt(a.id) === idBusqueda);
+        if (found) {
+          aseguradora = found.nombre;
+        } else {
+          const foundSimple = (window._aseguradorasSimplesList || []).find(a => parseInt(a.id) === idBusqueda);
+          if (foundSimple) aseguradora = foundSimple.nombre;
+        }
+      }
+      const tipo_fza   = data.tipo_fianza  || data.tipo_nombre || data.subtipo || '—';
+      const monto      = parseFloat(data.monto_afianzado || data.valor_afianzado || 0);
+      const plazo      = data.plazo_meses  || data.plazo || '—';
+      const fi         = data.fecha_inicio  || data.fecha_emision || data.fecha || '';
+      const fv         = data.fecha_vencimiento || '';
+      const primer_req = (data.primer_requerimiento === true || data.primer_requerimiento === 1
+                       || String(data.primer_requerimiento).toLowerCase() === 'si'
+                       || String(data.primer_requerimiento).toLowerCase() === '1');
+      const num_contrato = data.numero_contrato || data.num_contrato || '';
+      const pbase      = parseFloat(data.prima_base || data.prima || 0);
+      const itbis      = parseFloat(data.itbis || data.impuesto || pbase * 0.18);
+      const total      = parseFloat(data.total || pbase + itbis);
+      const ncf        = data.ncf || data.usar_ncf || false;
+
+      // ── HEADER ──
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, W, 40, 'F');
+      if (logo) { try { doc.addImage(logo, 'PNG', 10, 6, 35, 14); } catch(e) {} }
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18); doc.setFont(undefined, 'bold');
+      doc.text('CERTIFICADO DE FIANZA', W / 2, 18, { align: 'center' });
+      doc.setFontSize(10); doc.setFont(undefined, 'normal');
+      doc.text('MAS QUE FIANZAS +QF, SRL', W / 2, 26, { align: 'center' });
+      doc.text('RNC: 133-53573-4 · Licencia No. CMS-1561-A', W / 2, 32, { align: 'center' });
+      y = 48;
+
+      // N° y Fecha
+      doc.setTextColor(0, 0, 0);
+      doc.setFillColor(238, 242, 255);
+      doc.roundedRect(10, y, W - 20, 14, 3, 3, 'F');
+      doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.setTextColor(79, 70, 229);
+      doc.text('N° FIANZA: ' + num, 15, y + 6);
+      doc.text('FECHA EMISIÓN: ' + fmtFecha(fi || new Date()), W - 15, y + 6, { align: 'right' });
+      y += 20;
+
+      // ── ASEGURADO ──
+      doc.setTextColor(0,0,0); doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.text('EL ASEGURADO', 10, y);
+      doc.setDrawColor(199,210,254); doc.line(10, y+1, W-10, y+1); y += 6;
+      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      doc.text('Nombre: ' + cliente, 12, y); y += 5;
+      doc.text('Cédula / RNC: ' + cedula, 12, y); y += 10;
+
+      // ── BENEFICIARIO ──
+      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.text('EL BENEFICIARIO', 10, y);
+      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
+      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      doc.text(benef, 12, y); y += 10;
+
+      // ── OBJETO ──
+      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.text('OBJETO DE LA FIANZA', 10, y);
+      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
+      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      const objText = doc.splitTextToSize(objeto, W - 24);
+      doc.text(objText, 12, y); y += objText.length * 5 + 5;
+
+      // ── DETALLES EN TABLA ──
+      const detalles = [
+        ['EMITIDA POR', aseguradora],
+        ['TIPO DE GARANTÍA', tipo_fza],
+        ['MONTO GARANTIZADO', fmt(monto)],
+        ['VIGENCIA', plazo + ' meses, desde ' + fmtFecha(fi) + ' hasta ' + fmtFecha(fv)],
+      ];
+      if (num_contrato) detalles.push(['N° CONTRATO / LICITACIÓN', num_contrato]);
+
+      doc.autoTable({
+        body: detalles, startY: y, margin: { left: 10, right: 10 },
+        columnStyles: { 0: { fontStyle:'bold', textColor:[79,70,229], cellWidth:55 }, 1: { textColor:[30,30,30] } },
+        styles: { fontSize:9.5, cellPadding:3 },
+        alternateRowStyles: { fillColor:[249,250,251] },
+      });
+      y = doc.lastAutoTable.finalY + 8;
+
+      // ── PRIMER REQUERIMIENTO ──
+      if (primer_req) {
+        doc.setFillColor(239,246,255); doc.roundedRect(10,y,W-20,16,2,2,'F');
+        doc.setFontSize(9); doc.setFont(undefined,'italic'); doc.setTextColor(30,64,175);
+        const clausulaText = doc.splitTextToSize('Esta fianza es pagadera a primer requerimiento escrito del Beneficiario, sin que éste deba probar el incumplimiento del Afianzado.', W-26);
+        doc.text(clausulaText, 14, y+5); y += clausulaText.length * 4.5 + 8;
+      }
+
+      // ── DESGLOSE PRIMA (sin tasa) ──
+      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.text('DESGLOSE DE PRIMA', 10, y);
+      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 3;
+
+      doc.autoTable({
+        head: [['Concepto','Monto']],
+        body: [['Prima Base', fmt(pbase)], ['ITBIS (18%)', fmt(itbis)], ['TOTAL A PAGAR', fmt(total)]],
+        startY: y, margin: { left:10, right:10 },
+        headStyles: { fillColor:[79,70,229], textColor:255, fontStyle:'bold' },
+        styles: { fontSize:9.5, cellPadding:3 },
+        columnStyles: { 1: { halign:'right', fontStyle:'bold' } },
+      });
+      y = doc.lastAutoTable.finalY + 6;
+
+      if (ncf) {
+        doc.setFontSize(9); doc.setFont(undefined,'normal'); doc.setTextColor(107,114,128);
+        doc.text('Comprobante Fiscal (NCF): B02 — ' + (typeof ncf==='string' ? ncf : 'Pendiente'), 10, y); y += 6;
+      }
+      doc.setFontSize(8); doc.setFont(undefined,'italic'); doc.setTextColor(156,163,175);
+      doc.text('El solicitante aceptó la Declaración de Veracidad y Autorización de Administración y Cesión de Información.', 10, y, { maxWidth: W-20 }); y += 8;
+
+      // PIE
+      doc.setFillColor(30,58,138); doc.rect(0,285,W,12,'F');
+      doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(255,255,255);
+      doc.text('MAS QUE FIANZAS +QF, SRL · RNC: 133-53573-4 · Licencia No. CMS-1561-A', W/2, 291, { align:'center' });
+      doc.text('Documento generado electrónicamente · ' + new Date().toLocaleString('es-DO'), W/2, 295, { align:'center' });
+
+      doc.save('fianza_' + num + '.pdf');
+      MQF.toast('✅ PDF generado: fianza_' + num + '.pdf', 'success');
+
+    } catch(e) {
+      console.error('Error generando PDF:', e);
+      MQF.toast('Error al generar PDF: ' + e.message, 'error');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // TELEFONO FORMAT
+  // ═══════════════════════════════════════════════════════
+  function formatearTelefono(el) {
+    let v = el.value.replace(/\D/g, '').substring(0, 10);
+    if (v.length >= 7) {
+      v = '(' + v.substring(0, 3) + ') ' + v.substring(3, 6) + '-' + v.substring(6);
+    } else if (v.length >= 4) {
+      v = '(' + v.substring(0, 3) + ') ' + v.substring(3);
+    }
+    el.value = v;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // PERMISOS / TAB GUARDS
+  // ═══════════════════════════════════════════════════════
+  async function initTabGuardsFianzas() {
+    try {
+      const token = localStorage.getItem('token_sesion') ||
+                    sessionStorage.getItem('mqf_token') ||
+                    sessionStorage.getItem('mqfToken');
+      if (!token) return;
+
+      let codigosPermisos = [];
+      try {
+        if (window.parent && window.parent.MQF_PERMISOS_NOFTRAB) {
+          codigosPermisos = window.parent.MQF_PERMISOS_NOFTRAB;
+        }
+      } catch(pe) { /* cross-origin */ }
+
+      if (codigosPermisos.length === 0) {
+        try {
+          const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/auth/validar-sesion?token=' + encodeURIComponent(token));
+          if (resp.ok) {
+            const data = await resp.json();
+            const rawPermisos = data.permisos || data.datos || data.codigos || [];
+            if (Array.isArray(rawPermisos)) {
+              codigosPermisos = rawPermisos.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+            }
+          }
+        } catch(fetchErr) { return; }
+      }
+
+      if (codigosPermisos.length === 0) return;
+
+      // Guardar globalmente para guards de UI en tablas
+      window._permisosFz = codigosPermisos;
+
+      // Mostrar tab tarifarios solo si tiene permiso admin
+      const tieneAdmin = codigosPermisos.some(p =>
+        p === 'TAB_FZ_TARIFARIOS' || p === 'ADMIN' || p === 'SUPERADMIN' || p.includes('ADMIN') || p === 'FIANZAS_ADMIN_TARIFARIO'
+      );
+      const tabTarif = document.getElementById('tab-tarifarios');
+      if (tabTarif) tabTarif.style.display = tieneAdmin ? '' : 'none';
+
+      // Acceso global para administradores y perfiles con acceso total
+      const esAdminGlobal = codigosPermisos.some(p =>
+        p === 'ADMIN' || p === 'SUPERADMIN' || p.includes('ADMIN') || p === 'FI_TOTAL'
+      );
+
+      // Ocultar otros tabs sin permiso
+      const guards = [
+        { id: 'tab-empresas',     permiso: 'TAB_FZ_EMPRESAS' },
+        { id: 'tab-cotizaciones', permiso: 'TAB_FZ_COTIZACIONES' },
+        { id: 'tab-fianzas',      permiso: 'TAB_FZ_FIANZAS' },
+        { id: 'tab-historial',    permiso: 'TAB_FZ_HISTORIAL' },
+      ];
+      guards.forEach(g => {
+        const tienePermisoTab = esAdminGlobal || codigosPermisos.includes(g.permiso);
+        const el = document.getElementById(g.id);
+        if (el) el.style.display = tienePermisoTab ? '' : 'none';
+      });
+
+      // Activar primer tab visible
+      const tabIds = ['tab-empresas','tab-cotizaciones','tab-fianzas','tab-historial','tab-tarifarios'];
+      for (const id of tabIds) {
+        const el = document.getElementById(id);
+        if (el && el.style.display !== 'none') { el.click(); break; }
+      }
+
+    } catch(e) {
+      console.warn('TabGuard Fianzas:', e.message);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // UX-SKIN SYNC
+  // ═══════════════════════════════════════════════════════
+  (function() {
+    var s = localStorage.getItem('mqf-skin') || 'indigo';
+    document.body.setAttribute('data-skin', s);
+    document.documentElement.setAttribute('data-skin', s);
+  })();
+
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'mqf-skin-set') {
+      document.body.setAttribute('data-skin', e.data.skin);
+      document.documentElement.setAttribute('data-skin', e.data.skin);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // INIT
+  // ═══════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', function() {
+    // Verificar wizard btn estado al cargar paso 1
+    const btnSig = document.getElementById('btn-wiz-siguiente');
+    if (btnSig) btnSig.disabled = true;
+
+    // Fecha default hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    const fd = document.getElementById('wiz-fecha-inicio');
+    if (fd) fd.value = hoy;
+
+    // Cargar tab inicial (empresas)
+    cargarEmpresas();
+
+    // Tab guards
+    initTabGuardsFianzas();
+  });
+  </script>
+
+</body>
+</html>

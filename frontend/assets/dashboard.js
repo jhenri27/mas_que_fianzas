@@ -678,6 +678,15 @@ class Dashboard {
             }
         }
 
+        // Si es fianzas, forzar carga del iframe (Norma NOFTRAB)
+        if (modulo === 'fianzas') {
+            const iframe = document.getElementById('fianzas-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/fianzas.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
         // Si es centro_financiero, forzar carga del iframe
         if (modulo === 'centro_financiero') {
             const iframe = document.getElementById('finance-iframe');

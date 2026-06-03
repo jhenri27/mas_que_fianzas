@@ -1398,3 +1398,28 @@ html, body {
     flex-direction: column;
     gap: 8px;
 }
+
+/* Close button contrast fix for global-modal (NOFTRAB) */
+#globalQueryModal .global-modal-header .modal-close {
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+#globalQueryModal .global-modal-header .modal-close:hover {
+    color: #0f172a !important;
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    transform: scale(1.05) !important;
+}
+

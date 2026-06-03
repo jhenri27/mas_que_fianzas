@@ -85,6 +85,53 @@ try {
             respuestaJSON(true, "Catálogo obtenido", $cuentas);
             break;
 
+        case 'crear_cuenta':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!$data) {
+                $data = $_POST;
+            }
+
+            $codigo = trim($data['codigo'] ?? '');
+            $nombre = trim($data['nombre'] ?? '');
+            $tipo = trim($data['tipo'] ?? '');
+            $naturaleza = trim($data['naturaleza'] ?? '');
+            $es_detalle = isset($data['es_detalle']) ? (int)$data['es_detalle'] : 1;
+
+            if (empty($codigo) || empty($nombre) || empty($tipo) || empty($naturaleza)) {
+                respuestaJSON(false, "Todos los campos marcados con * son obligatorios.");
+                break;
+            }
+
+            // Validar si el código ya existe
+            $stmt = $db->prepare("SELECT id FROM cf_catalogo_cuentas WHERE codigo = ?");
+            $stmt->bind_param("s", $codigo);
+            $stmt->execute();
+            if ($stmt->get_result()->num_rows > 0) {
+                respuestaJSON(false, "El código de cuenta '$codigo' ya está registrado.");
+                break;
+            }
+            $stmt->close();
+
+            // Calcular nivel y cuenta padre
+            $tokens = explode('.', $codigo);
+            $nivel = count($tokens);
+            $cuenta_padre = '';
+            if ($nivel > 1) {
+                array_pop($tokens);
+                $cuenta_padre = implode('.', $tokens);
+            }
+
+            // Insertar la cuenta
+            $stmt = $db->prepare("INSERT INTO cf_catalogo_cuentas (codigo, nombre, tipo, naturaleza, nivel, cuenta_padre, es_detalle, activa) VALUES (?, ?, ?, ?, ?, ?, ?, 1)");
+            $stmt->bind_param("ssssisi", $codigo, $nombre, $tipo, $naturaleza, $nivel, $cuenta_padre, $es_detalle);
+            if ($stmt->execute()) {
+                respuestaJSON(true, "Cuenta '$nombre' registrada con éxito.");
+            } else {
+                respuestaJSON(false, "Error al registrar la cuenta: " . $stmt->error);
+            }
+            $stmt->close();
+            break;
+
         default:
             respuestaJSON(false, "Acción no definida");
             break;

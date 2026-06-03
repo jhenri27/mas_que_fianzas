@@ -263,8 +263,12 @@
 [data-skin="obsidian"] .dropdown-item:hover { background: var(--mqf-surface-2) !important; }
 [data-skin="obsidian"] input, [data-skin="obsidian"] select, [data-skin="obsidian"] textarea {
   background: var(--mqf-surface-2) !important;
-  color: var(--mqf-text) !important;
+  color: #ffffff !important;
   border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] select option {
+  background-color: #0d1527 !important;
+  color: #ffffff !important;
 }
 [data-skin="obsidian"] .tbl-wrap,
 [data-skin="obsidian"] .table-container     { background: var(--mqf-surface) !important; }
@@ -1785,5 +1789,43 @@
 [data-skin="obsidian"] .permiso-nombre-td,
 [data-skin="obsidian-classic"] .permiso-nombre-td {
   color: #cbd5e1 !important;
+}
+
+/* ============================================================
+   GLOBAL SELECT OPTION CONTRAST FALLBACKS (NOFTRAP)
+   Evita que las opciones se decoloren a blanco en fondos claros
+   ============================================================ */
+select option {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+}
+[data-skin="obsidian"] select option,
+[data-skin="obsidian-classic"] select option {
+  background-color: #0d1527 !important;
+  color: #ffffff !important;
+}
+
+/* Close button contrast fix for global-modal (NOFTRAB) */
+#globalQueryModal .global-modal-header .modal-close {
+    color: #475569 !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 50% !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+#globalQueryModal .global-modal-header .modal-close:hover {
+    color: #0f172a !important;
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    transform: scale(1.05) !important;
 }
 

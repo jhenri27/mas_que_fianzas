@@ -58,10 +58,12 @@ $action = $_GET['action'] ?? 'listar';
 
 try {
     // ─── VERIFICAR PERMISOS BASE DEL MÓDULO ──────────────────────────────────
-    if (!tienePermiso($usuario_actual, 'TAB_CONF_COMPANIAS') && $usuario_actual !== 1) {
-        http_response_code(403);
-        echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para acceder a esta sección de configuración."]);
-        exit;
+    if ($method !== 'GET') {
+        if (!tienePermiso($usuario_actual, 'TAB_CONF_COMPANIAS') && $usuario_actual !== 1) {
+            http_response_code(403);
+            echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para acceder a esta sección de configuración."]);
+            exit;
+        }
     }
 
     if ($method === 'GET') {

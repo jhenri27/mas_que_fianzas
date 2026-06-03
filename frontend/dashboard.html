@@ -6,10 +6,10 @@
     <title>Dashboard - MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
     <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
-    <link rel="stylesheet" href="assets/dashboard.css?v=5.0.0">
-    <link rel="stylesheet" href="assets/modulos.css?v=5.0.0">
-    <link rel="stylesheet" href="assets/skin-engine.css?v=5.0.0">
-    <script src="assets/components.js?v=5.0.0" defer></script>
+    <link rel="stylesheet" href="assets/dashboard.css?v=9.0.0">
+    <link rel="stylesheet" href="assets/modulos.css?v=9.0.0">
+    <link rel="stylesheet" href="assets/skin-engine.css?v=9.0.0">
+    <script src="assets/components.js?v=9.0.0" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><script>
       /* ── Aplicar skin ANTES del primer render (evita flash) ── */
       (function(){
@@ -275,13 +275,13 @@
                     </iframe>
                 </section>
 
-                <section id="modulo-fianzas" class="module">
-                    <div class="module-header">
-                        <h2>Gestión de Fianzas</h2>
-                    </div>
-                    <div class="coming-soon">
-                        <p>Módulo de gestión de fianzas en desarrollo</p>
-                    </div>
+                <section id="modulo-fianzas" class="module" style="padding:0; overflow:hidden;">
+                    <iframe
+                        id="fianzas-iframe"
+                        src=""
+                        style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
+                        title="Módulo de Gestión de Fianzas">
+                    </iframe>
                 </section>
 
                 <section id="modulo-pagos" class="module">
@@ -1209,8 +1209,8 @@
         </div>
     </div>
 
-    <script src="assets/api-client.js?v=5.0.0"></script>
-    <script src="assets/dashboard.js?v=5.0.0"></script>
+    <script src="assets/api-client.js?v=9.0.0"></script>
+    <script src="assets/dashboard.js?v=9.0.0"></script>
     <script>
     // Helper para abrir modales si no está definido globalmente
     function abrirModal(modalId) {

@@ -50,7 +50,7 @@ $usuario_actual = $usuario_id;
 $metodo = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
-// Auto-crear tabla si no existe
+// Auto-crear tabla si no existe y agregar columnas faltantes (idempotente)
 function crearTablaIfNeeded($db) {
     $sql = "CREATE TABLE IF NOT EXISTS `cotizaciones` (
         `id`                   INT AUTO_INCREMENT PRIMARY KEY,
@@ -59,6 +59,8 @@ function crearTablaIfNeeded($db) {
         `subtipo`              VARCHAR(100)  DEFAULT NULL,
         `cliente`              VARCHAR(200)  DEFAULT NULL,
         `cedula`               VARCHAR(30)   DEFAULT NULL,
+        `telefono`             VARCHAR(30)   DEFAULT NULL,
+        `email`                VARCHAR(120)  DEFAULT NULL,
         `beneficiario`         VARCHAR(255)  DEFAULT NULL,
         `uso`                  VARCHAR(60)   DEFAULT NULL,
         `capacidad`            VARCHAR(100)  DEFAULT NULL,
@@ -75,6 +77,12 @@ function crearTablaIfNeeded($db) {
         INDEX `idx_fecha` (`fecha`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     $db->query($sql);
+    // Migración idempotente: agregar columnas si no existen (tabla ya creada anteriormente)
+    $cols = [];
+    $r = $db->query("SHOW COLUMNS FROM cotizaciones");
+    while ($row = $r->fetch_assoc()) $cols[] = $row['Field'];
+    if (!in_array('telefono', $cols)) $db->query("ALTER TABLE cotizaciones ADD COLUMN telefono VARCHAR(30) DEFAULT NULL AFTER cedula");
+    if (!in_array('email',    $cols)) $db->query("ALTER TABLE cotizaciones ADD COLUMN email    VARCHAR(120) DEFAULT NULL AFTER telefono");
 }
 
 function insertar_cotizacion($db, $c, $usuario_actual = 1) {
@@ -83,6 +91,8 @@ function insertar_cotizacion($db, $c, $usuario_actual = 1) {
     $subtipo     = $c['subtipo'] ?? '';
     $cliente     = $c['cliente'] ?? '';
     $cedula      = $c['cedula'] ?? '';
+    $telefono    = $c['telefono'] ?? '';
+    $email       = $c['email']    ?? '';
     $beneficiario= $c['beneficiario'] ?? '';
     $uso         = $c['uso'] ?? '';
     $capacidad   = $c['capacidad'] ?? '';
@@ -95,22 +105,25 @@ function insertar_cotizacion($db, $c, $usuario_actual = 1) {
     $total       = floatval($c['total'] ?? 0);
     $servicios   = isset($c['servicios_opcionales']) ? (is_array($c['servicios_opcionales']) ? json_encode($c['servicios_opcionales']) : $c['servicios_opcionales']) : '';
     $fecha_raw   = $c['fecha'] ?? date('Y-m-d H:i:s');
-    // Normalizar fecha ISO a MySQL
     $fecha = date('Y-m-d H:i:s', strtotime($fecha_raw));
+    $tasa_manual = (isset($c['tasa_manual']) && !empty($c['tasa_manual'])) ? floatval($c['tasa_manual']) : null;
 
     $stmt = $db->prepare(
-        "INSERT INTO cotizaciones 
-         (numero, tipo, subtipo, cliente, cedula, beneficiario, uso, capacidad, aseguradora, cobertura,
-          monto_afianzado, plazo, prima_base, impuesto, total, servicios_opcionales, fecha, creado_por)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        "INSERT INTO cotizaciones
+         (numero, tipo, subtipo, cliente, cedula, telefono, email, beneficiario, uso, capacidad, aseguradora, cobertura,
+          monto_afianzado, plazo, prima_base, impuesto, total, servicios_opcionales, fecha, creado_por, tasa_manual)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
          ON DUPLICATE KEY UPDATE
-         tipo=VALUES(tipo), cliente=VALUES(cliente), beneficiario=VALUES(beneficiario), total=VALUES(total), fecha=VALUES(fecha)"
+         tipo=VALUES(tipo), cliente=VALUES(cliente), cedula=VALUES(cedula),
+         telefono=VALUES(telefono), email=VALUES(email),
+         beneficiario=VALUES(beneficiario), aseguradora=VALUES(aseguradora),
+         subtipo=VALUES(subtipo), total=VALUES(total), fecha=VALUES(fecha), tasa_manual=VALUES(tasa_manual)"
     );
-    $stmt->bind_param('ssssssssssdidddssi',
-        $numero, $tipo, $subtipo, $cliente, $cedula, $beneficiario,
+    $stmt->bind_param('ssssssssssssdidddssid',
+        $numero, $tipo, $subtipo, $cliente, $cedula, $telefono, $email, $beneficiario,
         $uso, $capacidad, $aseguradora, $cobertura,
         $monto, $plazo, $prima_base, $impuesto, $total,
-        $servicios, $fecha, $usuario_actual
+        $servicios, $fecha, $usuario_actual, $tasa_manual
     );
     $ok = $stmt->execute();
     $stmt->close();
@@ -213,10 +226,12 @@ try {
 
         $id = intval($datos['id']);
         $sql = "UPDATE cotizaciones SET 
-                tipo = ?, subtipo = ?, cliente = ?, cedula = ?, beneficiario = ?, uso = ?, 
+                tipo = ?, subtipo = ?, cliente = ?, cedula = ?, telefono = ?, email = ?,
+                beneficiario = ?, uso = ?, 
                 capacidad = ?, aseguradora = ?, cobertura = ?, 
                 monto_afianzado = ?, plazo = ?, prima_base = ?, 
-                impuesto = ?, total = ?, servicios_opcionales = ?
+                impuesto = ?, total = ?, servicios_opcionales = ?,
+                tasa_manual = ?
                 WHERE id = ?";
         
         $stmt = $db->prepare($sql);
@@ -228,24 +243,27 @@ try {
                     : ($datos['cobertura'] ?? '');
         $beneficiario = $datos['beneficiario'] ?? '';
 
-        $tipo = $datos['tipo'] ?? 'GENERAL';
-        $subtipo = $datos['subtipo'] ?? '';
-        $cliente = $datos['cliente'] ?? '';
-        $cedula = $datos['cedula'] ?? '';
-        $uso = $datos['uso'] ?? '';
-        $capacidad = $datos['capacidad'] ?? '';
+        $tipo     = $datos['tipo'] ?? 'GENERAL';
+        $subtipo  = $datos['subtipo'] ?? '';
+        $cliente  = $datos['cliente'] ?? '';
+        $cedula   = $datos['cedula']   ?? '';
+        $telefono = $datos['telefono'] ?? '';
+        $email    = $datos['email']    ?? '';
+        $uso      = $datos['uso']      ?? '';
+        $capacidad   = $datos['capacidad']  ?? '';
         $aseguradora = $datos['aseguradora'] ?? '';
         $monto_afianzado = floatval($datos['monto_afianzado'] ?? 0);
-        $plazo = intval($datos['plazo'] ?? 0);
-        $prima_base = floatval($datos['prima_base'] ?? 0);
-        $impuesto = floatval($datos['impuesto'] ?? 0);
-        $total = floatval($datos['total'] ?? 0);
+        $plazo       = intval($datos['plazo'] ?? 0);
+        $prima_base  = floatval($datos['prima_base'] ?? 0);
+        $impuesto    = floatval($datos['impuesto'] ?? 0);
+        $total       = floatval($datos['total'] ?? 0);
+        $tasa_manual = (isset($datos['tasa_manual']) && !empty($datos['tasa_manual'])) ? floatval($datos['tasa_manual']) : null;
 
-        $stmt->bind_param('sssssssssdidddsi',
-            $tipo, $subtipo, $cliente, $cedula, $beneficiario, $uso,
+        $stmt->bind_param('sssssssssssdidddssdi',
+            $tipo, $subtipo, $cliente, $cedula, $telefono, $email, $beneficiario, $uso,
             $capacidad, $aseguradora, $cobertura,
             $monto_afianzado, $plazo, $prima_base,
-            $impuesto, $total, $servicios, $id
+            $impuesto, $total, $servicios, $tasa_manual, $id
         );
 
         if ($stmt->execute()) {

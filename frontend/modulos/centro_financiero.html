@@ -122,7 +122,7 @@
                     <h2 class="mqf-card-title">Catálogo de Cuentas SIS</h2>
                     <div>
                         <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="exportarCatalogo()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-                        <button class="mqf-btn mqf-btn--primary mqf-btn--sm"><i class="fa-solid fa-plus"></i> Nueva Cuenta</button>
+                        <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirModalNuevaCuenta()"><i class="fa-solid fa-plus"></i> Nueva Cuenta</button>
                     </div>
                 </div>
                 <div id="catalogo-body" style="padding:20px;">
@@ -180,20 +180,71 @@
     </div>
 
     <!-- MODAL DETALLE ASIENTO -->
-    <div id="modal-asiento" class="mqf-modal">
-        <div class="mqf-modal__content" style="max-width: 700px;">
-            <div class="mqf-modal__header" style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 class="mqf-modal__title">Detalle de Asiento Contable</h2>
+    <div id="modal-asiento" class="mqf-modal-backdrop">
+        <div class="mqf-modal mqf-modal--lg">
+            <div class="mqf-modal-header">
+                <h2 class="mqf-modal-title">Detalle de Asiento Contable</h2>
                 <div>
                     <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" id="btn-print-asiento" style="margin-right:10px;"><i class="fa-solid fa-print"></i> PDF</button>
-                    <button class="mqf-modal__close" onclick="closeModal()">&times;</button>
+                    <button class="mqf-modal-close" onclick="closeModal()">&times;</button>
                 </div>
             </div>
-            <div class="mqf-modal__body" id="asiento-detalle-body">
+            <div class="mqf-modal-body" id="asiento-detalle-body">
                 <!-- Se llena vía JS -->
             </div>
         </div>
     </div>
+
+    <!-- MODAL NUEVA CUENTA -->
+    <div id="modal-nueva-cuenta" class="mqf-modal-backdrop">
+        <div class="mqf-modal">
+            <div class="mqf-modal-header">
+                <h2 class="mqf-modal-title"><i class="fa-solid fa-book"></i> Nueva Cuenta de Catálogo</h2>
+                <button class="mqf-modal-close" onclick="cerrarModalNuevaCuenta()">&times;</button>
+            </div>
+            <form id="form-nueva-cuenta" onsubmit="guardarNuevaCuenta(event)" class="mqf-modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Código de la Cuenta *</label>
+                    <input type="text" id="cta-codigo" class="mqf-input" placeholder="Ej: 1.1.03 o 2.1.04" required>
+                    <span style="font-size:11px; color:var(--mqf-text-muted);">Debe seguir el formato de niveles separado por puntos.</span>
+                </div>
+                <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Nombre de la Cuenta *</label>
+                    <input type="text" id="cta-nombre" class="mqf-input" placeholder="Ej: Banco BHD o Cuentas por Cobrar Socios" required>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Tipo de Cuenta *</label>
+                        <select id="cta-tipo" class="mqf-select" required>
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="PASIVO">PASIVO</option>
+                            <option value="PATRIMONIO">PATRIMONIO</option>
+                            <option value="INGRESO">INGRESO</option>
+                            <option value="EGRESO">EGRESO</option>
+                            <option value="ORDEN">ORDEN</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Naturaleza *</label>
+                        <select id="cta-naturaleza" class="mqf-select" required>
+                            <option value="DEUDORA">DEUDORA</option>
+                            <option value="ACREEDORA">ACREEDORA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="cta-es-detalle" checked style="width:16px; height:16px; cursor:pointer;">
+                    <label for="cta-es-detalle" style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary); cursor:pointer;">Es Cuenta de Detalle (Permite registrar asientos)</label>
+                </div>
+                <div class="mqf-modal-footer" style="padding-top:16px; border-top:1px solid var(--mqf-border); display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                    <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalNuevaCuenta()">Cancelar</button>
+                    <button type="submit" class="mqf-btn mqf-btn--primary"><i class="fa-solid fa-save"></i> Guardar Cuenta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
 
     <script>
         const API_FINANCE = '../../backend/api/centro_financiero.php';
@@ -319,6 +370,59 @@
 
         function closeModal() {
             document.getElementById('modal-asiento').classList.remove('active');
+        }
+
+        function abrirModalNuevaCuenta() {
+            document.getElementById('form-nueva-cuenta').reset();
+            document.getElementById('modal-nueva-cuenta').classList.add('active');
+        }
+
+        function cerrarModalNuevaCuenta() {
+            document.getElementById('modal-nueva-cuenta').classList.remove('active');
+        }
+
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            if (window.parent && window.parent.MQF && window.parent.MQF.toast) {
+                window.parent.MQF.toast(mensaje, tipo);
+            } else if (window.MQF && window.MQF.toast) {
+                window.MQF.toast(mensaje, tipo);
+            } else {
+                alert(mensaje);
+            }
+        }
+
+        async function guardarNuevaCuenta(e) {
+            e.preventDefault();
+            
+            const codigo = document.getElementById('cta-codigo').value.trim();
+            const nombre = document.getElementById('cta-nombre').value.trim();
+            const tipo = document.getElementById('cta-tipo').value;
+            const naturaleza = document.getElementById('cta-naturaleza').value;
+            const es_detalle = document.getElementById('cta-es-detalle').checked ? 1 : 0;
+
+            if (!codigo || !nombre || !tipo || !naturaleza) {
+                mostrarNotificacion("Todos los campos obligatorios (*) son requeridos.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_FINANCE}?action=crear_cuenta`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo, nombre, tipo, naturaleza, es_detalle })
+                }).then(r => r.json());
+
+                if (response.exito) {
+                    mostrarNotificacion(response.mensaje, "success");
+                    cerrarModalNuevaCuenta();
+                    cargarCatalogo(); // Recargar tabla
+                } else {
+                    mostrarNotificacion("Error: " + response.mensaje, "error");
+                }
+            } catch (err) {
+                console.error("Error al registrar cuenta:", err);
+                mostrarNotificacion("Ocurrió un error de conexión al registrar la cuenta.", "error");
+            }
         }
 
         // Carga inicial
