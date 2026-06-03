@@ -1090,7 +1090,7 @@
                 const doc = new jsPDF();
 
                 // Logo
-                const logoB64 = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+                const logoB64 = window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
                 if (logoB64) {
                     try {
                         doc.addImage(logoB64, 'PNG', 15, 12, 24, 24);
@@ -1101,7 +1101,7 @@
 
                 // Encabezado
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(18);
+                doc.setFontSize(14);
                 doc.setTextColor(30, 41, 59);
                 doc.text("MAS QUE FIANZAS +QF, SRL", 42, 20);
 
