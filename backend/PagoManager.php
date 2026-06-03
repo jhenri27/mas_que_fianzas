@@ -87,6 +87,21 @@ class PagoManager {
 
             // Guardar documento si existe soporte
             if ($tiene_soporte) {
+                // Validación contra fraude (NOFTRAB): verificar duplicidad de archivo soporte
+                $comprobante_hash = $datos['comprobante_hash'];
+                $sql_chk_hash = "SELECT COUNT(*) as cnt FROM documentos_poliza WHERE hash_documento = ? AND tipo_documento = 'soporte_pago'";
+                $stmt_chk = $this->db->prepare($sql_chk_hash);
+                if ($stmt_chk) {
+                    $stmt_chk->bind_param("s", $comprobante_hash);
+                    $stmt_chk->execute();
+                    $res_chk = $stmt_chk->get_result()->fetch_assoc();
+                    $stmt_chk->close();
+                    
+                    if (isset($res_chk['cnt']) && $res_chk['cnt'] > 0) {
+                        throw new Exception("Error transaccional (NOFTRAB): El comprobante de pago adjunto ya ha sido utilizado para validar otro cobro en el sistema. Intento de duplicidad bloqueado.");
+                    }
+                }
+
                 $sql_doc = "INSERT INTO documentos_poliza (
                                 poliza_id, pago_id, tipo_documento, nombre_archivo,
                                 ruta_archivo, hash_documento, generado_por

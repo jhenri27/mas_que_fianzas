@@ -29,6 +29,10 @@ define('API_BASE_URL', 'http://localhost/PLATAFORMA_INTEGRADA/backend/api');
 define('FRONTEND_BASE_URL', 'http://localhost/PLATAFORMA_INTEGRADA/frontend');
 define('ENABLE_CORS', true);
 define('ALLOWED_ORIGINS', ['http://localhost', 'http://localhost:3000', 'http://localhost:8080']);
+define('GOOGLE_VISION_KEY_PATH', dirname(__FILE__) . '/google-key.json');
+if (file_exists(GOOGLE_VISION_KEY_PATH)) {
+    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . GOOGLE_VISION_KEY_PATH);
+}
 
 // ==================== CONFIGURACIÓN DE AUDITORÍA ====================
 define('AUDIT_ENABLED', true);

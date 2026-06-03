@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Pagos y Recepción de Fondos - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    
+    <!-- Design System & Skins -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
+    
+    <!-- PDF Generation Libraries -->
+    <script src="../assets/lib/jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
+    <script src="../assets/lib/jspdf.plugin.autotable.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js';document.head.appendChild(s);"></script>
+    <script src="../assets/logo_b64.js?v=4"></script>
+
+    <style>
+        .sidebar { display: none !important; }
+        .top-navbar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
+        .content-area { padding: 20px !important; margin-top: 0 !important; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+
+        .status-badge { padding: 4px 10px; border-radius: var(--mqf-radius-full); font-size: var(--mqf-text-xs); font-weight: 700; display: inline-block; }
+        .status-procesado { background: var(--mqf-success-light); color: var(--mqf-success-text); }
+        .status-pendiente { background: var(--mqf-warning-light); color: var(--mqf-warning-text); }
+        .status-rechazado { background: var(--mqf-danger-light); color: var(--mqf-danger-text); }
+
+        .payment-method-card {
+            border: 2px dashed var(--mqf-border);
+            border-radius: var(--mqf-radius-lg);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background: var(--mqf-surface);
+        }
+        .payment-method-card:hover, .payment-method-card.active {
+            border-color: var(--mqf-accent);
+            background: var(--mqf-primary-light);
+            transform: translateY(-2px);
+        }
+        .payment-method-card i {
+            font-size: 32px;
+            color: var(--mqf-text-secondary);
+            margin-bottom: 10px;
+        }
+        .payment-method-card.active i {
+            color: var(--mqf-accent);
+        }
+
+        .gateway-simulation {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .spinner-loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: var(--mqf-accent);
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .mqf-module-header h1,
+        .mqf-module-header__title {
+            color: #ffffff !important;
+        }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+        
+        .card-preview {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .card-preview::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+        .card-number-display {
+            font-size: 20px;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .card-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .bank-info-box {
+            background: var(--mqf-surface-2);
+            border-left: 4px solid var(--mqf-accent);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <main class="main-content">
+        <div class="content-area" style="padding:0!important;">
+
+            <!-- Header -->
+            <div class="mqf-module-header">
+                <h1 class="mqf-module-header__title">
+                    <i class="fa-solid fa-sack-dollar"></i> Control de Cobros y Recibos
+                </h1>
+                <p class="mqf-module-header__subtitle">Registrar recaudaciones, conciliar depósitos bancarios y emitir comprobantes NCF</p>
+                
+                <!-- Pestañas -->
+                <div class="mqf-module-tabs" style="margin-top: 15px;">
+                    <button class="mqf-module-tab active" id="tab-btn-lista" onclick="cambiarTab('lista')">
+                        <i class="fa-solid fa-list-check"></i> Historial y Validación
+                    </button>
+                    <button class="mqf-module-tab" id="tab-btn-registrar" onclick="cambiarTab('registrar')">
+                        <i class="fa-solid fa-cash-register"></i> Registrar Pago
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENIDO PESTAÑA 1: LISTADO -->
+            <div id="vista-lista" class="tab-view active" style="padding: 20px;">
+                <!-- KPIs -->
+                <div class="mqf-form-grid-2" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-success);">
+                        <div class="mqf-kpi-card__title">Total Recaudado</div>
+                        <div class="mqf-kpi-card__value" id="kpi-total-recaudado">RD$ 0.00</div>
+                    </div>
+                    <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-accent);">
+                        <div class="mqf-kpi-card__title">Pagos Procesados</div>
+                        <div class="mqf-kpi-card__value" id="kpi-procesados">0</div>
+                    </div>
+                    <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-warning);">
+                        <div class="mqf-kpi-card__title">Por Validar</div>
+                        <div class="mqf-kpi-card__value" id="kpi-pendientes">0</div>
+                    </div>
+                    <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-danger);">
+                        <div class="mqf-kpi-card__title">Pagos Rechazados</div>
+                        <div class="mqf-kpi-card__value" id="kpi-rechazados">0</div>
+                    </div>
+                </div>
+
+                <!-- Buscador e Filtros -->
+                <div class="mqf-card" style="margin-bottom: 20px; padding: 15px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 1; min-width: 250px; position: relative;">
+                            <input type="text" id="busqueda-pagos" class="mqf-input" placeholder="Buscar por referencia, póliza o cliente..." style="width: 100%;" oninput="filtrarTablaPagos()">
+                        </div>
+                        <div style="width: 180px;">
+                            <select id="filtro-estado" class="mqf-select" style="width: 100%;" onchange="filtrarTablaPagos()">
+                                <option value="">Todos los estados</option>
+                                <option value="procesado">Procesados</option>
+                                <option value="pendiente">Pendientes</option>
+                                <option value="rechazado">Rechazados</option>
+                            </select>
+                        </div>
+                        <button class="mqf-btn mqf-btn--secondary" onclick="cargarPagos()">
+                            <i class="fa-solid fa-sync"></i> Refrescar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla -->
+                <div class="mqf-card" style="padding: 0; overflow: hidden;">
+                    <div class="mqf-table-wrapper">
+                        <table class="mqf-table" id="tabla-pagos">
+                            <thead>
+                                <tr>
+                                    <th>Ref / Recibo</th>
+                                    <th>NCF</th>
+                                    <th>Cliente</th>
+                                    <th>Póliza</th>
+                                    <th>Monto</th>
+                                    <th>Fecha</th>
+                                    <th>Canal</th>
+                                    <th>Estado</th>
+                                    <th style="text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pagos-tbody">
+                                <tr>
+                                    <td colspan="9" style="text-align:center; padding: 30px; opacity:0.6;">Cargando historial de transacciones...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENIDO PESTAÑA 2: REGISTRAR PAGO -->
+            <div id="vista-registrar" class="tab-view" style="display: none; padding: 20px;">
+                <div class="mqf-form-grid-2" style="grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+                    
+                    <!-- Lado izquierdo: Búsqueda y Datos de Póliza -->
+                    <div class="mqf-card" style="padding: 20px;">
+                        <h3 style="margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--mqf-border); padding-bottom: 10px;">
+                            <i class="fa-solid fa-file-invoice"></i> 1. Buscar Póliza Activa
+                        </h3>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">Seleccione la póliza a pagar *</label>
+                            <select id="pago-poliza-select" class="mqf-select" style="width: 100%;" onchange="seleccionarPoliza(this.value)">
+                                <option value="">Seleccione una póliza...</option>
+                            </select>
+                        </div>
+
+                        <!-- Ficha de Póliza seleccionada -->
+                        <div id="ficha-poliza-vacia" class="mqf-empty-state" style="padding: 30px 10px;">
+                            <i class="fa-solid fa-file-invoice-dollar" style="font-size: 32px; opacity: 0.5; margin-bottom: 10px;"></i>
+                            <p style="margin: 0;">Seleccione una póliza para visualizar su balance y desglose de primas</p>
+                        </div>
+
+                        <div id="ficha-poliza-detalle" style="display: none; background: var(--mqf-surface-2); padding: 15px; border-radius: var(--mqf-radius-md); border: 1px solid var(--mqf-border);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-weight: bold; color: var(--mqf-text-secondary);">Asegurado:</span>
+                                <span id="pol-det-cliente" style="font-weight: bold;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-weight: bold; color: var(--mqf-text-secondary);">RNC / Cédula:</span>
+                                <span id="pol-det-rnc">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-weight: bold; color: var(--mqf-text-secondary);">Aseguradora:</span>
+                                <span id="pol-det-compania" style="font-weight: bold; color: var(--mqf-accent);">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-weight: bold; color: var(--mqf-text-secondary);">Póliza N°:</span>
+                                <span id="pol-det-numero" style="font-family: monospace; font-weight: bold;">-</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="font-weight: bold; color: var(--mqf-text-secondary);">Ramo / Tipo:</span>
+                                <span id="pol-det-tipo">-</span>
+                            </div>
+                            <div style="border-top: 1px dashed var(--mqf-border); margin: 10px 0; padding-top: 10px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Prima Total:</span>
+                                    <span id="pol-det-total" style="font-weight: bold;">RD$ 0.00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Periodicidad:</span>
+                                    <span id="pol-det-periodo" style="text-transform: capitalize;">-</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span>Cuotas Totales:</span>
+                                    <span id="pol-det-cuotas">-</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 16px; font-weight: bold; color: var(--mqf-success);">
+                                    <span>Monto a Cobrar:</span>
+                                    <span id="pol-det-monto-cobrar">RD$ 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lado derecho: Métodos de Pago y Checkout -->
+                    <div id="checkout-container" class="mqf-card" style="padding: 20px; opacity: 0.5; pointer-events: none;">
+                        <h3 style="margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--mqf-border); padding-bottom: 10px;">
+                            <i class="fa-solid fa-credit-card"></i> 2. Canal de Cobro
+                        </h3>
+
+                        <!-- Grid de Selección de Método -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                            <div class="payment-method-card active" id="method-card" onclick="seleccionarMetodo('card')">
+                                <i class="fa-regular fa-credit-card"></i>
+                                <div style="font-size: 12px; font-weight: bold;">Pasarela Card</div>
+                            </div>
+                            <div class="payment-method-card" id="method-transfer" onclick="seleccionarMetodo('transfer')">
+                                <i class="fa-solid fa-building-columns"></i>
+                                <div style="font-size: 12px; font-weight: bold;">Transfer / Depósito</div>
+                            </div>
+                            <div class="payment-method-card" id="method-cash" onclick="seleccionarMetodo('cash')">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                                <div style="font-size: 12px; font-weight: bold;">Efectivo Manual</div>
+                            </div>
+                        </div>
+
+                        <!-- FORMULARIOS DE CHECKOUT -->
+                        
+                        <!-- 1. PASARELA TARJETA -->
+                        <form id="form-pago-card" onsubmit="procesarPagoCard(event)">
+                            <div class="card-preview">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 14px; font-weight: bold; font-style: italic;">MAS QUE FIANZAS</span>
+                                    <i class="fa-brands fa-cc-visa" style="font-size: 28px;"></i>
+                                </div>
+                                <div class="card-number-display" id="card-num-preview">•••• •••• •••• ••••</div>
+                                <div class="card-info-row">
+                                    <div>
+                                        <div style="font-size: 8px; opacity: 0.6;">Titular</div>
+                                        <div id="card-name-preview">Nombre Completo</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 8px; opacity: 0.6;">Vence</div>
+                                        <div id="card-exp-preview">MM/AA</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mqf-form-grid-2" style="margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Número de Tarjeta *</label>
+                                    <input type="text" id="card-num" class="mqf-input" maxlength="19" required placeholder="4000 1234 5678 9010" oninput="actualizarPrevisualizacionTarjeta()" style="width: 100%;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Nombre del Titular *</label>
+                                    <input type="text" id="card-name" class="mqf-input" required placeholder="JUAN PEREZ" oninput="actualizarPrevisualizacionTarjeta()" style="width: 100%;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Fecha de Expiración *</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <select id="card-month" class="mqf-select" required onchange="actualizarPrevisualizacionTarjeta()" style="flex: 1;">
+                                            <option value="">Mes</option>
+                                            <option value="01">01</option><option value="02">02</option>
+                                            <option value="03">03</option><option value="04">04</option>
+                                            <option value="05">05</option><option value="06">06</option>
+                                            <option value="07">07</option><option value="08">08</option>
+                                            <option value="09">09</option><option value="10">10</option>
+                                            <option value="11">11</option><option value="12">12</option>
+                                        </select>
+                                        <select id="card-year" class="mqf-select" required onchange="actualizarPrevisualizacionTarjeta()" style="flex: 1;">
+                                            <option value="">Año</option>
+                                            <option value="26">2026</option><option value="27">2027</option>
+                                            <option value="28">2028</option><option value="29">2029</option>
+                                            <option value="30">2030</option><option value="31">2031</option>
+                                            <option value="32">2032</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">CVV *</label>
+                                    <input type="password" id="card-cvv" class="mqf-input" maxlength="4" required placeholder="•••" style="width: 100%;">
+                                </div>
+                            </div>
+
+                            <div class="mqf-form-grid-2" style="margin-bottom: 15px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Adquiriente de Cobro *</label>
+                                    <select id="card-adquiriente" class="mqf-select" required style="width: 100%;">
+                                        <option value="Azul">Pasarela Azul (Popular)</option>
+                                        <option value="CardNet">Pasarela CardNet (BHD)</option>
+                                        <option value="Directo">Pago Directo Aseguradora (Integración API)</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; justify-content: flex-end;">
+                                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" id="card-ncf-chk" checked>
+                                        <span style="font-size: 13px; font-weight: bold;">Emitir Factura NCF</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="mqf-btn mqf-btn--success" style="width: 100%; font-size: 15px; padding: 12px;">
+                                <i class="fa-solid fa-shield-halved"></i> Autorizar y Procesar Cobro
+                            </button>
+                        </form>
+
+                        <!-- 2. TRANSFERENCIA / DEPOSITO -->
+                        <form id="form-pago-transfer" style="display: none;" onsubmit="procesarPagoTransfer(event)">
+                            <div class="bank-info-box">
+                                <strong style="display: block; margin-bottom: 5px; color: var(--mqf-accent);"><i class="fa-solid fa-circle-info"></i> Provisión de Cuenta</strong>
+                                Seleccione una de nuestras cuentas corporativas y adjunte la foto o PDF de su comprobante de transferencia (ACH/LBTR/Depósito).
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Cuenta Bancaria Destino *</label>
+                                <select id="transfer-banco" class="mqf-select" required style="width: 100%;">
+                                    <option value="">Cargando cuentas bancarias...</option>
+                                </select>
+                            </div>
+
+                            <div class="mqf-form-grid-2" style="margin-bottom: 12px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Número de Referencia / Transacción *</label>
+                                    <input type="text" id="transfer-referencia" class="mqf-input" required placeholder="Ej: TXN874628" style="width: 100%;">
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Fecha del Depósito *</label>
+                                    <input type="date" id="transfer-fecha" class="mqf-input" required style="width: 100%;">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Comprobante de Soporte * (PDF, JPG, PNG - Max 5MB)</label>
+                                <input type="file" id="transfer-archivo" class="mqf-input" accept=".pdf,.png,.jpg,.jpeg" required style="width: 100%; border: 1px dashed var(--mqf-border); padding: 8px;">
+                            </div>
+
+                            <button type="submit" class="mqf-btn mqf-btn--primary" style="width: 100%; font-size: 15px; padding: 12px;">
+                                <i class="fa-solid fa-upload"></i> Subir Soporte para Validación
+                            </button>
+                        </form>
+
+                        <!-- 3. EFECTIVO MANUAL -->
+                        <form id="form-pago-cash" style="display: none;" onsubmit="procesarPagoCash(event)">
+                            <div class="bank-info-box" style="border-left-color: var(--mqf-success);">
+                                <strong style="display: block; margin-bottom: 5px; color: var(--mqf-success);"><i class="fa-solid fa-wallet"></i> Cobro Físico Directo</strong>
+                                Registre cobros directos en ventanilla o efectivo manual recibido. Se emitirá el recibo físico de forma inmediata.
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; font-weight: bold;">Comentarios / Nota de Recibido</label>
+                                <textarea id="cash-nota" class="mqf-textarea" placeholder="Indique detalles del recibidor o número de caja física..." rows="3" style="width: 100%;"></textarea>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="cash-ncf-chk" checked>
+                                    <span style="font-size: 13px; font-weight: bold;">Emitir Factura NCF</span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="mqf-btn mqf-btn--success" style="width: 100%; font-size: 15px; padding: 12px;">
+                                <i class="fa-solid fa-check-double"></i> Registrar e Imprimir Recibo
+                            </button>
+                        </form>
+
+                        <!-- PANTALLA DE PROCESAMIENTO MOCKUP PASARELA -->
+                        <div class="gateway-simulation" id="gateway-sim">
+                            <div class="spinner-loader"></div>
+                            <h4 id="sim-status-title" style="margin-top: 10px; margin-bottom: 5px;">Estableciendo conexión...</h4>
+                            <p id="sim-status-desc" style="font-size: 12px; opacity: 0.7; margin: 0;">Iniciando canal seguro SSL con la pasarela bancaria</p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- MODAL DE DETALLE / VALIDACIÓN DE PAGOS -->
+            <div id="pago-modal" class="mqf-modal-backdrop">
+                <div class="mqf-modal" style="max-width: 600px;">
+                    <div class="mqf-modal-header">
+                        <h3 class="mqf-modal-title"><i class="fa-solid fa-magnifying-glass-dollar"></i> Validación de Depósito</h3>
+                        <button class="mqf-modal-close" onclick="cerrarModalLocal('pago-modal')">&times;</button>
+                    </div>
+                    <div class="mqf-modal-body">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Referencia</div>
+                                <div id="modal-pago-ref" style="font-weight: bold;">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Póliza</div>
+                                <div id="modal-pago-poliza" style="font-weight: bold;">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Cliente</div>
+                                <div id="modal-pago-cliente" style="font-weight: bold;">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Monto Cobrado</div>
+                                <div id="modal-pago-monto" style="font-weight: bold; color: var(--mqf-success); font-size: 16px;">RD$ 0.00</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Banco / Cuenta</div>
+                                <div id="modal-pago-banco">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; opacity: 0.6; font-weight: bold; text-transform: uppercase;">Referencia Soporte</div>
+                                <div id="modal-pago-ref-soporte">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Previsualización de Comprobante -->
+                        <div style="border-top: 1px solid var(--mqf-border); padding-top: 15px;">
+                            <h4 style="margin-top: 0; margin-bottom: 10px;"><i class="fa-regular fa-file-image"></i> Documento Adjunto</h4>
+                            <div id="soporte-preview-box" style="text-align: center; background: var(--mqf-surface-2); padding: 15px; border-radius: 8px; border: 1px solid var(--mqf-border); min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                                <!-- Cargado dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mqf-modal-footer" id="modal-actions-footer">
+                        <!-- Acciones según estado cargadas dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- API Client & Engine imports -->
+    <script src="../assets/api-client.js?v=8.0.0"></script>
+    <script src="../assets/components.js?v=9.0"></script>
+    
+    <script>
+        // Integrar notificaciones con el dashboard padre de manera segura
+        if (typeof MQF === 'undefined') {
+            window.MQF = {
+                toast: (m, t) => {
+                    alert((t === 'error' ? '❌ ' : t === 'success' ? '✅ ' : 'ℹ️ ') + m);
+                }
+            };
+        }
+        try {
+            if (window.parent && window.parent.MQF) {
+                MQF.toast = window.parent.MQF.toast;
+            }
+        } catch (e) {
+            console.warn('No se pudo acceder al MQF del parent window:', e);
+        }
+
+        const fmt = (n) => Number(n).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+
+        let currentTab = 'lista';
+        let activePoliza = null;
+        let selectedPaymentMethod = 'card';
+        let cachedPolizas = [];
+        let cachedPagos = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPagos();
+            cargarPolizasActivas();
+            cargarCuentasBancarias();
+            
+            // Listen for skin adjustments from parent
+            window.addEventListener('message', (e) => {
+                if (e.data && e.data.type === 'mqf-skin-set') {
+                    document.body.setAttribute('data-skin', e.data.skin);
+                    document.documentElement.setAttribute('data-skin', e.data.skin);
+                }
+            });
+            
+            // Apply current skin from parent safely on load
+            let currentSkin = 'indigo';
+            try {
+                if (window.parent && window.parent.document && window.parent.document.body) {
+                    currentSkin = window.parent.document.body.getAttribute('data-skin') || 'indigo';
+                }
+            } catch (e) {
+                console.warn('No se pudo leer skin del parent:', e);
+            }
+            document.body.setAttribute('data-skin', currentSkin);
+            document.documentElement.setAttribute('data-skin', currentSkin);
+        });
+
+        // Tabs
+        function cambiarTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-view').forEach(v => v.style.display = 'none');
+
+            if (tab === 'lista') {
+                document.getElementById('tab-btn-lista').classList.add('active');
+                document.getElementById('vista-lista').style.display = 'block';
+                cargarPagos();
+            } else {
+                document.getElementById('tab-btn-registrar').classList.add('active');
+                document.getElementById('vista-registrar').style.display = 'block';
+            }
+        }
+
+        // Cargar pagos de base de datos
+        async function cargarPagos() {
+            try {
+                const res = await api.solicitud('/pagos.php', 'GET');
+                if (res.exito && Array.isArray(res.data)) {
+                    cachedPagos = res.data;
+                    renderizarTablaPagos(cachedPagos);
+                    actualizarKPIs(cachedPagos);
+                } else {
+                    MQF.toast('Error al obtener lista de pagos: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al cargar los pagos', 'error');
+            }
+        }
+
+        function renderizarTablaPagos(pagos) {
+            const tbody = document.getElementById('pagos-tbody');
+            if (pagos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; opacity:0.6;">No hay transacciones registradas</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pagos.map(p => {
+                const canalIcon = p.tipo_pago === 'tarjeta' ? '💳' : p.tipo_pago === 'transferencia' ? '🏦' : '💵';
+                const actions = p.estado_pago === 'pendiente' 
+                    ? `<button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="verificarPagoModal(${p.id})"><i class="fa-solid fa-clipboard-check"></i> Validar</button>`
+                    : `<button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="descargarReciboPDF(${p.id})"><i class="fa-solid fa-file-pdf"></i> Recibo</button>`;
+
+                return `
+                    <tr>
+                        <td>
+                            <strong>${p.numero_referencia}</strong>
+                            <div style="font-size: 11px; opacity: 0.6;">${p.numero_recibo || 'S/R'}</div>
+                        </td>
+                        <td><span style="font-family: monospace; font-weight: bold;">${p.numero_ncf || 'Consumidor Final'}</span></td>
+                        <td><strong>${p.cliente_nombre}</strong></td>
+                        <td><span style="font-family: monospace; font-size: 12px;">${p.poliza_numero}</span></td>
+                        <td><strong>${fmt(p.monto)}</strong></td>
+                        <td>${p.fecha_pago}</td>
+                        <td style="text-transform: capitalize;">${canalIcon} ${p.tipo_pago}</td>
+                        <td><span class="status-badge status-${p.estado_pago}">${p.estado_pago.toUpperCase()}</span></td>
+                        <td style="text-align: center;">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function actualizarKPIs(pagos) {
+            const totalRecaudado = pagos
+                .filter(p => p.estado_pago === 'procesado')
+                .reduce((acc, p) => acc + parseFloat(p.monto), 0);
+
+            const total = pagos.filter(p => p.estado_pago === 'procesado').length;
+            const pend = pagos.filter(p => p.estado_pago === 'pendiente').length;
+            const rech = pagos.filter(p => p.estado_pago === 'rechazado').length;
+
+            document.getElementById('kpi-total-recaudado').textContent = fmt(totalRecaudado);
+            document.getElementById('kpi-procesados').textContent = total;
+            document.getElementById('kpi-pendientes').textContent = pend;
+            document.getElementById('kpi-rechazados').textContent = rech;
+        }
+
+        function filtrarTablaPagos() {
+            const query = document.getElementById('busqueda-pagos').value.toLowerCase();
+            const filterState = document.getElementById('filtro-estado').value;
+
+            const filtrados = cachedPagos.filter(p => {
+                const matchesSearch = p.numero_referencia.toLowerCase().includes(query) ||
+                                     p.poliza_numero.toLowerCase().includes(query) ||
+                                     p.cliente_nombre.toLowerCase().includes(query) ||
+                                     (p.numero_ncf && p.numero_ncf.toLowerCase().includes(query));
+
+                const matchesState = !filterState || p.estado_pago === filterState;
+
+                return matchesSearch && matchesState;
+            });
+
+            renderizarTablaPagos(filtrados);
+        }
+
+        // Cargar pólizas disponibles
+        async function cargarPolizasActivas() {
+            try {
+                const res = await api.solicitud('/polizas.php', 'GET');
+                if (res.exito && Array.isArray(res.data)) {
+                    cachedPolizas = res.data;
+                    const select = document.getElementById('pago-poliza-select');
+                    select.innerHTML = '<option value="">Seleccione una póliza...</option>';
+                    cachedPolizas.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.numero_poliza} - ${p.aseguradora} (Cliente: ${p.cliente_nombre || 'n/a'})`;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Cargar cuentas bancarias parametrizadas
+        async function cargarCuentasBancarias() {
+            try {
+                const res = await api.solicitud('/pagos.php?action=get_bancos', 'GET');
+                const select = document.getElementById('transfer-banco');
+                if (res.exito && Array.isArray(res.data) && res.data.length > 0) {
+                    select.innerHTML = '<option value="">Selecciona la cuenta de depósito...</option>';
+                    res.data.forEach(acc => {
+                        const opt = document.createElement('option');
+                        opt.value = `${acc.banco} - ${acc.cuenta}`;
+                        opt.textContent = `${acc.banco} [Cta ${acc.tipo}: ${acc.cuenta}]`;
+                        select.appendChild(opt);
+                    });
+                } else {
+                    select.innerHTML = '<option value="Popular Corriente">Popular Corriente [Cta: 768594021]</option>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function seleccionarPoliza(id) {
+            if (!id) {
+                activePoliza = null;
+                document.getElementById('ficha-poliza-vacia').style.display = 'block';
+                document.getElementById('ficha-poliza-detalle').style.display = 'none';
+                document.getElementById('checkout-container').style.opacity = '0.5';
+                document.getElementById('checkout-container').style.pointerEvents = 'none';
+                return;
+            }
+
+            activePoliza = cachedPolizas.find(p => p.id == id);
+            if (activePoliza) {
+                document.getElementById('pol-det-cliente').textContent = activePoliza.cliente_nombre || 'N/A';
+                document.getElementById('pol-det-rnc').textContent = activePoliza.cliente_cedula || 'N/A';
+                document.getElementById('pol-det-compania').textContent = activePoliza.aseguradora || 'N/A';
+                document.getElementById('pol-det-numero').textContent = activePoliza.numero_poliza || 'N/A';
+                document.getElementById('pol-det-tipo').textContent = (activePoliza.ramo || 'Seguro') + ' (' + (activePoliza.tipo_seguro || 'General') + ')';
+                document.getElementById('pol-det-total').textContent = fmt(activePoliza.prima_total);
+                document.getElementById('pol-det-periodo').textContent = activePoliza.periodicidad_pago || 'mensual';
+                document.getElementById('pol-det-cuotas').textContent = activePoliza.cuota_total || 1;
+                
+                // Calcular monto cuota (Prima Total / Cuota Total)
+                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+                const cuotaMonto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+                document.getElementById('pol-det-monto-cobrar').textContent = fmt(cuotaMonto);
+
+                document.getElementById('ficha-poliza-vacia').style.display = 'none';
+                document.getElementById('ficha-poliza-detalle').style.display = 'block';
+
+                document.getElementById('checkout-container').style.opacity = '1';
+                document.getElementById('checkout-container').style.pointerEvents = 'auto';
+            }
+        }
+
+        // Selección de canal
+        function seleccionarMetodo(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
+            document.getElementById('form-pago-card').style.display = 'none';
+            document.getElementById('form-pago-transfer').style.display = 'none';
+            document.getElementById('form-pago-cash').style.display = 'none';
+
+            if (method === 'card') {
+                document.getElementById('method-card').classList.add('active');
+                document.getElementById('form-pago-card').style.display = 'block';
+            } else if (method === 'transfer') {
+                document.getElementById('method-transfer').classList.add('active');
+                document.getElementById('form-pago-transfer').style.display = 'block';
+            } else {
+                document.getElementById('method-cash').classList.add('active');
+                document.getElementById('form-pago-cash').style.display = 'block';
+            }
+        }
+
+        // Previsualizar tarjeta
+        function actualizarPrevisualizacionTarjeta() {
+            const num = document.getElementById('card-num').value.replace(/\s?/g, '');
+            const name = document.getElementById('card-name').value.toUpperCase();
+            const mm = document.getElementById('card-month').value;
+            const yy = document.getElementById('card-year').value;
+
+            // Formatear espaciado tarjeta
+            let formatted = '';
+            for (let i = 0; i < num.length; i++) {
+                if (i > 0 && i % 4 === 0) formatted += ' ';
+                formatted += num[i];
+            }
+            
+            document.getElementById('card-num-preview').textContent = formatted || '•••• •••• •••• ••••';
+            document.getElementById('card-name-preview').textContent = name || 'Nombre Completo';
+            document.getElementById('card-exp-preview').textContent = (mm && yy) ? `${mm}/${yy}` : 'MM/AA';
+        }
+
+        // Validar número de tarjeta por Luhn
+        function validarLuhn(numero) {
+            let n = numero.replace(/\D/g, '');
+            if (n.length < 13 || n.length > 19) return false;
+            let sum = 0;
+            let shouldDouble = false;
+            for (let i = n.length - 1; i >= 0; i--) {
+                let digit = parseInt(n.charAt(i));
+                if (shouldDouble) {
+                    if ((digit *= 2) > 9) digit -= 9;
+                }
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+            return (sum % 10) === 0;
+        }
+
+        // PROCESAR CHECKOUT TARJETA MOCKUP
+        async function procesarPagoCard(e) {
+            e.preventDefault();
+            if (!activePoliza) return;
+
+            const cardNum = document.getElementById('card-num').value.replace(/\s?/g, '');
+            if (!validarLuhn(cardNum)) {
+                MQF.toast('Número de tarjeta no válido (Falló algoritmo de verificación Luhn). Corrija el número.', 'error');
+                return;
+            }
+
+            const selectAdq = document.getElementById('card-adquiriente').value;
+            const ncfChk = document.getElementById('card-ncf-chk').checked;
+
+            // Ocultar formulario, mostrar loader pasarela
+            document.getElementById('form-pago-card').style.display = 'none';
+            document.getElementById('gateway-sim').style.display = 'block';
+
+            const steps = [
+                { title: 'Estableciendo túnel SSL...', desc: 'Conectando con el servidor adquiriente...' },
+                { title: 'Validando credenciales...', desc: 'Autenticando comercio y enviando token de seguridad...' },
+                { title: selectAdq === 'Directo' ? 'Conectando API Aseguradora...' : 'Autorizando cargos...', desc: 'Esperando respuesta del banco emisor...' },
+                { title: 'Finalizando transacción...', desc: 'Generando asientos contables inmutables y comprobantes...' }
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                document.getElementById('sim-status-title').textContent = steps[i].title;
+                document.getElementById('sim-status-desc').textContent = steps[i].desc;
+                await new Promise(r => setTimeout(r, 1200));
+            }
+
+            // Calcular monto
+            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+
+            try {
+                const payload = {
+                    poliza_id: activePoliza.id,
+                    monto: monto,
+                    generar_ncf: ncfChk,
+                    tipo_comprobante: 'B02', // Comprobante de consumo por defecto
+                    banco: selectAdq === 'Directo' ? ('API ' + activePoliza.aseguradora) : selectAdq
+                };
+
+                const res = await api.solicitud('/pagos.php?action=procesar_pasarela', 'POST', payload);
+                
+                document.getElementById('gateway-sim').style.display = 'none';
+                document.getElementById('form-pago-card').style.display = 'block';
+
+                if (res.exito) {
+                    MQF.toast('¡Pago procesado con éxito!\nAutorización: ' + res.auth_code, 'success');
+                    
+                    // Resetear formulario y volver a lista
+                    document.getElementById('form-pago-card').reset();
+                    document.getElementById('card-num-preview').textContent = '•••• •••• •••• ••••';
+                    document.getElementById('card-name-preview').textContent = 'Nombre Completo';
+                    document.getElementById('card-exp-preview').textContent = 'MM/AA';
+                    
+                    // Seleccionar de nuevo vacío para resetear ficha
+                    document.getElementById('pago-poliza-select').value = '';
+                    seleccionarPoliza('');
+                    
+                    // Cambiar a lista y recargar
+                    cambiarTab('lista');
+                } else {
+                    MQF.toast('La pasarela de pago rechazó la transacción: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('gateway-sim').style.display = 'none';
+                document.getElementById('form-pago-card').style.display = 'block';
+                MQF.toast('Error del servidor al procesar el pago', 'error');
+            }
+        }
+
+        // PROCESAR TRANSFERENCIA (UPLOAD COMPROBANTE)
+        async function procesarPagoTransfer(e) {
+            e.preventDefault();
+            if (!activePoliza) return;
+
+            const selectBanco = document.getElementById('transfer-banco').value;
+            const refTxn = document.getElementById('transfer-referencia').value;
+            const fechaVal = document.getElementById('transfer-fecha').value;
+            const fileInput = document.getElementById('transfer-archivo');
+
+            if (fileInput.files.length === 0) {
+                MQF.toast('Es necesario adjuntar el documento de comprobante bancario', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                MQF.toast('El archivo supera el tamaño máximo permitido de 5MB', 'error');
+                return;
+            }
+
+            // Calcular monto de cuota
+            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+
+            // Form data para subir archivo
+            const formData = new FormData();
+            formData.append('poliza_id', activePoliza.id);
+            formData.append('monto', monto);
+            formData.append('tipo_pago', 'transferencia');
+            formData.append('banco', selectBanco);
+            formData.append('numero_comprobante', refTxn);
+            formData.append('fecha_pago', fechaVal);
+            formData.append('documento_deposito', file);
+
+            try {
+                // Usamos fetch directamente porque el api client maneja json por defecto
+                const token = localStorage.getItem('token_sesion') || '';
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/pagos.php?action=registrar', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                const res = await response.json();
+
+                if (res.exito) {
+                    MQF.toast('Comprobante cargado correctamente.\nEl pago quedará en estado PENDIENTE hasta ser validado.', 'info');
+                    document.getElementById('form-pago-transfer').reset();
+                    document.getElementById('pago-poliza-select').value = '';
+                    seleccionarPoliza('');
+                    cambiarTab('lista');
+                } else {
+                    MQF.toast('Error al registrar transferencia: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de conexión al cargar comprobante', 'error');
+            }
+        }
+
+        // PROCESAR PAGO EFECTIVO DIRECTO
+        async function procesarPagoCash(e) {
+            e.preventDefault();
+            if (!activePoliza) return;
+
+            const ncfChk = document.getElementById('cash-ncf-chk').checked;
+            const nota = document.getElementById('cash-nota').value;
+
+            // Calcular monto cuota
+            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+
+            try {
+                // Registrar pago directamente
+                const payload = {
+                    poliza_id: activePoliza.id,
+                    monto: monto,
+                    tipo_pago: 'efectivo',
+                    banco: 'Caja Principal MQF',
+                    generar_ncf: ncfChk,
+                    tipo_comprobante: 'B02',
+                    descripcion: nota || ('Pago en efectivo de Póliza #' + activePoliza.numero_poliza)
+                };
+
+                const res = await api.solicitud('/pagos.php?action=procesar_pasarela', 'POST', payload);
+
+                if (res.exito) {
+                    MQF.toast('Cobro en efectivo registrado con éxito', 'success');
+                    document.getElementById('form-pago-cash').reset();
+                    
+                    // Descargar recibo automáticamente
+                    descargarReciboPDF(res.id);
+
+                    document.getElementById('pago-poliza-select').value = '';
+                    seleccionarPoliza('');
+                    cambiarTab('lista');
+                } else {
+                    MQF.toast('Error al registrar cobro: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al registrar cobro en efectivo', 'error');
+            }
+        }
+
+        // MODAL DE VERIFICACIÓN / DETALLE
+        async function verificarPagoModal(pagoId) {
+            try {
+                // Buscamos el detalle del pago
+                const res = await api.solicitud('/pagos.php?action=verificar&ref=' + cachedPagos.find(p => p.id == pagoId).numero_referencia, 'GET');
+                if (res.exito) {
+                    const p = res.data;
+                    document.getElementById('modal-pago-ref').textContent = p.numero_referencia;
+                    document.getElementById('modal-pago-poliza').textContent = p.numero_poliza;
+                    document.getElementById('modal-pago-cliente').textContent = p.cliente_nombre;
+                    document.getElementById('modal-pago-monto').textContent = fmt(p.monto);
+                    document.getElementById('modal-pago-banco').textContent = p.banco || '-';
+                    document.getElementById('modal-pago-ref-soporte').textContent = p.numero_comprobante || '-';
+
+                    // Cargar previsualización de soporte
+                    const box = document.getElementById('soporte-preview-box');
+                    if (p.comprobante_ruta) {
+                        const ext = p.comprobante_ruta.split('.').pop().toLowerCase();
+                        if (ext === 'pdf') {
+                            box.innerHTML = `
+                                <div>
+                                    <i class="fa-solid fa-file-pdf" style="font-size: 64px; color: #ef4444; margin-bottom: 10px;"></i>
+                                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px;">Comprobante de Soporte PDF</div>
+                                    <a href="/PLATAFORMA_INTEGRADA/${p.comprobante_ruta}" target="_blank" class="mqf-btn mqf-btn--secondary mqf-btn--sm">
+                                        <i class="fa-solid fa-up-right-from-square"></i> Abrir en nueva ventana
+                                    </a>
+                                </div>
+                            `;
+                        } else {
+                            box.innerHTML = `<img src="/PLATAFORMA_INTEGRADA/${p.comprobante_ruta}" style="max-width: 100%; max-height: 350px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: zoom-in;" onclick="window.open(this.src)">`;
+                        }
+                    } else {
+                        box.innerHTML = '<div style="opacity: 0.5;">No hay soporte cargado.</div>';
+                    }
+
+                    // Acciones
+                    const footer = document.getElementById('modal-actions-footer');
+                    if (p.estado_pago === 'pendiente') {
+                        footer.innerHTML = `
+                            <button class="mqf-btn mqf-btn--danger" onclick="rechazarPagoLocal(${p.id})">
+                                <i class="fa-solid fa-ban"></i> Rechazar Depósito
+                            </button>
+                            <button class="mqf-btn mqf-btn--success" onclick="aprobarPagoLocal(${p.id})">
+                                <i class="fa-solid fa-check-double"></i> Aprobar y Registrar Contabilidad
+                            </button>
+                        `;
+                    } else {
+                        footer.innerHTML = `
+                            <button class="mqf-btn mqf-btn--secondary" onclick="cerrarModalLocal('pago-modal')">
+                                <i class="fa-solid fa-xmark"></i> Cerrar
+                            </button>
+                        `;
+                    }
+
+                    abrirModalLocal('pago-modal');
+                } else {
+                    MQF.toast('No se pudo obtener el detalle de la transacción: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al consultar el pago', 'error');
+            }
+        }
+
+        async function aprobarPagoLocal(pagoId) {
+            if (!confirm('¿Está seguro de aprobar y validar contablemente este depósito bancario?')) return;
+            try {
+                const res = await api.solicitud('/pagos.php?action=aprobar', 'POST', { id: pagoId });
+                if (res.exito) {
+                    MQF.toast('¡Pago verificado y registrado en el Libro Diario con éxito!', 'success');
+                    cerrarModalLocal('pago-modal');
+                    cargarPagos();
+                } else {
+                    MQF.toast('Error al aprobar: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error al procesar validación', 'error');
+            }
+        }
+
+        async function rechazarPagoLocal(pagoId) {
+            if (!confirm('¿Está seguro de rechazar e invalidar este comprobante de pago?')) return;
+            try {
+                const res = await api.solicitud('/pagos.php?action=rechazar', 'POST', { id: pagoId });
+                if (res.exito) {
+                    MQF.toast('Transacción rechazada con éxito.', 'warning');
+                    cerrarModalLocal('pago-modal');
+                    cargarPagos();
+                } else {
+                    MQF.toast('Error al rechazar: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error al procesar rechazo', 'error');
+            }
+        }
+
+        function abrirModalLocal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function cerrarModalLocal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // GENERAR RECIBO DE PAGO PDF (jsPDF)
+        async function descargarReciboPDF(pagoId) {
+            try {
+                const p = cachedPagos.find(x => x.id == pagoId);
+                if (!p) return;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Logo
+                const logoB64 = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+                if (logoB64) {
+                    try {
+                        doc.addImage(logoB64, 'PNG', 15, 12, 24, 24);
+                    } catch (e) {
+                        console.warn('Error loading logo to PDF', e);
+                    }
+                }
+
+                // Encabezado
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.setTextColor(30, 41, 59);
+                doc.text("MAS QUE FIANZAS +QF, SRL", 42, 20);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(100, 116, 139);
+                doc.text("Licencia CMS-1561-A · RNC: 133-53573-4", 42, 25);
+                doc.text("Av. Winston Churchill, Santo Domingo, Rep. Dom.", 42, 29);
+
+                // Caja de Comprobante / Recibo
+                doc.setDrawColor(226, 232, 240);
+                doc.setFillColor(248, 250, 252);
+                doc.rect(125, 12, 70, 24, "FD");
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(11);
+                doc.setTextColor(79, 70, 229);
+                doc.text("RECIBO OFICIAL DE PAGO", 129, 18);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.setTextColor(30, 41, 59);
+                doc.text("Recibo: " + (p.numero_recibo || 'S/N'), 129, 23);
+                doc.text("Fecha: " + p.fecha_pago, 129, 27);
+                doc.text("Ref: " + p.numero_referencia, 129, 31);
+
+                // NCF info
+                doc.setFillColor(241, 245, 249);
+                doc.rect(15, 42, 180, 10, "F");
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.setTextColor(30, 41, 59);
+                doc.text("COMPROBANTE FISCAL (NCF): " + (p.numero_ncf || "CONSUMIDOR FINAL"), 18, 48);
+
+                // Ficha del Cliente
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(30, 41, 59);
+                doc.text("DATOS DEL CLIENTE / ASEGURADO", 15, 60);
+                
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                doc.text("Razón Social / Nombre: " + p.cliente_nombre, 15, 66);
+                doc.text("RNC / Cédula Identificación: " + (p.cliente_cedula || 'No Registrada'), 15, 71);
+                doc.text("Póliza Relacionada: #" + p.poliza_numero, 15, 76);
+
+                // Desglose del Pago
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold");
+                doc.text("DETALLE DE LA TRANSACCIÓN BANCARIA", 15, 90);
+
+                const headers = [["Concepto / Descripción", "Canal", "Referencia Adquiriente / Banco", "Total DOP"]];
+                
+                // ITBIS cobrado proporcionalmente (18%)
+                const montoTotal = parseFloat(p.monto);
+                const subtotal = montoTotal / 1.18;
+                const itbis = montoTotal - subtotal;
+
+                const data = [
+                    [
+                        "Aplicación de Pago a Póliza de Seguros \n" + p.poliza_numero,
+                        p.tipo_pago.toUpperCase(),
+                        p.banco + " (" + (p.numero_comprobante || 'Transacción Directa') + ")",
+                        fmt(montoTotal)
+                    ]
+                ];
+
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: 94,
+                    theme: 'striped',
+                    headStyles: { fillColor: [79, 70, 229], fontStyle: 'bold' },
+                    columnStyles: {
+                        0: { cellWidth: 70 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 55 },
+                        3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
+                    }
+                });
+
+                let lastY = doc.previousAutoTable.finalY + 10;
+
+                // Totales
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9);
+                doc.text("Subtotal Neto:", 130, lastY);
+                doc.text(fmt(subtotal), 170, lastY, { align: 'right' });
+
+                doc.text("ITBIS Cobrado (18%):", 130, lastY + 5);
+                doc.text(fmt(itbis), 170, lastY + 5, { align: 'right' });
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(10);
+                doc.text("TOTAL PAGADO:", 130, lastY + 11);
+                doc.setTextColor(22, 163, 74);
+                doc.text(fmt(montoTotal), 170, lastY + 11, { align: 'right' });
+
+                // Firmas
+                doc.setTextColor(100, 116, 139);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.line(15, lastY + 40, 75, lastY + 40);
+                doc.text("Preparado y Recibido por", 15, lastY + 44);
+                doc.text("Caja General MAS QUE FIANZAS", 15, lastY + 48);
+
+                doc.line(130, lastY + 40, 190, lastY + 40);
+                doc.text("Validado por Auditoría", 130, lastY + 44);
+                doc.text("Firma Autorizada y Sello Contable", 130, lastY + 48);
+
+                // Footer legal
+                doc.text("Este recibo de cobro oficial constituye un documento legal inmutable para fines tributarios y contabilidad general.", 15, 280);
+
+                doc.save("Recibo_" + p.numero_referencia + ".pdf");
+                MQF.toast('Recibo PDF generado con éxito', 'success');
+
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error al construir el archivo PDF del recibo', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
