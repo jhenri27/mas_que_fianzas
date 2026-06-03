@@ -1188,16 +1188,16 @@
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(9);
                 doc.text("Subtotal Neto:", 130, lastY);
-                doc.text(fmt(subtotal), 170, lastY, { align: 'right' });
+                doc.text(fmt(subtotal), 195, lastY, { align: 'right' });
 
                 doc.text("ITBIS Cobrado (18%):", 130, lastY + 5);
-                doc.text(fmt(itbis), 170, lastY + 5, { align: 'right' });
+                doc.text(fmt(itbis), 195, lastY + 5, { align: 'right' });
 
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(10);
                 doc.text("TOTAL PAGADO:", 130, lastY + 11);
                 doc.setTextColor(22, 163, 74);
-                doc.text(fmt(montoTotal), 170, lastY + 11, { align: 'right' });
+                doc.text(fmt(montoTotal), 195, lastY + 11, { align: 'right' });
 
                 // Firmas
                 doc.setTextColor(100, 116, 139);
