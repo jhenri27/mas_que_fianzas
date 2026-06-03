@@ -118,6 +118,66 @@ class PagoManager {
                     throw new Exception("Error al registrar el comprobante de pago: " . $stmt_doc->error);
                 }
                 $stmt_doc->close();
+
+                // Fase 2 y 3: OCR y Conciliación Automática (con Fallback Manual)
+                try {
+                    $ocrResult = $this->analizarImagenOCR($datos['comprobante_ruta']);
+                    if ($ocrResult['exito'] && !empty($ocrResult['texto'])) {
+                        $textoOcr = $ocrResult['texto'];
+                        
+                        // Extraer referencia usando expresiones regulares del texto leído
+                        $referenciaDetectada = null;
+                        if (preg_match('/\b(TXN-\d+|DEP-\d+|REF-\d+|\d{8,15})\b/i', $textoOcr, $matchesRef)) {
+                            $referenciaDetectada = trim($matchesRef[1]);
+                        }
+                        
+                        if ($referenciaDetectada) {
+                            // Buscar en cf_movimientos_bancarios si existe un movimiento con esa referencia y el monto correspondiente
+                            $sql_reconcile = "SELECT id, banco, cuenta_destino, referencia_bancaria, monto 
+                                              FROM cf_movimientos_bancarios 
+                                              WHERE referencia_bancaria = ? AND monto = ? AND conciliado = 0 LIMIT 1";
+                            $stmt_rec = $this->db->prepare($sql_reconcile);
+                            if ($stmt_rec) {
+                                $stmt_rec->bind_param("sd", $referenciaDetectada, $monto);
+                                $stmt_rec->execute();
+                                $movimiento = $stmt_rec->get_result()->fetch_assoc();
+                                $stmt_rec->close();
+                                
+                                if ($movimiento) {
+                                    // MATCH PERFECTO! Auto-conciliado!
+                                    // 1. Actualizar el pago a estado = 'procesado'
+                                    $movimiento_id = $movimiento['id'];
+                                    $this->db->query("UPDATE pagos SET estado_pago = 'procesado', numero_comprobante = '" . $this->db->real_escape_string($referenciaDetectada) . "', banco = '" . $this->db->real_escape_string($movimiento['banco']) . "', validado_por = 1, fecha_validacion = NOW(), descripcion = CONCAT(descripcion, ' [Auto-Conciliado OCR]') WHERE id = " . intval($pagoId));
+                                    
+                                    // 2. Marcar el movimiento bancario como conciliado
+                                    $this->db->query("UPDATE cf_movimientos_bancarios SET conciliado = 1, pago_id = " . intval($pagoId) . " WHERE id = " . intval($movimiento_id));
+                                    
+                                    // 3. Registrar el Asiento Contable (evento COBRO_PRIMA) automáticamente
+                                    $desc_personalizada = "Cobro Prima Póliza #" . $poliza['numero_poliza'] . " — Auto-Conciliado OCR [Ref: " . $referenciaDetectada . "] - " . $movimiento['banco'];
+                                    $payloadContable = [
+                                        'modulo' => 'PAGOS',
+                                        'id' => $pagoId,
+                                        'numero' => $poliza['numero_poliza'],
+                                        'monto_cobrado' => $monto,
+                                        'fecha' => $fecha_pago,
+                                        'descripcion_personalizada' => $desc_personalizada
+                                    ];
+                                    
+                                    $asientoId = \MQF\Finance\MotorContable::disparar('COBRO_PRIMA', $payloadContable);
+                                    if ($asientoId) {
+                                        $this->db->query("UPDATE cf_asientos SET estado = 'APROBADO' WHERE id = " . intval($asientoId));
+                                    }
+                                    
+                                    $estado_pago = 'procesado'; // Para el array de retorno
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception $eOcr) {
+                    // FALLBACK MANUAL: Si falla el OCR o la conciliación, no bloqueamos la transacción.
+                    // El pago permanece 'pendiente' para revisión manual.
+                    error_log("Fallback Manual Activado: Error al ejecutar conciliación OCR: " . $eOcr->getMessage());
+                }
             } else {
                 // 4. Integrar con el Motor Contable (Evento COBRO_PRIMA) - Solo si no es diferido
                 $desc_personalizada = null;
@@ -314,6 +374,141 @@ class PagoManager {
         }
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Obtiene el token de acceso OAuth 2.0 para Google Cloud
+     */
+    private function obtenerVisionAccessToken($keyData) {
+        $header = json_encode(['alg' => 'RS256', 'typ' => 'JWT']);
+        $now = time();
+        $payload = json_encode([
+            'iss' => $keyData['client_email'],
+            'sub' => $keyData['client_email'],
+            'aud' => 'https://oauth2.googleapis.com/token',
+            'iat' => $now,
+            'exp' => $now + 3600,
+            'scope' => 'https://www.googleapis.com/auth/cloud-platform'
+        ]);
+
+        $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+        $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+
+        $signatureInput = $base64UrlHeader . "." . $base64UrlPayload;
+        $privateKey = $keyData['private_key'];
+
+        $signature = '';
+        if (!openssl_sign($signatureInput, $signature, $privateKey, OPENSSL_ALGO_SHA256)) {
+            throw new Exception("Error al firmar JWT con OpenSSL.");
+        }
+
+        $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+        $jwt = $signatureInput . "." . $base64UrlSignature;
+
+        // Exchange for OAuth token
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://oauth2.googleapis.com/token');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $jwt
+        ]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            $err = curl_error($ch);
+            curl_close($ch);
+            throw new Exception("Error en cURL al solicitar token: " . $err);
+        }
+        curl_close($ch);
+
+        $resData = json_decode($response, true);
+        if (isset($resData['access_token'])) {
+            return $resData['access_token'];
+        }
+
+        throw new Exception("No se pudo obtener access token de Google: " . ($resData['error_description'] ?? $response));
+    }
+
+    /**
+     * Envía la imagen de soporte a Google Cloud Vision API para extraer el texto (OCR)
+     */
+    public function analizarImagenOCR($imagePath) {
+        try {
+            $keyPath = dirname(__FILE__) . '/google-key.json';
+            if (!file_exists($keyPath)) {
+                throw new Exception("Archivo de llave google-key.json no encontrado.");
+            }
+
+            $keyData = json_decode(file_get_contents($keyPath), true);
+            if (!$keyData || empty($keyData['private_key'])) {
+                throw new Exception("Datos de credenciales de Google no válidos.");
+            }
+
+            // 1. Obtener Token de Acceso
+            $accessToken = $this->obtenerVisionAccessToken($keyData);
+
+            // 2. Leer imagen y codificar en base64
+            $fullPath = dirname(__FILE__) . '/../' . $imagePath;
+            if (!file_exists($fullPath)) {
+                throw new Exception("Archivo de imagen no encontrado: " . $fullPath);
+            }
+            $imageData = base64_encode(file_get_contents($fullPath));
+
+            // 3. Preparar llamada REST a Cloud Vision
+            $payload = json_encode([
+                'requests' => [
+                    [
+                        'image' => ['content' => $imageData],
+                        'features' => [
+                            ['type' => 'DOCUMENT_TEXT_DETECTION']
+                        ]
+                    ]
+                ]
+            ]);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://vision.googleapis.com/v1/images:annotate');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $accessToken,
+                'Content-Type: application/json'
+            ]);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            $response = curl_exec($ch);
+            if (curl_errno($ch)) {
+                $err = curl_error($ch);
+                curl_close($ch);
+                throw new Exception("Error en cURL Vision API: " . $err);
+            }
+            curl_close($ch);
+
+            $resData = json_decode($response, true);
+            
+            // Extraer el texto completo
+            $fullText = '';
+            if (isset($resData['responses'][0]['fullTextAnnotation']['text'])) {
+                $fullText = $resData['responses'][0]['fullTextAnnotation']['text'];
+            }
+
+            return [
+                'exito' => true,
+                'texto' => $fullText,
+                'raw' => $resData
+            ];
+
+        } catch (Exception $e) {
+            error_log("Error en OCR Vision: " . $e->getMessage());
+            return [
+                'exito' => false,
+                'mensaje' => $e->getMessage()
+            ];
+        }
     }
 }
 ?>
