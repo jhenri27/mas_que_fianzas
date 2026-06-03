@@ -563,6 +563,19 @@
             }
             document.body.setAttribute('data-skin', currentSkin);
             document.documentElement.setAttribute('data-skin', currentSkin);
+
+            // Control granular (NOFTRAB): Si el usuario no tiene permisos de Importación/Integración (MQF_CAN_IMPORT),
+            // se apaga la opción de la Pasarela Card y se activa por defecto la transferencia.
+            setTimeout(() => {
+                if (typeof window.MQF_CAN_IMPORT !== 'undefined' && !window.MQF_CAN_IMPORT) {
+                    const cardBtn = document.getElementById('method-card');
+                    if (cardBtn) {
+                        cardBtn.style.display = 'none';
+                        // Por defecto, seleccionar Transferencia
+                        seleccionarMetodo('transfer');
+                    }
+                }
+            }, 150);
         });
 
         // Tabs
