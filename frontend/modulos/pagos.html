@@ -146,6 +146,9 @@
                     <button class="mqf-module-tab" id="tab-btn-registrar" onclick="cambiarTab('registrar')">
                         <i class="fa-solid fa-cash-register"></i> Registrar Pago
                     </button>
+                    <button class="mqf-module-tab" id="tab-btn-pgc" onclick="cambiarTab('pgc')" style="display: none;">
+                        <i class="fa-solid fa-comments-dollar"></i> Portal de Gestión de Cobros (PGC)
+                    </button>
                 </div>
             </div>
 
@@ -232,6 +235,10 @@
                             <select id="pago-poliza-select" class="mqf-select" style="width: 100%;" onchange="seleccionarPoliza(this.value)">
                                 <option value="">Seleccione una póliza...</option>
                             </select>
+                            <label style="display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; cursor: pointer; user-select: none; opacity: 0.85;">
+                                <input type="checkbox" id="chk-ver-saldadas" onchange="renderSelectPolizas()">
+                                <span>Mostrar pólizas saldadas (solo lectura)</span>
+                            </label>
                         </div>
 
                         <!-- Ficha de Póliza seleccionada -->
@@ -274,9 +281,27 @@
                                     <span>Cuotas Totales:</span>
                                     <span id="pol-det-cuotas">-</span>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 16px; font-weight: bold; color: var(--mqf-success);">
+                                <div id="row-det-monto-cobrar" style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 16px; font-weight: bold; color: var(--mqf-success);">
                                     <span>Monto a Cobrar:</span>
                                     <span id="pol-det-monto-cobrar">RD$ 0.00</span>
+                                </div>
+                                <div id="row-det-estado-cobro" style="display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--mqf-border);">
+                                    <span style="font-weight: bold; color: var(--mqf-text-secondary);">Estado Cobro:</span>
+                                    <span id="pol-det-estado-cobro" class="status-badge" style="font-size: 12px; font-weight: bold;">-</span>
+                                </div>
+                                <div id="row-det-balance" style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <span style="font-weight: bold; color: var(--mqf-text-secondary);">Balance Pendiente:</span>
+                                    <span id="pol-det-balance" style="font-weight: bold;">RD$ 0.00</span>
+                                </div>
+                                <div id="row-det-fecha-saldo" style="display: flex; justify-content: space-between; margin-top: 5px; display: none;">
+                                    <span style="font-weight: bold; color: var(--mqf-text-secondary);">Fecha de Saldo:</span>
+                                    <span id="pol-det-fecha-saldo" style="font-weight: bold;">-</span>
+                                </div>
+                                <div id="row-det-recibos" style="margin-top: 10px; display: none; padding-top: 10px; border-top: 1px dashed var(--mqf-border);">
+                                    <span style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 12px; color: var(--mqf-text-secondary);">Recibos Oficiales de Pago:</span>
+                                    <div id="pol-det-recibos-lista" style="display: flex; flex-direction: column; gap: 5px;">
+                                        <!-- Botones de recibo -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -287,6 +312,40 @@
                         <h3 style="margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--mqf-border); padding-bottom: 10px;">
                             <i class="fa-solid fa-credit-card"></i> 2. Canal de Cobro
                         </h3>
+
+                        <!-- Alerta Póliza Saldada -->
+                        <div id="checkout-saldada-msg" class="mqf-alert mqf-alert--info" style="display: none; margin-bottom: 15px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 15px; border-radius: var(--mqf-radius-md); align-items: start; gap: 10px;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 20px; color: #0284c7; margin-top: 2px;"></i>
+                            <div>
+                                <strong style="display: block; font-size: 14px; margin-bottom: 4px;">Póliza Completamente Saldada</strong>
+                                <span style="font-size: 13px; line-height: 1.5; display: block;">Esta póliza ha sido pagada en su totalidad. Por motivos de auditoría y de acuerdo con la normativa vigente, no se permiten cobros adicionales en este período técnico. Esta póliza pasará al proceso futuro de renovación.</span>
+                            </div>
+                        </div>
+
+                        <div id="checkout-form-wrapper">
+                            <!-- Fraccionamiento Toggle -->
+                        <div id="fraccionamiento-wrapper" style="background: var(--mqf-surface-2); padding: 12px; border-radius: 8px; border: 1.5px solid var(--mqf-border); margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-weight: bold; font-size: 13px;">
+                                <input type="checkbox" id="chk-fraccionar" onchange="toggleFraccionamiento()">
+                                <i class="fa-solid fa-calendar-days" style="color: var(--mqf-accent); font-size: 14px; margin: 0;"></i>
+                                Activar Fraccionamiento (Ley 146-02)
+                            </label>
+                            <div id="calc-fraccionamiento" style="display: none; margin-top: 10px; border-top: 1px dashed var(--mqf-border); padding-top: 8px;">
+                                <div style="margin-bottom: 8px;">
+                                    <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px;">Cuota Inicial (Mínimo 10% = <span id="fracc-min-inicial">RD$ 0.00</span>) *</label>
+                                    <input type="number" id="fracc-monto-inicial" class="mqf-input" step="0.01" oninput="calcularCuotasFraccionadas()" style="width: 100%; padding: 6px 10px; font-weight: bold;">
+                                </div>
+                                <div style="font-size: 11px; color: var(--mqf-text-secondary);">
+                                    <strong>Desglose Proyectado:</strong>
+                                    <ul style="margin: 4px 0 0 15px; padding: 0;" id="fracc-desglose-lista">
+                                        <li>Cuota 1 (Inicial): RD$ 0.00</li>
+                                        <li>Cuota 2 (30 días): RD$ 0.00</li>
+                                        <li>Cuota 3 (60 días): RD$ 0.00</li>
+                                        <li>Cuota 4 (90 días): RD$ 0.00</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Grid de Selección de Método -->
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
@@ -453,6 +512,8 @@
                             <p id="sim-status-desc" style="font-size: 12px; opacity: 0.7; margin: 0;">Iniciando canal seguro SSL con la pasarela bancaria</p>
                         </div>
 
+                        </div>
+
                     </div>
 
                 </div>
@@ -507,6 +568,157 @@
                 </div>
             </div>
 
+            <!-- CONTENIDO PESTAÑA 3: PORTAL DE GESTIÓN DE COBROS (PGC) -->
+            <div id="vista-pgc" class="tab-view" style="display: none; padding: 20px;">
+                <!-- Configuración Bot y KPIs -->
+                <div class="mqf-card" style="margin-bottom: 20px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--mqf-border); padding-bottom: 12px; margin-bottom: 15px;">
+                        <h3 style="margin: 0; font-size: 16px;"><i class="fa-solid fa-robot"></i> Asistente de Cobros Automatizado</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label class="mqf-toggle-switch">
+                                <input type="checkbox" id="chk-bot-global" onchange="toggleBotGlobal()">
+                                <span></span>
+                            </label>
+                            <span id="bot-global-status-lbl" style="font-weight: bold; font-size: 13px;">INACTIVO</span>
+                            
+                            <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="ejecutarBotManual()" style="margin-left: 15px;">
+                                <i class="fa-solid fa-play"></i> Ejecución JIT Manual
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mqf-form-grid-2" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-accent);">
+                            <div class="mqf-kpi-card__title">DSO (Plazo Promedio Cobro)</div>
+                            <div class="mqf-kpi-card__value" id="kpi-dso">0 días</div>
+                        </div>
+                        <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-success);">
+                            <div class="mqf-kpi-card__title">Al Corriente (0-30 días)</div>
+                            <div class="mqf-kpi-card__value" id="kpi-aging-0-30">RD$ 0.00</div>
+                        </div>
+                        <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-warning);">
+                            <div class="mqf-kpi-card__title">Mora Media (31-90 días)</div>
+                            <div class="mqf-kpi-card__value" id="kpi-aging-31-90">RD$ 0.00</div>
+                        </div>
+                        <div class="mqf-kpi-card" style="border-left: 4px solid var(--mqf-danger);">
+                            <div class="mqf-kpi-card__title">Mora Crítica (>90 días)</div>
+                            <div class="mqf-kpi-card__value" id="kpi-aging-over-90">RD$ 0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buscador e Filtros PGC -->
+                <div class="mqf-card" style="margin-bottom: 20px; padding: 15px;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <input type="text" id="busqueda-pgc" class="mqf-input" placeholder="Buscar por póliza o cliente en cobranza..." style="width: 100%;" oninput="filtrarPGC()">
+                        </div>
+                        <div style="width: 180px;">
+                            <select id="filtro-riesgo-pgc" class="mqf-select" style="width: 100%;" onchange="filtrarPGC()">
+                                <option value="">Todos los niveles de riesgo</option>
+                                <option value="bajo">Riesgo Bajo (Al día)</option>
+                                <option value="medio">Riesgo Medio</option>
+                                <option value="critico">Riesgo Crítico (Tiempos Temerarios)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla PGC -->
+                <div class="mqf-card" style="padding: 0; overflow: hidden;">
+                    <div class="mqf-table-wrapper">
+                        <table class="mqf-table" id="tabla-pgc">
+                            <thead>
+                                <tr>
+                                    <th>Póliza</th>
+                                    <th>Cliente</th>
+                                    <th>Prima Total</th>
+                                    <th>Pagado</th>
+                                    <th>Balance</th>
+                                    <th>Días Vigencia</th>
+                                    <th>Días Pagados</th>
+                                    <th>Balance Cobertura</th>
+                                    <th>Riesgo</th>
+                                    <th style="text-align: center;">Bot</th>
+                                    <th style="text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pgc-tbody">
+                                <tr>
+                                    <td colspan="11" style="text-align:center; padding: 30px; opacity:0.6;">Cargando balances de prorrata y antigüedad de saldos...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL DE DETALLE Y BITÁCORA DE GESTIÓN DE COBRO -->
+            <div id="modal-gestion-cobro" class="mqf-modal-backdrop">
+                <div class="mqf-modal" style="max-width: 700px;">
+                    <div class="mqf-modal-header">
+                        <h3 class="mqf-modal-title"><i class="fa-solid fa-comments-dollar"></i> Gestión y Bitácora de Cobranza</h3>
+                        <button class="mqf-modal-close" onclick="cerrarModalLocal('modal-gestion-cobro')">&times;</button>
+                    </div>
+                    <div class="mqf-modal-body" style="grid-template-columns: 1fr; gap: 20px;">
+                        <!-- Ficha de la Póliza -->
+                        <div style="background: var(--mqf-surface-2); padding: 15px; border-radius: 8px; border: 1px solid var(--mqf-border); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+                            <div><strong>Póliza:</strong> <span id="gc-poliza-num">-</span></div>
+                            <div><strong>Cliente:</strong> <span id="gc-cliente-nombre">-</span></div>
+                            <div><strong>Monto Financiado:</strong> <span id="gc-monto-total">-</span></div>
+                            <div><strong>Balance Pendiente:</strong> <span id="gc-monto-balance" style="color: var(--mqf-danger); font-weight: bold;">-</span></div>
+                            <div><strong>Días Cobertura Restantes:</strong> <span id="gc-cobertura-restante" style="font-weight: bold;">-</span></div>
+                            <div><strong>Estado de Riesgo:</strong> <span id="gc-riesgo-badge">-</span></div>
+                        </div>
+
+                        <!-- Nueva Gestión Form -->
+                        <form id="form-nueva-gestion" onsubmit="registrarNuevaGestion(event)">
+                            <input type="hidden" id="gc-poliza-id">
+                            <h4 style="margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid var(--mqf-border); padding-bottom: 5px;"><i class="fa-solid fa-pen-nib"></i> Registrar Gestión de Contacto</h4>
+                            
+                            <div class="mqf-form-grid-2" style="margin-bottom: 10px;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 4px; font-size: 11px; font-weight: bold;">Tipo de Gestión *</label>
+                                    <select id="gc-tipo-contacto" class="mqf-select" required onchange="togglePromesaCampos()" style="width: 100%;">
+                                        <option value="llamada">Llamada Telefónica</option>
+                                        <option value="correo">Correo Electrónico</option>
+                                        <option value="whatsapp">Mensaje WhatsApp</option>
+                                        <option value="visita">Visita Domiciliaria</option>
+                                        <option value="promesa_pago">Acuerdo / Promesa de Pago</option>
+                                    </select>
+                                </div>
+                                <div id="promesa-campos-wrapper" style="display: none; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 4px; font-size: 11px; font-weight: bold;">Monto Prometido *</label>
+                                        <input type="number" id="gc-promesa-monto" class="mqf-input" step="0.01" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 4px; font-size: 11px; font-weight: bold;">Fecha Promesa *</label>
+                                        <input type="date" id="gc-promesa-fecha" class="mqf-input" style="width: 100%;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 4px; font-size: 11px; font-weight: bold;">Descripción de Gestión * (Mínimo 15 caracteres para auditoría NOFTRAB)</label>
+                                <textarea id="gc-descripcion" class="mqf-textarea" required placeholder="Detalle la respuesta del cliente, acuerdos alcanzados o bitácora de la gestión..." rows="3" style="width: 100%;"></textarea>
+                            </div>
+
+                            <button type="submit" class="mqf-btn mqf-btn--primary" style="width: 100%;">
+                                <i class="fa-solid fa-save"></i> Guardar Gestión en la Bitácora Inmutable
+                            </button>
+                        </form>
+
+                        <!-- Listado de Gestiones Históricas (Inmutables) -->
+                        <div style="border-top: 1px solid var(--mqf-border); padding-top: 15px;">
+                            <h4 style="margin-top: 0; margin-bottom: 10px;"><i class="fa-solid fa-history"></i> Historial de Contacto y Alertas</h4>
+                            <div style="max-height: 250px; overflow-y: auto;" id="gc-bitacora-lista">
+                                <!-- Cargado dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -538,6 +750,7 @@
         let selectedPaymentMethod = 'card';
         let cachedPolizas = [];
         let cachedPagos = [];
+        let selectedPolicyPayments = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             cargarPagos();
@@ -575,6 +788,7 @@
                         seleccionarMetodo('transfer');
                     }
                 }
+                verificarPermisoPGC();
             }, 150);
         });
 
@@ -582,15 +796,107 @@
         function cambiarTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-view').forEach(v => v.style.display = 'none');
+            document.querySelectorAll('.tab-view').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            });
 
             if (tab === 'lista') {
                 document.getElementById('tab-btn-lista').classList.add('active');
                 document.getElementById('vista-lista').style.display = 'block';
+                document.getElementById('vista-lista').classList.add('active');
                 cargarPagos();
-            } else {
+            } else if (tab === 'registrar') {
                 document.getElementById('tab-btn-registrar').classList.add('active');
                 document.getElementById('vista-registrar').style.display = 'block';
+                document.getElementById('vista-registrar').classList.add('active');
+            } else if (tab === 'pgc') {
+                document.getElementById('tab-btn-pgc').classList.add('active');
+                document.getElementById('vista-pgc').style.display = 'block';
+                document.getElementById('vista-pgc').classList.add('active');
+                cargarReportePGC();
+            }
+        }
+
+        // --- SISTEMA DE FRACCIONAMIENTO (LEY 146-02) ---
+        function toggleFraccionamiento() {
+            const chk = document.getElementById('chk-fraccionar');
+            const calc = document.getElementById('calc-fraccionamiento');
+            const inputInicial = document.getElementById('fracc-monto-inicial');
+            
+            if (chk.checked) {
+                calc.style.display = 'block';
+                const primaTotal = parseFloat(activePoliza.prima_total);
+                const minInicial = round(primaTotal * 0.10, 2);
+                const sugerido = round(primaTotal * 0.25, 2);
+                inputInicial.value = sugerido >= minInicial ? sugerido : minInicial;
+                inputInicial.min = minInicial;
+                
+                document.getElementById('fracc-min-inicial').textContent = fmt(minInicial);
+                calcularCuotasFraccionadas();
+            } else {
+                calc.style.display = 'none';
+                seleccionarPoliza(document.getElementById('pago-poliza-select').value);
+            }
+        }
+
+        function calcularCuotasFraccionadas() {
+            if (!activePoliza) return;
+            const inputInicial = document.getElementById('fracc-monto-inicial');
+            let inicial = parseFloat(inputInicial.value) || 0;
+            const primaTotal = parseFloat(activePoliza.prima_total);
+            const minInicial = round(primaTotal * 0.10, 2);
+            
+            if (inicial < minInicial) {
+                inputInicial.style.borderColor = 'var(--mqf-danger)';
+            } else {
+                inputInicial.style.borderColor = '';
+            }
+
+            const balanceRestante = primaTotal - inicial;
+            const montoCuota = round(balanceRestante / 3, 2);
+            const montoUltimaCuota = round(balanceRestante - (montoCuota * 2), 2);
+            
+            const lista = document.getElementById('fracc-desglose-lista');
+            lista.innerHTML = `
+                <li><strong>Cuota 1 (Inicial hoy):</strong> ${fmt(inicial)}</li>
+                <li><strong>Cuota 2 (30 días):</strong> ${fmt(montoCuota)}</li>
+                <li><strong>Cuota 3 (60 días):</strong> ${fmt(montoCuota)}</li>
+                <li><strong>Cuota 4 (90 días):</strong> ${fmt(montoUltimaCuota)}</li>
+            `;
+            
+            document.getElementById('pol-det-monto-cobrar').textContent = fmt(inicial);
+        }
+        
+        function round(num, decimals) {
+            const t = Math.pow(10, decimals);
+            return Math.round((num + Number.EPSILON) * t) / t;
+        }
+
+        function verificarPermisoPGC() {
+            const token = localStorage.getItem('token_sesion');
+            let tienePgc = false;
+            try {
+                if (window.parent && window.parent.MQF_PERMISOS) {
+                    const codigos = window.parent.MQF_PERMISOS.map(p => typeof p === 'string' ? p : (p.codigo || p.permiso || ''));
+                    tienePgc = codigos.includes('PAG_PGC_ACCEDER') || codigos.includes('PAG_TOTAL');
+                }
+            } catch (e) {
+                console.warn('No se pudieron leer los permisos del parent iframe', e);
+            }
+
+            if (tienePgc || !token) {
+                const tabBtn = document.getElementById('tab-btn-pgc');
+                if (tabBtn) tabBtn.style.display = 'inline-block';
+            } else {
+                api.solicitud('/cobros.php?action=get_bot_config', 'GET')
+                    .then(res => {
+                        const tabBtn = document.getElementById('tab-btn-pgc');
+                        if (tabBtn) tabBtn.style.display = 'inline-block';
+                    })
+                    .catch(err => {
+                        console.warn('Acceso restringido a PGC (403)');
+                    });
             }
         }
 
@@ -682,18 +988,35 @@
                 const res = await api.solicitud('/polizas.php', 'GET');
                 if (res.exito && Array.isArray(res.data)) {
                     cachedPolizas = res.data;
-                    const select = document.getElementById('pago-poliza-select');
-                    select.innerHTML = '<option value="">Seleccione una póliza...</option>';
-                    cachedPolizas.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = `${p.numero_poliza} - ${p.aseguradora} (Cliente: ${p.cliente_nombre || 'n/a'})`;
-                        select.appendChild(opt);
-                    });
+                    renderSelectPolizas();
                 }
             } catch (err) {
                 console.error(err);
             }
+        }
+
+        function renderSelectPolizas() {
+            const select = document.getElementById('pago-poliza-select');
+            const chkVerSaldadas = document.getElementById('chk-ver-saldadas');
+            const verSaldadas = chkVerSaldadas ? chkVerSaldadas.checked : false;
+            
+            select.innerHTML = '<option value="">Seleccione una póliza...</option>';
+            
+            cachedPolizas.forEach(p => {
+                const balance = parseFloat(p.balance !== undefined ? p.balance : (p.prima_total - (p.total_pagado || 0)));
+                const isSaldada = balance <= 0;
+                
+                if (!isSaldada || verSaldadas) {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    if (isSaldada) {
+                        opt.textContent = `[SALDADA] ${p.numero_poliza} - ${p.aseguradora} (Cliente: ${p.cliente_nombre || 'n/a'})`;
+                    } else {
+                        opt.textContent = `${p.numero_poliza} - ${p.aseguradora} (Cliente: ${p.cliente_nombre || 'n/a'})`;
+                    }
+                    select.appendChild(opt);
+                }
+            });
         }
 
         // Cargar cuentas bancarias parametrizadas
@@ -717,13 +1040,16 @@
             }
         }
 
-        function seleccionarPoliza(id) {
+        async function seleccionarPoliza(id) {
             if (!id) {
                 activePoliza = null;
+                selectedPolicyPayments = [];
                 document.getElementById('ficha-poliza-vacia').style.display = 'block';
                 document.getElementById('ficha-poliza-detalle').style.display = 'none';
                 document.getElementById('checkout-container').style.opacity = '0.5';
                 document.getElementById('checkout-container').style.pointerEvents = 'none';
+                document.getElementById('checkout-saldada-msg').style.display = 'none';
+                document.getElementById('checkout-form-wrapper').style.display = 'block';
                 return;
             }
 
@@ -743,11 +1069,80 @@
                 const cuotaMonto = parseFloat(activePoliza.prima_total) / cuotaTotal;
                 document.getElementById('pol-det-monto-cobrar').textContent = fmt(cuotaMonto);
 
+                // Calcular balance
+                const balance = parseFloat(activePoliza.balance !== undefined ? activePoliza.balance : (activePoliza.prima_total - (activePoliza.total_pagado || 0)));
+                const isSaldada = balance <= 0;
+
+                // Cargar recibos y fecha de saldo
+                selectedPolicyPayments = [];
+                let fechaSaldo = 'N/A';
+                try {
+                    const res = await api.solicitud('/pagos.php?poliza_id=' + activePoliza.id, 'GET');
+                    if (res.exito && Array.isArray(res.data)) {
+                        selectedPolicyPayments = res.data;
+                    }
+                } catch (err) {
+                    console.error('Error fetching payments:', err);
+                }
+
+                const processedPayments = selectedPolicyPayments.filter(p => p.estado_pago === 'procesado');
+                if (processedPayments.length > 0) {
+                    // La fecha de saldo es la fecha del pago más reciente que la saldó
+                    fechaSaldo = processedPayments[0].fecha_pago;
+                }
+
+                // Renderizar campos técnicos
+                const detEstado = document.getElementById('pol-det-estado-cobro');
+                detEstado.textContent = isSaldada ? 'SALDADA' : 'PENDIENTE DE PAGO';
+                detEstado.className = 'status-badge ' + (isSaldada ? 'status-procesado' : 'status-pendiente');
+                
+                document.getElementById('pol-det-balance').textContent = fmt(Math.max(0, balance));
+
+                if (isSaldada) {
+                    document.getElementById('row-det-monto-cobrar').style.display = 'none';
+                    document.getElementById('row-det-fecha-saldo').style.display = 'flex';
+                    document.getElementById('pol-det-fecha-saldo').textContent = fechaSaldo;
+                    
+                    // Alerta y deshabilitar pago
+                    document.getElementById('checkout-saldada-msg').style.display = 'flex';
+                    document.getElementById('checkout-form-wrapper').style.display = 'none';
+                    document.getElementById('checkout-container').style.opacity = '1';
+                    document.getElementById('checkout-container').style.pointerEvents = 'auto'; // Permitir leer el mensaje sin interactuar con los campos
+                } else {
+                    document.getElementById('row-det-monto-cobrar').style.display = 'flex';
+                    document.getElementById('row-det-fecha-saldo').style.display = 'none';
+                    
+                    // Habilitar pago
+                    document.getElementById('checkout-saldada-msg').style.display = 'none';
+                    document.getElementById('checkout-form-wrapper').style.display = 'block';
+                    document.getElementById('checkout-container').style.opacity = '1';
+                    document.getElementById('checkout-container').style.pointerEvents = 'auto';
+                }
+
+                // Renderizar recibos
+                const rowRecibos = document.getElementById('row-det-recibos');
+                const recibosLista = document.getElementById('pol-det-recibos-lista');
+                
+                if (processedPayments.length > 0) {
+                    rowRecibos.style.display = 'block';
+                    recibosLista.innerHTML = processedPayments.map(p => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 6px 10px; border-radius: 4px; font-size: 11px; border: 1px solid var(--mqf-border);">
+                            <span>
+                                <strong>${p.numero_recibo || 'Recibo'}</strong><br>
+                                <span style="opacity: 0.7;">${p.fecha_pago} · ${fmt(p.monto)} (${p.tipo_pago})</span>
+                            </span>
+                            <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" style="padding: 3px 8px; font-size: 11px;" onclick="descargarReciboPDF(${p.id})">
+                                <i class="fa-solid fa-file-pdf"></i> Imprimir
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    rowRecibos.style.display = 'none';
+                    recibosLista.innerHTML = '';
+                }
+
                 document.getElementById('ficha-poliza-vacia').style.display = 'none';
                 document.getElementById('ficha-poliza-detalle').style.display = 'block';
-
-                document.getElementById('checkout-container').style.opacity = '1';
-                document.getElementById('checkout-container').style.pointerEvents = 'auto';
             }
         }
 
@@ -839,8 +1234,21 @@
             }
 
             // Calcular monto
-            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            const chkFraccionar = document.getElementById('chk-fraccionar').checked;
+            const inputInicial = document.getElementById('fracc-monto-inicial');
+            
+            let monto = 0;
+            if (chkFraccionar) {
+                monto = parseFloat(inputInicial.value) || 0;
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                if (monto < minInicial) {
+                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    return;
+                }
+            } else {
+                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            }
 
             try {
                 const payload = {
@@ -848,7 +1256,8 @@
                     monto: monto,
                     generar_ncf: ncfChk,
                     tipo_comprobante: 'B02', // Comprobante de consumo por defecto
-                    banco: selectAdq === 'Directo' ? ('API ' + activePoliza.aseguradora) : selectAdq
+                    banco: selectAdq === 'Directo' ? ('API ' + activePoliza.aseguradora) : selectAdq,
+                    fraccionar: chkFraccionar ? 1 : 0
                 };
 
                 const res = await api.solicitud('/pagos.php?action=procesar_pasarela', 'POST', payload);
@@ -904,8 +1313,21 @@
             }
 
             // Calcular monto de cuota
-            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            const chkFraccionar = document.getElementById('chk-fraccionar').checked;
+            const inputInicial = document.getElementById('fracc-monto-inicial');
+            
+            let monto = 0;
+            if (chkFraccionar) {
+                monto = parseFloat(inputInicial.value) || 0;
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                if (monto < minInicial) {
+                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    return;
+                }
+            } else {
+                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            }
 
             // Form data para subir archivo
             const formData = new FormData();
@@ -916,6 +1338,7 @@
             formData.append('numero_comprobante', refTxn);
             formData.append('fecha_pago', fechaVal);
             formData.append('documento_deposito', file);
+            formData.append('fraccionar', chkFraccionar ? '1' : '0');
 
             try {
                 // Usamos fetch directamente porque el api client maneja json por defecto
@@ -951,8 +1374,21 @@
             const nota = document.getElementById('cash-nota').value;
 
             // Calcular monto cuota
-            const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-            const monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            const chkFraccionar = document.getElementById('chk-fraccionar').checked;
+            const inputInicial = document.getElementById('fracc-monto-inicial');
+            
+            let monto = 0;
+            if (chkFraccionar) {
+                monto = parseFloat(inputInicial.value) || 0;
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                if (monto < minInicial) {
+                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    return;
+                }
+            } else {
+                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
+                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+            }
 
             try {
                 // Registrar pago directamente
@@ -963,7 +1399,8 @@
                     banco: 'Caja Principal MQF',
                     generar_ncf: ncfChk,
                     tipo_comprobante: 'B02',
-                    descripcion: nota || ('Pago en efectivo de Póliza #' + activePoliza.numero_poliza)
+                    descripcion: nota || ('Pago en efectivo de Póliza #' + activePoliza.numero_poliza),
+                    fraccionar: chkFraccionar ? 1 : 0
                 };
 
                 const res = await api.solicitud('/pagos.php?action=procesar_pasarela', 'POST', payload);
@@ -1093,11 +1530,22 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
-        // GENERAR RECIBO DE PAGO PDF (jsPDF)
         async function descargarReciboPDF(pagoId) {
             try {
-                const p = cachedPagos.find(x => x.id == pagoId);
-                if (!p) return;
+                let p = cachedPagos.find(x => x.id == pagoId) || selectedPolicyPayments.find(x => x.id == pagoId);
+                if (!p) {
+                    MQF.toast('No se encontró información del pago', 'error');
+                    return;
+                }
+
+                const res = await api.solicitud('/pagos.php?action=verificar&ref=' + p.numero_referencia, 'GET');
+                if (res.exito && res.data) {
+                    p = res.data;
+                    p.poliza_numero = p.numero_poliza;
+                } else {
+                    MQF.toast('No se pudo verificar el pago en el servidor: ' + res.mensaje, 'error');
+                    return;
+                }
 
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
@@ -1233,6 +1681,302 @@
             } catch (err) {
                 console.error(err);
                 MQF.toast('Error al construir el archivo PDF del recibo', 'error');
+            }
+        }
+
+        // --- PORTAL DE GESTIÓN DE COBROS (PGC) & BOT DUNNING ---
+        let pgcDataCached = null;
+
+        async function cargarReportePGC() {
+            try {
+                // 1. Cargar config del bot
+                const botRes = await api.solicitud('/cobros.php?action=get_bot_config', 'GET');
+                if (botRes.exito) {
+                    const botActivo = parseInt(botRes.bot_activo) === 1;
+                    document.getElementById('chk-bot-global').checked = botActivo;
+                    const lbl = document.getElementById('bot-global-status-lbl');
+                    lbl.textContent = botActivo ? 'ACTIVO' : 'INACTIVO';
+                    lbl.style.color = botActivo ? 'var(--mqf-success)' : 'var(--mqf-text-secondary)';
+                }
+
+                // 2. Cargar reporte general (DSO/Aging/Polizas)
+                const res = await api.solicitud('/cobros.php?action=get_reporte', 'GET');
+                if (res.exito && res.data) {
+                    pgcDataCached = res.data;
+                    renderizarReportePGC(res.data);
+                } else {
+                    MQF.toast('Error al obtener reporte PGC: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al cargar PGC', 'error');
+            }
+        }
+
+        function renderizarReportePGC(data) {
+            document.getElementById('kpi-dso').textContent = Math.round(data.dso || 0) + ' días';
+            document.getElementById('kpi-aging-0-30').textContent = fmt(data.aging_buckets['0-30'] || 0);
+            document.getElementById('kpi-aging-31-90').textContent = fmt((data.aging_buckets['31-60'] || 0) + (data.aging_buckets['61-90'] || 0));
+            document.getElementById('kpi-aging-over-90').textContent = fmt(data.aging_buckets['90+'] || 0);
+
+            renderizarTablaPGC(data.polizas || []);
+        }
+
+        function renderizarTablaPGC(polizas) {
+            const tbody = document.getElementById('pgc-tbody');
+            if (polizas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:30px; opacity:0.6;">No hay pólizas registradas con balances o cuotas futuras</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = polizas.map(p => {
+                const balance = parseFloat(p.prima_total) - parseFloat(p.monto_pagado);
+                
+                let riesgoBadgeClass = 'status-procesado';
+                let riesgoTexto = 'Bajo (Al día)';
+                if (p.riesgo_prorrata === 'critico') {
+                    riesgoBadgeClass = 'status-rechazado';
+                    riesgoTexto = 'Crítico (Temerario)';
+                } else if (p.riesgo_prorrata === 'medio') {
+                    riesgoBadgeClass = 'status-pendiente';
+                    riesgoTexto = 'Medio';
+                }
+
+                const botExcluido = parseInt(p.bot_excluir) === 1;
+                const botColor = botExcluido ? '#94a3b8' : 'var(--mqf-accent)';
+                const botIconTitle = botExcluido ? 'Bot Excluido para este cliente' : 'Bot Activado';
+                const botBtn = `<button class="mqf-btn mqf-btn--sm" style="background: transparent; color: ${botColor}; border: none; font-size: 16px; padding: 0; cursor: pointer;" onclick="toggleBotPoliza(${p.id})" title="${botIconTitle}"><i class="fa-solid fa-robot"></i></button>`;
+
+                return `
+                    <tr data-riesgo="${p.riesgo_prorrata}">
+                        <td><strong>${p.numero_poliza}</strong></td>
+                        <td>${p.cliente_nombre}</td>
+                        <td>${fmt(p.prima_total)}</td>
+                        <td>${fmt(p.monto_pagado)}</td>
+                        <td style="color: var(--mqf-danger); font-weight: bold;">${fmt(balance)}</td>
+                        <td>${p.dias_transcurridos} días</td>
+                        <td>${p.dias_pagados} días</td>
+                        <td style="font-weight: bold; color: ${p.balance_dias_cobertura < 0 ? 'var(--mqf-danger)' : 'var(--mqf-text-main)'};">
+                            ${p.balance_dias_cobertura} días
+                        </td>
+                        <td><span class="status-badge ${riesgoBadgeClass}">${riesgoTexto}</span></td>
+                        <td style="text-align: center;">${botBtn}</td>
+                        <td style="text-align: center;">
+                            <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirGestionModal(${p.id})">
+                                <i class="fa-solid fa-comments-dollar"></i> Gestionar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filtrarPGC() {
+            const query = document.getElementById('busqueda-pgc').value.toLowerCase();
+            const filterRiesgo = document.getElementById('filtro-riesgo-pgc').value;
+
+            if (!pgcDataCached || !pgcDataCached.polizas) return;
+
+            const filtradas = pgcDataCached.polizas.filter(p => {
+                const matchesSearch = p.numero_poliza.toLowerCase().includes(query) ||
+                                     p.cliente_nombre.toLowerCase().includes(query);
+
+                const matchesRiesgo = !filterRiesgo || p.riesgo_prorrata === filterRiesgo;
+
+                return matchesSearch && matchesRiesgo;
+            });
+
+            renderizarTablaPGC(filtradas);
+        }
+
+        async function toggleBotGlobal() {
+            const chk = document.getElementById('chk-bot-global');
+            const activo = chk.checked ? 1 : 0;
+            try {
+                const res = await api.solicitud('/cobros.php?action=save_bot_config', 'POST', { bot_activo: activo });
+                if (res.exito) {
+                    const lbl = document.getElementById('bot-global-status-lbl');
+                    lbl.textContent = activo === 1 ? 'ACTIVO' : 'INACTIVO';
+                    lbl.style.color = activo === 1 ? 'var(--mqf-success)' : 'var(--mqf-text-secondary)';
+                    MQF.toast(res.mensaje, 'success');
+                } else {
+                    chk.checked = !chk.checked;
+                    MQF.toast('No pudo actualizar la configuración del bot: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                chk.checked = !chk.checked;
+                MQF.toast('Error de red al actualizar bot', 'error');
+            }
+        }
+
+        async function toggleBotPoliza(polizaId) {
+            try {
+                const res = await api.solicitud('/cobros.php?action=toggle_bot_poliza', 'POST', { poliza_id: polizaId });
+                if (res.exito) {
+                    MQF.toast(res.mensaje, 'success');
+                    cargarReportePGC();
+                } else {
+                    MQF.toast('Error al cambiar estatus del bot: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error al enviar la solicitud', 'error');
+            }
+        }
+
+        async function ejecutarBotManual() {
+            if (!confirm('¿Desea disparar la ejecución manual de cobro del bot? Se enviarán alertas y recordatorios pendientes.')) return;
+            try {
+                MQF.toast('Ejecutando secuencia del bot en segundo plano...', 'info');
+                const res = await api.solicitud('/cobros.php?action=ejecutar_bot_manual', 'POST');
+                if (res.exito) {
+                    MQF.toast(res.mensaje, 'success');
+                    cargarReportePGC();
+                } else {
+                    MQF.toast('Error al ejecutar bot: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al invocar ejecución del bot', 'error');
+            }
+        }
+
+        async function abrirGestionModal(polizaId) {
+            const poliza = pgcDataCached.polizas.find(p => p.id == polizaId);
+            if (!poliza) return;
+
+            document.getElementById('gc-poliza-id').value = polizaId;
+            document.getElementById('gc-poliza-num').textContent = poliza.numero_poliza;
+            document.getElementById('gc-cliente-nombre').textContent = poliza.cliente_nombre;
+            document.getElementById('gc-monto-total').textContent = fmt(poliza.prima_total);
+            
+            const balance = parseFloat(poliza.prima_total) - parseFloat(poliza.monto_pagado);
+            document.getElementById('gc-monto-balance').textContent = fmt(balance);
+            document.getElementById('gc-cobertura-restante').textContent = poliza.balance_dias_cobertura + ' días';
+
+            const rBadge = document.getElementById('gc-riesgo-badge');
+            rBadge.textContent = poliza.riesgo_prorrata === 'critico' ? 'CRÍTICO' : poliza.riesgo_prorrata === 'medio' ? 'MEDIO' : 'BAJO';
+            rBadge.className = 'status-badge status-' + (poliza.riesgo_prorrata === 'critico' ? 'rechazado' : poliza.riesgo_prorrata === 'medio' ? 'pendiente' : 'procesado');
+
+            document.getElementById('form-nueva-gestion').reset();
+            togglePromesaCampos();
+
+            cargarHistorialGestiones(polizaId);
+
+            abrirModalLocal('modal-gestion-cobro');
+        }
+
+        function togglePromesaCampos() {
+            const tipo = document.getElementById('gc-tipo-contacto').value;
+            const wrapper = document.getElementById('promesa-campos-wrapper');
+            if (tipo === 'promesa_pago') {
+                wrapper.style.display = 'grid';
+                document.getElementById('gc-promesa-monto').required = true;
+                document.getElementById('gc-promesa-fecha').required = true;
+            } else {
+                wrapper.style.display = 'none';
+                document.getElementById('gc-promesa-monto').required = false;
+                document.getElementById('gc-promesa-fecha').required = false;
+            }
+        }
+
+        async function cargarHistorialGestiones(polizaId) {
+            const listDiv = document.getElementById('gc-bitacora-lista');
+            listDiv.innerHTML = '<div style="text-align: center; padding: 15px; opacity: 0.5;"><i class="fa-solid fa-sync fa-spin"></i> Cargando historial...</div>';
+            try {
+                const res = await api.solicitud('/cobros.php?action=listar_gestiones&poliza_id=' + polizaId, 'GET');
+                if (res.exito && Array.isArray(res.data)) {
+                    if (res.data.length === 0) {
+                        listDiv.innerHTML = '<div style="text-align: center; padding: 15px; opacity: 0.5;">No hay gestiones anteriores registradas para esta póliza.</div>';
+                        return;
+                    }
+
+                    listDiv.innerHTML = res.data.map(g => {
+                        const esBot = g.tipo_gestion === 'bot_notificacion';
+                        const icon = esBot ? '🤖' : '👤';
+                        const background = esBot ? '#f1f5f9' : '#faf5ff';
+                        const labelTipo = g.tipo_gestion.toUpperCase();
+                        
+                        let extraPromesa = '';
+                        if (g.tipo_gestion === 'promesa_pago' && g.monto_prometido) {
+                            extraPromesa = `<div style="font-size: 11px; margin-top: 4px; font-weight: bold; color: var(--mqf-warning-text);">
+                                              Promesa de Pago: ${fmt(g.monto_prometido)} para el ${g.fecha_promesa} [Estado: ${g.estado_promesa.toUpperCase()}]
+                                            </div>`;
+                        }
+
+                        return `
+                            <div style="background: ${background}; border: 1px solid var(--mqf-border); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12.5px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span style="font-weight: bold;">${icon} ${labelTipo}</span>
+                                    <span style="font-size: 11px; opacity: 0.6;">${g.fecha_gestion}</span>
+                                </div>
+                                <div style="color: var(--mqf-text-secondary); word-break: break-word;">${g.descripcion}</div>
+                                ${extraPromesa}
+                                <div style="font-size: 11px; opacity: 0.6; margin-top: 4px; text-align: right;">
+                                    Registrado por: ${g.usuario_nombre || 'Asistente Robot'}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    listDiv.innerHTML = '<div style="text-align: center; padding: 15px; color: var(--mqf-danger);">No se pudo cargar la bitácora.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                listDiv.innerHTML = '<div style="text-align: center; padding: 15px; color: var(--mqf-danger);">Error de conexión.</div>';
+            }
+        }
+
+        async function registrarNuevaGestion(e) {
+            e.preventDefault();
+            const polizaId = document.getElementById('gc-poliza-id').value;
+            const tipo = document.getElementById('gc-tipo-contacto').value;
+            const desc = document.getElementById('gc-descripcion').value.trim();
+            const montoP = document.getElementById('gc-promesa-monto').value;
+            const fechaP = document.getElementById('gc-promesa-fecha').value;
+
+            if (desc.length < 15) {
+                MQF.toast('La descripción de la gestión debe contener al menos 15 caracteres para cumplir con la norma de auditoría inmutable NOFTRAB.', 'error');
+                return;
+            }
+
+            const payload = {
+                poliza_id: polizaId,
+                tipo_gestion: tipo,
+                descripcion: desc
+            };
+
+            if (tipo === 'promesa_pago') {
+                payload.monto_prometido = parseFloat(montoP);
+                payload.fecha_promesa = fechaP;
+                payload.estado_promesa = 'pendiente';
+            }
+
+            try {
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+                const res = await api.solicitud('/cobros.php?action=registrar_gestion', 'POST', payload);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Gestión en la Bitácora Inmutable';
+
+                if (res.exito) {
+                    MQF.toast('Gestión de cobranza registrada y guardada inmutablemente.', 'success');
+                    document.getElementById('gc-descripcion').value = '';
+                    if (tipo === 'promesa_pago') {
+                        document.getElementById('gc-promesa-monto').value = '';
+                        document.getElementById('gc-promesa-fecha').value = '';
+                    }
+                    cargarHistorialGestiones(polizaId);
+                    cargarReportePGC();
+                } else {
+                    MQF.toast('Error al guardar gestión: ' + res.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al guardar la gestión', 'error');
             }
         }
     </script>

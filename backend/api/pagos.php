@@ -137,6 +137,14 @@ try {
                         "asiento_contable" => $asiento_numero
                     ]
                 ]);
+            } elseif ($action === 'get_bancos') {
+                $db = Database::getInstance()->getConnection();
+                $res = $db->query("SELECT valor_config FROM configuracion_sistema WHERE clave_config = 'EMPRESA_CUENTAS_TRANSFERENCIA' LIMIT 1");
+                $val = [];
+                if ($res && $row = $res->fetch_assoc()) {
+                    $val = json_decode($row['valor_config'], true);
+                }
+                echo json_encode(["exito" => true, "data" => $val]);
             } else {
                 $filtros = [];
                 if (isset($_GET['poliza_id'])) $filtros['poliza_id'] = $_GET['poliza_id'];
@@ -213,8 +221,117 @@ try {
                     }
                 }
                 
-                $resultado = $pagoManager->registrarPago($datos);
+                if (isset($datos['fraccionar']) && intval($datos['fraccionar']) === 1) {
+                    $resultado = $pagoManager->registrarFraccionamiento([
+                        'poliza_id' => $datos['poliza_id'],
+                        'monto_inicial' => $datos['monto'],
+                        'tipo_pago' => $datos['tipo_pago'] ?? 'transferencia',
+                        'banco' => $datos['banco'] ?? null,
+                        'numero_comprobante' => $datos['numero_comprobante'] ?? null,
+                        'fecha_pago' => $datos['fecha_pago'] ?? date('Y-m-d'),
+                        'registrado_por' => $usuario_id,
+                        'comprobante_nombre' => $datos['comprobante_nombre'] ?? null,
+                        'comprobante_ruta' => $datos['comprobante_ruta'] ?? null,
+                        'comprobante_hash' => $datos['comprobante_hash'] ?? null
+                    ]);
+                } else {
+                    $resultado = $pagoManager->registrarPago($datos);
+                }
+                
                 if ($resultado['exito']) {
+                    echo json_encode($resultado);
+                } else {
+                    http_response_code(500);
+                    echo json_encode($resultado);
+                }
+            } elseif ($action === 'procesar_pasarela') {
+                if (!$datos || empty($datos['poliza_id']) || empty($datos['monto'])) {
+                    http_response_code(400);
+                    echo json_encode(["exito" => false, "mensaje" => "Datos de pago incompletos (poliza_id y monto requeridos)"]);
+                    break;
+                }
+
+                $poliza_id = intval($datos['poliza_id']);
+                $monto = floatval($datos['monto']);
+                $generar_ncf = isset($datos['generar_ncf']) ? (bool)$datos['generar_ncf'] : false;
+                $tipo_comprobante = !empty($datos['tipo_comprobante']) ? $datos['tipo_comprobante'] : 'B02';
+                $banco = !empty($datos['banco']) ? $datos['banco'] : 'MQF Gateway';
+
+                // Obtener póliza
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT p.*, c.id as c_id, c.nombre as c_nombre, c.cedula as c_cedula FROM polizas p JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ? LIMIT 1");
+                $stmt->bind_param("i", $poliza_id);
+                $stmt->execute();
+                $poliza = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+
+                if (!$poliza) {
+                    http_response_code(404);
+                    echo json_encode(["exito" => false, "mensaje" => "Póliza no encontrada"]);
+                    break;
+                }
+
+                // Check active integration
+                $compania_id = 0;
+                $stmt_c = $db->prepare("SELECT id FROM companias_registradas WHERE nombre = ? LIMIT 1");
+                $stmt_c->bind_param("s", $poliza['aseguradora']);
+                $stmt_c->execute();
+                $res_c = $stmt_c->get_result()->fetch_assoc();
+                if ($res_c) {
+                    $compania_id = (int)$res_c['id'];
+                }
+                $stmt_c->close();
+
+                $integracion = null;
+                if ($compania_id > 0) {
+                    $stmt_i = $db->prepare("SELECT * FROM integraciones_aseguradoras WHERE compania_id = ? AND estado = 1 LIMIT 1");
+                    $stmt_i->bind_param("i", $compania_id);
+                    $stmt_i->execute();
+                    $integracion = $stmt_i->get_result()->fetch_assoc();
+                    $stmt_i->close();
+                }
+
+                $gateway_usado = "Pasarela MQF (" . $banco . ")";
+                if ($integracion) {
+                    $gateway_usado = "API Puente Aseguradora: " . $poliza['aseguradora'];
+                }
+
+                // Generate NCF
+                require_once '../NCFManager.php';
+                $ncf = null;
+                if ($generar_ncf) {
+                    $ncfManager = new \MQF\Finance\NCFManager($db);
+                    $ncf = $ncfManager->generarSiguiente($tipo_comprobante, true);
+                }
+
+                $auth_code = 'AUTH-' . rand(100000, 999999);
+
+                $datosPago = [
+                    'poliza_id' => $poliza_id,
+                    'monto' => $monto,
+                    'tipo_pago' => !empty($datos['tipo_pago']) ? $datos['tipo_pago'] : 'tarjeta_credito',
+                    'numero_ncf' => $ncf,
+                    'tipo_comprobante' => $tipo_comprobante,
+                    'numero_comprobante' => $auth_code,
+                    'banco' => $banco,
+                    'registrado_por' => $usuario_id,
+                    'fecha_pago' => date('Y-m-d')
+                ];
+
+                if (isset($datos['fraccionar']) && intval($datos['fraccionar']) === 1) {
+                    $datosPago['monto_inicial'] = $monto;
+                    $resultado = $pagoManager->registrarFraccionamiento($datosPago);
+                } else {
+                    $resultado = $pagoManager->registrarPago($datosPago);
+                }
+                
+                if ($resultado['exito']) {
+                    $resultado['gateway_usado'] = $gateway_usado;
+                    $resultado['auth_code'] = $auth_code;
+                    $resultado['cliente_nombre'] = $poliza['c_nombre'];
+                    $resultado['cliente_cedula'] = $poliza['c_cedula'];
+                    $resultado['poliza_numero'] = $poliza['numero_poliza'];
+                    $resultado['aseguradora'] = $poliza['aseguradora'];
                     echo json_encode($resultado);
                 } else {
                     http_response_code(500);

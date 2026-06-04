@@ -83,10 +83,7 @@ class PolizaManager {
         $polizas = [];
         
         while ($row = $result->fetch_assoc()) {
-            // Cálculo de balance
-            $prima = floatval($row['prima_total']);
-            $pagado = floatval($row['total_pagado'] ?? 0);
-            $row['balance'] = $prima - $pagado;
+            $this->inyectarProrrataInterna($row);
             $polizas[] = $row;
         }
         
@@ -113,6 +110,7 @@ class PolizaManager {
         if ($poliza) {
             $poliza['vehiculo'] = $this->vehiculoManager->obtenerVehiculo($poliza['vehiculo_id']);
             $poliza['comisiones'] = $this->comisionManager->listarComisiones(['poliza_id' => $id]);
+            $this->inyectarProrrataInterna($poliza);
             // Otros relacionados...
         }
 
@@ -222,6 +220,65 @@ class PolizaManager {
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("si", $nuevoEstado, $id);
         return $stmt->execute();
+    }
+
+    /**
+     * Calculates dynamic internal prorata fields for a policy
+     */
+    private function inyectarProrrataInterna(&$poliza) {
+        $fechaInicio = $poliza['fecha_emision'];
+        $fechaVence = $poliza['fecha_vencimiento'];
+        $primaTotal = floatval($poliza['prima_total']);
+        
+        if (!isset($poliza['total_pagado'])) {
+            $sql = "SELECT SUM(monto) as total FROM pagos WHERE poliza_id = ? AND estado_pago = 'procesado'";
+            $stmt = $this->db->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param("i", $poliza['id']);
+                $stmt->execute();
+                $poliza['total_pagado'] = floatval($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+                $stmt->close();
+            } else {
+                $poliza['total_pagado'] = 0.00;
+            }
+        }
+        
+        $totalPagado = floatval($poliza['total_pagado']);
+        $poliza['balance'] = $primaTotal - $totalPagado;
+
+        $d1 = new DateTime($fechaInicio);
+        $d2 = new DateTime($fechaVence);
+        $diffTotal = $d1->diff($d2);
+        $diasVigenciaTotal = $diffTotal->days;
+        if ($diasVigenciaTotal <= 0) $diasVigenciaTotal = 365;
+
+        $valorDia = $primaTotal / $diasVigenciaTotal;
+        $poliza['valor_dia'] = round($valorDia, 2);
+
+        $diasPagados = ($valorDia > 0) ? floor($totalPagado / $valorDia) : 0;
+        $poliza['dias_pagados'] = intval($diasPagados);
+
+        $fechaVenceProrrata = date('Y-m-d', strtotime($fechaInicio . " + " . intval($diasPagados) . " days"));
+        $poliza['fecha_vencimiento_prorrata'] = $fechaVenceProrrata;
+
+        $hoy = new DateTime(date('Y-m-d'));
+        $diasTranscurridos = 0;
+        if ($hoy >= $d1) {
+            $diffTranscurridos = $d1->diff($hoy);
+            $diasTranscurridos = $diffTranscurridos->days;
+        }
+        $poliza['dias_transcurridos'] = intval($diasTranscurridos);
+
+        $diasRestantes = $diasPagados - $diasTranscurridos;
+        $poliza['dias_cobertura_restante_prorrata'] = intval($diasRestantes);
+
+        if ($diasRestantes > 15) {
+            $poliza['alerta_prorrata_nivel'] = 'bajo';
+        } elseif ($diasRestantes >= 0) {
+            $poliza['alerta_prorrata_nivel'] = 'medio';
+        } else {
+            $poliza['alerta_prorrata_nivel'] = 'critico'; // Tiempo Temerario
+        }
     }
 }
 ?>

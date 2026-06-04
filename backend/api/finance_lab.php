@@ -110,29 +110,6 @@ try {
             respuestaJSON(true, "Datos de prueba del Lab eliminados");
             break;
 
-        case 'get_ncf_status':
-            $secuencias = $db->query("SELECT * FROM cf_ncf_secuencias")->fetch_all(MYSQLI_ASSOC);
-            $logs = $db->query("SELECT * FROM cf_ncf_log ORDER BY fecha_emision DESC LIMIT 20")->fetch_all(MYSQLI_ASSOC);
-            respuestaJSON(true, "Datos NCF obtenidos", [
-                'secuencias' => $secuencias,
-                'logs' => $logs
-            ]);
-            break;
-
-        case 'update_ncf_sequence':
-            $datos = json_decode(file_get_contents('php://input'), true);
-            $tipo = $datos['tipo'];
-            $nuevo_valor = (int)$datos['valor'];
-            
-            $stmt = $db->prepare("UPDATE cf_ncf_secuencias SET secuencia_actual = ? WHERE tipo = ?");
-            $stmt->bind_param("is", $nuevo_valor, $tipo);
-            if ($stmt->execute()) {
-                respuestaJSON(true, "Secuencia $tipo actualizada a $nuevo_valor");
-            } else {
-                respuestaJSON(false, "Error al actualizar secuencia");
-            }
-            $stmt->close();
-            break;
 
         default:
             respuestaJSON(false, "Acción no válida");

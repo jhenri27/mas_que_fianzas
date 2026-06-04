@@ -1,0 +1,10 @@
+RESTAURARCIÓN DEL DASHBOARD ANTERIOR NOFTRAB 11
+
+correo en powershell
+
+# Restaurar archivos CSS y JS desde los backups creados
+Copy-Item -Path "dashboard.css.bak" -Destination "dashboard.css" -Force
+Copy-Item -Path "dashboard.js.bak" -Destination "dashboard.js" -Force
+
+# Restaurar la estructura HTML
+git checkout ../dashboard.html

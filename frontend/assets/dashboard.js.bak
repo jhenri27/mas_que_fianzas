@@ -539,26 +539,14 @@ class Dashboard {
                     
                     topClientesList.innerHTML = stats.top_clientes.map(c => {
                         const pct = (c.cantidad_polizas / maxPolizas) * 100;
-                        const cleanCedula = (c.cliente_cedula || '').replace(/[^0-9]/g, '');
-                        const isCompany = cleanCedula.length === 9 || 
-                                          /\b(s\.?r\.?l\.?|s\.?a\.?|s\.?a\.?s\.?|inc|group|corp|ltda|inversiones|industrias|asociacion|empresa|cooperativa|s\.r\.l|s\.a)\b/i.test(c.cliente_nombre);
-                        const iconClass = isCompany ? 'fa-solid fa-building' : 'fa-solid fa-robot';
-                        const iconTypeClass = isCompany ? 'client-company' : 'client-natural';
-                        const labelPoli = c.cantidad_polizas === 1 ? 'póliza' : 'pólizas';
-                        
                         return `
-                            <div class="top-cliente-card">
-                                <div class="top-cliente-icon-wrapper ${iconTypeClass}">
-                                    <i class="${iconClass}"></i>
+                            <div class="top-cliente-row" style="margin-bottom: 12px;">
+                                <div class="cliente-info-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                                    <span class="cliente-nombre" style="font-weight: 500; opacity: 0.9;">${c.cliente_nombre}</span>
+                                    <span class="cliente-cantidad" style="font-weight: bold; color: var(--accent, #6366f1);">${c.cantidad_polizas} ${c.cantidad_polizas === 1 ? 'póliza' : 'pólizas'}</span>
                                 </div>
-                                <div class="top-cliente-details">
-                                    <span class="top-cliente-name" title="${c.cliente_nombre}">${c.cliente_nombre}</span>
-                                    <div class="top-cliente-progress-container">
-                                        <div class="top-cliente-progress-bar" style="width: ${pct}%"></div>
-                                    </div>
-                                </div>
-                                <div class="top-cliente-badge-pill">
-                                    ${c.cantidad_polizas} ${labelPoli}
+                                <div class="progress-bar-bg" style="background: var(--poliza-bar-bg, rgba(255, 255, 255, 0.05)); height: 6px; border-radius: 3px; overflow: hidden; width: 100%;">
+                                    <div class="progress-bar-fill" style="background: var(--poliza-bar-fill, linear-gradient(90deg, var(--accent, #6366f1) 0%, var(--success, #10b981) 100%)); height: 100%; border-radius: 3px; transition: width 0.8s ease-in-out; width: ${pct}%"></div>
                                 </div>
                             </div>
                         `;
@@ -1704,29 +1692,26 @@ async function abrirDetallePolizas() {
                     modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;">No hay pólizas emitidas</div>';
                 } else {
                     const maxPol = stats.top_clientes.reduce((max, c) => Math.max(max, c.cantidad_polizas), 1);
+                    const gradients = [
+                        'linear-gradient(90deg, #6366f1, #8b5cf6)', // Indigo a Morado
+                        'linear-gradient(90deg, #3b82f6, #06b6d4)', // Azul a Cyan
+                        'linear-gradient(90deg, #10b981, #34d399)', // Esmeralda a Menta
+                        'linear-gradient(90deg, #f59e0b, #fbbf24)', // Ámbar a Dorado
+                        'linear-gradient(90deg, #64748b, #94a3b8)'  // Pizarra a Gris
+                    ];
                     
                     modalTopClientesList.innerHTML = stats.top_clientes.map((c, index) => {
                         const pct = Math.round((c.cantidad_polizas / maxPol) * 100);
-                        const cleanCedula = (c.cliente_cedula || '').replace(/[^0-9]/g, '');
-                        const isCompany = cleanCedula.length === 9 || 
-                                          /\b(s\.?r\.?l\.?|s\.?a\.?|s\.?a\.?s\.?|inc|group|corp|ltda|inversiones|industrias|asociacion|empresa|cooperativa|s\.r\.l|s\.a)\b/i.test(c.cliente_nombre);
-                        const iconClass = isCompany ? 'fa-solid fa-building' : 'fa-solid fa-robot';
-                        const iconTypeClass = isCompany ? 'client-company' : 'client-natural';
-                        const plural = c.cantidad_polizas === 1 ? 'póliza' : 'pólizas';
-                        
+                        const grad = gradients[index % gradients.length];
+                        const plural = c.cantidad_polizas === 1 ? 'Póliza' : 'Pólizas';
                         return `
-                            <div class="top-cliente-card" style="margin-bottom: 8px;">
-                                <div class="top-cliente-icon-wrapper ${iconTypeClass}">
-                                    <i class="${iconClass}"></i>
+                            <div style="margin-bottom: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px;">
+                                    <span style="font-weight: 600; color: #334155;">${c.cliente_nombre}</span>
+                                    <span style="font-weight: 700; color: #4f46e5; font-size: 12px; background: #eef2ff; padding: 2px 10px; border-radius: 9999px; font-family: monospace;">${c.cantidad_polizas} ${plural}</span>
                                 </div>
-                                <div class="top-cliente-details">
-                                    <span class="top-cliente-name" title="${c.cliente_nombre}">${c.cliente_nombre}</span>
-                                    <div class="top-cliente-progress-container">
-                                        <div class="top-cliente-progress-bar" style="width: ${pct}%"></div>
-                                    </div>
-                                </div>
-                                <div class="top-cliente-badge-pill">
-                                    ${c.cantidad_polizas} ${plural}
+                                <div style="width: 100%; background: #e2e8f0; border-radius: 9999px; height: 10px; overflow: hidden; display: flex; align-items: center;">
+                                    <div style="height: 100%; border-radius: 9999px; width: ${pct}%; background: ${grad}; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                                 </div>
                             </div>
                         `;

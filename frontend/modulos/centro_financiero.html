@@ -34,6 +34,77 @@
         
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
+
+        /* ── NCF Sequence Cards ─── */
+        .ncf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .ncf-card {
+            background: var(--mqf-surface, white);
+            border: 1px solid var(--mqf-border, #e2e8f0);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .ncf-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--mqf-primary-light, #c7d2fe);
+        }
+        .ncf-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ncf-card__tipo {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--mqf-primary);
+        }
+        .ncf-card__valor {
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--mqf-text);
+        }
+        .ncf-card__footer {
+            font-size: 11px;
+            color: var(--mqf-text-muted, #64748b);
+        }
+        .ncf-card__footer .text-danger { color: var(--mqf-danger); font-weight: 700; }
+        .ncf-card__footer .text-warning { color: #f59e0b; font-weight: 700; }
+        .ncf-card__footer .text-success { color: var(--mqf-success); font-weight: 700; }
+
+        /* ── Progress Bar (NCF) ─── */
+        .ncf-bar {
+            height: 6px;
+            background: var(--mqf-border, #e2e8f0);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .ncf-bar__fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* ── Justification textarea counter ─── */
+        .char-counter {
+            font-size: 11px;
+            color: var(--mqf-text-muted, #94a3b8);
+            text-align: right;
+            margin-top: 2px;
+        }
+        .char-counter.invalid { color: var(--mqf-danger); }
+
+        /* ── Catalog row styles ─── */
+        .catalogo-row-disabled { opacity: 0.5; }
+        .catalogo-row-disabled td { text-decoration: line-through; }
     </style>
 </head>
 <body class="mqf-bg-surface">
@@ -67,6 +138,10 @@
             </button>
             <button class="mqf-module-tab" onclick="showTab('balances')" id="tab-balances">
                 <i class="fa-solid fa-scale-balanced"></i> Balances
+            </button>
+            <!-- NCF tab: hidden by default, shown if user has CF_GESTIONAR_NCF -->
+            <button class="mqf-module-tab" onclick="showTab('ncf')" id="tab-ncf" style="display:none;">
+                <i class="fa-solid fa-hashtag"></i> NCF (DGII)
             </button>
         </div>
     </div>
@@ -177,6 +252,44 @@
             </div>
         </div>
 
+        <!-- PESTAÑA: NCF (DGII) — Visible solo con permiso CF_GESTIONAR_NCF -->
+        <div class="tab-panel" id="panel-ncf">
+            <div class="mqf-card">
+                <div class="mqf-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 class="mqf-card-title"><i class="fa-solid fa-hashtag" style="margin-right:6px;"></i> Monitor de Secuencias NCF (DGII)</h2>
+                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="imprimirReporteNCF()">
+                        <i class="fa-solid fa-file-pdf"></i> Imprimir Reporte NCF
+                    </button>
+                </div>
+                <div style="padding:20px;">
+                    <div id="ncf-stats-grid" class="ncf-grid">
+                        <div style="text-align:center; padding:40px; color:var(--mqf-text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Cargando secuencias...</div>
+                    </div>
+
+                    <div class="mqf-card" style="margin-top:20px;">
+                        <div class="mqf-card-header" style="background:var(--mqf-bg, #f8fafc);">
+                            <h2 class="mqf-card-title" style="font-size:13px;">Log de Auditoría NCF (Últimos 20)</h2>
+                        </div>
+                        <div style="padding:0;">
+                            <table class="mqf-table" style="width:100%; font-size:12px;">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha/Hora</th>
+                                        <th>Tipo</th>
+                                        <th>NCF</th>
+                                        <th>Módulo Origen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ncf-log-tbody">
+                                    <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--mqf-text-muted);">Cargando log...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- MODAL DETALLE ASIENTO -->
@@ -195,14 +308,17 @@
         </div>
     </div>
 
-    <!-- MODAL NUEVA CUENTA -->
+    <!-- MODAL NUEVA / EDITAR CUENTA -->
     <div id="modal-nueva-cuenta" class="mqf-modal-backdrop">
         <div class="mqf-modal">
             <div class="mqf-modal-header">
-                <h2 class="mqf-modal-title"><i class="fa-solid fa-book"></i> Nueva Cuenta de Catálogo</h2>
-                <button class="mqf-modal-close" onclick="cerrarModalNuevaCuenta()">&times;</button>
+                <h2 class="mqf-modal-title" id="modal-cuenta-titulo"><i class="fa-solid fa-book"></i> Nueva Cuenta de Catálogo</h2>
+                <button class="mqf-modal-close" onclick="cerrarModalCuenta()">&times;</button>
             </div>
-            <form id="form-nueva-cuenta" onsubmit="guardarNuevaCuenta(event)" class="mqf-modal-body" style="display:flex; flex-direction:column; gap:16px;">
+            <form id="form-nueva-cuenta" onsubmit="guardarCuenta(event)" class="mqf-modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Hidden field for edit mode -->
+                <input type="hidden" id="cta-edit-id" value="">
+
                 <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
                     <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Código de la Cuenta *</label>
                     <input type="text" id="cta-codigo" class="mqf-input" placeholder="Ej: 1.1.03 o 2.1.04" required>
@@ -236,11 +352,111 @@
                     <input type="checkbox" id="cta-es-detalle" checked style="width:16px; height:16px; cursor:pointer;">
                     <label for="cta-es-detalle" style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary); cursor:pointer;">Es Cuenta de Detalle (Permite registrar asientos)</label>
                 </div>
+
+                <!-- Estado (solo visible en edición) -->
+                <div id="campo-estado-cuenta" style="display:none;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">Estado</label>
+                        <select id="cta-activa" class="mqf-select">
+                            <option value="1">Activa</option>
+                            <option value="0">Inactiva</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Justificación (solo visible en edición, requerido NOFTRAB) -->
+                <div id="campo-justificacion-cuenta" style="display:none;">
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:var(--mqf-text-secondary);">
+                            <i class="fa-solid fa-shield-halved" style="color:var(--mqf-primary); margin-right:4px;"></i>
+                            Justificación del Cambio (NOFTRAB v4.0) *
+                        </label>
+                        <textarea id="cta-justificacion" class="mqf-textarea" rows="3" 
+                            placeholder="Explique brevemente el motivo del cambio (mínimo 15 caracteres)" 
+                            oninput="actualizarContadorJustCta()"></textarea>
+                        <div class="char-counter" id="cta-just-counter">0 / 15 caracteres mínimos</div>
+                        <div class="mqf-alert mqf-alert--warning" style="margin-top:6px; font-size:11px; padding:8px 12px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Esta acción genera un registro inmutable de auditoría conforme a NOFTRAB v4.0. 
+                            El estado anterior y posterior se almacenan en formato forense.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mqf-modal-footer" style="padding-top:16px; border-top:1px solid var(--mqf-border); display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                    <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalNuevaCuenta()">Cancelar</button>
-                    <button type="submit" class="mqf-btn mqf-btn--primary"><i class="fa-solid fa-save"></i> Guardar Cuenta</button>
+                    <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalCuenta()">Cancelar</button>
+                    <button type="submit" class="mqf-btn mqf-btn--primary" id="btn-guardar-cuenta"><i class="fa-solid fa-save"></i> Guardar Cuenta</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL AJUSTE NCF (NOFTRAB) -->
+    <div id="modal-ncf-ajuste" class="mqf-modal-backdrop">
+        <div class="mqf-modal" style="max-width:460px;">
+            <div class="mqf-modal-header">
+                <h2 class="mqf-modal-title"><i class="fa-solid fa-sliders"></i> Ajustar Secuencia NCF</h2>
+                <button class="mqf-modal-close" onclick="cerrarModalNCF()">&times;</button>
+            </div>
+            <div class="mqf-modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Info del tipo -->
+                <div style="background:var(--mqf-bg, #f8fafc); padding:14px 16px; border-radius:10px; border:1px solid var(--mqf-border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--mqf-text-muted); margin-bottom:4px;">
+                                <i class="fa-solid fa-hashtag" style="color:var(--mqf-primary); margin-right:4px;"></i> Tipo de Comprobante
+                            </div>
+                            <div style="font-size:18px; font-weight:800; font-family:monospace;" id="ncfModalTipo">B01</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--mqf-text-muted); margin-bottom:4px;">
+                                Secuencia Actual
+                            </div>
+                            <div style="font-size:18px; font-weight:700; font-family:monospace; color:var(--mqf-primary);" id="ncfModalActual">00000001</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input nueva secuencia -->
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--mqf-text-secondary);">
+                        <i class="fa-solid fa-arrow-right-to-bracket" style="color:var(--mqf-primary); margin-right:4px;"></i>
+                        Nueva Secuencia
+                    </label>
+                    <input type="number" id="ncfModalValor" class="mqf-input"
+                           style="font-size:16px; font-family:monospace; font-weight:700;"
+                           placeholder="Ingrese el número de secuencia"
+                           min="0" step="1">
+                </div>
+
+                <!-- Justificación (NOFTRAB v4.0) -->
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-size:12px; font-weight:700; color:var(--mqf-text-secondary);">
+                        <i class="fa-solid fa-shield-halved" style="color:var(--mqf-primary); margin-right:4px;"></i>
+                        Justificación (NOFTRAB v4.0) *
+                    </label>
+                    <textarea id="ncfJustificacion" class="mqf-textarea" rows="3" 
+                        placeholder="Explique brevemente el motivo del ajuste (mínimo 15 caracteres)"
+                        oninput="actualizarContadorJustNCF()"></textarea>
+                    <div class="char-counter" id="ncf-just-counter">0 / 15 caracteres mínimos</div>
+                </div>
+
+                <div id="ncfModalError" class="mqf-alert mqf-alert--warning" style="display:none; font-size:12px; padding:8px 12px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="ncfModalErrorText">El valor debe ser mayor o igual a 0.</span>
+                </div>
+
+                <div class="mqf-alert mqf-alert--info" style="font-size:11px; padding:8px 12px;">
+                    <i class="fa-solid fa-info-circle"></i>
+                    Cambiar la secuencia afecta el próximo NCF emitido. Auditoría inmutable NOFTRAB v4.0.
+                </div>
+            </div>
+            <div class="mqf-modal-footer">
+                <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalNCF()">Cancelar</button>
+                <button type="button" class="mqf-btn mqf-btn--primary" id="btn-confirmar-ncf" onclick="confirmarAjusteNCF()">
+                    <i class="fa-solid fa-floppy-disk"></i> Aplicar Secuencia
+                </button>
+            </div>
         </div>
     </div>
 
@@ -249,6 +465,11 @@
     <script>
         const API_FINANCE = '../../backend/api/centro_financiero.php';
 
+        // ─── Permissions State ───────────────────────────────────────
+        let _puedeEditarCuenta = false;
+        let _puedeGestionarNCF = false;
+
+        // ─── Tab Navigation ──────────────────────────────────────────
         function showTab(name) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.mqf-module-tab').forEach(t => t.classList.remove('active'));
@@ -258,8 +479,38 @@
             if (name === 'resumen') cargarResumen();
             if (name === 'diario') cargarDiario();
             if (name === 'catalogo') cargarCatalogo();
+            if (name === 'ncf') cargarStatusNCF();
         }
 
+        // ─── Notification Helper ─────────────────────────────────────
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            if (window.parent && window.parent.MQF && window.parent.MQF.toast) {
+                window.parent.MQF.toast(mensaje, tipo);
+            } else if (window.MQF && window.MQF.toast) {
+                window.MQF.toast(mensaje, tipo);
+            } else {
+                alert(mensaje);
+            }
+        }
+
+        // ─── Char Counter Helpers ────────────────────────────────────
+        function actualizarContadorJustCta() {
+            const val = document.getElementById('cta-justificacion').value;
+            const cnt = document.getElementById('cta-just-counter');
+            cnt.textContent = `${val.length} / 15 caracteres mínimos`;
+            cnt.className = val.length >= 15 ? 'char-counter' : 'char-counter invalid';
+        }
+
+        function actualizarContadorJustNCF() {
+            const val = document.getElementById('ncfJustificacion').value;
+            const cnt = document.getElementById('ncf-just-counter');
+            cnt.textContent = `${val.length} / 15 caracteres mínimos`;
+            cnt.className = val.length >= 15 ? 'char-counter' : 'char-counter invalid';
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // RESUMEN
+        // ═══════════════════════════════════════════════════════════
         async function cargarResumen() {
             try {
                 const res = await fetch(`${API_FINANCE}?action=get_resumen`).then(r => r.json());
@@ -289,6 +540,9 @@
             } catch (e) { console.error('Error cargando resumen', e); }
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // DIARIO
+        // ═══════════════════════════════════════════════════════════
         async function cargarDiario() {
             try {
                 const res = await fetch(`${API_FINANCE}?action=get_diario`).then(r => r.json());
@@ -342,23 +596,45 @@
             }
         }
 
+        function closeModal() {
+            document.getElementById('modal-asiento').classList.remove('active');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // CATÁLOGO — con columna Acciones (Editar)
+        // ═══════════════════════════════════════════════════════════
+        let _catalogoData = []; // cache para editar
+
         async function cargarCatalogo() {
             try {
                 const res = await fetch(`${API_FINANCE}?action=get_catalogo`).then(r => r.json());
                 const body = document.getElementById('catalogo-body');
                 if (res.exito) {
+                    _catalogoData = res.datos;
+                    const showEdit = _puedeEditarCuenta;
                     body.innerHTML = `
                         <table class="mqf-table">
                             <thead>
-                                <tr><th>Código</th><th>Cuenta</th><th>Tipo</th><th>Naturaleza</th></tr>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Cuenta</th>
+                                    <th>Tipo</th>
+                                    <th>Naturaleza</th>
+                                    ${showEdit ? '<th style="width:80px; text-align:center;">Acciones</th>' : ''}
+                                </tr>
                             </thead>
                             <tbody>
                                 ${res.datos.map(c => `
-                                    <tr>
+                                    <tr class="${c.activa == 0 ? 'catalogo-row-disabled' : ''}">
                                         <td><strong>${c.codigo}</strong></td>
-                                        <td>${c.nombre}</td>
+                                        <td>${c.nombre}${c.activa == 0 ? ' <span class="mqf-badge" style="background:var(--mqf-danger); color:white; font-size:9px;">INACTIVA</span>' : ''}</td>
                                         <td>${c.tipo}</td>
                                         <td><span class="status-badge" style="background:#f1f5f9">${c.naturaleza}</span></td>
+                                        ${showEdit ? `<td style="text-align:center;">
+                                            <button class="mqf-btn mqf-btn--sm" style="padding:2px 8px;" onclick="editarCuenta(${c.id})" title="Editar cuenta">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                        </td>` : ''}
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -368,32 +644,50 @@
             } catch (e) { console.error('Error cargando catálogo', e); }
         }
 
-        function closeModal() {
-            document.getElementById('modal-asiento').classList.remove('active');
-        }
-
+        // ─── Modal Cuenta: Crear ──────────────────────────────────
         function abrirModalNuevaCuenta() {
             document.getElementById('form-nueva-cuenta').reset();
+            document.getElementById('cta-edit-id').value = '';
+            document.getElementById('modal-cuenta-titulo').innerHTML = '<i class="fa-solid fa-book"></i> Nueva Cuenta de Catálogo';
+            document.getElementById('campo-estado-cuenta').style.display = 'none';
+            document.getElementById('campo-justificacion-cuenta').style.display = 'none';
+            document.getElementById('btn-guardar-cuenta').innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cuenta';
             document.getElementById('modal-nueva-cuenta').classList.add('active');
         }
 
-        function cerrarModalNuevaCuenta() {
+        // ─── Modal Cuenta: Editar ──────────────────────────────────
+        function editarCuenta(id) {
+            const cuenta = _catalogoData.find(c => c.id == id);
+            if (!cuenta) { mostrarNotificacion('Cuenta no encontrada', 'error'); return; }
+
+            document.getElementById('cta-edit-id').value = cuenta.id;
+            document.getElementById('cta-codigo').value = cuenta.codigo;
+            document.getElementById('cta-nombre').value = cuenta.nombre;
+            document.getElementById('cta-tipo').value = cuenta.tipo;
+            document.getElementById('cta-naturaleza').value = cuenta.naturaleza;
+            document.getElementById('cta-es-detalle').checked = cuenta.es_detalle == 1;
+            document.getElementById('cta-activa').value = cuenta.activa;
+            document.getElementById('cta-justificacion').value = '';
+            actualizarContadorJustCta();
+
+            document.getElementById('modal-cuenta-titulo').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar Cuenta de Catálogo';
+            document.getElementById('campo-estado-cuenta').style.display = 'block';
+            document.getElementById('campo-justificacion-cuenta').style.display = 'block';
+            document.getElementById('btn-guardar-cuenta').innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+            document.getElementById('modal-nueva-cuenta').classList.add('active');
+        }
+
+        function cerrarModalCuenta() {
             document.getElementById('modal-nueva-cuenta').classList.remove('active');
         }
 
-        function mostrarNotificacion(mensaje, tipo = 'success') {
-            if (window.parent && window.parent.MQF && window.parent.MQF.toast) {
-                window.parent.MQF.toast(mensaje, tipo);
-            } else if (window.MQF && window.MQF.toast) {
-                window.MQF.toast(mensaje, tipo);
-            } else {
-                alert(mensaje);
-            }
-        }
-
-        async function guardarNuevaCuenta(e) {
+        // ─── Guardar Cuenta (Crear o Editar) ──────────────────────
+        async function guardarCuenta(e) {
             e.preventDefault();
             
+            const editId = document.getElementById('cta-edit-id').value;
+            const isEdit = editId !== '';
+
             const codigo = document.getElementById('cta-codigo').value.trim();
             const nombre = document.getElementById('cta-nombre').value.trim();
             const tipo = document.getElementById('cta-tipo').value;
@@ -405,28 +699,354 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_FINANCE}?action=crear_cuenta`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ codigo, nombre, tipo, naturaleza, es_detalle })
-                }).then(r => r.json());
+            const btn = document.getElementById('btn-guardar-cuenta');
 
-                if (response.exito) {
-                    mostrarNotificacion(response.mensaje, "success");
-                    cerrarModalNuevaCuenta();
-                    cargarCatalogo(); // Recargar tabla
-                } else {
-                    mostrarNotificacion("Error: " + response.mensaje, "error");
+            if (isEdit) {
+                // ── Edición con NOFTRAB ──
+                const justificacion = document.getElementById('cta-justificacion').value.trim();
+                const activa = parseInt(document.getElementById('cta-activa').value);
+
+                if (justificacion.length < 15) {
+                    mostrarNotificacion("La justificación debe tener al menos 15 caracteres (NOFTRAB v4.0).", "error");
+                    document.getElementById('cta-justificacion').focus();
+                    return;
                 }
-            } catch (err) {
-                console.error("Error al registrar cuenta:", err);
-                mostrarNotificacion("Ocurrió un error de conexión al registrar la cuenta.", "error");
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+                try {
+                    const response = await fetch(`${API_FINANCE}?action=editar_cuenta`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: parseInt(editId), codigo, nombre, tipo, naturaleza, es_detalle, activa, justificacion })
+                    }).then(r => r.json());
+
+                    if (response.exito) {
+                        mostrarNotificacion(response.mensaje, "success");
+                        cerrarModalCuenta();
+                        cargarCatalogo();
+                    } else {
+                        mostrarNotificacion("Error: " + response.mensaje, "error");
+                    }
+                } catch (err) {
+                    console.error("Error al editar cuenta:", err);
+                    mostrarNotificacion("Ocurrió un error de conexión.", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+                }
+            } else {
+                // ── Creación ──
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+                try {
+                    const response = await fetch(`${API_FINANCE}?action=crear_cuenta`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ codigo, nombre, tipo, naturaleza, es_detalle })
+                    }).then(r => r.json());
+
+                    if (response.exito) {
+                        mostrarNotificacion(response.mensaje, "success");
+                        cerrarModalCuenta();
+                        cargarCatalogo();
+                    } else {
+                        mostrarNotificacion("Error: " + response.mensaje, "error");
+                    }
+                } catch (err) {
+                    console.error("Error al registrar cuenta:", err);
+                    mostrarNotificacion("Ocurrió un error de conexión al registrar la cuenta.", "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cuenta';
+                }
             }
         }
 
-        // Carga inicial
-        window.onload = cargarResumen;
+        // ═══════════════════════════════════════════════════════════
+        // NCF — Monitor de Secuencias
+        // ═══════════════════════════════════════════════════════════
+        async function cargarStatusNCF() {
+            try {
+                const res = await fetch(`${API_FINANCE}?action=get_ncf_status`).then(r => r.json());
+                if (res.exito) {
+                    const grid = document.getElementById('ncf-stats-grid');
+                    
+                    if (!res.datos.secuencias || res.datos.secuencias.length === 0) {
+                        grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--mqf-text-muted);"><i class="fa-solid fa-database"></i> No hay secuencias NCF configuradas.</div>';
+                    } else {
+                        grid.innerHTML = res.datos.secuencias.map(s => {
+                            const disp = s.secuencia_final - s.secuencia_actual;
+                            const pct = s.secuencia_final > 0 ? (disp / s.secuencia_final) * 100 : 0;
+                            const usadoPct = 100 - pct;
+                            let colorClass = 'text-success';
+                            let barColor = 'var(--mqf-success)';
+                            if (disp < 100) { colorClass = 'text-danger'; barColor = 'var(--mqf-danger)'; }
+                            else if (disp < 500) { colorClass = 'text-warning'; barColor = '#f59e0b'; }
+
+                            return `
+                                <div class="ncf-card">
+                                    <div class="ncf-card__header">
+                                        <span class="ncf-card__tipo">${s.tipo}</span>
+                                        <button class="mqf-btn mqf-btn--sm" style="padding:2px 8px; font-size:10px;" onclick="abrirAjusteNCF('${s.tipo}', ${s.secuencia_actual}, ${s.secuencia_final})">
+                                            <i class="fa-solid fa-sliders"></i> Ajustar
+                                        </button>
+                                    </div>
+                                    <div class="ncf-card__valor">${s.prefijo || ''}${String(s.secuencia_actual).padStart(8, '0')}</div>
+                                    <div class="ncf-bar">
+                                        <div class="ncf-bar__fill" style="width:${usadoPct}%; background:${barColor};"></div>
+                                    </div>
+                                    <div class="ncf-card__footer">
+                                        Disponibles: <span class="${colorClass}">${disp.toLocaleString()}</span> de ${s.secuencia_final.toLocaleString()} (${pct.toFixed(1)}%)
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    // Log de auditoría
+                    const tbody = document.getElementById('ncf-log-tbody');
+                    if (res.datos.logs && res.datos.logs.length > 0) {
+                        tbody.innerHTML = res.datos.logs.map(l => `
+                            <tr>
+                                <td>${new Date(l.fecha_emision).toLocaleString()}</td>
+                                <td><span class="mqf-badge" style="background:var(--mqf-primary-light, #e0e7ff); color:var(--mqf-primary); font-size:11px; padding:2px 8px; border-radius:4px;">${l.tipo}</span></td>
+                                <td style="font-family:monospace; font-weight:700;">${l.ncf}</td>
+                                <td style="color:var(--mqf-text-muted);">${l.modulo_origen || '-'}</td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--mqf-text-muted);">Sin registros de auditoría NCF recientes</td></tr>';
+                    }
+                }
+            } catch (e) {
+                console.error('Error cargando NCF:', e);
+                document.getElementById('ncf-stats-grid').innerHTML = '<div style="text-align:center; padding:40px; color:var(--mqf-danger);"><i class="fa-solid fa-circle-exclamation"></i> Error al cargar secuencias NCF</div>';
+            }
+        }
+
+        // ─── Modal NCF Ajuste ─────────────────────────────────────
+        function abrirAjusteNCF(tipo, actual, final_seq) {
+            document.getElementById('ncfModalTipo').textContent = tipo;
+            document.getElementById('ncfModalActual').textContent = String(actual).padStart(8, '0');
+            document.getElementById('ncfModalValor').value = actual;
+            document.getElementById('ncfModalValor').max = final_seq;
+            document.getElementById('ncfJustificacion').value = '';
+            actualizarContadorJustNCF();
+            document.getElementById('ncfModalError').style.display = 'none';
+
+            window._ncfAjusteTipo = tipo;
+            window._ncfAjusteActual = actual;
+            window._ncfAjusteFinal = final_seq;
+
+            document.getElementById('modal-ncf-ajuste').classList.add('active');
+            setTimeout(() => document.getElementById('ncfModalValor').select(), 80);
+        }
+
+        function cerrarModalNCF() {
+            document.getElementById('modal-ncf-ajuste').classList.remove('active');
+        }
+
+        async function confirmarAjusteNCF() {
+            const tipo = window._ncfAjusteTipo;
+            const nuevo = parseInt(document.getElementById('ncfModalValor').value);
+            const justificacion = document.getElementById('ncfJustificacion').value.trim();
+            const errDiv = document.getElementById('ncfModalError');
+            const errText = document.getElementById('ncfModalErrorText');
+
+            if (isNaN(nuevo) || nuevo < 0) {
+                errText.textContent = 'El valor debe ser mayor o igual a 0.';
+                errDiv.style.display = 'block';
+                document.getElementById('ncfModalValor').focus();
+                return;
+            }
+
+            if (window._ncfAjusteFinal && nuevo > window._ncfAjusteFinal) {
+                errText.textContent = `El valor no puede superar la secuencia final (${window._ncfAjusteFinal}).`;
+                errDiv.style.display = 'block';
+                document.getElementById('ncfModalValor').focus();
+                return;
+            }
+
+            if (justificacion.length < 15) {
+                errText.textContent = 'La justificación debe tener al menos 15 caracteres (NOFTRAB v4.0).';
+                errDiv.style.display = 'block';
+                document.getElementById('ncfJustificacion').focus();
+                return;
+            }
+
+            errDiv.style.display = 'none';
+
+            const btn = document.getElementById('btn-confirmar-ncf');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aplicando...';
+
+            try {
+                const res = await fetch(`${API_FINANCE}?action=update_ncf_sequence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tipo, valor: nuevo, justificacion })
+                }).then(r => r.json());
+
+                if (res.exito) {
+                    mostrarNotificacion(`✅ Secuencia [${tipo}] actualizada a ${nuevo}`, 'success');
+                    cerrarModalNCF();
+                    cargarStatusNCF();
+                } else {
+                    errText.textContent = '❌ ' + (res.mensaje || 'Error del servidor.');
+                    errDiv.style.display = 'block';
+                }
+            } catch (e) {
+                errText.textContent = '❌ Error de conexión con el servidor.';
+                errDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Aplicar Secuencia';
+            }
+        }
+
+        // ─── Imprimir Reporte NCF (PDF) ───────────────────────────
+        function imprimirReporteNCF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const date = new Date().toLocaleString();
+
+            // Logo y Encabezado
+            const logo = window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64;
+            if (logo) {
+                try { doc.addImage(logo, 'PNG', 15, 10, 25, 12); } catch(e) {}
+            }
+            
+            doc.setFontSize(16);
+            doc.setTextColor(30, 41, 59);
+            doc.setFont("helvetica", "bold");
+            doc.text('MAS QUE FIANZAS', 45, 17);
+            
+            doc.setFontSize(14);
+            doc.setTextColor(79, 70, 229);
+            doc.text('REPORTE DE ESTADO NCF - DGII', 45, 24);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Fecha de emisión: ${date}`, 45, 29);
+            
+            doc.setDrawColor(200);
+            doc.line(15, 34, 195, 34);
+
+            // 1. Resumen de Secuencias
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+            doc.text('ESTADO ACTUAL DE SECUENCIAS', 15, 40);
+
+            const secuenciasRows = [];
+            document.querySelectorAll('#ncf-stats-grid .ncf-card').forEach(card => {
+                const tipo = card.querySelector('.ncf-card__tipo')?.textContent || '';
+                const actual = card.querySelector('.ncf-card__valor')?.textContent || '';
+                const footer = card.querySelector('.ncf-card__footer')?.textContent || '';
+                secuenciasRows.push([tipo, actual, footer.trim()]);
+            });
+
+            if (secuenciasRows.length > 0) {
+                doc.autoTable({
+                    startY: 44,
+                    head: [['Tipo', 'Último NCF Generado', 'Disponibilidad']],
+                    body: secuenciasRows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [79, 70, 229] }
+                });
+            }
+
+            // 2. Log de Auditoría
+            const logY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : 60;
+            doc.setFontSize(12);
+            doc.text('HISTORIAL RECIENTE DE EMISIÓN (LOG)', 15, logY);
+
+            const logRows = [];
+            document.querySelectorAll('#ncf-log-tbody tr').forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    logRows.push([
+                        cells[0].textContent.trim(),
+                        cells[1].textContent.trim(),
+                        cells[2].textContent.trim(),
+                        cells[3].textContent.trim()
+                    ]);
+                }
+            });
+
+            if (logRows.length > 0) {
+                doc.autoTable({
+                    startY: logY + 5,
+                    head: [['Fecha/Hora', 'Tipo', 'NCF', 'Módulo Origen']],
+                    body: logRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [100, 116, 139] }
+                });
+            }
+
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text('Centro Financiero MQF - Documento de control interno', 15, doc.internal.pageSize.height - 10);
+
+            doc.save(`Reporte_NCF_MQF_${Date.now()}.pdf`);
+            mostrarNotificacion('Reporte NCF generado con éxito', 'success');
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // PERMISSION CHECK ON LOAD
+        // ═══════════════════════════════════════════════════════════
+        async function checkPermisos() {
+            try {
+                // Attempt to call the NCF endpoint — if user has no permission, server returns 403
+                // We check by calling get_ncf_status; if it succeeds, user has access
+                const resNCF = await fetch(`${API_FINANCE}?action=get_ncf_status`).then(r => r.json());
+                if (resNCF.exito) {
+                    _puedeGestionarNCF = true;
+                    document.getElementById('tab-ncf').style.display = '';
+                }
+            } catch(e) {}
+
+            try {
+                // For edit permission, we check the crear_cuenta endpoint (always allowed) 
+                // and assume editar_cuenta permission by checking a dedicated check endpoint
+                // Since we don't have one, we check via a flag passed in get_catalogo or similar
+                // For now, try a lightweight test — call editar_cuenta with no data to see if 403 returned
+                const resEdit = await fetch(`${API_FINANCE}?action=editar_cuenta`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                }).then(r => r.json());
+                // If we get 403 message about permission, we don't have it
+                // If we get validation error (missing fields), we DO have permission
+                if (resEdit.mensaje && resEdit.mensaje.includes('permiso')) {
+                    _puedeEditarCuenta = false;
+                } else {
+                    _puedeEditarCuenta = true;
+                }
+            } catch(e) {
+                _puedeEditarCuenta = false;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════
+        window.onload = async function() {
+            await checkPermisos();
+            cargarResumen();
+        };
+
+        // ESC to close modals
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal();
+                cerrarModalCuenta();
+                cerrarModalNCF();
+            }
+        });
     </script>
     <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 </body>
