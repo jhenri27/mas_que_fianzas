@@ -663,6 +663,7 @@
                         <div style="background: var(--mqf-surface-2); padding: 15px; border-radius: 8px; border: 1px solid var(--mqf-border); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
                             <div><strong>Póliza:</strong> <span id="gc-poliza-num">-</span></div>
                             <div><strong>Cliente:</strong> <span id="gc-cliente-nombre">-</span></div>
+                            <div><strong>Teléfono:</strong> <span id="gc-cliente-telefono">-</span></div>
                             <div><strong>Monto Financiado:</strong> <span id="gc-monto-total">-</span></div>
                             <div><strong>Balance Pendiente:</strong> <span id="gc-monto-balance" style="color: var(--mqf-danger); font-weight: bold;">-</span></div>
                             <div><strong>Días Cobertura Restantes:</strong> <span id="gc-cobertura-restante" style="font-weight: bold;">-</span></div>
@@ -1775,7 +1776,9 @@
             }
 
             tbody.innerHTML = polizas.map(p => {
-                const balance = parseFloat(p.prima_total) - parseFloat(p.monto_pagado);
+                const totalPagado = parseFloat(p.total_pagado) || 0;
+                const balance = p.balance !== undefined ? parseFloat(p.balance) : (parseFloat(p.prima_total) - totalPagado);
+                const diasCobertura = p.dias_cobertura_restante_prorrata !== undefined ? p.dias_cobertura_restante_prorrata : 0;
                 
                 let riesgoBadgeClass = 'status-procesado';
                 let riesgoTexto = 'Bajo (Al día)';
@@ -1797,12 +1800,12 @@
                         <td><strong>${p.numero_poliza}</strong></td>
                         <td>${p.cliente_nombre}</td>
                         <td>${fmt(p.prima_total)}</td>
-                        <td>${fmt(p.monto_pagado)}</td>
+                        <td>${fmt(totalPagado)}</td>
                         <td style="color: var(--mqf-danger); font-weight: bold;">${fmt(balance)}</td>
                         <td>${p.dias_transcurridos} días</td>
                         <td>${p.dias_pagados} días</td>
-                        <td style="font-weight: bold; color: ${p.balance_dias_cobertura < 0 ? 'var(--mqf-danger)' : 'var(--mqf-text-main)'};">
-                            ${p.balance_dias_cobertura} días
+                        <td style="font-weight: bold; color: ${diasCobertura < 0 ? 'var(--mqf-danger)' : 'var(--mqf-text-main)'};">
+                            ${diasCobertura} días
                         </td>
                         <td><span class="status-badge ${riesgoBadgeClass}">${riesgoTexto}</span></td>
                         <td style="text-align: center;">${botBtn}</td>
@@ -1894,11 +1897,25 @@
             document.getElementById('gc-poliza-id').value = polizaId;
             document.getElementById('gc-poliza-num').textContent = poliza.numero_poliza;
             document.getElementById('gc-cliente-nombre').textContent = poliza.cliente_nombre;
+
+            // Inyectar teléfono de contacto con enlace directo de llamada (Micro-UX Premium NOFTRAB)
+            const telEl = document.getElementById('gc-cliente-telefono');
+            if (telEl) {
+                if (poliza.cliente_telefono) {
+                    telEl.innerHTML = `<a href="tel:${poliza.cliente_telefono}" style="color: var(--mqf-accent); font-weight: bold; text-decoration: none;" title="Llamar al cliente"><i class="fa-solid fa-phone"></i> ${poliza.cliente_telefono}</a>`;
+                } else {
+                    telEl.textContent = 'No registrado';
+                }
+            }
+
             document.getElementById('gc-monto-total').textContent = fmt(poliza.prima_total);
             
-            const balance = parseFloat(poliza.prima_total) - parseFloat(poliza.monto_pagado);
+            const totalPagado = parseFloat(poliza.total_pagado) || 0;
+            const balance = poliza.balance !== undefined ? parseFloat(poliza.balance) : (parseFloat(poliza.prima_total) - totalPagado);
             document.getElementById('gc-monto-balance').textContent = fmt(balance);
-            document.getElementById('gc-cobertura-restante').textContent = poliza.balance_dias_cobertura + ' días';
+            
+            const diasCobertura = poliza.dias_cobertura_restante_prorrata !== undefined ? poliza.dias_cobertura_restante_prorrata : 0;
+            document.getElementById('gc-cobertura-restante').textContent = diasCobertura + ' días';
 
             const rBadge = document.getElementById('gc-riesgo-badge');
             rBadge.textContent = poliza.riesgo_prorrata === 'critico' ? 'CRÍTICO' : poliza.riesgo_prorrata === 'medio' ? 'MEDIO' : 'BAJO';

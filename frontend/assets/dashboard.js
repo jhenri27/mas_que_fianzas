@@ -712,6 +712,24 @@ class Dashboard {
             }
         }
 
+        // Si es siniestros, forzar carga del iframe
+        if (modulo === 'siniestros') {
+            const iframe = document.getElementById('siniestros-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/siniestros.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
+        // Si es productos, forzar carga del iframe
+        if (modulo === 'productos') {
+            const iframe = document.getElementById('productos-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/productos.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
         // Si es centro_financiero, forzar carga del iframe
         if (modulo === 'centro_financiero') {
             const iframe = document.getElementById('finance-iframe');

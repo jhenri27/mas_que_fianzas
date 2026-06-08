@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Siniestros - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    
+    <!-- Design System MQF -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
+    
+    <style>
+        .sidebar { display: none !important; }
+        .top-navbar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
+        .content-area { padding: 20px !important; margin-top: 0 !important; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+
+        /* Statuses */
+        .status-badge { padding: 3px 10px; border-radius: var(--mqf-radius-full); font-size: var(--mqf-text-xs); font-weight: 700; display: inline-block; }
+        .status-registrado { background: #dbeafe; color: #1e40af; }
+        .status-en_revision { background: #fef3c7; color: #92400e; }
+        .status-aprobado { background: #dcfce7; color: #166534; }
+        .status-rechazado { background: #fee2e2; color: #991b1b; }
+        .status-pagado { background: #faf5ff; color: #6b21a8; }
+
+        .data-table th { padding: 12px 15px; background: var(--mqf-primary-light); border-bottom: 2px solid var(--mqf-border); color: var(--mqf-primary-dark); font-weight: 700; text-align: left; font-size: var(--mqf-text-xs); text-transform: uppercase; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--mqf-border); color: var(--mqf-text-secondary); }
+        .data-table tr:hover { background: var(--mqf-surface-2); }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .kpi-card { background: var(--mqf-surface); border: 1px solid var(--mqf-border); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--mqf-shadow-sm); }
+        .kpi-card .info h3 { margin: 0 0 5px 0; font-size: 13px; color: var(--mqf-text-secondary); text-transform: uppercase; }
+        .kpi-card .info .number { font-size: 24px; font-weight: 800; color: var(--mqf-text-main); }
+        .kpi-card .icon-wrap { width: 50px; height: 50px; border-radius: 10px; background: var(--mqf-primary-light); color: var(--mqf-primary); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; align-items:center; justify-content:center; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        .modal-box { background: var(--mqf-surface); border-radius: 12px; border: 1px solid var(--mqf-border); box-shadow: var(--mqf-shadow-lg); overflow: hidden; animation: modalFadeIn 0.3s; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--mqf-border); display: flex; justify-content: space-between; align-items: center; background: var(--mqf-surface-2); }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid var(--mqf-border); display: flex; justify-content: flex-end; gap: 10px; background: var(--mqf-surface-2); }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 15px; position: relative; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--mqf-text-main); }
+
+        /* Autocomplete dropdown style */
+        .autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; background: var(--mqf-surface); border: 1px solid var(--mqf-border); border-radius: 0 0 6px 6px; box-shadow: var(--mqf-shadow-md); z-index: 1000; max-height: 200px; overflow-y: auto; display: none; }
+        .autocomplete-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--mqf-border); font-size: 13px; }
+        .autocomplete-item:hover { background: var(--mqf-surface-2); }
+        .autocomplete-item:last-child { border-bottom: none; }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="content-area">
+        <!-- HEADER -->
+        <div style="background: linear-gradient(135deg, var(--mqf-primary-dark) 0%, var(--mqf-primary) 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--mqf-shadow-md);">
+            <div>
+                <h1 style="margin: 0 0 5px 0; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.15);"><i class="fa-solid fa-car-burst"></i> Gestión Contable de Siniestros</h1>
+                <p style="margin: 0; font-size: 14px; opacity: 0.9;">Declaración de incidentes, liquidación de reclamos y automatización contable de provisiones en tiempo real.</p>
+            </div>
+            <div>
+                <button class="mqf-btn mqf-btn--primary" onclick="abrirNuevoSiniestro()" style="background: white; color: var(--mqf-primary); border: none;">
+                    <i class="fa-solid fa-plus-circle"></i> Declarar Siniestro
+                </button>
+            </div>
+        </div>
+
+        <!-- KPIS -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="info">
+                    <h3>Siniestros Activos</h3>
+                    <div class="number" id="kpi-activos">0</div>
+                </div>
+                <div class="icon-wrap"><i class="fa-solid fa-car-burst"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="info">
+                    <h3>Total Reclamado</h3>
+                    <div class="number" id="kpi-reclamado">RD$0.00</div>
+                </div>
+                <div class="icon-wrap" style="color: var(--mqf-warning-text);"><i class="fa-solid fa-money-bill-wave"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="info">
+                    <h3>Total Liquidado</h3>
+                    <div class="number" id="kpi-liquidado">RD$0.00</div>
+                </div>
+                <div class="icon-wrap" style="color: var(--mqf-success);"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            </div>
+            <div class="kpi-card">
+                <div class="info">
+                    <h3>Tasa Aprobación</h3>
+                    <div class="number" id="kpi-tasa">0%</div>
+                </div>
+                <div class="icon-wrap" style="color: var(--mqf-accent);"><i class="fa-solid fa-percentage"></i></div>
+            </div>
+        </div>
+
+        <!-- FILTROS & GRILLA -->
+        <div class="mqf-card" style="padding: 20px; margin-bottom: 25px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <input type="text" id="busqueda-s" class="mqf-input" placeholder="Buscar por número de siniestro, cliente o póliza..." oninput="filtrarSiniestros()">
+                <select id="filtro-estado-s" class="mqf-select" onchange="filtrarSiniestros()">
+                    <option value="">Todos los Estados</option>
+                    <option value="registrado">Registrado</option>
+                    <option value="en_revision">En Revisión</option>
+                    <option value="aprobado">Aprobado</option>
+                    <option value="rechazado">Rechazado</option>
+                    <option value="pagado">Pagado (Liquidado)</option>
+                </select>
+                <button class="mqf-btn mqf-btn--secondary" onclick="cargarSiniestros()"><i class="fa-solid fa-sync"></i> Actualizar</button>
+            </div>
+
+            <div style="overflow-x: auto; border-radius: 8px; border: 1px solid var(--mqf-border);">
+                <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>Siniestro</th>
+                            <th>Póliza</th>
+                            <th>Cliente</th>
+                            <th>Fecha Evento</th>
+                            <th>Monto Reclamado</th>
+                            <th>Monto Aprobado</th>
+                            <th>Estado</th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="siniestros-tbody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 30px; opacity: 0.5;">
+                                <i class="fa-solid fa-sync fa-spin"></i> Cargando siniestros...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO DE SINIESTRO -->
+    <div id="siniestroModal" class="modal-overlay">
+        <div class="modal-box" style="width: 90%; max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="mqf-modal-title"><i class="fa-solid fa-plus-circle"></i> Declarar Nuevo Siniestro</h3>
+                <button class="mqf-modal-close" onclick="cerrarModalSiniestro()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <form id="siniestroForm" onsubmit="guardarSiniestro(event)" class="modal-body" enctype="multipart/form-data">
+                <input type="hidden" id="sin-poliza-id">
+                <input type="hidden" id="sin-cliente-id">
+                
+                <!-- Buscador de Póliza con Autocomplete -->
+                <div class="form-group">
+                    <label>Buscar Póliza Activa (Nº de Póliza, Cliente o Cédula) *</label>
+                    <input type="text" id="sin-poliza-search" class="mqf-input" required placeholder="Escriba para buscar..." autocomplete="off" oninput="buscarPolizasAutocomplete(this.value)">
+                    <div id="autocomplete-results" class="autocomplete-dropdown"></div>
+                </div>
+
+                <div class="mqf-form-grid-2" style="background: var(--mqf-surface-2); padding: 10px; border-radius: 8px; border:1px solid var(--mqf-border); margin-bottom:15px; font-size:12px; display:none;" id="ficha-poliza-seleccionada">
+                    <div><strong>Cliente:</strong> <span id="lbl-cli-nombre">-</span></div>
+                    <div><strong>Documento:</strong> <span id="lbl-cli-cedula">-</span></div>
+                    <div><strong>Póliza Seleccionada:</strong> <span id="lbl-pol-num">-</span></div>
+                    <div><strong>Aseguradora:</strong> <span id="lbl-pol-aseg">-</span></div>
+                </div>
+
+                <div class="mqf-form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha del Siniestro *</label>
+                        <input type="date" id="sin-fecha" class="mqf-input" required max="2026-12-31">
+                    </div>
+                    <div class="form-group">
+                        <label>Monto Reclamado (DOP) *</label>
+                        <input type="number" id="sin-monto" class="mqf-input" required step="0.01" value="0.00">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Lugar del Evento / Accidente</label>
+                    <input type="text" id="sin-lugar" class="mqf-input" placeholder="Ej: Av. Winston Churchill esq. Gustavo Mejía Ricart">
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción Detallada del Evento *</label>
+                    <textarea id="sin-descripcion" class="mqf-textarea" rows="3" required placeholder="Detalle cómo ocurrió el accidente o siniestro..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Adjuntar Evidencia (Foto del choque, acta policial, presupuesto del taller)</label>
+                    <input type="file" id="sin-evidencia" class="mqf-input" accept="image/*,.pdf,.doc,.docx">
+                </div>
+
+                <div class="modal-footer" style="padding: 15px 0 0 0; background: none; border: none;">
+                    <button type="button" onclick="cerrarModalSiniestro()" class="mqf-btn mqf-btn--secondary">Cancelar</button>
+                    <button type="submit" class="mqf-btn mqf-btn--primary">Declarar Incidente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE Y DICTAMEN -->
+    <div id="detalleModal" class="modal-overlay">
+        <div class="modal-box" style="width: 95%; max-width: 750px;">
+            <div class="modal-header">
+                <div>
+                    <h3 class="mqf-modal-title"><i class="fa-solid fa-car-burst"></i> Ficha y Dictamen de Siniestro</h3>
+                    <p style="margin:5px 0 0 0; font-size:12px; opacity:0.7;" id="det-siniestro-num">-</p>
+                </div>
+                <button class="mqf-modal-close" onclick="cerrarModalDetalle()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px;">
+                <!-- Ficha Detallada -->
+                <div>
+                    <h4 style="margin:0 0 10px 0; border-bottom: 1px solid var(--mqf-border); padding-bottom:5px;"><i class="fa-solid fa-file-lines"></i> Detalles del Reclamo</h4>
+                    <div style="font-size:13px; display:grid; grid-template-columns:1fr; gap:8px;">
+                        <div><strong>Número de Caso:</strong> <span id="d-num">-</span></div>
+                        <div><strong>Póliza:</strong> <span id="d-poliza">-</span></div>
+                        <div><strong>Cliente:</strong> <span id="d-cliente">-</span></div>
+                        <div><strong>Fecha Evento:</strong> <span id="d-fecha">-</span></div>
+                        <div><strong>Lugar:</strong> <span id="d-lugar">-</span></div>
+                        <div><strong>Monto Reclamado:</strong> <span id="d-reclamado">-</span></div>
+                        <div><strong>Monto Aprobado:</strong> <span id="d-aprobado">-</span></div>
+                        <div><strong>Estatus Actual:</strong> <span id="d-estado-badge">-</span></div>
+                        
+                        <div style="margin-top: 10px;">
+                            <strong>Descripción del Suceso:</strong>
+                            <div style="background: var(--mqf-surface-2); padding:10px; border-radius:6px; border:1px solid var(--mqf-border); margin-top:5px; max-height:80px; overflow-y:auto;" id="d-desc">-</div>
+                        </div>
+
+                        <div style="margin-top: 10px;" id="d-evidencia-box">
+                            <strong>Evidencia Cargada:</strong>
+                            <div style="margin-top:5px;" id="d-evidencia-btn">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dictamen y Transiciones Contables -->
+                <div style="border-left: 1px solid var(--mqf-border); padding-left: 20px;">
+                    <h4 style="margin:0 0 10px 0; border-bottom: 1px solid var(--mqf-border); padding-bottom:5px;"><i class="fa-solid fa-gavel"></i> Dictaminar o Liquidar</h4>
+                    
+                    <!-- Dictamen Acciones -->
+                    <div id="dictamen-acciones" style="display:grid; grid-template-columns:1fr; gap:10px;">
+                        <button class="mqf-btn mqf-btn--secondary" id="btn-revisar" onclick="cambiarEstadoSiniestro('en_revision')">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i> Poner En Revisión
+                        </button>
+                        
+                        <div style="border: 1px solid var(--mqf-border); padding: 10px; border-radius: 8px; background: var(--mqf-surface-2);">
+                            <label style="display:block; font-size:11px; font-weight:bold; margin-bottom:4px;">Dictaminar Aprobación (Monto Aprobado) *</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="number" id="dictamen-monto" class="mqf-input" step="0.01" placeholder="RD$ Aprobado" style="flex:1;">
+                                <button class="mqf-btn mqf-btn--primary" id="btn-aprobar" onclick="dictaminarReclamo('aprobado')">
+                                    <i class="fa-solid fa-check"></i> Aprobar
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="mqf-btn mqf-btn--secondary" style="background:var(--mqf-danger-light); color:var(--mqf-danger-text); border:none;" id="btn-rechazar" onclick="dictaminarReclamo('rechazado')">
+                            <i class="fa-solid fa-times-circle"></i> Rechazar Reclamación
+                        </button>
+
+                        <div style="border-top:1px solid var(--mqf-border); margin-top:10px; padding-top:10px;" id="box-liquidacion">
+                            <button class="mqf-btn mqf-btn--primary" style="background:var(--mqf-success); width:100%;" id="btn-pagar" onclick="cambiarEstadoSiniestro('pagado')">
+                                <i class="fa-solid fa-file-signature"></i> Liquidar y Generar Pago Contable
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Asientos Contables Generados -->
+                    <div style="margin-top: 15px;">
+                        <h5 style="margin: 0 0 6px 0;"><i class="fa-solid fa-receipt"></i> Asientos Contables Vinculados</h5>
+                        <div style="max-height: 120px; overflow-y:auto; font-size:11px; border:1px solid var(--mqf-border); border-radius:6px; background: var(--mqf-surface-2);" id="det-asientos-list">
+                            <div style="padding:10px; opacity:0.5; text-align:center;">No hay registros contables aún.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/api-client.js?v=9.0"></script>
+    <script>
+    let cacheSiniestros = [];
+    let selectedSiniestro = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        cargarSiniestros();
+    });
+
+    const fmt = (v) => {
+        return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(v || 0);
+    };
+
+    async function cargarSiniestros() {
+        const tbody = document.getElementById('siniestros-tbody');
+        try {
+            const res = await api.solicitud('/siniestros.php?action=listar', 'GET');
+            if (res.exito && Array.isArray(res.data)) {
+                cacheSiniestros = res.data;
+                renderSiniestros(cacheSiniestros);
+                actualizarKPIs(cacheSiniestros);
+            } else {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--mqf-danger);">${res.mensaje || 'Error al obtener siniestros'}</td></tr>`;
+            }
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--mqf-danger);">Error de red al conectar al servidor</td></tr>`;
+        }
+    }
+
+    function renderSiniestros(siniestros) {
+        const tbody = document.getElementById('siniestros-tbody');
+        if (siniestros.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; opacity:0.6; padding: 25px;">No hay reclamaciones de siniestros declaradas.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = siniestros.map(s => {
+            const statusClass = 'status-' + s.estado;
+            const aprobadoStr = s.monto_aprobado !== null ? fmt(s.monto_aprobado) : '-';
+            return `
+                <tr>
+                    <td><strong>${s.numero_siniestro}</strong></td>
+                    <td>${s.numero_poliza}</td>
+                    <td>${s.cliente_nombre}</td>
+                    <td>${s.fecha_siniestro}</td>
+                    <td>${fmt(s.monto_reclamado)}</td>
+                    <td style="font-weight: bold; color: var(--mqf-primary-dark);">${aprobadoStr}</td>
+                    <td><span class="status-badge ${statusClass}">${s.estado.toUpperCase().replace('_', ' ')}</span></td>
+                    <td style="text-align:center;">
+                        <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="verDetalleSiniestro(${s.id})">
+                            <i class="fa-solid fa-gavel"></i> Dictaminar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function actualizarKPIs(siniestros) {
+        const total = siniestros.length;
+        const activos = siniestros.filter(s => s.estado !== 'pagado' && s.estado !== 'rechazado').length;
+        
+        let reclamado = 0;
+        let liquidado = 0;
+        let aprobadosCount = 0;
+
+        siniestros.forEach(s => {
+            reclamado += s.monto_reclamado;
+            if (s.estado === 'pagado') {
+                liquidado += s.monto_aprobado;
+            }
+            if (s.estado === 'aprobado' || s.estado === 'pagado') {
+                aprobadosCount++;
+            }
+        });
+
+        const tasa = total > 0 ? Math.round((aprobadosCount / total) * 100) + '%' : '0%';
+
+        document.getElementById('kpi-activos').textContent = activos;
+        document.getElementById('kpi-reclamado').textContent = fmt(reclamado);
+        document.getElementById('kpi-liquidado').textContent = fmt(liquidado);
+        document.getElementById('kpi-tasa').textContent = tasa;
+    }
+
+    function filtrarSiniestros() {
+        const query = document.getElementById('busqueda-s').value.toLowerCase();
+        const estado = document.getElementById('filtro-estado-s').value;
+
+        const filtrados = cacheSiniestros.filter(s => {
+            const matchesSearch = s.numero_siniestro.toLowerCase().includes(query) || 
+                                 s.cliente_nombre.toLowerCase().includes(query) || 
+                                 s.numero_poliza.toLowerCase().includes(query);
+            const matchesEstado = !estado || s.estado === estado;
+
+            return matchesSearch && matchesEstado;
+        });
+
+        renderSiniestros(filtrados);
+    }
+
+    // REGISTRO Y AUTOCOMPLETE
+    function abrirNuevoSiniestro() {
+        document.getElementById('siniestroForm').reset();
+        document.getElementById('sin-poliza-id').value = '';
+        document.getElementById('sin-cliente-id').value = '';
+        document.getElementById('ficha-poliza-seleccionada').style.display = 'none';
+        document.getElementById('autocomplete-results').style.display = 'none';
+        document.getElementById('sin-poliza-search').disabled = false;
+        abrirModal('siniestroModal');
+    }
+
+    function cerrarModalSiniestro() {
+        document.getElementById('siniestroModal').style.display = 'none';
+    }
+
+    async function buscarPolizasAutocomplete(val) {
+        const wrapper = document.getElementById('autocomplete-results');
+        if (val.length < 2) {
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        try {
+            const res = await api.solicitud('/siniestros.php?action=buscar_poliza&query=' + encodeURIComponent(val), 'GET');
+            if (res.exito && Array.isArray(res.data)) {
+                if (res.data.length === 0) {
+                    wrapper.innerHTML = '<div class="autocomplete-item" style="opacity:0.5;">No se encontraron pólizas activas coincidentes.</div>';
+                } else {
+                    wrapper.innerHTML = res.data.map(p => `
+                        <div class="autocomplete-item" onclick="seleccionarPoliza(${p.poliza_id}, ${p.cliente_id}, '${p.numero_poliza}', '${p.cliente_nombre}', '${p.cliente_cedula}', '${p.aseguradora}')">
+                            <strong>${p.numero_poliza}</strong> — ${p.cliente_nombre} (${p.aseguradora})
+                        </div>
+                    `).join('');
+                }
+                wrapper.style.display = 'block';
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function seleccionarPoliza(polId, cliId, polNum, cliNom, cliCed, aseg) {
+        document.getElementById('sin-poliza-id').value = polId;
+        document.getElementById('sin-cliente-id').value = cliId;
+        document.getElementById('sin-poliza-search').value = polNum;
+
+        // Mostrar Ficha de Póliza
+        document.getElementById('lbl-cli-nombre').textContent = cliNom;
+        document.getElementById('lbl-cli-cedula').textContent = cliCed;
+        document.getElementById('lbl-pol-num').textContent = polNum;
+        document.getElementById('lbl-pol-aseg').textContent = aseg;
+        document.getElementById('ficha-poliza-seleccionada').style.display = 'grid';
+
+        document.getElementById('autocomplete-results').style.display = 'none';
+    }
+
+    async function guardarSiniestro(e) {
+        e.preventDefault();
+        
+        const polId = document.getElementById('sin-poliza-id').value;
+        if (!polId) {
+            MQF.toast('Debe buscar y seleccionar una póliza activa de la lista.', 'warning');
+            return;
+        }
+
+        // Usar FormData para soportar subida de archivo
+        const formData = new FormData();
+        formData.append('poliza_id', polId);
+        formData.append('cliente_id', document.getElementById('sin-cliente-id').value);
+        formData.append('fecha_siniestro', document.getElementById('sin-fecha').value);
+        formData.append('monto_reclamado', document.getElementById('sin-monto').value);
+        formData.append('lugar_evento', document.getElementById('sin-lugar').value);
+        formData.append('descripcion_evento', document.getElementById('sin-descripcion').value);
+
+        const fileInput = document.getElementById('sin-evidencia');
+        if (fileInput.files.length > 0) {
+            formData.append('evidencia', fileInput.files[0]);
+        }
+
+        try {
+            // El API-Client maneja peticiones con FormData automáticamente si lo pasamos
+            const res = await api.solicitud('/siniestros.php?action=registrar', 'POST', formData, true);
+            if (res.exito) {
+                MQF.toast(res.mensaje, 'success');
+                cerrarModalSiniestro();
+                cargarSiniestros();
+            } else {
+                MQF.toast('Error al registrar: ' + res.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            MQF.toast('Error de red al declarar siniestro', 'error');
+        }
+    }
+
+    // DETALLE Y DICTAMEN
+    async function verDetalleSiniestro(id) {
+        try {
+            const res = await api.solicitud('/siniestros.php?action=obtener&id=' + id, 'GET');
+            if (res.exito && res.data) {
+                selectedSiniestro = res.data;
+                const s = res.data;
+
+                // Ficha
+                document.getElementById('det-siniestro-num').textContent = s.numero_siniestro;
+                document.getElementById('d-num').textContent = s.numero_siniestro;
+                document.getElementById('d-poliza').textContent = s.numero_poliza + ' (' + s.aseguradora + ')';
+                document.getElementById('d-cliente').textContent = s.cliente_nombre + ' (Tel: ' + (s.cliente_telefono || '-') + ')';
+                document.getElementById('d-fecha').textContent = s.fecha_siniestro;
+                document.getElementById('d-lugar').textContent = s.lugar_evento || 'No especificado';
+                document.getElementById('d-reclamado').textContent = fmt(s.monto_reclamado);
+                document.getElementById('d-aprobado').textContent = s.monto_aprobado !== null ? fmt(s.monto_aprobado) : '-';
+                document.getElementById('d-desc').textContent = s.descripcion_evento;
+
+                // Evidencia
+                const evBox = document.getElementById('d-evidencia-btn');
+                if (s.evidencia_adjunta) {
+                    evBox.innerHTML = `<a href="/PLATAFORMA_INTEGRADA/${s.evidencia_adjunta}" target="_blank" class="mqf-btn mqf-btn--secondary mqf-btn--sm" style="display:inline-block; text-decoration:none;"><i class="fa-solid fa-file-shield"></i> Ver Soporte Técnico</a>`;
+                } else {
+                    evBox.textContent = 'Sin soporte adjunto';
+                }
+
+                // Estatus badge
+                const statusBadge = document.getElementById('d-estado-badge');
+                statusBadge.textContent = s.estado.toUpperCase().replace('_', ' ');
+                statusBadge.className = 'status-badge status-' + s.estado;
+
+                // Habilitar/deshabilitar acciones de dictamen según estado actual
+                configurarBotonesDictamen(s.estado);
+
+                // Cargar asientos
+                const listAs = document.getElementById('det-asientos-list');
+                if (s.asientos && s.asientos.length > 0) {
+                    listAs.innerHTML = s.asientos.map(a => `
+                        <div style="padding: 8px; border-bottom:1px solid var(--mqf-border); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>${a.numero_asiento}</strong><br>
+                                <span style="opacity:0.7;">${a.descripcion}</span>
+                            </div>
+                            <span class="status-badge status-activo">${a.estado.toUpperCase()}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    listAs.innerHTML = '<div style="padding:10px; opacity:0.5; text-align:center;">No hay registros contables aún.</div>';
+                }
+
+                abrirModal('detalleModal');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function configurarBotonesDictamen(estado) {
+        // Reset botones
+        document.getElementById('btn-revisar').style.display = 'none';
+        document.getElementById('btn-aprobar').closest('div').style.display = 'none';
+        document.getElementById('btn-rechazar').style.display = 'none';
+        document.getElementById('box-liquidacion').style.display = 'none';
+
+        if (estado === 'registrado') {
+            document.getElementById('btn-revisar').style.display = 'block';
+        } else if (estado === 'en_revision') {
+            document.getElementById('btn-aprobar').closest('div').style.display = 'block';
+            document.getElementById('btn-rechazar').style.display = 'block';
+            document.getElementById('dictamen-monto').value = selectedSiniestro.monto_reclamado; // Default al reclamado
+        } else if (estado === 'aprobado') {
+            document.getElementById('box-liquidacion').style.display = 'block';
+        }
+    }
+
+    async function cambiarEstadoSiniestro(nuevoEst) {
+        if (!selectedSiniestro) return;
+        
+        let confirmMsg = `¿Confirma cambiar el estado de la reclamación a '${nuevoEst.toUpperCase()}'?`;
+        if (nuevoEst === 'pagado') {
+            confirmMsg = `¿Confirma proceder con la liquidación e indemnización del caso por ${fmt(selectedSiniestro.monto_aprobado)}? Esto generará el desembolso y el asiento de caja correspondiente de forma automática.`;
+        }
+
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            const res = await api.solicitud('/siniestros.php?action=actualizar_estado', 'POST', {
+                id: selectedSiniestro.id,
+                estado: nuevoEst,
+                justificacion: 'Cambio de estado en dictamen general.'
+            });
+
+            if (res.exito) {
+                MQF.toast(res.mensaje, 'success');
+                cerrarModalDetalle();
+                cargarSiniestros();
+            } else {
+                MQF.toast(res.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function dictaminarReclamo(nuevoEst) {
+        if (!selectedSiniestro) return;
+
+        const payload = {
+            id: selectedSiniestro.id,
+            estado: nuevoEst
+        };
+
+        if (nuevoEst === 'aprobado') {
+            const monto = parseFloat(document.getElementById('dictamen-monto').value);
+            if (isNaN(monto) || monto <= 0) {
+                MQF.toast('El monto aprobado debe ser mayor a 0 DOP.', 'warning');
+                return;
+            }
+            payload.monto_aprobado = monto;
+            payload.justificacion = 'Reclamación de siniestro aprobada y provisión contable efectuada.';
+        } else if (nuevoEst === 'rechazado') {
+            const just = prompt("Indique el motivo o justificación técnica del rechazo:");
+            if (just === null) return;
+            if (just.trim().length < 5) {
+                MQF.toast('Debe proveer una justificación técnica válida para rechazar el siniestro.', 'warning');
+                return;
+            }
+            payload.justificacion = just;
+        }
+
+        try {
+            const res = await api.solicitud('/siniestros.php?action=actualizar_estado', 'POST', payload);
+            if (res.exito) {
+                MQF.toast(res.mensaje, 'success');
+                cerrarModalDetalle();
+                cargarSiniestros();
+            } else {
+                MQF.toast(res.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function abrirModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+    function cerrarModalDetalle() {
+        document.getElementById('detalleModal').style.display = 'none';
+        selectedSiniestro = null;
+    }
+    </script>
+
+    <script>
+      (function(){
+        var s = localStorage.getItem('mqf-skin') || 'indigo';
+        document.body.setAttribute('data-skin', s);
+        document.documentElement.setAttribute('data-skin', s);
+      })();
+    </script>
+    <script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
+</body>
+</html>
