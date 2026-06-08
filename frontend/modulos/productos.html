@@ -22,6 +22,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
+        /* =====================================================
+           NOFTRAB HEADER CONTRAST FIX — inline para garantía
+           Sobreescribe cualquier regla de h1/h2/h3 global
+           ===================================================== */
+        .mqf-module-header h1,
+        .mqf-module-header h2,
+        .mqf-module-header h3,
+        .mqf-module-header__title,
+        .mqf-module-header h1 i,
+        .mqf-module-header__title i {
+            color: #ffffff !important;
+        }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        .mqf-module-header i {
+            color: #ffffff !important;
+        }
+
         /* Standalone overrides for Iframe display */
         .sidebar { display: none !important; }
         .top-navbar { display: none !important; }
@@ -71,10 +91,10 @@
 
     <div class="content-area">
         <!-- HEADER -->
-        <div style="background: linear-gradient(135deg, var(--mqf-primary-dark) 0%, var(--mqf-primary) 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--mqf-shadow-md);">
+        <div class="mqf-module-header" style="background: linear-gradient(135deg, var(--mqf-primary-dark) 0%, var(--mqf-primary) 100%); padding: 25px !important; border-radius: 12px !important; border-bottom: none !important; margin-bottom: 25px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--mqf-shadow-md);">
             <div>
-                <h1 style="margin: 0 0 5px 0; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.15);"><i class="fa-solid fa-folder-tree"></i> Catálogo de Productos y Deducibles</h1>
-                <p style="margin: 0; font-size: 14px; opacity: 0.9;">CRM inteligente de consulta, tarifas, deducibles y carga masiva para aseguradoras aliadas.</p>
+                <h1 class="mqf-module-header__title" style="margin: 0 0 5px 0; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.15);"><i class="fa-solid fa-folder-tree"></i> Catálogo de Productos y Deducibles</h1>
+                <p class="mqf-module-header__subtitle" style="margin: 0; font-size: 14px; opacity: 0.9;">CRM inteligente de consulta, tarifas, deducibles y carga masiva para aseguradoras aliadas.</p>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button class="mqf-btn mqf-btn--secondary" onclick="abrirImportarModal()" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); color: white;">
