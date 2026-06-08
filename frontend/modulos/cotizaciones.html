@@ -6,7 +6,7 @@
   <title>Cotizaciones - MAS QUE FIANZAS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-  <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+  <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
   <link rel="stylesheet" href="../assets/components.css?v=9.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF + AutoTable -->
@@ -45,7 +45,7 @@
         color: rgba(255, 255, 255, 0.85) !important;
     }
 
-    .cot-panel { display: none; padding: 24px; }
+    .cot-panel { display: none; padding: 20px; }
     .cot-panel.active { display: block; }
     .section-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .section-title { font-size: 15px; font-weight: 700; color: #1e1b4b; margin: 0 0 16px; }
@@ -77,6 +77,12 @@
     .btn-print-row:hover { background:#1d4ed8; }
     .btn-edit-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#f59e0b; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; margin-right:5px; }
     .btn-edit-row:hover { background:#d97706; }
+    .btn-process-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#10b981; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; margin-left:5px; }
+    .btn-process-row:hover { background:#059669; }
+    .btn-delete-row { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: #ef4444; color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; margin-left: 5px; }
+    .btn-delete-row:hover { background: #dc2626; }
+    .mqf-btn--danger { background: #ef4444 !important; color: #fff !important; }
+    .mqf-btn--danger:hover { background: #dc2626 !important; }
     .hist-count { font-size:13px; color:#6b7280; margin-left:auto; }
   </style>
 </head>
@@ -98,28 +104,30 @@
 
   <!-- FIANZAS -->
   <div class="cot-panel" id="panel-fianzas">
-    <div class="section-card">
-      <div class="section-title">🛡️ Nueva Cotización de Fianza</div>
-      <div class="fianza-grid">
-        <div class="form-group"><label>Nombre del Cliente *</label><input type="text" id="f_nombre" placeholder="Nombre completo"></div>
-        <div class="form-group"><label>Cédula / RNC</label><input type="text" id="f_cedula" placeholder="000-0000000-0"></div>
-        <div class="form-group"><label>Teléfono</label><input type="tel" id="f_telefono" placeholder="(809) 000-0000"></div>
-        <div class="form-group"><label>Correo</label><input type="email" id="f_email" placeholder="correo@email.com"></div>
-        <div class="form-group">
+    <div class="mqf-card">
+      <div class="mqf-card-header">
+        <h3 class="mqf-card-title">🛡️ Nueva Cotización de Fianza</h3>
+      </div>
+      <div class="mqf-form-grid-2">
+        <div class="mqf-form-group"><label>Nombre del Cliente *</label><input type="text" id="f_nombre" placeholder="Nombre completo" class="mqf-input"></div>
+        <div class="mqf-form-group"><label>Cédula / RNC</label><input type="text" id="f_cedula" placeholder="000-0000000-0" class="mqf-input"></div>
+        <div class="mqf-form-group"><label>Teléfono</label><input type="tel" id="f_telefono" placeholder="(809) 000-0000" class="mqf-input"></div>
+        <div class="mqf-form-group"><label>Correo</label><input type="email" id="f_email" placeholder="correo@email.com" class="mqf-input"></div>
+        <div class="mqf-form-group">
           <label>Compañía Aseguradora *</label>
-          <select id="f_aseguradora" onchange="cargarTiposFianzaSimple()">
+          <select id="f_aseguradora" onchange="cargarTiposFianzaSimple()" class="mqf-select">
             <option value="">Cargando...</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="mqf-form-group">
           <label>Tipo de Fianza *</label>
-          <select id="f_tipo" onchange="calcularFianza()">
+          <select id="f_tipo" onchange="calcularFianza()" class="mqf-select">
             <option value="">Seleccione aseguradora primero</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="mqf-form-group">
           <label>Plazo (meses)</label>
-          <select id="f_plazo" onchange="calcularFianza()">
+          <select id="f_plazo" onchange="calcularFianza()" class="mqf-select">
             <option value="1">1 mes</option>
             <option value="3">3 meses</option>
             <option value="6">6 meses</option>
@@ -129,34 +137,41 @@
             <option value="36">36 meses</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="mqf-form-group">
           <label>Tasa Especial Manual (%) <span style="color:#9ca3af;">(opcional)</span></label>
-          <input type="number" id="f_tasa_manual" placeholder="Ej: 3.0" step="0.01" min="0" oninput="calcularFianza()">
+          <input type="number" id="f_tasa_manual" placeholder="Ej: 3.0" step="0.01" min="0" oninput="calcularFianza()" class="mqf-input">
         </div>
-        <div class="form-group full"><label>Monto Afianzado (DOP) *</label><input type="number" id="f_monto" placeholder="0.00" oninput="calcularFianza()"></div>
-        <div class="form-group full"><label>Beneficiario</label><input type="text" id="f_beneficiario" placeholder="Nombre de la entidad"></div>
+        <div class="mqf-form-group mqf-form-full"><label>Monto Afianzado (DOP) *</label><input type="number" id="f_monto" placeholder="0.00" oninput="calcularFianza()" class="mqf-input"></div>
+        <div class="mqf-form-group mqf-form-full"><label>Beneficiario</label><input type="text" id="f_beneficiario" placeholder="Nombre de la entidad" class="mqf-input"></div>
       </div>
       <div style="margin-top:16px; display:flex; align-items:center; gap:8px;">
-        <input type="checkbox" id="f_usar_ncf" checked style="width:auto;"> 
-        <label for="f_usar_ncf" style="font-size:13px; color:#4b5563; cursor:pointer;">Generar NCF (Comprobante Fiscal B02)</label>
+        <input type="checkbox" id="f_usar_ncf" style="width:auto; height:16px; width:16px;" class="mr-1"> 
+        <label for="f_usar_ncf" style="font-size:13px; color:#4b5563; cursor:pointer; font-weight:600;">Generar NCF (Comprobante Fiscal B02)</label>
       </div>
-      <div style="margin-top:8px;"><button class="btn-primary" onclick="guardarCotizacion()"><i class="fa-solid fa-save"></i> Guardar y Descargar PDF</button></div>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button class="mqf-btn mqf-btn--primary" id="btn-guardar-fianza" onclick="guardarCotizacion()"><i class="fa-solid fa-save"></i> Guardar y Descargar PDF</button>
+        <button class="mqf-btn mqf-btn--danger" id="btn-eliminar-fianza" onclick="eliminarFianzaActual()" style="display:none; background-color:#ef4444;"><i class="fa-solid fa-trash"></i> Eliminar Cotización</button>
+        <button class="mqf-btn mqf-btn--secondary" id="btn-cancelar-fianza" onclick="cancelarEdicionFianza()" style="display:none;"><i class="fa-solid fa-rotate-left"></i> Cancelar Edición</button>
+      </div>
     </div>
-    <div class="result-card">
-      <div class="section-title"><i class="fa-solid fa-calculator"></i> Resultado</div>
+    <div class="mqf-card" style="margin-top:16px; background: linear-gradient(135deg, var(--mqf-primary-light), var(--mqf-bg)); border-color: var(--mqf-border);">
+      <div class="mqf-card-header" style="border-bottom-color: var(--mqf-border);">
+        <h3 class="mqf-card-title" style="color: var(--mqf-primary-dark);"><i class="fa-solid fa-calculator"></i> Resultado</h3>
+      </div>
       <div id="resultado-body"><p style="color:#9ca3af;text-align:center;padding:20px;">Complete el formulario para ver el resultado</p></div>
     </div>
   </div>
 
   <!-- HISTORIAL -->
   <div class="cot-panel" id="panel-historial">
-    <div class="section-card">
-      <div class="section-title">📜 Historial de Cotizaciones</div>
-
+    <div class="mqf-card">
+      <div class="mqf-card-header">
+        <h3 class="mqf-card-title">📜 Historial de Cotizaciones</h3>
+      </div>
       <!-- Toolbar Exportar / Importar -->
       <div class="hist-toolbar">
         <div class="dropdown-export">
-          <button class="btn-export-main" onclick="toggleExportMenuHist()">
+          <button class="mqf-btn mqf-btn--primary" onclick="toggleExportMenuHist()">
             <i class="fa-solid fa-file-export"></i> Exportar <i class="fa-solid fa-chevron-down" style="font-size:11px;"></i>
           </button>
           <div class="export-menu" id="exportMenuHist">
@@ -167,17 +182,18 @@
             <button onclick="exportarListado('zip','cotizaciones')"><i class="fa-solid fa-file-zipper" style="color:#b45309;width:18px;"></i> ZIP</button>
           </div>
         </div>
-        <label class="btn-import-main btn-importar" style="cursor:pointer;">
+        <label class="mqf-btn mqf-btn--secondary btn-importar" style="cursor:pointer;">
           <i class="fa-solid fa-file-import"></i> Importar
           <input type="file" accept=".xlsx,.csv" style="display:none;" onchange="importarCotizaciones(event)">
         </label>
-        <div class="form-group" style="flex:1; min-width:250px; margin-bottom:0; position:relative;">
-          <input type="text" id="hist-search" placeholder="🔍 Buscar por N°, Cliente o Tipo..." oninput="filtrarHistorial()" style="padding:10px 15px; border-radius:10px; border:1.5px solid #e5e7eb; width:100%;">
+        <button class="mqf-btn mqf-btn--danger" id="btn-eliminar-masivo" onclick="eliminarCotizacionesSeleccionadas()" style="display:none; background-color:#ef4444;"><i class="fa-solid fa-trash-can"></i> Eliminar Seleccionados (<span id="count-seleccionados">0</span>)</button>
+        <div class="mqf-form-group" style="flex:1; min-width:250px; margin-bottom:0; position:relative;">
+          <input type="text" id="hist-search" placeholder="🔍 Buscar por N°, Cliente o Tipo..." oninput="filtrarHistorial()" class="mqf-input" style="padding:10px 15px;">
         </div>
-        <span class="hist-count" id="hist-count-label" style="background:#f3f4f6; padding:6px 12px; border-radius:20px; font-weight:600; color:#4b5563;"></span>
+        <span class="hist-count" id="hist-count-label" style="background:var(--mqf-bg); padding:6px 12px; border-radius:20px; font-weight:600; color:var(--mqf-text-secondary); border: 1px solid var(--mqf-border);"></span>
       </div>
 
-      <div id="historial-body" style="min-height:200px;">
+      <div id="historial-body" class="mqf-table-wrapper" style="min-height:200px;">
         <p style="color:#9ca3af;text-align:center;padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando...</p>
       </div>
     </div>
@@ -357,7 +373,7 @@
             '<div class="result-row"><span class="label">Monto</span><span class="value">' + fmt(monto) + '</span></div>' +
             '<div class="result-row"><span class="label">Plazo</span><span class="value">' + plazo + ' meses</span></div>' +
             '<div class="result-row"><span class="label">Prima Base</span><span class="value">' + fmt(calc.prima_base) + '</span></div>' +
-            '<div class="result-row"><span class="label">ITBIS (18%)</span><span class="value">' + fmt(calc.itbis) + '</span></div>' +
+            '<div class="result-row"><span class="label">ISC (16%)</span><span class="value">' + fmt(calc.itbis) + '</span></div>' +
             (calc.prima_minima_aplicada ? '<div class="result-row" style="color:#d97706;font-weight:500;"><span class="label">⚠️ Prima Mínima</span><span class="value">Aplicada</span></div>' : '') +
             coberturaHTML +
             '<div class="result-row" style="border-top:2px solid #c7d2fe;margin-top:8px;padding-top:12px;"><span class="label" style="font-weight:600;">Total</span><span class="amount">' + fmt(calc.total) + '</span></div>';
@@ -457,6 +473,12 @@
       const action = window._editingFianzaId ? 'actualizar' : 'guardar';
       if (window._editingFianzaId) data.id = window._editingFianzaId;
 
+      const btn = document.getElementById('btn-guardar-fianza');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+      }
+
       try {
         const res = await api.solicitud(`/cotizaciones.php?action=${action}`, 'POST', data);
 
@@ -465,22 +487,7 @@
           
           generarPDFFianzaProfesional(data);
           
-          window._editingFianzaId = null;
-          window._editingFianzaNum = null;
-          
-          // Restablecer campos
-          document.getElementById('f_nombre').value = '';
-          document.getElementById('f_cedula').value = '';
-          document.getElementById('f_telefono').value = '';
-          document.getElementById('f_email').value = '';
-          document.getElementById('f_aseguradora').value = '';
-          document.getElementById('f_tipo').innerHTML = '<option value="">Seleccione aseguradora primero</option>';
-          document.getElementById('f_plazo').value = '12';
-          document.getElementById('f_monto').value = '';
-          document.getElementById('f_beneficiario').value = '';
-          if (document.getElementById('f_tasa_manual')) document.getElementById('f_tasa_manual').value = '';
-          document.getElementById('resultado-body').innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;">Complete el formulario para ver el resultado</p>';
-          window.currentCot = null;
+          limpiarFormularioFianza();
           
           setTimeout(() => {
             cargarHistorial();
@@ -491,6 +498,77 @@
         }
       } catch (e) {
         MQF.toast('Error de conexión con el servidor: ' + e.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          if (window._editingFianzaId) {
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+          } else {
+            btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar y Descargar PDF';
+          }
+        }
+      }
+    }
+
+    function limpiarFormularioFianza() {
+      window._editingFianzaId = null;
+      window._editingFianzaNum = null;
+      
+      document.getElementById('f_nombre').value = '';
+      document.getElementById('f_cedula').value = '';
+      document.getElementById('f_telefono').value = '';
+      document.getElementById('f_email').value = '';
+      document.getElementById('f_aseguradora').value = '';
+      document.getElementById('f_tipo').innerHTML = '<option value="">Seleccione aseguradora primero</option>';
+      document.getElementById('f_plazo').value = '12';
+      document.getElementById('f_monto').value = '';
+      document.getElementById('f_beneficiario').value = '';
+      if (document.getElementById('f_tasa_manual')) document.getElementById('f_tasa_manual').value = '';
+      document.getElementById('resultado-body').innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px;">Complete el formulario para ver el resultado</p>';
+      window.currentCot = null;
+      if (document.getElementById('f_usar_ncf')) document.getElementById('f_usar_ncf').checked = false;
+
+      // Restablecer botones
+      document.getElementById('btn-guardar-fianza').innerHTML = '<i class="fa-solid fa-save"></i> Guardar y Descargar PDF';
+      document.getElementById('btn-eliminar-fianza').style.display = 'none';
+      document.getElementById('btn-cancelar-fianza').style.display = 'none';
+    }
+
+    function cancelarEdicionFianza() {
+      limpiarFormularioFianza();
+      showTab('historial');
+    }
+
+    async function eliminarFianzaActual() {
+      const id = window._editingFianzaId;
+      if (!id) return;
+      
+      const confirmacion = confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.');
+      if (!confirmacion) return;
+      
+      const btn = document.getElementById('btn-eliminar-fianza');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+      }
+      
+      try {
+        const res = await api.solicitud('/cotizaciones.php?action=eliminar', 'POST', { id: parseInt(id) });
+        if (res.exito) {
+          MQF.toast('✅ Cotización eliminada correctamente', 'success');
+          limpiarFormularioFianza();
+          cargarHistorial();
+          showTab('historial');
+        } else {
+          MQF.toast('Error al eliminar: ' + (res.mensaje || 'Respuesta inválida del servidor'), 'error');
+        }
+      } catch (err) {
+        MQF.toast('Error de conexión al eliminar: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-trash"></i> Eliminar Cotización';
+        }
       }
     }
 
@@ -514,7 +592,7 @@
         dataNorm.aseguradora  = dataNorm.aseguradora  || dataNorm.aseguradora_nombre || '';
         dataNorm.subtipo      = dataNorm.subtipo      || dataNorm.tipo_fianza || '';
         dataNorm.prima_base   = parseFloat(dataNorm.prima_base  || dataNorm.prima || 0);
-        dataNorm.impuesto     = parseFloat(dataNorm.impuesto    || dataNorm.itbis || dataNorm.prima_base * 0.18);
+        dataNorm.impuesto     = parseFloat(dataNorm.impuesto    || dataNorm.itbis || dataNorm.prima_base * 0.16);
         dataNorm.total        = parseFloat(dataNorm.total || 0);
         dataNorm.monto_afianzado = parseFloat(dataNorm.monto_afianzado || dataNorm.valor_afianzado || 0);
         // Coberturas: asegurar que sea string vacío si es array, y parsear si es JSON string
@@ -629,7 +707,8 @@
 
     function renderizarTablaHistorial(datos) {
       const body = document.getElementById('historial-body');
-      let html = '<table><thead><tr>' +
+      let html = '<table class="mqf-table"><thead><tr>' +
+        '<th style="width:40px; text-align:center;"><input type="checkbox" id="select-all-historial" onclick="seleccionarTodasCotizaciones(this.checked)"></th>' +
         '<th>N°</th><th>Tipo</th><th>Cliente</th>' +
         '<th style="text-align:right;">Total</th>' +
         '<th>Fecha</th><th>Origen</th>' +
@@ -639,6 +718,14 @@
       datos.forEach((c) => {
         const qId = c.id;
         const origen = c._origen || 'cotizaciones';
+        
+        let chk = '';
+        if (origen === 'cotizaciones') {
+          chk = '<input type="checkbox" class="select-cotizacion-chk" data-id="' + qId + '" onchange="actualizarEstadoBotonEliminarMasivo()">';
+        } else {
+          chk = '<input type="checkbox" disabled title="Registros del Wizard no se pueden eliminar desde aquí">';
+        }
+
         // Badge de origen visual
         const badgeOrigen = origen === 'fianzas'
           ? '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>'
@@ -654,12 +741,17 @@
         if (origen === 'cotizaciones') {
           btns += '<button class="btn-edit-row" onclick="editarCotizacion(\'' + qId + '\')" title="Editar"><i class="fa-solid fa-pen"></i> Editar</button>';
           btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="PDF"><i class="fa-solid fa-print"></i> PDF</button>';
+          if (c.tipo === 'SEGURO DE LEY') {
+            btns += '<button class="btn-process-row" onclick="procesarCotizacionARegistro(\'' + c.numero + '\')" title="Procesar"><i class="fa-solid fa-gear"></i> Procesar</button>';
+          }
+          btns += '<button class="btn-delete-row" onclick="eliminarCotizacionHistorial(\'' + qId + '\')" title="Eliminar"><i class="fa-solid fa-trash"></i> Eliminar</button>';
         } else {
           // Fianzas del wizard: link al módulo de fianzas para editar
           btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\', \'fianzas\')" title="PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>';
         }
 
         html += '<tr>' +
+          '<td style="text-align:center;">' + chk + '</td>' +
           '<td><strong>' + (c.numero || '-') + '</strong></td>' +
           '<td>' + tipoBadge + '</td>' +
           '<td>' + (c.cliente || 'N/A') + '</td>' +
@@ -672,6 +764,119 @@
 
       html += '</tbody></table>';
       body.innerHTML = html;
+      
+      // Limpiar selección superior al renderizar
+      const selectAllCheckbox = document.getElementById('select-all-historial');
+      if (selectAllCheckbox) selectAllCheckbox.checked = false;
+      actualizarEstadoBotonEliminarMasivo();
+    }
+
+    // Procesar cotización a registro de pólizas
+    function procesarCotizacionARegistro(numero) {
+      if (!numero) {
+        MQF.toast('Número de cotización inválido', 'error');
+        return;
+      }
+      sessionStorage.setItem('convertir_cotizacion_numero', numero);
+      if (window.parent && window.parent.dashboard && typeof window.parent.dashboard.cambiarModulo === 'function') {
+        const iframe = window.parent.document.getElementById('polizas-iframe');
+        if (iframe) {
+          iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html?t=' + Date.now();
+        }
+        window.parent.dashboard.cambiarModulo('polizas');
+      } else {
+        MQF.toast('Error al redirigir al módulo de pólizas', 'error');
+      }
+    }
+
+    // Eliminar cotización del historial
+    async function eliminarCotizacionHistorial(id) {
+      if (!id) {
+        MQF.toast('ID de cotización no válido', 'error');
+        return;
+      }
+      const confirmacion = confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.');
+      if (!confirmacion) return;
+
+      try {
+        const res = await api.solicitud('/cotizaciones.php?action=eliminar', 'POST', { id: parseInt(id) });
+        if (res.exito) {
+          MQF.toast('✅ Cotización eliminada correctamente', 'success');
+          cargarHistorial();
+        } else {
+          MQF.toast('Error al eliminar: ' + (res.mensaje || 'Respuesta inválida del servidor'), 'error');
+        }
+      } catch (err) {
+        MQF.toast('Error de conexión al eliminar: ' + err.message, 'error');
+      }
+    }
+
+    // Seleccionar todas las cotizaciones habilitadas
+    function seleccionarTodasCotizaciones(checked) {
+      document.querySelectorAll('.select-cotizacion-chk').forEach(chk => {
+        if (!chk.disabled) {
+          chk.checked = checked;
+        }
+      });
+      actualizarEstadoBotonEliminarMasivo();
+    }
+
+    // Actualizar visibilidad y conteo del botón de eliminación masiva
+    function actualizarEstadoBotonEliminarMasivo() {
+      const chks = document.querySelectorAll('.select-cotizacion-chk:checked');
+      const count = chks.length;
+      const btn = document.getElementById('btn-eliminar-masivo');
+      const countLabel = document.getElementById('count-seleccionados');
+      
+      if (btn) {
+        if (count > 0) {
+          btn.style.display = 'inline-flex';
+          if (countLabel) countLabel.textContent = count;
+        } else {
+          btn.style.display = 'none';
+        }
+      }
+    }
+
+    // Eliminar cotizaciones seleccionadas masivamente
+    async function eliminarCotizacionesSeleccionadas() {
+      const chks = document.querySelectorAll('.select-cotizacion-chk:checked');
+      const ids = Array.from(chks).map(chk => parseInt(chk.getAttribute('data-id'))).filter(Boolean);
+      
+      if (ids.length === 0) {
+        MQF.toast('Por favor, seleccione al menos una cotización para eliminar', 'warning');
+        return;
+      }
+      
+      const confirmacion = confirm('¿Está seguro de que desea eliminar las ' + ids.length + ' cotizaciones seleccionadas? Esta acción no se puede deshacer.');
+      if (!confirmacion) return;
+      
+      const btn = document.getElementById('btn-eliminar-masivo');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+      }
+      
+      try {
+        const res = await api.solicitud('/cotizaciones.php?action=eliminar', 'POST', { ids: ids });
+        if (res.exito) {
+          MQF.toast('✅ ' + ids.length + ' cotizaciones eliminadas correctamente', 'success');
+          // Desmarcar checkbox general
+          const selectAllCheckbox = document.getElementById('select-all-historial');
+          if (selectAllCheckbox) selectAllCheckbox.checked = false;
+          cargarHistorial();
+        } else {
+          MQF.toast('Error al eliminar: ' + (res.mensaje || 'Respuesta inválida del servidor'), 'error');
+        }
+      } catch (err) {
+        MQF.toast('Error de conexión al eliminar: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Eliminar Seleccionados (<span id="count-seleccionados">0</span>)';
+          actualizarEstadoBotonEliminarMasivo();
+        }
+      }
     }
 
     // Imprimir una cotización individual del historial
@@ -766,6 +971,11 @@
           calcularFianza();
         }
 
+        // Mostrar botones de edición
+        document.getElementById('btn-guardar-fianza').innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cambios';
+        document.getElementById('btn-eliminar-fianza').style.display = 'inline-flex';
+        document.getElementById('btn-cancelar-fianza').style.display = 'inline-flex';
+
         showTab('fianzas');
       }
     }
@@ -806,7 +1016,8 @@
       const [selectedCoverage, setSelectedCoverage] = React.useState('');
       const [showCoverageDetails, setShowCoverageDetails] = React.useState(false);
       const [optionalSelected, setOptionalSelected] = React.useState({});
-      const [usarNCF, setUsarNCF] = React.useState(true);
+      const [usarNCF, setUsarNCF] = React.useState(false);
+      const [isSaving, setIsSaving] = React.useState(false);
       
       const OPTIONAL_SERVICES = React.useMemo(() => [
         { id: 'ASIST_VIAL_LIV', label: 'ASISTENCIA VIAL (VEHICULO LIVIANO)', price: 2600 },
@@ -1083,6 +1294,7 @@
       function guardarCotizacionSeguro() {
         if(!validate()) return;
         
+        setIsSaving(true);
         const isEdit = !!editingId;
         const numCot = isEdit ? editingNum : ('SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000));
         
@@ -1110,196 +1322,269 @@
         const action = isEdit ? 'actualizar' : 'guardar';
         
         api.solicitud(`/cotizaciones.php?action=${action}`, 'POST', data).then(res=>{
+          setIsSaving(false);
           if (res.exito) {
             const finalNum = res.datos?.numero || data.numero;
             MQF.toast('Cotización ' + (isEdit ? 'actualizada' : 'guardada') + ': ' + finalNum, 'success');
-            generarPDFSeguroProfesional(Object.assign({}, data, { servicios_opcionales: optionalSelected }));
             setEditingId(null);
             setEditingNum(null);
             // Restablecer campos
-            setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(true);
+            setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
             setCliente(''); setCedula('');
             cargarHistorial();
           } else {
             MQF.toast('Error: ' + res.mensaje, 'error');
           }
-        }).catch(e=> MQF.toast('Error: ' + e.message, 'error'));
+        }).catch(e=> {
+          setIsSaving(false);
+          MQF.toast('Error: ' + e.message, 'error');
+        });
+      }
+
+      function imprimirPDFActual() {
+        if(!validate()) return;
+        
+        const numCot = editingNum || ('SL-TEMP-' + Math.floor(Math.random() * 9000 + 1000));
+        
+        const data = {
+          tipo: 'SEGURO DE LEY',
+          subtipo: type,
+          numero: numCot,
+          cliente: cliente,
+          cedula: cedula,
+          uso: uso,
+          capacidad: capacidad,
+          aseguradora: insurer,
+          cobertura: selectedCoverage,
+          plazo: 0,
+          prima_base: price,
+          servicios_opcionales: optionalSelected,
+          prima_mensual: 0,
+          impuesto: 0,
+          total: totalPrice,
+          usar_ncf: usarNCF,
+          fecha: new Date().toISOString()
+        };
+        
+        generarPDFSeguroProfesional(data);
       }
 
       function generarPDFSeguroProfesional(data) {
         try {
           const { jsPDF } = window.jspdf;
+          if (!jsPDF) { MQF.toast('Motor PDF no disponible', 'error'); return; }
           const doc = new jsPDF();
           // Asegurar que servicios_opcionales sea objeto (no string) para dibujarCotizacionPDF
           const dataNorm = Object.assign({}, data);
           if (typeof dataNorm.servicios_opcionales === 'string') {
             try { dataNorm.servicios_opcionales = JSON.parse(dataNorm.servicios_opcionales); } catch(e) { dataNorm.servicios_opcionales = {}; }
           }
-          // Llamar al motor profesional con logo MQF en Base64
           if (typeof dibujarCotizacionPDF === 'function') {
             dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || null, null);
+            MQF.toast('✅ PDF generado correctamente', 'success');
           } else {
+            MQF.toast('Motor PDF no cargado (data-export.js)', 'error');
             console.error('dibujarCotizacionPDF no disponible — verifica data-export.js');
-            doc.text('Sin motor PDF', 14, 20);
-            try {
-              const blob = doc.output('blob');
-              const url = URL.createObjectURL(blob);
-              const win = window.open(url, '_blank');
-              if (!win || win.closed || typeof win.closed === 'undefined') {
-                throw new Error('Popup blocked');
-              }
-            } catch (err) {
-              console.warn('El navegador bloqueó la ventana emergente de impresión, descargando directamente...', err);
-              doc.save(dataNorm.numero ? `${dataNorm.numero}.pdf` : 'cotizacion.pdf');
-            }
           }
-        } catch(e){ console.error('PDF Error:', e); }
+        } catch(e){
+          console.error('PDF Error:', e);
+          MQF.toast('Error al generar PDF: ' + e.message, 'error');
+        }
       }
 
       return (
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-1">
-              <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg shadow">
-                <h1 className="text-xl font-bold">SEGUROS DE LEY</h1>
-                <p className="text-sm opacity-90">Cotizador rápido MULTISEGUROS</p>
+        <div className="mqf-card w-full">
+          <div className="mqf-card-header">
+            <h3 className="mqf-card-title">🚗 Nueva Cotización de Seguro de Ley</h3>
+          </div>
+          
+          {/* SECCIÓN CLIENTE: 2 columnas */}
+          <div className="border-b border-gray-200 pb-4 mb-4">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Datos del Cliente</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mqf-form-group">
+                <label>Nombre del Cliente *</label>
+                <input type="text" value={cliente} onChange={e=>{setCliente(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cliente; return n; });}} placeholder="Nombre completo" className="mqf-input" />
+                {errors.cliente && <div className="text-sm text-red-600 mt-1">{errors.cliente}</div>}
               </div>
-              <form className="mt-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Nombre del Cliente *</label>
-                  <input type="text" value={cliente} onChange={e=>{setCliente(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cliente; return n; });}} placeholder="Nombre completo" className="mt-1 w-full p-3 border rounded" />
-                  {errors.cliente && <div className="text-sm text-red-600 mt-1">{errors.cliente}</div>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Cédula / RNC *</label>
-                  <input type="text" value={cedula} onChange={e=>{setCedula(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cedula; return n; });}} placeholder="000-0000000-0" className="mt-1 w-full p-3 border rounded" />
-                  {errors.cedula && <div className="text-sm text-red-600 mt-1">{errors.cedula}</div>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Tipo de Vehículo *</label>
-                  <select value={type} onChange={e=>{ setType(e.target.value); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setSelectedCoverage(''); }} className="mt-1 w-full p-3 border rounded">
-                    <option value="">Seleccione Tipo...</option>
-                    {tipos.map(t=> <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  {errors.type && <div className="text-sm text-red-600 mt-1">{errors.type}</div>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Uso *</label>
-                  <select value={uso} onChange={e=>{ setUso(e.target.value); setCapacidad(''); setInsurer(''); setPrice(0); }} disabled={!type} className="mt-1 w-full p-3 border rounded">
-                    <option value="">Seleccione Uso...</option>
-                    {usos.map(u=> <option key={u} value={u}>{u}</option>)}
-                  </select>
-                  {errors.uso && <div className="text-sm text-red-600 mt-1">{errors.uso}</div>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Capacidad / Cilindrada *</label>
-                  <select value={capacidad} onChange={e=>setCapacidad(e.target.value)} disabled={!uso} className="mt-1 w-full p-3 border rounded">
-                    <option value="">Seleccione Capacidad...</option>
-                    {capacidades.map(c=> <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  {errors.capacidad && <div className="text-sm text-red-600 mt-1">{errors.capacidad}</div>}
-                </div>
-              </form>
+              <div className="mqf-form-group">
+                <label>Cédula / RNC *</label>
+                <input type="text" value={cedula} onChange={e=>{setCedula(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cedula; return n; });}} placeholder="000-0000000-0" className="mqf-input" />
+                {errors.cedula && <div className="text-sm text-red-600 mt-1">{errors.cedula}</div>}
+              </div>
             </div>
-            <div className="md:col-span-2 p-4">
-              <div className="bg-gray-50 p-4 rounded">
-                <h2 className="text-lg font-semibold">Resultados</h2>
+          </div>
 
-                {selectedCoverage && (
-                  <div className="mt-4 p-3 border rounded bg-white">
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold">Cobertura: {selectedCoverage}</div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-sm text-gray-500">Incluida</div>
-                        <button onClick={()=>setShowCoverageDetails(s=>!s)} className="px-2 py-1 text-sm border rounded hover:bg-gray-100">{showCoverageDetails? 'Ocultar detalles' : 'Ver detalles'}</button>
-                      </div>
-                    </div>
-                    {showCoverageDetails && (
-                      <div className="mt-3 space-y-2">
-                        {(COVERAGE_PROFILES[String(selectedCoverage).trim()]||[]).map((c,idx)=> (
-                          <div key={idx} className="flex justify-between text-sm">
-                            <div>{c.label}</div>
-                            <div className="font-medium">{currency(c.amount)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+          {/* SECCIÓN VEHÍCULO: 3 columnas */}
+          <div className="border-b border-gray-200 pb-4 mb-4">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Datos del Vehículo</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mqf-form-group">
+                <label>Tipo de Vehículo *</label>
+                <select value={type} onChange={e=>{ setType(e.target.value); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setSelectedCoverage(''); }} className="mqf-select">
+                  <option value="">Seleccione Tipo...</option>
+                  {tipos.map(t=> <option key={t} value={t}>{t}</option>)}
+                </select>
+                {errors.type && <div className="text-sm text-red-600 mt-1">{errors.type}</div>}
+              </div>
+              <div className="mqf-form-group">
+                <label>Uso *</label>
+                <select value={uso} onChange={e=>{ setUso(e.target.value); setCapacidad(''); setInsurer(''); setPrice(0); }} disabled={!type} className="mqf-select">
+                  <option value="">Seleccione Uso...</option>
+                  {usos.map(u=> <option key={u} value={u}>{u}</option>)}
+                </select>
+                {errors.uso && <div className="text-sm text-red-600 mt-1">{errors.uso}</div>}
+              </div>
+              <div className="mqf-form-group">
+                <label>Capacidad / Cilindrada *</label>
+                <select value={capacidad} onChange={e=>setCapacidad(e.target.value)} disabled={!uso} className="mqf-select">
+                  <option value="">Seleccione Capacidad...</option>
+                  {capacidades.map(c=> <option key={c} value={c}>{c}</option>)}
+                </select>
+                {errors.capacidad && <div className="text-sm text-red-600 mt-1">{errors.capacidad}</div>}
+              </div>
+            </div>
+          </div>
 
-                {/* Servicios Opcionales */}
-                {selectedCoverage && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700">Servicios Opcionales</label>
-                    <div className="mt-2 space-y-2">
-                      {OPTIONAL_SERVICES.map(s=>{
-                        if(selectedCoverage && selectedCoverage.includes('LIVIANO') && s.id === 'ASIST_VIAL_PES') return null;
-                        if(selectedCoverage && selectedCoverage.includes('PESADO') && s.id === 'ASIST_VIAL_LIV') return null;
-                        const disabled = (s.id === 'CENTRO_AUTOMOVILISTA' && optionalSelected.CASA_CONDUCTOR) || (s.id === 'CASA_CONDUCTOR' && optionalSelected.CENTRO_AUTOMOVILISTA);
-                        return (
-                          <label key={s.id} className={`flex items-center justify-between p-2 border rounded ${optionalSelected[s.id]?'bg-gray-50':''}`}>
-                            <div className="flex items-center">
-                              <input type="checkbox" disabled={disabled} checked={!!optionalSelected[s.id]} onChange={e=> setOptionalSelected(prev=>({ ...prev, [s.id]: e.target.checked }))} className="mr-3" />
-                              <div className="text-sm">{s.label}</div>
-                            </div>
-                            <div className="text-sm text-gray-600">—</div>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 border rounded">
-                    <div className="text-sm text-gray-500">Aseguradora</div>
-                    <div className="font-bold mt-1">{insurer || '—'}</div>
-                  </div>
-                  <div className="p-3 border rounded">
-                    <div className="text-sm text-gray-500">Precio estimado</div>
-                    <div className="font-bold text-green-600 mt-1">{currency(totalPrice || 0)}</div>
-                  </div>
-                </div>
-
-                {/* Otras aseguradoras */}
-                <div className="mt-4">
-                  <div className="text-sm text-gray-600">Otras aseguradoras disponibles</div>
-                  <div className="mt-2 space-y-2">
-                    {insurersList.length ? insurersList.map(i=> (
-                      <label key={i.aseguradora} className={`flex items-center justify-between p-2 border rounded ${insurer===i.aseguradora?'ring-2 ring-cyan-300':''}`}>
-                        <div className="flex items-center">
-                          <input type="radio" name="insurer" value={i.aseguradora} checked={insurer===i.aseguradora} onChange={()=>{ setInsurer(i.aseguradora); setPrice(i.prima); setErrors(prev=>{ const n={...prev}; delete n.insurer; delete n.price; return n; }); }} className="mr-3" />
-                          <div>{i.aseguradora}</div>
+          {/* SECCIÓN RESULTADOS: 2 columnas */}
+          {type && uso && capacidad && (
+            <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 mb-4">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider"><i className="fa-solid fa-calculator"></i> Coberturas y Costos</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Columna izquierda: Coberturas y Opcionales */}
+                <div className="space-y-4">
+                  {selectedCoverage && (
+                    <div className="p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-gray-800">Cobertura: {selectedCoverage}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm text-gray-500 font-medium">Incluida</div>
+                          <button type="button" onClick={()=>setShowCoverageDetails(s=>!s)} className="px-2 py-1 text-sm border rounded hover:bg-gray-100 font-semibold text-gray-700">{showCoverageDetails? 'Ocultar detalles' : 'Ver detalles'}</button>
                         </div>
-                        <div className="font-semibold">{currency(i.prima)}</div>
-                      </label>
-                    )) : (
-                      <div className="text-sm text-gray-500">No hay tarifas disponibles para la selección.</div>
-                    )}
-                  </div>
-                  {errors.insurer && <div className="mt-2 text-sm text-red-600">{errors.insurer}</div>}
+                      </div>
+                      {showCoverageDetails && (
+                        <div className="mt-3 space-y-2 border-t pt-3">
+                          {(COVERAGE_PROFILES[String(selectedCoverage).trim()]||[]).map((c,idx)=> (
+                            <div key={idx} className="flex justify-between text-sm text-gray-600">
+                              <div>{c.label}</div>
+                              <div className="font-medium text-gray-800">{currency(c.amount)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedCoverage && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Servicios Opcionales</label>
+                      <div className="space-y-2">
+                        {OPTIONAL_SERVICES.map(s=>{
+                          if(selectedCoverage && selectedCoverage.includes('LIVIANO') && s.id === 'ASIST_VIAL_PES') return null;
+                          if(selectedCoverage && selectedCoverage.includes('PESADO') && s.id === 'ASIST_VIAL_LIV') return null;
+                          const disabled = (s.id === 'CENTRO_AUTOMOVILISTA' && optionalSelected.CASA_CONDUCTOR) || (s.id === 'CASA_CONDUCTOR' && optionalSelected.CENTRO_AUTOMOVILISTA);
+                          return (
+                            <label key={s.id} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${optionalSelected[s.id]?'bg-indigo-50/35 border-indigo-200':'bg-white hover:bg-gray-50'}`}>
+                              <div className="flex items-center">
+                                <input type="checkbox" disabled={disabled} checked={!!optionalSelected[s.id]} onChange={e=> setOptionalSelected(prev=>({ ...prev, [s.id]: e.target.checked }))} className="mr-3 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                                <div className="text-sm font-medium text-gray-700">{s.label}</div>
+                              </div>
+                              <div className="text-sm text-gray-600">—</div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-6 flex gap-3">
-                  <button onClick={guardarCotizacionSeguro} className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-50">
-                    {editingId ? 'Guardar Cambios' : 'Guardar y Descargar PDF'}
-                  </button>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={usarNCF} onChange={e=> setUsarNCF(e.target.checked)} />
-                    <span className="text-sm text-gray-700">Generar NCF (B02)</span>
-                  </label>
-                  <button onClick={()=>{ 
-                    setEditingId(null);
-                    setEditingNum(null);
-                    setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(true);
-                    setCliente(''); setCedula('');
-                  }} className="px-4 py-2 border rounded">
-                    {editingId ? 'Cancelar Edición' : 'Restablecer'}
-                  </button>
+                {/* Columna derecha: Aseguradoras y Total */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Aseguradora</div>
+                      <div className="text-lg font-bold text-gray-800 mt-1">{insurer || '—'}</div>
+                    </div>
+                    <div className="p-4 border border-gray-100 rounded-lg bg-green-50/50 shadow-sm">
+                      <div className="text-xs font-semibold text-green-700 uppercase tracking-wider">Precio estimado</div>
+                      <div className="text-xl font-extrabold text-green-600 mt-1">{currency(totalPrice || 0)}</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-semibold text-gray-700 mb-2">Otras aseguradoras disponibles</div>
+                    <div className="space-y-2">
+                      {insurersList.length ? insurersList.map(i=> (
+                        <label key={i.aseguradora} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${insurer===i.aseguradora?'border-indigo-500 bg-indigo-50/30 ring-2 ring-indigo-500/20':'bg-white hover:bg-gray-50'}`}>
+                          <div className="flex items-center">
+                            <input type="radio" name="insurer" value={i.aseguradora} checked={insurer===i.aseguradora} onChange={()=>{ setInsurer(i.aseguradora); setPrice(i.prima); setErrors(prev=>{ const n={...prev}; delete n.insurer; delete n.price; return n; }); }} className="mr-3 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
+                            <div className="text-sm font-medium text-gray-700">{i.aseguradora}</div>
+                          </div>
+                          <div className="font-semibold text-gray-800">{currency(i.prima)}</div>
+                        </label>
+                      )) : (
+                        <div className="text-sm text-gray-500">No hay tarifas disponibles para la selección.</div>
+                      )}
+                    </div>
+                    {errors.insurer && <div className="mt-2 text-sm text-red-600">{errors.insurer}</div>}
+                  </div>
                 </div>
 
               </div>
             </div>
+          )}
+
+          {/* ACCIONES DEL FORMULARIO */}
+          <div className="mt-6 flex items-center gap-4 flex-wrap border-t border-gray-200 pt-4">
+            <button type="button" onClick={guardarCotizacionSeguro} disabled={isSaving} className="mqf-btn mqf-btn--success" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              {isSaving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-save"></i>}
+              {isSaving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Guardar')}
+            </button>
+            
+            <button type="button" onClick={imprimirPDFActual} className="mqf-btn mqf-btn--primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <i className="fa-solid fa-print"></i> Imprimir PDF
+            </button>
+
+            {editingId && (
+              <button type="button" onClick={() => {
+                if (confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.')) {
+                  setIsSaving(true);
+                  api.solicitud('/cotizaciones.php?action=eliminar', 'POST', { id: editingId }).then(res => {
+                    setIsSaving(false);
+                    if (res.exito) {
+                      MQF.toast('✅ Cotización eliminada correctamente', 'success');
+                      setEditingId(null);
+                      setEditingNum(null);
+                      setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
+                      setCliente(''); setCedula('');
+                      cargarHistorial();
+                    } else {
+                      MQF.toast('Error: ' + res.mensaje, 'error');
+                    }
+                  }).catch(e => {
+                    setIsSaving(false);
+                    MQF.toast('Error: ' + e.message, 'error');
+                  });
+                }
+              }} className="mqf-btn mqf-btn--danger" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fa-solid fa-trash"></i> Eliminar Cotización
+              </button>
+            )}
+            
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" checked={usarNCF} onChange={e=> setUsarNCF(e.target.checked)} className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+              <span className="text-sm text-gray-700 font-semibold">Generar NCF (B02)</span>
+            </label>
+            
+            <button type="button" onClick={()=>{ 
+              setEditingId(null);
+              setEditingNum(null);
+              setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
+              setCliente(''); setCedula('');
+            }} className="mqf-btn mqf-btn--secondary">
+              <i className="fa-solid fa-rotate-left"></i> {editingId ? 'Cancelar Edición' : 'Restablecer'}
+            </button>
           </div>
         </div>
       );
@@ -1395,6 +1680,14 @@ async function initTabGuardsCotizaciones() {
 document.addEventListener('DOMContentLoaded', () => {
     initTabGuardsCotizaciones();
     cargarAseguradorasSimple();
+
+    // Default NCF checkbox based on user profile
+    const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+    const esPDV = (usuario.perfil_id == 5) || (usuario.perfil && usuario.perfil.toLowerCase().includes('pdv'));
+    const fUsarNcf = document.getElementById('f_usar_ncf');
+    if (fUsarNcf) {
+        fUsarNcf.checked = !esPDV;
+    }
 });
 </script>
 </body>

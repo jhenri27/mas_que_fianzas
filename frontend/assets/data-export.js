@@ -87,8 +87,8 @@ function imprimirItem(id, modulo = 'clientes') {
         let y = 45;
         const linea = (label, value) => {
             doc.setFontSize(12); doc.setTextColor(40);
-            doc.setFont(undefined, 'bold'); doc.text(label + ":", 14, y);
-            doc.setFont(undefined, 'normal'); doc.text(value ? value.toString() : 'N/A', 60, y);
+            doc.setFont('helvetica', 'bold'); doc.text(label + ":", 14, y);
+            doc.setFont('helvetica', 'normal'); doc.text(value ? value.toString() : 'N/A', 60, y);
             y += 10;
         };
         linea('ID Cliente', c.id);
@@ -130,35 +130,39 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
 
     // Logo
     if (logoImg) {
-        doc.addImage(logoImg, 'PNG', 14, 10, 50, 22);
+        try {
+            doc.addImage(logoImg, 'PNG', 14, 10, 50, 22);
+        } catch (e) {
+            console.warn('Error rendering logoImg in PDF, continuing without logo:', e);
+        }
     } else {
-        doc.setFontSize(22); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+        doc.setFontSize(22); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
         doc.text('MAS QUE FIANZAS', 14, 25);
     }
     
     // Header Right
-    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont(undefined, 'normal');
+    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
     doc.text('Usuario:', 150, 25, {align: 'right'}); doc.text('Generado Sistema', 196, 25, {align: 'right'});
     doc.text('Fecha:', 150, 29, {align: 'right'}); doc.text(new Date().toLocaleString('es-DO'), 196, 29, {align: 'right'});
     doc.text('Vigencia:', 150, 33, {align: 'right'}); doc.text('30 días', 196, 33, {align: 'right'});
     doc.text('Moneda:', 150, 37, {align: 'right'}); doc.text('RD$ Peso Dominicano', 196, 37, {align: 'right'});
     
     // Titulo COTIZACION
-    doc.setFontSize(18); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+    doc.setFontSize(18); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
     doc.text('COTIZACIÓN', 14, 45);
     doc.setFontSize(14); doc.setTextColor(...textColor); doc.text(c.numero || 'S/N', 14, 52);
 
     // Saludo
-    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
     doc.text(`Estimado Sr(a). ${c.cliente || 'A QUIEN CORRESPONDA'}`, 14, 62);
-    doc.setTextColor(...textColor); doc.setFont(undefined, 'normal');
+    doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
     doc.text('Le agradecemos que haya contado con nosotros para su necesidad de fianza/seguro, y nos satisface', 14, 68);
     doc.text('presentarle estas propuestas para la cobertura de su solicitud basado en los siguientes detalles.', 14, 73);
 
     // Producto Line
     doc.setFillColor(...lightColor);
     doc.rect(14, 80, 182, 8, 'F');
-    doc.setFont(undefined, 'bold'); doc.setTextColor(...primaryColor);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...primaryColor);
     doc.text(`Producto: ${c.subtipo || c.tipo || 'FIANZA'}`, 16, 85.5);
     // Para Seguro de Ley mostrar "Aseguradora" y "Prima Anual"; para Fianza mostrar "Monto a Afianzar"
     const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
@@ -173,7 +177,7 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.line(14, 106, 196, 106); 
 
     doc.setFontSize(9); doc.setTextColor(...textColor);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Riesgos a Terceros / Detalles', 14, 104); 
     doc.text('Límite RD$', 160, 104, {align: 'right'});
     doc.text('Deducible', 196, 104, {align: 'right'});
@@ -188,7 +192,7 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     };
 
     // Filas Cobertura
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     let yRow = 112;
 
     if (c.tipo === 'SEGURO DE LEY' && c.cobertura && COVERAGE_PROFILES[c.cobertura]) {
@@ -224,9 +228,9 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
         yRow += 6;
         
         if (c.beneficiario) {
-            doc.setFont(undefined, 'bold');
+            doc.setFont('helvetica', 'bold');
             doc.text(`Beneficiario: ${c.beneficiario}`, 14, yRow);
-            doc.setFont(undefined, 'normal');
+            doc.setFont('helvetica', 'normal');
             yRow += 6;
         }
     }
@@ -237,37 +241,45 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     yRow += 5;
     let yTotales = yRow > 135 ? yRow : 135;
     doc.setFillColor(...lightColor);
-    doc.rect(110, yTotales, 86, 25, 'F');
-    doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
     if (esSeguroLey) {
-        // SEGURO DE LEY: mostrar Prima Base y Prima Total Anual
-        doc.text('Cobertura', 115, yTotales + 6); doc.text(c.cobertura || 'N/A', 192, yTotales + 6, {align: 'right'});
-        doc.setFont(undefined, 'normal');
-        doc.text('Prima Base', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || 0)}`, 192, yTotales + 12, {align: 'right'});
-        doc.text('Servicios Opcionales', 115, yTotales + 17); 
-        // Calcular suma de servicios opcionales
+        doc.rect(110, yTotales, 86, 35, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
+        doc.text('Cobertura', 115, yTotales + 5); doc.text(c.cobertura || 'N/A', 192, yTotales + 5, {align: 'right'});
+        doc.setFont('helvetica', 'normal');
+        
+        const primaBaseVal = parseFloat(c.prima_base || 0);
+        const primaBaseNet = Math.round((primaBaseVal / 1.16) * 100) / 100;
+        const iscVal = Math.round((primaBaseVal - primaBaseNet) * 100) / 100;
+        
         const OPTIONAL_PRICES = { ASIST_VIAL_LIV: 2600, ASIST_VIAL_PES: 4600, CASA_CONDUCTOR: 1020, CENTRO_AUTOMOVILISTA: 1020 };
         let serviciosOpc2 = c.servicios_opcionales;
         if (typeof serviciosOpc2 === 'string') { try { serviciosOpc2 = JSON.parse(serviciosOpc2); } catch(e) { serviciosOpc2 = {}; } }
         if (!serviciosOpc2 || typeof serviciosOpc2 !== 'object' || Array.isArray(serviciosOpc2)) serviciosOpc2 = {};
-        const sumOpc = Object.keys(serviciosOpc2).reduce((acc, k) => acc + (serviciosOpc2[k] ? (OPTIONAL_PRICES[k] || 0) : 0), 0);
-        doc.text(`${fmt(sumOpc)}`, 192, yTotales + 17, {align: 'right'});
-        doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
-        doc.text('Prima Total Anual', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
+        const sumOpcVal = Object.keys(serviciosOpc2).reduce((acc, k) => acc + (serviciosOpc2[k] ? (OPTIONAL_PRICES[k] || 0) : 0), 0);
+        const sumOpcNet = Math.round((sumOpcVal / 1.18) * 100) / 100;
+        const itbisVal = Math.round((sumOpcVal - sumOpcNet) * 100) / 100;
+
+        doc.text('Prima Neta Base', 115, yTotales + 10); doc.text(`${fmt(primaBaseNet)}`, 192, yTotales + 10, {align: 'right'});
+        doc.text('ISC (16%)', 115, yTotales + 15); doc.text(`${fmt(iscVal)}`, 192, yTotales + 15, {align: 'right'});
+        doc.text('Servicios Opc. (Neto)', 115, yTotales + 20); doc.text(`${fmt(sumOpcNet)}`, 192, yTotales + 20, {align: 'right'});
+        doc.text('ITBIS (18%)', 115, yTotales + 25); doc.text(`${fmt(itbisVal)}`, 192, yTotales + 25, {align: 'right'});
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
+        doc.text('Prima Total Anual', 115, yTotales + 31); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 31, {align: 'right'});
     } else {
-        // FIANZA: mostrar Monto Afianzado, Prima Neta, Impuestos, Prima Bruta
+        doc.rect(110, yTotales, 86, 25, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
         doc.text('Monto a Afianzar', 115, yTotales + 6); doc.text(`${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 192, yTotales + 6, {align: 'right'});
-        doc.setFont(undefined, 'normal');
+        doc.setFont('helvetica', 'normal');
         doc.text('Prima Neta', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || c.total || c.prima_total || 0)}`, 192, yTotales + 12, {align: 'right'});
         doc.text('Impuestos (ISC)', 115, yTotales + 17); doc.text(`${fmt(c.impuesto || 0)}`, 192, yTotales + 17, {align: 'right'});
-        doc.setFont(undefined, 'bold'); doc.setTextColor(0,0,0);
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
         doc.text('Prima Bruta', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
     }
 
     // Observaciones
-    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont(undefined, 'bold');
+    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
     doc.text('Observaciones', 14, yTotales + 4);
-    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont(undefined, 'normal');
+    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
     doc.text('La aceptación de esta cotización para la Emisión', 14, yTotales + 9);
     doc.text('de la Póliza, dependerá de la inspección de', 14, yTotales + 14);
     doc.text('dicho riesgo, válida por 30 días.', 14, yTotales + 19);
@@ -275,25 +287,18 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     // Firma
     doc.text('Atentamente,', 14, yTotales + 35);
     doc.setLineWidth(0.5); doc.line(90, yTotales + 65, 140, yTotales + 65);
-    doc.setFont(undefined, 'bold'); doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
     doc.text('Firma autorizada', 115, yTotales + 70, {align: 'center'});
 
     // Footer Address dinámico
-    doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
     doc.text('Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN. Código postal: 10107, República Dominicana', 105, 280, {align: 'center'});
     doc.text('Tel: +1 (829) 629-1952 | Email: info@masquefianzas.com', 105, 284, {align: 'center'});
 
-    doc.autoPrint();
     try {
-        const blob = doc.output('blob');
-        const url = URL.createObjectURL(blob);
-        const win = window.open(url, '_blank');
-        if (!win || win.closed || typeof win.closed === 'undefined') {
-            throw new Error('Popup blocked');
-        }
-    } catch (e) {
-        console.warn('El navegador bloqueó la ventana emergente del PDF, descargando directamente...', e);
         doc.save(c.numero ? `${c.numero}.pdf` : 'cotizacion.pdf');
+    } catch (e) {
+        console.error('Error al descargar PDF:', e);
     }
 }
 

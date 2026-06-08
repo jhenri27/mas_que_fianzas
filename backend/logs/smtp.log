@@ -590,3 +590,49 @@
 [2026-06-03 04:25:08] [SUCCESS] ✔ Correo enviado exitosamente a pastorandersonhenriquez@gmail.com
 [2026-06-03 04:25:08] [INFO]   Message-ID: <mqf.6a1fe4e3c8f128.49542010@smtp.gmail.com>
 [2026-06-03 04:25:08] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-06-04 17:33:07] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-06-04 17:33:07] [INFO] Iniciando envío → pastorandersonhenriquez@gmail.com
+[2026-06-04 17:33:07] [INFO] Servidor: smtp.gmail.com:587 | Cifrado: tls
+[2026-06-04 17:33:07] [INFO] EHLO hostname local: FAMILIA-HB
+[2026-06-04 17:33:07] [SMTP] S ← 220 smtp.gmail.com ESMTP 00721157ae682-7ea23591b26sm40337847b3.31 - gsmtp
+[2026-06-04 17:33:07] [SMTP] C → EHLO FAMILIA-HB
+[2026-06-04 17:33:07] [SMTP] S ← 250-smtp.gmail.com at your service, [2001:1308:2617:9900:5c2c:2555:a38c:4c2]
+[2026-06-04 17:33:07] [SMTP] S ← 250-SIZE 35882577
+[2026-06-04 17:33:07] [SMTP] S ← 250-8BITMIME
+[2026-06-04 17:33:07] [SMTP] S ← 250-STARTTLS
+[2026-06-04 17:33:07] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-06-04 17:33:07] [SMTP] S ← 250-PIPELINING
+[2026-06-04 17:33:07] [SMTP] S ← 250-CHUNKING
+[2026-06-04 17:33:07] [SMTP] S ← 250 SMTPUTF8
+[2026-06-04 17:33:07] [INFO] Enviando STARTTLS...
+[2026-06-04 17:33:07] [SMTP] C → STARTTLS
+[2026-06-04 17:33:07] [SMTP] S ← 220 2.0.0 Ready to start TLS
+[2026-06-04 17:33:07] [SUCCESS] Cifrado TLS establecido.
+[2026-06-04 17:33:07] [SMTP] C → EHLO FAMILIA-HB
+[2026-06-04 17:33:08] [SMTP] S ← 250-smtp.gmail.com at your service, [2001:1308:2617:9900:5c2c:2555:a38c:4c2]
+[2026-06-04 17:33:08] [SMTP] S ← 250-SIZE 35882577
+[2026-06-04 17:33:08] [SMTP] S ← 250-8BITMIME
+[2026-06-04 17:33:08] [SMTP] S ← 250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+[2026-06-04 17:33:08] [SMTP] S ← 250-ENHANCEDSTATUSCODES
+[2026-06-04 17:33:08] [SMTP] S ← 250-PIPELINING
+[2026-06-04 17:33:08] [SMTP] S ← 250-CHUNKING
+[2026-06-04 17:33:08] [SMTP] S ← 250 SMTPUTF8
+[2026-06-04 17:33:08] [SMTP] C → AUTH LOGIN
+[2026-06-04 17:33:08] [SMTP] S ← 334 VXNlcm5hbWU6
+[2026-06-04 17:33:08] [SMTP] C → cGFzdG9yYW5kZXJzb25oZW5yaXF1ZXpAZ21haWwuY29t
+[2026-06-04 17:33:08] [SMTP] S ← 334 UGFzc3dvcmQ6
+[2026-06-04 17:33:08] [SMTP] C → [PASSWORD OCULTA]
+[2026-06-04 17:33:08] [SMTP] S ← 235 2.7.0 Accepted
+[2026-06-04 17:33:08] [SUCCESS] Autenticación exitosa.
+[2026-06-04 17:33:08] [SMTP] C → MAIL FROM:<pastorandersonhenriquez@gmail.com>
+[2026-06-04 17:33:08] [SMTP] S ← 250 2.1.0 OK 00721157ae682-7ea23591b26sm40337847b3.31 - gsmtp
+[2026-06-04 17:33:08] [SMTP] C → RCPT TO:<pastorandersonhenriquez@gmail.com>
+[2026-06-04 17:33:08] [SMTP] S ← 250 2.1.5 OK 00721157ae682-7ea23591b26sm40337847b3.31 - gsmtp
+[2026-06-04 17:33:08] [SMTP] C → DATA
+[2026-06-04 17:33:08] [SMTP] S ← 354 Go ahead 00721157ae682-7ea23591b26sm40337847b3.31 - gsmtp
+[2026-06-04 17:33:08] [SMTP] S ← 250 2.0.0 OK  1780608789 00721157ae682-7ea23591b26sm40337847b3.31 - gsmtp
+[2026-06-04 17:33:08] [SMTP] C → QUIT
+[2026-06-04 17:33:08] [SUCCESS] ✔ Correo enviado exitosamente a pastorandersonhenriquez@gmail.com
+[2026-06-04 17:33:08] [INFO]   Message-ID: <mqf.6a21ef14800fc2.82543174@smtp.gmail.com>
+[2026-06-04 17:33:08] [INFO] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-06-07 01:21:09] [WARNING] [AUTH] Contraseña incorrecta | username: admin | ID: 1 | intento 1 de 5

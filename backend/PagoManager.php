@@ -18,6 +18,224 @@ class PagoManager {
     }
 
     /**
+     * Registra un plan de fraccionamiento de prima (Ley 146-02: Inicial >= 25% y 2 cuotas mensuales)
+     */
+    public function registrarFraccionamiento($datos) {
+        $this->db->begin_transaction();
+        try {
+            $polizaId = intval($datos['poliza_id']);
+            $montoInicial = floatval($datos['monto_inicial']);
+            $tipoPago = !empty($datos['tipo_pago']) ? $datos['tipo_pago'] : 'efectivo';
+            $banco = !empty($datos['banco']) ? $datos['banco'] : null;
+            $numComp = !empty($datos['numero_comprobante']) ? $datos['numero_comprobante'] : null;
+            $fechaPago = !empty($datos['fecha_pago']) ? $datos['fecha_pago'] : date('Y-m-d');
+            $regPor = isset($datos['registrado_por']) ? intval($datos['registrado_por']) : 1;
+            
+            // Comprobante de transferencia si aplica
+            $comprobanteNombre = $datos['comprobante_nombre'] ?? null;
+            $comprobanteRuta = $datos['comprobante_ruta'] ?? null;
+            $comprobanteHash = $datos['comprobante_hash'] ?? null;
+
+            // 1. Validar póliza existente
+            $sql_p = "SELECT p.*, c.id as c_id, c.nombre as c_nombre FROM polizas p JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ? LIMIT 1";
+            $stmt_p = $this->db->prepare($sql_p);
+            if (!$stmt_p) throw new Exception($this->db->error);
+            $stmt_p->bind_param("i", $polizaId);
+            $stmt_p->execute();
+            $poliza = $stmt_p->get_result()->fetch_assoc();
+            $stmt_p->close();
+
+            if (!$poliza) {
+                throw new Exception("Póliza no encontrada.");
+            }
+
+            // 2. Validar que no tenga pagos procesados
+            $sql_check = "SELECT COUNT(*) as cnt FROM pagos WHERE poliza_id = ? AND estado_pago = 'procesado'";
+            $stmt_check = $this->db->prepare($sql_check);
+            if (!$stmt_check) throw new Exception($this->db->error);
+            $stmt_check->bind_param("i", $polizaId);
+            $stmt_check->execute();
+            $chk_res = $stmt_check->get_result()->fetch_assoc();
+            $stmt_check->close();
+
+            if ($chk_res['cnt'] > 0) {
+                throw new Exception("No es posible fraccionar esta póliza: Ya existen cobros procesados registrados.");
+            }
+
+            // 3. Validar regla Superintendencia (Inicial >= 25% de prima_total)
+            $primaTotal = floatval($poliza['prima_total']);
+            $minimoInicial = round($primaTotal * 0.25, 2);
+            if ($montoInicial < $minimoInicial) {
+                throw new Exception("Regla Superintendencia: El pago inicial (RD$ " . number_format($montoInicial, 2) . ") debe ser al menos el 25% de la prima total (Mínimo: RD$ " . number_format($minimoInicial, 2) . ").");
+            }
+
+            // 4. Actualizar póliza a cuota_total = 3
+            $sql_up_pol = "UPDATE polizas SET cuota_total = 3 WHERE id = ?";
+            $stmt_up_pol = $this->db->prepare($sql_up_pol);
+            if (!$stmt_up_pol) throw new Exception($this->db->error);
+            $stmt_up_pol->bind_param("i", $polizaId);
+            if (!$stmt_up_pol->execute()) {
+                throw new Exception("Error al actualizar cuotas de póliza: " . $stmt_up_pol->error);
+            }
+            $stmt_up_pol->close();
+
+            // 5. Eliminar pagos pendientes previos sin soporte para evitar duplicados
+            $sql_del = "DELETE FROM pagos WHERE poliza_id = ? AND estado_pago = 'pendiente' AND id NOT IN (SELECT DISTINCT pago_id FROM documentos_poliza WHERE poliza_id = ? AND pago_id IS NOT NULL)";
+            $stmt_del = $this->db->prepare($sql_del);
+            if (!$stmt_del) throw new Exception($this->db->error);
+            $stmt_del->bind_param("ii", $polizaId, $polizaId);
+            $stmt_del->execute();
+            $stmt_del->close();
+
+            // 6. Registrar Cuota 1 (Inicial)
+            // Si es efectivo o tarjeta, es procesado. Si es transferencia/cheque es pendiente.
+            $estadoInicial = ($tipoPago === 'efectivo' || $tipoPago === 'tarjeta_credito' || $tipoPago === 'tarjeta_debito') ? 'procesado' : 'pendiente';
+            
+            $num_ref = 'PAG-' . date('Ymd') . '-' . rand(1000, 9999);
+            $num_rec = 'REC-' . date('Y') . '-' . rand(1000, 9999);
+            $itbis_pago = $montoInicial * 0.16; // 16% ISC
+            $desc = "Pago Inicial (Cuota 1 de 3) - Póliza #" . $poliza['numero_poliza'];
+
+            $sql_ins = "INSERT INTO pagos (
+                            numero_referencia, numero_recibo, numero_ncf, tipo_comprobante,
+                            poliza_id, cliente_id, monto, fecha_pago, tipo_pago,
+                            numero_comprobante, banco, estado_pago, registrado_por,
+                            itbis_pago, descripcion, cuota_numero, cuota_total
+                        ) VALUES (?, ?, null, 'B02', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 3)";
+            
+            $stmt_ins = $this->db->prepare($sql_ins);
+            if (!$stmt_ins) {
+                throw new Exception("Error al preparar inserción del inicial: " . $this->db->error);
+            }
+            
+            $stmt_ins->bind_param("ssiidsssssids",
+                $num_ref, $num_rec,
+                $polizaId, $poliza['cliente_id'], $montoInicial, $fechaPago, $tipoPago,
+                $numComp, $banco, $estadoInicial, $regPor,
+                $itbis_pago, $desc
+            );
+
+            if (!$stmt_ins->execute()) {
+                throw new Exception("Error al registrar cuota inicial: " . $stmt_ins->error);
+            }
+            $pagoId = $this->db->insert_id;
+            $stmt_ins->close();
+
+            // Guardar documento si es transferencia con comprobante
+            if ($estadoInicial === 'pendiente' && $comprobanteRuta) {
+                // Validación contra fraude (NOFTRAB): verificar duplicidad de archivo soporte
+                $sql_chk_hash = "SELECT COUNT(*) as cnt FROM documentos_poliza WHERE hash_documento = ? AND tipo_documento = 'soporte_pago'";
+                $stmt_chk = $this->db->prepare($sql_chk_hash);
+                if ($stmt_chk) {
+                    $stmt_chk->bind_param("s", $comprobanteHash);
+                    $stmt_chk->execute();
+                    $res_chk = $stmt_chk->get_result()->fetch_assoc();
+                    $stmt_chk->close();
+                    
+                    if (isset($res_chk['cnt']) && $res_chk['cnt'] > 0) {
+                        throw new Exception("Error transaccional (NOFTRAB): El comprobante de pago adjunto ya ha sido utilizado para validar otro cobro en el sistema. Intento de duplicidad bloqueado.");
+                    }
+                }
+
+                $sql_doc = "INSERT INTO documentos_poliza (
+                                poliza_id, pago_id, tipo_documento, nombre_archivo,
+                                ruta_archivo, hash_documento, generado_por
+                            ) VALUES (?, ?, 'soporte_pago', ?, ?, ?, ?)";
+                $stmt_doc = $this->db->prepare($sql_doc);
+                if (!$stmt_doc) throw new Exception($this->db->error);
+                $stmt_doc->bind_param("iisssi",
+                    $polizaId, $pagoId, $comprobanteNombre,
+                    $comprobanteRuta, $comprobanteHash, $regPor
+                );
+                if (!$stmt_doc->execute()) {
+                    throw new Exception("Error al registrar el comprobante de pago inicial: " . $stmt_doc->error);
+                }
+                $stmt_doc->close();
+            }
+
+            // 7. Calcular y registrar Cuotas 2 y 3 (Vencimiento futuro y estado pendiente)
+            $balanceRestante = $primaTotal - $montoInicial;
+            $montoCuota = round($balanceRestante / 2, 2);
+            $montoUltimaCuota = round($balanceRestante - $montoCuota, 2);
+
+            for ($c = 2; $c <= 3; $c++) {
+                $montoC = ($c === 3) ? $montoUltimaCuota : $montoCuota;
+                $itbisC = $montoC * 0.16; // 16% ISC
+                $dias = ($c - 1) * 30;
+                $fechaVence = date('Y-m-d', strtotime($fechaPago . " + $dias days"));
+                
+                $num_ref_c = 'PAG-' . date('Ymd', strtotime($fechaVence)) . '-' . rand(1000, 9999);
+                $num_rec_c = 'REC-' . date('Y', strtotime($fechaVence)) . '-' . rand(1000, 9999);
+                $desc_c = "Financiamiento Cuota $c de 3 (Vence $fechaVence) - Póliza #" . $poliza['numero_poliza'];
+
+                $sql_c = "INSERT INTO pagos (
+                            numero_referencia, numero_recibo, numero_ncf, tipo_comprobante,
+                            poliza_id, cliente_id, monto, fecha_pago, tipo_pago,
+                            numero_comprobante, banco, estado_pago, registrado_por,
+                            itbis_pago, descripcion, cuota_numero, cuota_total
+                        ) VALUES (?, ?, null, 'B02', ?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, 3)";
+                
+                $stmt_c = $this->db->prepare($sql_c);
+                if (!$stmt_c) {
+                    throw new Exception("Error al preparar cuotas del financiamiento: " . $this->db->error);
+                }
+                
+                $stmt_c->bind_param("ssiidsssssidi",
+                    $num_ref_c, $num_rec_c,
+                    $polizaId, $poliza['cliente_id'], $montoC, $fechaVence, $tipoPago,
+                    $numComp, $banco, $regPor,
+                    $itbisC, $desc_c, $c
+                );
+                
+                if (!$stmt_c->execute()) {
+                    throw new Exception("Error al insertar cuota $c: " . $stmt_c->error);
+                }
+                $stmt_c->close();
+            }
+
+            // 8. Contabilizar cuota inicial de inmediato si es procesado
+            if ($estadoInicial === 'procesado') {
+                $desc_personalizada = "Cobro Inicial (Cuota 1 de 3) Póliza #" . $poliza['numero_poliza'];
+                if (!empty($banco) || !empty($numComp)) {
+                    $desc_personalizada .= " [" . ($banco ?? 'Caja') . " - Ref: " . ($numComp ?? 'Directo') . "]";
+                }
+                
+                $payloadContable = [
+                    'modulo' => 'PAGOS',
+                    'id' => $pagoId,
+                    'numero' => $poliza['numero_poliza'],
+                    'monto_cobrado' => $montoInicial,
+                    'fecha' => $fechaPago,
+                    'descripcion_personalizada' => $desc_personalizada
+                ];
+
+                $asientoId = \MQF\Finance\MotorContable::disparar('COBRO_PRIMA', $payloadContable);
+                if ($asientoId) {
+                    $this->db->query("UPDATE cf_asientos SET estado = 'APROBADO' WHERE id = " . intval($asientoId));
+                }
+            }
+
+            // 9. Registrar ajuste de auditoría (NOFTRAB)
+            $justificacion = "Registro de plan de fraccionamiento multicanal (Inicial: RD$ " . number_format($montoInicial, 2) . ", 2 cuotas mensuales de RD$ " . number_format($montoCuota, 2) . ")";
+            registrarAjuste($regPor, 'pagos', 'pagos_plan', $polizaId, ['plan' => 'sin_fraccionar'], ['plan' => 'fraccionado_3_cuotas', 'inicial' => $montoInicial], $justificacion);
+
+            $this->db->commit();
+            return [
+                'exito' => true,
+                'id' => $pagoId,
+                'numero_referencia' => $num_ref,
+                'monto' => $montoInicial,
+                'cuotas_generadas' => 3,
+                'estado_pago' => $estadoInicial
+            ];
+
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        }
+    }
+
+    /**
      * Registra un pago completo sobre una póliza y dispara el asiento contable automático
      */
     public function registrarPago($datos) {
@@ -36,13 +254,34 @@ class PagoManager {
                 throw new Exception("Póliza no encontrada.");
             }
 
+            $monto = floatval($datos['monto']);
+
+            // Validar que no sea un pago parcial menor al 50% del balance restante en cuotas futuras
+            $sql_pagado = "SELECT COALESCE(SUM(monto), 0) as pagado FROM pagos WHERE poliza_id = ? AND estado_pago = 'procesado'";
+            $stmt_pagado = $this->db->prepare($sql_pagado);
+            if ($stmt_pagado) {
+                $stmt_pagado->bind_param("i", $polizaId);
+                $stmt_pagado->execute();
+                $pagado = floatval($stmt_pagado->get_result()->fetch_assoc()['pagado']);
+                $stmt_pagado->close();
+
+                if ($pagado > 0) {
+                    $balanceRestante = floatval($poliza['prima_total']) - $pagado;
+                    if ($balanceRestante > 0) {
+                        $minimoCuotaFutura = round($balanceRestante * 0.50, 2);
+                        if ($monto < $minimoCuotaFutura && abs($monto - $balanceRestante) > 0.01) {
+                            throw new Exception("El pago de cuotas futuras debe ser de al menos el 50% del balance restante (Mínimo: RD$ " . number_format($minimoCuotaFutura, 2) . ").");
+                        }
+                    }
+                }
+            }
+
             // 2. Generar campos automáticos de pago
             $num_ref = 'PAG-' . date('Ymd') . '-' . rand(1000, 9999);
             $num_rec = 'REC-' . date('Y') . '-' . rand(1000, 9999);
             $ncf = !empty($datos['numero_ncf']) ? $datos['numero_ncf'] : null;
             $tipo_comp = !empty($datos['tipo_comprobante']) ? $datos['tipo_comprobante'] : 'B02';
             $cliente_id = intval($poliza['c_id']);
-            $monto = floatval($datos['monto']);
             $fecha_pago = !empty($datos['fecha_pago']) ? $datos['fecha_pago'] : date('Y-m-d');
             $tipo_pago = !empty($datos['tipo_pago']) ? $datos['tipo_pago'] : 'efectivo';
             $num_comp = !empty($datos['numero_comprobante']) ? $datos['numero_comprobante'] : null;
@@ -52,8 +291,8 @@ class PagoManager {
             $cuota_tot = isset($datos['cuota_total']) ? intval($datos['cuota_total']) : 1;
             $reg_por = isset($datos['registrado_por']) ? intval($datos['registrado_por']) : 1;
 
-            // ITBIS cobrado proporcionalmente en el pago
-            $itbis_pago = $monto * 0.18; // 18% ITBIS
+            // ITBIS/ISC cobrado proporcionalmente en el pago
+            $itbis_pago = $monto * 0.16; // 16% ISC
 
             // Determinar si tiene soporte adjunto
             $tiene_soporte = !empty($datos['comprobante_ruta']);
@@ -526,222 +765,5 @@ class PagoManager {
         }
     }
 
-    /**
-     * Registra un plan de fraccionamiento de prima (Ley 146-02: Inicial >= 10% y 3 cuotas mensuales)
-     */
-    public function registrarFraccionamiento($datos) {
-        $this->db->begin_transaction();
-        try {
-            $polizaId = intval($datos['poliza_id']);
-            $montoInicial = floatval($datos['monto_inicial']);
-            $tipoPago = !empty($datos['tipo_pago']) ? $datos['tipo_pago'] : 'efectivo';
-            $banco = !empty($datos['banco']) ? $datos['banco'] : null;
-            $numComp = !empty($datos['numero_comprobante']) ? $datos['numero_comprobante'] : null;
-            $fechaPago = !empty($datos['fecha_pago']) ? $datos['fecha_pago'] : date('Y-m-d');
-            $regPor = isset($datos['registrado_por']) ? intval($datos['registrado_por']) : 1;
-            
-            // Comprobante de transferencia si aplica
-            $comprobanteNombre = $datos['comprobante_nombre'] ?? null;
-            $comprobanteRuta = $datos['comprobante_ruta'] ?? null;
-            $comprobanteHash = $datos['comprobante_hash'] ?? null;
-
-            // 1. Validar póliza existente
-            $sql_p = "SELECT p.*, c.id as c_id, c.nombre as c_nombre FROM polizas p JOIN clientes c ON p.cliente_id = c.id WHERE p.id = ? LIMIT 1";
-            $stmt_p = $this->db->prepare($sql_p);
-            if (!$stmt_p) throw new Exception($this->db->error);
-            $stmt_p->bind_param("i", $polizaId);
-            $stmt_p->execute();
-            $poliza = $stmt_p->get_result()->fetch_assoc();
-            $stmt_p->close();
-
-            if (!$poliza) {
-                throw new Exception("Póliza no encontrada.");
-            }
-
-            // 2. Validar que no tenga pagos procesados
-            $sql_check = "SELECT COUNT(*) as cnt FROM pagos WHERE poliza_id = ? AND estado_pago = 'procesado'";
-            $stmt_check = $this->db->prepare($sql_check);
-            if (!$stmt_check) throw new Exception($this->db->error);
-            $stmt_check->bind_param("i", $polizaId);
-            $stmt_check->execute();
-            $chk_res = $stmt_check->get_result()->fetch_assoc();
-            $stmt_check->close();
-
-            if ($chk_res['cnt'] > 0) {
-                throw new Exception("No es posible fraccionar esta póliza: Ya existen cobros procesados registrados.");
-            }
-
-            // 3. Validar regla Superintendencia (Inicial >= 10% de prima_total)
-            $primaTotal = floatval($poliza['prima_total']);
-            $minimoInicial = round($primaTotal * 0.10, 2);
-            if ($montoInicial < $minimoInicial) {
-                throw new Exception("Regla Superintendencia: El pago inicial (RD$ " . number_format($montoInicial, 2) . ") debe ser al menos el 10% de la prima total (Mínimo: RD$ " . number_format($minimoInicial, 2) . ").");
-            }
-
-            // 4. Actualizar póliza a cuota_total = 4
-            $sql_up_pol = "UPDATE polizas SET cuota_total = 4 WHERE id = ?";
-            $stmt_up_pol = $this->db->prepare($sql_up_pol);
-            if (!$stmt_up_pol) throw new Exception($this->db->error);
-            $stmt_up_pol->bind_param("i", $polizaId);
-            if (!$stmt_up_pol->execute()) {
-                throw new Exception("Error al actualizar cuotas de póliza: " . $stmt_up_pol->error);
-            }
-            $stmt_up_pol->close();
-
-            // 5. Eliminar pagos pendientes previos sin soporte para evitar duplicados
-            $sql_del = "DELETE FROM pagos WHERE poliza_id = ? AND estado_pago = 'pendiente' AND id NOT IN (SELECT DISTINCT pago_id FROM documentos_poliza WHERE poliza_id = ? AND pago_id IS NOT NULL)";
-            $stmt_del = $this->db->prepare($sql_del);
-            if (!$stmt_del) throw new Exception($this->db->error);
-            $stmt_del->bind_param("ii", $polizaId, $polizaId);
-            $stmt_del->execute();
-            $stmt_del->close();
-
-            // 6. Registrar Cuota 1 (Inicial)
-            // Si es efectivo o tarjeta, es procesado. Si es transferencia/cheque es pendiente.
-            $estadoInicial = ($tipoPago === 'efectivo' || $tipoPago === 'tarjeta_credito' || $tipoPago === 'tarjeta_debito') ? 'procesado' : 'pendiente';
-            
-            $num_ref = 'PAG-' . date('Ymd') . '-' . rand(1000, 9999);
-            $num_rec = 'REC-' . date('Y') . '-' . rand(1000, 9999);
-            $itbis_pago = $montoInicial * 0.18;
-            $desc = "Pago Inicial (Cuota 1 de 4) - Póliza #" . $poliza['numero_poliza'];
-
-            $sql_ins = "INSERT INTO pagos (
-                            numero_referencia, numero_recibo, numero_ncf, tipo_comprobante,
-                            poliza_id, cliente_id, monto, fecha_pago, tipo_pago,
-                            numero_comprobante, banco, estado_pago, registrado_por,
-                            itbis_pago, descripcion, cuota_numero, cuota_total
-                        ) VALUES (?, ?, null, 'B02', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 4)";
-            
-            $stmt_ins = $this->db->prepare($sql_ins);
-            if (!$stmt_ins) {
-                throw new Exception("Error al preparar inserción del inicial: " . $this->db->error);
-            }
-            
-            $stmt_ins->bind_param("ssiidsssssids",
-                $num_ref, $num_rec,
-                $polizaId, $poliza['cliente_id'], $montoInicial, $fechaPago, $tipoPago,
-                $numComp, $banco, $estadoInicial, $regPor,
-                $itbis_pago, $desc
-            );
-
-            if (!$stmt_ins->execute()) {
-                throw new Exception("Error al registrar cuota inicial: " . $stmt_ins->error);
-            }
-            $pagoId = $this->db->insert_id;
-            $stmt_ins->close();
-
-            // Guardar documento si es transferencia con comprobante
-            if ($estadoInicial === 'pendiente' && $comprobanteRuta) {
-                // Validación contra fraude (NOFTRAB): verificar duplicidad de archivo soporte
-                $sql_chk_hash = "SELECT COUNT(*) as cnt FROM documentos_poliza WHERE hash_documento = ? AND tipo_documento = 'soporte_pago'";
-                $stmt_chk = $this->db->prepare($sql_chk_hash);
-                if ($stmt_chk) {
-                    $stmt_chk->bind_param("s", $comprobanteHash);
-                    $stmt_chk->execute();
-                    $res_chk = $stmt_chk->get_result()->fetch_assoc();
-                    $stmt_chk->close();
-                    
-                    if (isset($res_chk['cnt']) && $res_chk['cnt'] > 0) {
-                        throw new Exception("Error transaccional (NOFTRAB): El comprobante de pago adjunto ya ha sido utilizado para validar otro cobro en el sistema. Intento de duplicidad bloqueado.");
-                    }
-                }
-
-                $sql_doc = "INSERT INTO documentos_poliza (
-                                poliza_id, pago_id, tipo_documento, nombre_archivo,
-                                ruta_archivo, hash_documento, generado_por
-                            ) VALUES (?, ?, 'soporte_pago', ?, ?, ?, ?)";
-                $stmt_doc = $this->db->prepare($sql_doc);
-                if (!$stmt_doc) throw new Exception($this->db->error);
-                $stmt_doc->bind_param("iisssi",
-                    $polizaId, $pagoId, $comprobanteNombre,
-                    $comprobanteRuta, $comprobanteHash, $regPor
-                );
-                if (!$stmt_doc->execute()) {
-                    throw new Exception("Error al registrar el comprobante de pago inicial: " . $stmt_doc->error);
-                }
-                $stmt_doc->close();
-            }
-
-            // 7. Calcular y registrar Cuotas 2, 3 y 4 (Vencimiento futuro y estado pendiente)
-            $balanceRestante = $primaTotal - $montoInicial;
-            $montoCuota = round($balanceRestante / 3, 2);
-            $montoUltimaCuota = round($balanceRestante - ($montoCuota * 2), 2);
-
-            for ($c = 2; $c <= 4; $c++) {
-                $montoC = ($c === 4) ? $montoUltimaCuota : $montoCuota;
-                $itbisC = $montoC * 0.18;
-                $dias = ($c - 1) * 30;
-                $fechaVence = date('Y-m-d', strtotime($fechaPago . " + $dias days"));
-                
-                $num_ref_c = 'PAG-' . date('Ymd', strtotime($fechaVence)) . '-' . rand(1000, 9999);
-                $num_rec_c = 'REC-' . date('Y', strtotime($fechaVence)) . '-' . rand(1000, 9999);
-                $desc_c = "Financiamiento Cuota $c de 4 (Vence $fechaVence) - Póliza #" . $poliza['numero_poliza'];
-
-                $sql_c = "INSERT INTO pagos (
-                            numero_referencia, numero_recibo, numero_ncf, tipo_comprobante,
-                            poliza_id, cliente_id, monto, fecha_pago, tipo_pago,
-                            numero_comprobante, banco, estado_pago, registrado_por,
-                            itbis_pago, descripcion, cuota_numero, cuota_total
-                        ) VALUES (?, ?, null, 'B02', ?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?, ?, 4)";
-                
-                $stmt_c = $this->db->prepare($sql_c);
-                if (!$stmt_c) {
-                    throw new Exception("Error al preparar cuotas del financiamiento: " . $this->db->error);
-                }
-                
-                $stmt_c->bind_param("ssiidsssssidi",
-                    $num_ref_c, $num_rec_c,
-                    $polizaId, $poliza['cliente_id'], $montoC, $fechaVence, $tipoPago,
-                    $numComp, $banco, $regPor,
-                    $itbisC, $desc_c, $c
-                );
-                
-                if (!$stmt_c->execute()) {
-                    throw new Exception("Error al insertar cuota $c: " . $stmt_c->error);
-                }
-                $stmt_c->close();
-            }
-
-            // 8. Contabilizar cuota inicial de inmediato si es procesado
-            if ($estadoInicial === 'procesado') {
-                $desc_personalizada = "Cobro Inicial (Cuota 1 de 4) Póliza #" . $poliza['numero_poliza'];
-                if (!empty($banco) || !empty($numComp)) {
-                    $desc_personalizada .= " [" . ($banco ?? 'Caja') . " - Ref: " . ($numComp ?? 'Directo') . "]";
-                }
-                
-                $payloadContable = [
-                    'modulo' => 'PAGOS',
-                    'id' => $pagoId,
-                    'numero' => $poliza['numero_poliza'],
-                    'monto_cobrado' => $montoInicial,
-                    'fecha' => $fechaPago,
-                    'descripcion_personalizada' => $desc_personalizada
-                ];
-
-                $asientoId = \MQF\Finance\MotorContable::disparar('COBRO_PRIMA', $payloadContable);
-                if ($asientoId) {
-                    $this->db->query("UPDATE cf_asientos SET estado = 'APROBADO' WHERE id = " . intval($asientoId));
-                }
-            }
-
-            // 9. Registrar ajuste de auditoría (NOFTRAB)
-            $justificacion = "Registro de plan de fraccionamiento multicanal (Inicial: RD$ " . number_format($montoInicial, 2) . ", 3 cuotas mensuales de RD$ " . number_format($montoCuota, 2) . ")";
-            registrarAjuste($regPor, 'pagos', 'pagos_plan', $polizaId, ['plan' => 'sin_fraccionar'], ['plan' => 'fraccionado_4_cuotas', 'inicial' => $montoInicial], $justificacion);
-
-            $this->db->commit();
-            return [
-                'exito' => true,
-                'id' => $pagoId,
-                'numero_referencia' => $num_ref,
-                'monto' => $montoInicial,
-                'cuotas_generadas' => 4,
-                'estado_pago' => $estadoInicial
-            ];
-
-        } catch (Exception $e) {
-            $this->db->rollback();
-            return ['exito' => false, 'mensaje' => $e->getMessage()];
-        }
-    }
 }
 ?>

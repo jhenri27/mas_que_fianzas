@@ -1,0 +1,32 @@
+┌─────────────────────────────────────────────────────────┐
+│ HEADER (Como tu plataforma)                             │
+│ Logo | Modelador PDF DOCS | Usuario | Notificaciones   │
+├──────────┬──────────────────────────────────────────────┤
+│          │                                              │
+│ SIDEBAR  │           ÁREA DE TRABAJO PRINCIPAL         │
+│ Oscuro   │                                              │
+│          │  ┌────────────────────────────────────┐     │
+│ 📁 Mis   │  │  TABS: Editor | Preview | Datos   │     │
+│    PDFs  │  ├────────────────────────────────────┤     │
+│ ➕ Nuevo │  │                                    │     │
+│    PDF   │  │   [Split View]                     │     │
+│ 📊       │  │   ┌──────────┬──────────────────┐ │     │
+│    Plant │  │   │ FORMULARIO│   PDF ORIGINAL  │ │     │
+│ 📋       │  │   │  ONLINE   │   (Thumbnail)   │ │     │
+│    Campos│  │   │            │                 │ │     │
+│ 🔧       │  │   │  [Campos  │   [Visualización│ │     │
+│ Config   │  │   │  Editables]│    del PDF]    │ │     │
+│          │  │   │            │                 │ │     │
+│          │  │   └──────────┴──────────────────┘ │     │
+│          │  │                                    │     │
+│          │  │   [Toolbar: Guardar | Publicar |  │     │
+│          │  │    Descargar | Enviar]            │     │
+│          │  └────────────────────────────────────┘     │
+└──────────┴──────────────────────────────────────────────┘
+
+Paleta de Colores (Consistente con tu plataforma):
+Primario: Azul oscuro (#1a1a3e) - Sidebar
+Secundario: Morado/Violeta (#6c5ce7) - Acciones principales
+Acento: Verde (#00b894) - Éxito/Confirmación
+Fondo: Blanco/Gris claro (#f8f9fa)
+Texto: Gris oscuro (#2d3436)

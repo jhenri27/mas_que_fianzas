@@ -65,9 +65,10 @@ try {
         case 'GET':
             if ($action === 'verificar') {
                 $ref = $_GET['ref'] ?? '';
-                if (empty($ref)) {
+                $pago_id = intval($_GET['id'] ?? 0);
+                if (empty($ref) && !$pago_id) {
                     http_response_code(400);
-                    echo json_encode(["exito" => false, "mensaje" => "Referencia de pago requerida"]);
+                    echo json_encode(["exito" => false, "mensaje" => "Referencia de pago o ID requerida"]);
                     break;
                 }
 
@@ -80,7 +81,7 @@ try {
                           JOIN clientes c ON p.cliente_id = c.id
                           LEFT JOIN usuarios u ON p.validado_por = u.id
                           LEFT JOIN documentos_poliza d ON d.pago_id = p.id AND d.tipo_documento = 'soporte_pago'
-                          WHERE p.numero_referencia = ? LIMIT 1";
+                          WHERE " . ($pago_id ? "p.id = ?" : "p.numero_referencia = ?") . " LIMIT 1";
 
                 $stmt_v = $db->prepare($sql_v);
                 if (!$stmt_v) {
@@ -88,7 +89,11 @@ try {
                     echo json_encode(["exito" => false, "mensaje" => "Error de base de datos: " . $db->error]);
                     break;
                 }
-                $stmt_v->bind_param("s", $ref);
+                if ($pago_id) {
+                    $stmt_v->bind_param("i", $pago_id);
+                } else {
+                    $stmt_v->bind_param("s", $ref);
+                }
                 $stmt_v->execute();
                 $pago = $stmt_v->get_result()->fetch_assoc();
                 $stmt_v->close();

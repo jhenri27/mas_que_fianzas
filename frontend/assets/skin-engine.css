@@ -242,7 +242,7 @@
 
 /* Ajustes específicos Obsidian para elementos del dashboard */
 [data-skin="obsidian"] .sidebar             { background: var(--mqf-gradient) !important; }
-[data-skin="obsidian"] .top-navbar          { background: var(--mqf-surface) !important; border-bottom: 1px solid var(--mqf-border); }
+[data-skin="obsidian"] .top-header          { background: var(--mqf-surface) !important; border-bottom: 1px solid var(--mqf-border) !important; }
 [data-skin="obsidian"] .content-area        { background: var(--mqf-bg); }
 [data-skin="obsidian"] .stat-card,
 [data-skin="obsidian"] .card,
@@ -250,7 +250,7 @@
 [data-skin="obsidian"] .data-table th       { background: var(--mqf-surface-2) !important; color: var(--mqf-primary) !important; border-color: var(--mqf-border) !important; }
 [data-skin="obsidian"] .data-table td       { color: var(--mqf-text-secondary) !important; border-color: var(--mqf-border) !important; }
 [data-skin="obsidian"] .data-table tr:hover td { background: var(--mqf-surface-2) !important; }
-[data-skin="obsidian"] .mqf-module-header   { background: var(--mqf-gradient) !important; }
+[data-skin="obsidian"] .mqf-module-header   { background: var(--mqf-surface) !important; border-bottom: 1px solid var(--mqf-border) !important; backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important; }
 [data-skin="obsidian"] .form-input,
 [data-skin="obsidian"] .mqf-input           { background: var(--mqf-surface-2) !important; color: var(--mqf-text) !important; border-color: var(--mqf-border) !important; }
 [data-skin="obsidian"] .modal-box,
@@ -1827,5 +1827,148 @@ select option {
     background: #e2e8f0 !important;
     border-color: #cbd5e1 !important;
     transform: scale(1.05) !important;
+}
+
+/* ============================================================
+   💎 3.0 CABECERAS GLASSMORPHIC & CONTRASTE DE TEXTOS (NOFTRAB)
+   ============================================================ */
+
+/* ── 1. CABECERA PRINCIPAL DEL DASHBOARD (.top-header) ── */
+
+[data-skin*="indigo"] .top-header,
+[data-skin*="coral"] .top-header,
+[data-skin*="obsidian"] .top-header,
+[data-skin*="custom"] .top-header {
+  background: var(--mqf-gradient) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: var(--mqf-shadow-premium) !important;
+}
+
+/* Asegurar contraste blanco puro en la barra de cabecera principal (.top-header) para temas oscuros adaptativos */
+[data-skin*="indigo"] .top-header h1,
+[data-skin*="indigo"] .top-header .user-name,
+[data-skin*="indigo"] .top-header .user-menu-toggle,
+[data-skin*="indigo"] .top-header .notification-btn,
+[data-skin*="indigo"] .top-header i,
+[data-skin*="coral"] .top-header h1,
+[data-skin*="coral"] .top-header .user-name,
+[data-skin*="coral"] .top-header .user-menu-toggle,
+[data-skin*="coral"] .top-header .notification-btn,
+[data-skin*="coral"] .top-header i,
+[data-skin*="obsidian"] .top-header h1,
+[data-skin*="obsidian"] .top-header .user-name,
+[data-skin*="obsidian"] .top-header .user-menu-toggle,
+[data-skin*="obsidian"] .top-header .notification-btn,
+[data-skin*="obsidian"] .top-header i,
+[data-skin*="custom"] .top-header h1,
+[data-skin*="custom"] .top-header .user-name,
+[data-skin*="custom"] .top-header .user-menu-toggle,
+[data-skin*="custom"] .top-header .notification-btn,
+[data-skin*="custom"] .top-header i {
+  color: #ffffff !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-skin*="obsidian"] .top-header .user-dropdown-menu {
+  background: var(--mqf-surface) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--mqf-border) !important;
+  box-shadow: var(--mqf-shadow-premium) !important;
+}
+[data-skin*="obsidian"] .top-header .dropdown-item {
+  color: var(--mqf-text-secondary) !important;
+  border-bottom: 1px solid var(--mqf-border) !important;
+}
+[data-skin*="obsidian"] .top-header .dropdown-item:hover {
+  background: var(--mqf-surface-2) !important;
+  color: #ffffff !important;
+}
+[data-skin*="obsidian"] .top-header .dropdown-item.logout {
+  color: #fca5a5 !important;
+}
+[data-skin*="obsidian"] .top-header .dropdown-item.logout:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* ── 2. CABECERA DE MÓDULOS EN IFRAMES (.mqf-module-header) ── */
+
+/* Alinear las cabeceras de los módulos (.mqf-module-header) para que tengan el mismo fondo oscuro que la barra lateral (sidebar) */
+[data-skin*="indigo"] .mqf-module-header,
+[data-skin*="coral"] .mqf-module-header,
+[data-skin*="obsidian"] .mqf-module-header,
+[data-skin*="custom"] .mqf-module-header {
+  background: var(--mqf-gradient) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Sobrescribir títulos, subtítulos, iconos y pestañas para contrastar con blanco puro sobre el fondo oscuro de las cabeceras */
+[data-skin*="indigo"] .mqf-module-header .mqf-module-header__title,
+[data-skin*="indigo"] .mqf-module-header h1,
+[data-skin*="indigo"] .mqf-module-header h2,
+[data-skin*="indigo"] .mqf-module-header h3,
+[data-skin*="obsidian"] .mqf-module-header .mqf-module-header__title,
+[data-skin*="obsidian"] .mqf-module-header h1,
+[data-skin*="obsidian"] .mqf-module-header h2,
+[data-skin*="obsidian"] .mqf-module-header h3,
+[data-skin*="coral"] .mqf-module-header .mqf-module-header__title,
+[data-skin*="coral"] .mqf-module-header h1,
+[data-skin*="coral"] .mqf-module-header h2,
+[data-skin*="coral"] .mqf-module-header h3,
+[data-skin*="custom"] .mqf-module-header .mqf-module-header__title,
+[data-skin*="custom"] .mqf-module-header h1,
+[data-skin*="custom"] .mqf-module-header h2,
+[data-skin*="custom"] .mqf-module-header h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-skin*="indigo"] .mqf-module-header .mqf-module-header__subtitle,
+[data-skin*="indigo"] .mqf-module-header p,
+[data-skin*="obsidian"] .mqf-module-header .mqf-module-header__subtitle,
+[data-skin*="obsidian"] .mqf-module-header p,
+[data-skin*="coral"] .mqf-module-header .mqf-module-header__subtitle,
+[data-skin*="coral"] .mqf-module-header p,
+[data-skin*="custom"] .mqf-module-header .mqf-module-header__subtitle,
+[data-skin*="custom"] .mqf-module-header p {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-skin*="indigo"] .mqf-module-header i,
+[data-skin*="obsidian"] .mqf-module-header i,
+[data-skin*="coral"] .mqf-module-header i,
+[data-skin*="custom"] .mqf-module-header i {
+  color: #ffffff !important;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3)) !important;
+}
+
+/* Estilos de pestañas dentro de las cabeceras oscuras */
+[data-skin*="indigo"] .mqf-module-tab,
+[data-skin*="obsidian"] .mqf-module-tab,
+[data-skin*="coral"] .mqf-module-tab,
+[data-skin*="custom"] .mqf-module-tab {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-skin*="indigo"] .mqf-module-tab:hover,
+[data-skin*="obsidian"] .mqf-module-tab:hover,
+[data-skin*="coral"] .mqf-module-tab:hover,
+[data-skin*="custom"] .mqf-module-tab:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+}
+
+[data-skin*="indigo"] .mqf-module-tab.active,
+[data-skin*="obsidian"] .mqf-module-tab.active,
+[data-skin*="coral"] .mqf-module-tab.active,
+[data-skin*="custom"] .mqf-module-tab.active {
+  background: var(--mqf-bg) !important;
+  color: var(--mqf-primary) !important;
+  border-bottom: none !important;
 }
 

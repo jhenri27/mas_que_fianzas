@@ -156,7 +156,7 @@ class PolizaManager {
             $aseguradora = $datos['aseguradora'] ?? 'MULTISEGUROS';
             $perfil = $datos['perfil_cobertura'] ?? 'Seguro de Ley';
             $total = floatval($datos['prima_total']);
-            $itbis = $total * 0.18; // Cálculo estándar RD si no viene desglosado
+            $itbis = $total * 0.16; // Cálculo estándar RD si no viene desglosado (16% ISC)
             $neta = $total - $itbis;
             $otros = 0;
             $periodo = $datos['periodicidad_pago'] ?? 'anual';

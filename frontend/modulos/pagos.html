@@ -12,7 +12,7 @@
     <!-- Design System & Skins -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
     
@@ -332,7 +332,7 @@
                             </label>
                             <div id="calc-fraccionamiento" style="display: none; margin-top: 10px; border-top: 1px dashed var(--mqf-border); padding-top: 8px;">
                                 <div style="margin-bottom: 8px;">
-                                    <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px;">Cuota Inicial (Mínimo 10% = <span id="fracc-min-inicial">RD$ 0.00</span>) *</label>
+                                    <label style="display: block; font-size: 11px; font-weight: bold; margin-bottom: 4px;">Cuota Inicial (Mínimo 25% = <span id="fracc-min-inicial">RD$ 0.00</span>) *</label>
                                     <input type="number" id="fracc-monto-inicial" class="mqf-input" step="0.01" oninput="calcularCuotasFraccionadas()" style="width: 100%; padding: 6px 10px; font-weight: bold;">
                                 </div>
                                 <div style="font-size: 11px; color: var(--mqf-text-secondary);">
@@ -341,7 +341,6 @@
                                         <li>Cuota 1 (Inicial): RD$ 0.00</li>
                                         <li>Cuota 2 (30 días): RD$ 0.00</li>
                                         <li>Cuota 3 (60 días): RD$ 0.00</li>
-                                        <li>Cuota 4 (90 días): RD$ 0.00</li>
                                     </ul>
                                 </div>
                             </div>
@@ -756,6 +755,16 @@
             cargarPagos();
             cargarPolizasActivas();
             cargarCuentasBancarias();
+
+            // Default NCF checkboxes based on user profile
+            const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+            const esPDV = (usuario.perfil_id == 5) || (usuario.perfil && usuario.perfil.toLowerCase().includes('pdv'));
+            if (esPDV) {
+                const cardNcf = document.getElementById('card-ncf-chk');
+                if (cardNcf) cardNcf.checked = false;
+                const cashNcf = document.getElementById('cash-ncf-chk');
+                if (cashNcf) cashNcf.checked = false;
+            }
             
             // Listen for skin adjustments from parent
             window.addEventListener('message', (e) => {
@@ -827,8 +836,8 @@
             if (chk.checked) {
                 calc.style.display = 'block';
                 const primaTotal = parseFloat(activePoliza.prima_total);
-                const minInicial = round(primaTotal * 0.10, 2);
-                const sugerido = round(primaTotal * 0.25, 2);
+                const minInicial = round(primaTotal * 0.25, 2);
+                const sugerido = round(primaTotal * 0.35, 2);
                 inputInicial.value = sugerido >= minInicial ? sugerido : minInicial;
                 inputInicial.min = minInicial;
                 
@@ -845,7 +854,7 @@
             const inputInicial = document.getElementById('fracc-monto-inicial');
             let inicial = parseFloat(inputInicial.value) || 0;
             const primaTotal = parseFloat(activePoliza.prima_total);
-            const minInicial = round(primaTotal * 0.10, 2);
+            const minInicial = round(primaTotal * 0.25, 2);
             
             if (inicial < minInicial) {
                 inputInicial.style.borderColor = 'var(--mqf-danger)';
@@ -854,15 +863,14 @@
             }
 
             const balanceRestante = primaTotal - inicial;
-            const montoCuota = round(balanceRestante / 3, 2);
-            const montoUltimaCuota = round(balanceRestante - (montoCuota * 2), 2);
+            const montoCuota = round(balanceRestante / 2, 2);
+            const montoUltimaCuota = round(balanceRestante - montoCuota, 2);
             
             const lista = document.getElementById('fracc-desglose-lista');
             lista.innerHTML = `
                 <li><strong>Cuota 1 (Inicial hoy):</strong> ${fmt(inicial)}</li>
                 <li><strong>Cuota 2 (30 días):</strong> ${fmt(montoCuota)}</li>
-                <li><strong>Cuota 3 (60 días):</strong> ${fmt(montoCuota)}</li>
-                <li><strong>Cuota 4 (90 días):</strong> ${fmt(montoUltimaCuota)}</li>
+                <li><strong>Cuota 3 (60 días):</strong> ${fmt(montoUltimaCuota)}</li>
             `;
             
             document.getElementById('pol-det-monto-cobrar').textContent = fmt(inicial);
@@ -1064,32 +1072,21 @@
                 document.getElementById('pol-det-periodo').textContent = activePoliza.periodicidad_pago || 'mensual';
                 document.getElementById('pol-det-cuotas').textContent = activePoliza.cuota_total || 1;
                 
-                // Calcular monto cuota (Prima Total / Cuota Total)
-                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-                const cuotaMonto = parseFloat(activePoliza.prima_total) / cuotaTotal;
-                document.getElementById('pol-det-monto-cobrar').textContent = fmt(cuotaMonto);
-
                 // Calcular balance
                 const balance = parseFloat(activePoliza.balance !== undefined ? activePoliza.balance : (activePoliza.prima_total - (activePoliza.total_pagado || 0)));
                 const isSaldada = balance <= 0;
 
-                // Cargar recibos y fecha de saldo
-                selectedPolicyPayments = [];
-                let fechaSaldo = 'N/A';
-                try {
-                    const res = await api.solicitud('/pagos.php?poliza_id=' + activePoliza.id, 'GET');
-                    if (res.exito && Array.isArray(res.data)) {
-                        selectedPolicyPayments = res.data;
-                    }
-                } catch (err) {
-                    console.error('Error fetching payments:', err);
-                }
-
+                // Calcular monto cuota (Prima Total / Cuota Total adaptado a balance y cuotas pagadas)
+                const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
                 const processedPayments = selectedPolicyPayments.filter(p => p.estado_pago === 'procesado');
-                if (processedPayments.length > 0) {
-                    // La fecha de saldo es la fecha del pago más reciente que la saldó
-                    fechaSaldo = processedPayments[0].fecha_pago;
+                let cuotaMonto = parseFloat(activePoliza.prima_total);
+                if (cuotaTotal > 1) {
+                    const remainingCuotas = cuotaTotal - processedPayments.length;
+                    cuotaMonto = remainingCuotas > 0 ? (balance / remainingCuotas) : balance;
+                } else {
+                    cuotaMonto = balance;
                 }
+                document.getElementById('pol-det-monto-cobrar').textContent = fmt(cuotaMonto);
 
                 // Renderizar campos técnicos
                 const detEstado = document.getElementById('pol-det-estado-cobro');
@@ -1097,7 +1094,7 @@
                 detEstado.className = 'status-badge ' + (isSaldada ? 'status-procesado' : 'status-pendiente');
                 
                 document.getElementById('pol-det-balance').textContent = fmt(Math.max(0, balance));
-
+ 
                 if (isSaldada) {
                     document.getElementById('row-det-monto-cobrar').style.display = 'none';
                     document.getElementById('row-det-fecha-saldo').style.display = 'flex';
@@ -1117,6 +1114,16 @@
                     document.getElementById('checkout-form-wrapper').style.display = 'block';
                     document.getElementById('checkout-container').style.opacity = '1';
                     document.getElementById('checkout-container').style.pointerEvents = 'auto';
+
+                    // Mostrar/ocultar wrapper de fraccionamiento
+                    const fraccWrapper = document.getElementById('fraccionamiento-wrapper');
+                    if (cuotaTotal > 1 || processedPayments.length > 0) {
+                        fraccWrapper.style.display = 'none';
+                        document.getElementById('chk-fraccionar').checked = false;
+                        document.getElementById('calc-fraccionamiento').style.display = 'none';
+                    } else {
+                        fraccWrapper.style.display = 'block';
+                    }
                 }
 
                 // Renderizar recibos
@@ -1240,14 +1247,21 @@
             let monto = 0;
             if (chkFraccionar) {
                 monto = parseFloat(inputInicial.value) || 0;
-                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.25, 2);
                 if (monto < minInicial) {
-                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    MQF.toast('El monto inicial no puede ser menor al 25% de la prima total.', 'error');
                     return;
                 }
             } else {
                 const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+                const balance = parseFloat(activePoliza.balance !== undefined ? activePoliza.balance : (activePoliza.prima_total - (activePoliza.total_pagado || 0)));
+                const processedPayments = selectedPolicyPayments.filter(p => p.estado_pago === 'procesado');
+                if (cuotaTotal > 1) {
+                    const remainingCuotas = cuotaTotal - processedPayments.length;
+                    monto = remainingCuotas > 0 ? round(balance / remainingCuotas, 2) : balance;
+                } else {
+                    monto = balance;
+                }
             }
 
             try {
@@ -1319,14 +1333,21 @@
             let monto = 0;
             if (chkFraccionar) {
                 monto = parseFloat(inputInicial.value) || 0;
-                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.25, 2);
                 if (monto < minInicial) {
-                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    MQF.toast('El monto inicial no puede ser menor al 25% de la prima total.', 'error');
                     return;
                 }
             } else {
                 const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+                const balance = parseFloat(activePoliza.balance !== undefined ? activePoliza.balance : (activePoliza.prima_total - (activePoliza.total_pagado || 0)));
+                const processedPayments = selectedPolicyPayments.filter(p => p.estado_pago === 'procesado');
+                if (cuotaTotal > 1) {
+                    const remainingCuotas = cuotaTotal - processedPayments.length;
+                    monto = remainingCuotas > 0 ? round(balance / remainingCuotas, 2) : balance;
+                } else {
+                    monto = balance;
+                }
             }
 
             // Form data para subir archivo
@@ -1380,14 +1401,21 @@
             let monto = 0;
             if (chkFraccionar) {
                 monto = parseFloat(inputInicial.value) || 0;
-                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.10, 2);
+                const minInicial = round(parseFloat(activePoliza.prima_total) * 0.25, 2);
                 if (monto < minInicial) {
-                    MQF.toast('El monto inicial no puede ser menor al 10% de la prima total.', 'error');
+                    MQF.toast('El monto inicial no puede ser menor al 25% de la prima total.', 'error');
                     return;
                 }
             } else {
                 const cuotaTotal = parseInt(activePoliza.cuota_total) || 1;
-                monto = parseFloat(activePoliza.prima_total) / cuotaTotal;
+                const balance = parseFloat(activePoliza.balance !== undefined ? activePoliza.balance : (activePoliza.prima_total - (activePoliza.total_pagado || 0)));
+                const processedPayments = selectedPolicyPayments.filter(p => p.estado_pago === 'procesado');
+                if (cuotaTotal > 1) {
+                    const remainingCuotas = cuotaTotal - processedPayments.length;
+                    monto = remainingCuotas > 0 ? round(balance / remainingCuotas, 2) : balance;
+                } else {
+                    monto = balance;
+                }
             }
 
             try {
@@ -1532,18 +1560,35 @@
 
         async function descargarReciboPDF(pagoId) {
             try {
-                let p = cachedPagos.find(x => x.id == pagoId) || selectedPolicyPayments.find(x => x.id == pagoId);
-                if (!p) {
-                    MQF.toast('No se encontró información del pago', 'error');
-                    return;
+                let p = null;
+                
+                // Si pagoId es un objeto, lo usamos directamente
+                if (typeof pagoId === 'object' && pagoId !== null) {
+                    p = pagoId;
+                } else {
+                    // Si es un número o ID numérico, consultamos directamente al servidor por ID
+                    const isNumericId = typeof pagoId === 'number' || !isNaN(pagoId);
+                    const queryParam = isNumericId ? 'id=' + pagoId : 'ref=' + pagoId;
+                    
+                    const res = await api.solicitud('/pagos.php?action=verificar&' + queryParam, 'GET');
+                    if (res.exito && res.data) {
+                        p = res.data;
+                        p.poliza_numero = p.numero_poliza;
+                    } else {
+                        // Fallback a buscar en caché local si falla la red
+                        const localP = cachedPagos.find(x => x.id == pagoId) || selectedPolicyPayments.find(x => x.id == pagoId);
+                        if (localP && localP.numero_referencia) {
+                            const resRef = await api.solicitud('/pagos.php?action=verificar&ref=' + localP.numero_referencia, 'GET');
+                            if (resRef.exito && resRef.data) {
+                                p = resRef.data;
+                                p.poliza_numero = p.numero_poliza;
+                            }
+                        }
+                    }
                 }
 
-                const res = await api.solicitud('/pagos.php?action=verificar&ref=' + p.numero_referencia, 'GET');
-                if (res.exito && res.data) {
-                    p = res.data;
-                    p.poliza_numero = p.numero_poliza;
-                } else {
-                    MQF.toast('No se pudo verificar el pago en el servidor: ' + res.mensaje, 'error');
+                if (!p) {
+                    MQF.toast('No se encontró información del pago', 'error');
                     return;
                 }
 

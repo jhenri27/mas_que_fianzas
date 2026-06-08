@@ -6,7 +6,7 @@
   <title>Fianzas - MAS QUE FIANZAS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-  <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+  <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
   <link rel="stylesheet" href="../assets/components.css?v=9.0">
   <!-- jsPDF + AutoTable -->
   <script src="../assets/lib/jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
@@ -966,7 +966,7 @@
               <input type="text" id="wiz-num-contrato" placeholder="Número de referencia">
             </div>
             <div class="form-group full" style="display:flex; align-items:center; gap:10px; margin-top:4px;">
-              <input type="checkbox" id="wiz-ncf" style="width:auto; accent-color:#4f46e5;">
+              <input type="checkbox" id="wiz-ncf" checked style="width:auto; accent-color:#4f46e5;">
               <label for="wiz-ncf" style="margin:0; cursor:pointer; font-size:13px;">Generar NCF (Comprobante Fiscal B02)</label>
             </div>
             <div class="form-group full">
@@ -995,7 +995,7 @@
               <span class="r-value" id="rg-prima-base">—</span>
             </div>
             <div class="result-row">
-              <span class="r-label">ITBIS (18%)</span>
+              <span class="r-label">ISC (16%)</span>
               <span class="r-value" id="rg-itbis">—</span>
             </div>
             <div class="result-row total-row">
@@ -1553,9 +1553,9 @@
         const logo = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
         let startY = 20;
         if (logo) { try { doc.addImage(logo, 'PNG', 14, 8, 30, 12); } catch(e){} startY = 26; }
-        doc.setFontSize(14); doc.setFont(undefined, 'bold');
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold');
         doc.text('MAS QUE FIANZAS — Historial de Fianzas', 50, 16);
-        doc.setFontSize(9); doc.setFont(undefined, 'normal');
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal');
         doc.text('Generado: ' + new Date().toLocaleDateString('es-DO'), 50, 22);
         const cols = ['N° Fianza','Cliente','Tipo','Aseguradora','Estado','Total','Fecha'];
         const rows = datos.map(f => [
@@ -1742,7 +1742,12 @@
     document.querySelectorAll('input[name="primer-req"]').forEach(r => r.checked = false);
     const fd = document.getElementById('wiz-fecha-inicio');
     if(fd) fd.value = new Date().toISOString().split('T')[0];
-    const ncf = document.getElementById('wiz-ncf'); if(ncf) ncf.checked = false;
+    const ncf = document.getElementById('wiz-ncf'); 
+    if(ncf) {
+      const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+      const esPDV = (usuario.perfil_id == 5) || (usuario.perfil && usuario.perfil.toLowerCase().includes('pdv'));
+      ncf.checked = !esPDV;
+    }
     const rg = document.getElementById('result-glass-panel'); if(rg) rg.style.display = 'none';
     const pm = document.getElementById('prima-minima-alert'); if(pm) pm.style.display = 'none';
     // Ocultar modo fields
@@ -2101,7 +2106,7 @@
     const panel = document.getElementById('result-glass-panel');
     document.getElementById('rg-monto-afianzado').textContent = fmt(data.valor_afianzado || data.monto_afianzado || 0);
     document.getElementById('rg-prima-base').textContent      = fmt(data.prima_base || data.prima || 0);
-    document.getElementById('rg-itbis').textContent           = fmt(data.itbis || (data.prima_base || data.prima || 0) * 0.18);
+    document.getElementById('rg-itbis').textContent           = fmt(data.itbis || (data.prima_base || data.prima || 0) * 0.16);
     document.getElementById('rg-total').textContent           = fmt(data.total || 0);
 
     const alertMin = document.getElementById('prima-minima-alert');
@@ -2170,7 +2175,7 @@
       ['N° Contrato',          _wizData.num_contrato || '—'],
       ['Valor a Afianzar',     fmt(_wizData.valor_afianzado || 0)],
       ['Prima Base',           fmt(_wizData.prima_base || _wizData.prima || 0)],
-      ['ITBIS (18%)',          fmt(_wizData.itbis || 0)],
+      ['ISC (16%)',            fmt(_wizData.itbis || 0)],
       ['TOTAL A PAGAR',        fmt(_wizData.total || 0)],
       ['Generar NCF',          _wizData.generar_ncf ? 'Sí (B02)' : 'No'],
     ];
@@ -2387,7 +2392,7 @@
                        || String(data.primer_requerimiento).toLowerCase() === '1');
       const num_contrato = data.numero_contrato || data.num_contrato || '';
       const pbase      = parseFloat(data.prima_base || data.prima || 0);
-      const itbis      = parseFloat(data.itbis || data.impuesto || pbase * 0.18);
+      const itbis      = parseFloat(data.itbis || data.impuesto || pbase * 0.16);
       const total      = parseFloat(data.total || pbase + itbis);
       const ncf        = data.ncf || data.usar_ncf || false;
 
@@ -2396,9 +2401,9 @@
       doc.rect(0, 0, W, 40, 'F');
       if (logo) { try { doc.addImage(logo, 'PNG', 10, 6, 35, 14); } catch(e) {} }
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18); doc.setFont(undefined, 'bold');
+      doc.setFontSize(18); doc.setFont('helvetica', 'bold');
       doc.text('CERTIFICADO DE FIANZA', W / 2, 18, { align: 'center' });
-      doc.setFontSize(10); doc.setFont(undefined, 'normal');
+      doc.setFontSize(10); doc.setFont('helvetica', 'normal');
       doc.text('MAS QUE FIANZAS +QF, SRL', W / 2, 26, { align: 'center' });
       doc.text('RNC: 133-53573-4 · Licencia No. CMS-1561-A', W / 2, 32, { align: 'center' });
       y = 48;
@@ -2407,31 +2412,31 @@
       doc.setTextColor(0, 0, 0);
       doc.setFillColor(238, 242, 255);
       doc.roundedRect(10, y, W - 20, 14, 3, 3, 'F');
-      doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.setTextColor(79, 70, 229);
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(79, 70, 229);
       doc.text('N° FIANZA: ' + num, 15, y + 6);
       doc.text('FECHA EMISIÓN: ' + fmtFecha(fi || new Date()), W - 15, y + 6, { align: 'right' });
       y += 20;
 
       // ── ASEGURADO ──
-      doc.setTextColor(0,0,0); doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.setTextColor(0,0,0); doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
       doc.text('EL ASEGURADO', 10, y);
       doc.setDrawColor(199,210,254); doc.line(10, y+1, W-10, y+1); y += 6;
-      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
       doc.text('Nombre: ' + cliente, 12, y); y += 5;
       doc.text('Cédula / RNC: ' + cedula, 12, y); y += 10;
 
       // ── BENEFICIARIO ──
-      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
       doc.text('EL BENEFICIARIO', 10, y);
       doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
-      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
       doc.text(benef, 12, y); y += 10;
 
       // ── OBJETO ──
-      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
       doc.text('OBJETO DE LA FIANZA', 10, y);
       doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
-      doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
       const objText = doc.splitTextToSize(objeto, W - 24);
       doc.text(objText, 12, y); y += objText.length * 5 + 5;
 
@@ -2455,19 +2460,19 @@
       // ── PRIMER REQUERIMIENTO ──
       if (primer_req) {
         doc.setFillColor(239,246,255); doc.roundedRect(10,y,W-20,16,2,2,'F');
-        doc.setFontSize(9); doc.setFont(undefined,'italic'); doc.setTextColor(30,64,175);
+        doc.setFontSize(9); doc.setFont('helvetica', 'italic'); doc.setTextColor(30,64,175);
         const clausulaText = doc.splitTextToSize('Esta fianza es pagadera a primer requerimiento escrito del Beneficiario, sin que éste deba probar el incumplimiento del Afianzado.', W-26);
         doc.text(clausulaText, 14, y+5); y += clausulaText.length * 4.5 + 8;
       }
 
       // ── DESGLOSE PRIMA (sin tasa) ──
-      doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(79,70,229);
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
       doc.text('DESGLOSE DE PRIMA', 10, y);
       doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 3;
 
       doc.autoTable({
         head: [['Concepto','Monto']],
-        body: [['Prima Base', fmt(pbase)], ['ITBIS (18%)', fmt(itbis)], ['TOTAL A PAGAR', fmt(total)]],
+        body: [['Prima Base', fmt(pbase)], ['ISC (16%)', fmt(itbis)], ['TOTAL A PAGAR', fmt(total)]],
         startY: y, margin: { left:10, right:10 },
         headStyles: { fillColor:[79,70,229], textColor:255, fontStyle:'bold' },
         styles: { fontSize:9.5, cellPadding:3 },
@@ -2476,15 +2481,15 @@
       y = doc.lastAutoTable.finalY + 6;
 
       if (ncf) {
-        doc.setFontSize(9); doc.setFont(undefined,'normal'); doc.setTextColor(107,114,128);
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(107,114,128);
         doc.text('Comprobante Fiscal (NCF): B02 — ' + (typeof ncf==='string' ? ncf : 'Pendiente'), 10, y); y += 6;
       }
-      doc.setFontSize(8); doc.setFont(undefined,'italic'); doc.setTextColor(156,163,175);
+      doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(156,163,175);
       doc.text('El solicitante aceptó la Declaración de Veracidad y Autorización de Administración y Cesión de Información.', 10, y, { maxWidth: W-20 }); y += 8;
 
       // PIE
       doc.setFillColor(30,58,138); doc.rect(0,285,W,12,'F');
-      doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(255,255,255);
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(255,255,255);
       doc.text('MAS QUE FIANZAS +QF, SRL · RNC: 133-53573-4 · Licencia No. CMS-1561-A', W/2, 291, { align:'center' });
       doc.text('Documento generado electrónicamente · ' + new Date().toLocaleString('es-DO'), W/2, 295, { align:'center' });
 
@@ -2616,6 +2621,14 @@
 
     // Tab guards
     initTabGuardsFianzas();
+
+    // Default NCF checkbox based on user profile
+    const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+    const esPDV = (usuario.perfil_id == 5) || (usuario.perfil && usuario.perfil.toLowerCase().includes('pdv'));
+    const wizNcf = document.getElementById('wiz-ncf');
+    if (wizNcf) {
+        wizNcf.checked = !esPDV;
+    }
   });
   </script>
 

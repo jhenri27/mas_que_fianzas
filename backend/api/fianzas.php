@@ -77,12 +77,13 @@ function calcularPrimaInterna($db, $tarifario_id, $monto_afianzado, $tasa_manual
         $prima_base = $prima_calculada;
     }
 
-    $itbis = round($prima_base * 0.18, 2);
-    $total = round($prima_base + $itbis, 2);
+    $isc = round($prima_base * 0.16, 2);
+    $total = round($prima_base + $isc, 2);
 
     return [
         'prima_base'            => round($prima_base, 2),
-        'itbis'                 => $itbis,
+        'itbis'                 => $isc, // Stored under itbis column for DB compatibility
+        'isc'                   => $isc, // Explicit key for frontend
         'total'                 => $total,
         'prima_minima_aplicada' => $prima_minima_aplic,
         'modo_calculo'          => $tar['modo_calculo']
@@ -277,15 +278,17 @@ if ($metodo === 'POST' && $action === 'crear') {
     if ($estado === 'vigente') {
         try {
             require_once '../MotorContable.php';
+            $comision = round((float)$pbase * 0.15, 2);
+            $itbis_sobre_comision = round($comision * 0.18, 2);
             $payloadContable = [
                 'id' => $fianza_id,
                 'numero' => $numero_fianza,
                 'modulo' => 'FIANZAS',
                 'fecha' => $fecha_inicio,
                 'total' => (float)$total,
-                'comision' => (float)$pbase * 0.15, // Comisión estándar MQF en fianzas (15%)
-                'itbis' => (float)$itbis,
-                'monto_neto' => (float)$total - ((float)$pbase * 0.15) - (float)$itbis
+                'comision' => $comision,
+                'itbis' => $itbis_sobre_comision,
+                'monto_neto' => (float)$total - $comision - $itbis_sobre_comision
             ];
             \MQF\Finance\MotorContable::disparar('EMISION_POLIZA', $payloadContable);
         } catch (\Exception $e) {
@@ -425,15 +428,18 @@ if ($metodo === 'POST' && $action === 'actualizar_estado') {
             $stmt_f->close();
 
             if ($f_data) {
+                $pbase = (float)$f_data['prima_base'];
+                $comision = round($pbase * 0.15, 2);
+                $itbis_sobre_comision = round($comision * 0.18, 2);
                 $payloadContable = [
                     'id' => $fianza_id,
                     'numero' => $f_data['numero_fianza'],
                     'modulo' => 'FIANZAS',
                     'fecha' => $f_data['fecha_inicio'],
                     'total' => (float)$f_data['total'],
-                    'comision' => (float)$f_data['prima_base'] * 0.15, // 15% comisión
-                    'itbis' => (float)$f_data['itbis'],
-                    'monto_neto' => (float)$f_data['total'] - ((float)$f_data['prima_base'] * 0.15) - (float)$f_data['itbis']
+                    'comision' => $comision,
+                    'itbis' => $itbis_sobre_comision,
+                    'monto_neto' => (float)$f_data['total'] - $comision - $itbis_sobre_comision
                 ];
                 \MQF\Finance\MotorContable::disparar('EMISION_POLIZA', $payloadContable);
             }
@@ -644,15 +650,17 @@ if ($metodo === 'POST' && $action === 'actualizar') {
     if ($nuevo_estado === 'vigente' && $prev['estado'] !== 'vigente') {
         try {
             require_once '../MotorContable.php';
+            $comision = round($pbase * 0.15, 2);
+            $itbis_sobre_comision = round($comision * 0.18, 2);
             $payloadContable = [
                 'id'         => $fianza_id,
                 'numero'     => $prev['numero_fianza'],
                 'modulo'     => 'FIANZAS',
                 'fecha'      => $fecha_inicio,
                 'total'      => $total,
-                'comision'   => $pbase * 0.15,
-                'itbis'      => $itbis,
-                'monto_neto' => $total - ($pbase * 0.15) - $itbis
+                'comision'   => $comision,
+                'itbis'      => $itbis_sobre_comision,
+                'monto_neto' => $total - $comision - $itbis_sobre_comision
             ];
             \MQF\Finance\MotorContable::disparar('EMISION_POLIZA', $payloadContable);
         } catch (\Exception $e) {

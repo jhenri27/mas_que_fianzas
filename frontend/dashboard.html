@@ -8,7 +8,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
     <link rel="stylesheet" href="assets/dashboard.css?v=9.0.0">
     <link rel="stylesheet" href="assets/modulos.css?v=9.0.0">
-    <link rel="stylesheet" href="assets/skin-engine.css?v=9.0.0">
+    <link rel="stylesheet" href="assets/skin-engine.css?v=11.0">
     <script src="assets/components.js?v=9.0.0" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><script>
       /* ── Aplicar skin ANTES del primer render (evita flash) ── */
@@ -79,6 +79,10 @@
                 <a href="#" class="nav-item" data-module="labs_masqf" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; background: rgba(0,0,0,0.2);">
                     <span class="icon">🧪</span>
                     <span class="label">LABS-MASQF</span>
+                </a>
+                <a href="#" class="nav-item" data-module="modelador_pdf">
+                    <span class="icon">📄</span>
+                    <span class="label">MODELADOR PDF</span>
                 </a>
                 <a href="#" class="nav-item" data-module="configuracion">
                     <span class="icon">⚙️</span>
@@ -346,6 +350,9 @@
                             <button id="btn-conf-integraciones" class="config-nav-btn" data-target="config-integraciones" onclick="cargarConfigIntegraciones()">
                                 <span>🔌</span> Integraciones API
                             </button>
+                            <button id="btn-conf-etl" class="config-nav-btn" data-target="config-etl" onclick="cargarETLInterfaz()">
+                                <span>🔄</span> ETL Tarifas
+                            </button>
                         </div>
                         
                         <!-- Paneles de Configuración -->
@@ -544,6 +551,181 @@
                                             Cargando integraciones configuradas...
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel ETL Tarifas -->
+                            <div id="config-etl" class="config-panel">
+                                <div class="config-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                                        <div>
+                                            <h3 style="margin:0; color:#2c3e50; font-size:16px; font-weight:700;">Motor de ETL de Tarifas (Insertivo)</h3>
+                                            <p style="font-size:13px; color:#64748b; margin:4px 0 0 0;">Cargue y convierta tarifarios externos de aseguradoras bajo normas de auditoría NOFTRAB v4.0.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Paso 1: Origen -->
+                                    <div class="etl-step-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:20px;">
+                                        <h4 style="margin-top:0; color:#1e293b; font-size:14px; display:flex; align-items:center; gap:8px;">
+                                            <span style="background:#4f46e5; color:#fff; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">1</span>
+                                            Configurar Origen del Tarifario
+                                        </h4>
+                                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-top:15px;">
+                                            <div class="form-group" style="margin:0;">
+                                                <label style="font-weight:600; font-size:12px; color:#475569; display:block; margin-bottom:6px;">Aseguradora Destino *</label>
+                                                <select id="etlAseguradora" class="form-control" style="width:100%;" onchange="actualizarMapeoPrevioETL(this.value)">
+                                                    <option value="">Seleccione Aseguradora...</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label style="font-weight:600; font-size:12px; color:#475569; display:block; margin-bottom:6px;">Archivo de Tarifas (Excel/CSV) *</label>
+                                                <input type="file" id="etlFile" class="form-control" accept=".xlsx,.xls,.csv" style="padding:6px 12px; width:100%;">
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary" onclick="subirYAnalizarETL()" style="margin-top:15px; display:inline-flex; align-items:center; gap:6px;">
+                                            <span>📤</span> Cargar y Analizar Archivo
+                                        </button>
+                                        <span id="etlUploadStatus" style="font-size:13px; font-weight:bold; margin-left:15px; vertical-align:middle;"></span>
+                                    </div>
+                                    
+                                    <!-- Paso 2: Mapeo -->
+                                    <div id="etlStep2" class="etl-step-box" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px; margin-bottom:20px;">
+                                        <h4 style="margin-top:0; color:#1e293b; font-size:14px; display:flex; align-items:center; gap:8px;">
+                                            <span style="background:#4f46e5; color:#fff; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">2</span>
+                                            Mapeo de Columnas de Datos
+                                        </h4>
+                                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-top:15px;">
+                                            <div class="form-group" style="margin:0;">
+                                                <label style="font-weight:600; font-size:12px; color:#475569; display:block; margin-bottom:6px;">Modo de Lectura *</label>
+                                                <select id="etlMode" class="form-control" onchange="toggleEtlMode(this.value)">
+                                                    <option value="blocks" selected>Modo Bloques (Jerárquico)</option>
+                                                    <option value="flat">Modo Tabla Plana (Planilla estándar)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" id="etlSheetGroup" style="margin:0;">
+                                                <label style="font-weight:600; font-size:12px; color:#475569; display:block; margin-bottom:6px;">Hoja de Excel *</label>
+                                                <select id="etlSheet" class="form-control"></select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="margin-top:20px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:15px;">
+                                            <h5 style="margin-top:0; margin-bottom:12px; font-size:13px; color:#1e293b; font-weight:600;">Definir Mapeo de Columnas</h5>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" id="etlMappingFieldsGrid">
+                                                <!-- Columna Tipo -->
+                                                <div id="etlMapTipoGroup" style="display:flex; flex-direction:column; gap:6px;">
+                                                    <label style="font-size:12px; font-weight:600; color:#475569;">Tipo de Vehículo</label>
+                                                    <div style="display:flex; gap:8px;">
+                                                        <select id="etlMapTipoType" class="form-control" style="width:35%;" onchange="toggleMappingField('tipo_vehiculo', this.value)">
+                                                            <option value="column">De Columna</option>
+                                                            <option value="fixed">Valor Fijo</option>
+                                                        </select>
+                                                        <select id="etlMapTipoValCol" class="form-control col-mapping-select" style="width:65%;"></select>
+                                                        <input type="text" id="etlMapTipoValFix" class="form-control" style="width:65%; display:none;" placeholder="Ej. AUTOMOVILES">
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Columna Capacidad -->
+                                                <div id="etlMapCapGroup" style="display:flex; flex-direction:column; gap:6px;">
+                                                    <label style="font-size:12px; font-weight:600; color:#475569;">Capacidad / Cilindrada</label>
+                                                    <div style="display:flex; gap:8px;">
+                                                        <select id="etlMapCapType" class="form-control" style="width:35%;" onchange="toggleMappingField('capacidad', this.value)">
+                                                            <option value="column">De Columna</option>
+                                                            <option value="fixed">Valor Fijo</option>
+                                                        </select>
+                                                        <select id="etlMapCapValCol" class="form-control col-mapping-select" style="width:65%;"></select>
+                                                        <input type="text" id="etlMapCapValFix" class="form-control" style="width:65%; display:none;" placeholder="Ej. Hasta 4 Cilindros">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Columna Uso -->
+                                                <div id="etlMapUsoGroup" style="display:flex; flex-direction:column; gap:6px;">
+                                                    <label style="font-size:12px; font-weight:600; color:#475569;">Uso del Vehículo</label>
+                                                    <div style="display:flex; gap:8px;">
+                                                        <select id="etlMapUsoType" class="form-control" style="width:35%;" onchange="toggleMappingField('uso', this.value)">
+                                                            <option value="column">De Columna</option>
+                                                            <option value="fixed">Valor Fijo</option>
+                                                        </select>
+                                                        <select id="etlMapUsoValCol" class="form-control col-mapping-select" style="width:65%;"></select>
+                                                        <select id="etlMapUsoValFix" class="form-control" style="width:65%; display:none;">
+                                                            <option value="PRIVADO">PRIVADO</option>
+                                                            <option value="PUBLICO">PUBLICO</option>
+                                                            <option value="RENT CAR">RENT CAR</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Columna Cobertura -->
+                                                <div id="etlMapCobGroup" style="display:flex; flex-direction:column; gap:6px;">
+                                                    <label style="font-size:12px; font-weight:600; color:#475569;">Cobertura</label>
+                                                    <div style="display:flex; gap:8px;">
+                                                        <select id="etlMapCobType" class="form-control" style="width:35%;" onchange="toggleMappingField('cobertura', this.value)">
+                                                            <option value="column">De Columna</option>
+                                                            <option value="fixed">Valor Fijo</option>
+                                                        </select>
+                                                        <select id="etlMapCobValCol" class="form-control col-mapping-select" style="width:65%;"></select>
+                                                        <input type="text" id="etlMapCobValFix" class="form-control" style="width:65%; display:none;" placeholder="Auto-inferir si está vacío">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Columna Tarifa -->
+                                                <div id="etlMapTarifaGroup" style="display:flex; flex-direction:column; gap:6px; grid-column: 1 / -1;">
+                                                    <label style="font-size:12px; font-weight:600; color:#475569;">Prima / Tarifa Base (Destino) *</label>
+                                                    <div style="display:flex; gap:8px;">
+                                                        <select id="etlMapTarifaValCol" class="form-control col-mapping-select" style="width:100%;"></select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div style="margin-top:15px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                                            <label style="font-size:13px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+                                                <input type="checkbox" id="etlApplyDiscount" checked>
+                                                Aplicar 2% de descuento a vehículos livianos privados (Automóviles y Jeeps)
+                                            </label>
+                                            <button type="button" class="btn btn-secondary" onclick="previsualizarETL()" style="display:inline-flex; align-items:center; gap:6px;">
+                                                <span>🔍</span> Generar Vista Previa
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Paso 3: Preview e Import -->
+                                    <div id="etlStep3" class="etl-step-box" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:20px;">
+                                        <h4 style="margin-top:0; color:#1e293b; font-size:14px; display:flex; align-items:center; gap:8px;">
+                                            <span style="background:#4f46e5; color:#fff; width:24px; height:24px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">3</span>
+                                            Vista Previa e Importación Final
+                                        </h4>
+                                        <p style="font-size:13px; color:#4a5568; margin-bottom:12px;">Se muestra una muestra de las tarifas procesadas. Verifique antes de realizar la inserción.</p>
+                                        
+                                        <div class="table-responsive" style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background: #fff;">
+                                            <table class="premium-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                                <thead>
+                                                    <tr style="background:#f1f5f9; font-size:12px; font-weight:700; color:#475569;">
+                                                        <th style="padding:10px 12px;">Tipo Vehículo</th>
+                                                        <th style="padding:10px 12px;">Capacidad / Cilindrada</th>
+                                                        <th style="padding:10px 12px;">Uso</th>
+                                                        <th style="padding:10px 12px;">Cobertura</th>
+                                                        <th style="padding:10px 12px; text-align:right;">Tarifa Base (DOP)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="etlPreviewBody" style="font-size:12px; color:#334155;"></tbody>
+                                            </table>
+                                        </div>
+                                        <div id="etlSummaryCounts" style="margin-top:10px; font-size:13px; color:#475569; font-weight:600;"></div>
+                                        
+                                        <!-- Justificación Requerida NOFTRAB -->
+                                        <div class="form-group" style="margin-top:20px;">
+                                            <label style="font-weight:700; font-size:13px; color:#2d3748; display:block; margin-bottom:8px;">
+                                                Justificación de la Carga (Requerido por auditoría NOFTRAB v4.0) *
+                                            </label>
+                                            <textarea id="etlJustificacion" class="form-control" rows="3" minlength="10" placeholder="Escriba la justificación formal para actualizar el tarifario en el sistema (mínimo 10 caracteres)..." required style="width:100%; border-radius:6px; padding:10px;"></textarea>
+                                        </div>
+                                        
+                                        <button type="button" class="btn btn-primary" onclick="confirmarEImportarETL()" style="margin-top:15px; background:#22c55e; border-color:#22c55e; display:inline-flex; align-items:center; gap:6px;">
+                                            <span>💾</span> Confirmar e Importar Tarifario
+                                        </button>
+                                        <span id="etlImportStatus" style="font-size:13px; font-weight:bold; margin-left:15px;"></span>
+                                    </div>
+                                    
                                 </div>
                             </div>
                             
@@ -789,6 +971,11 @@
                 <!-- LABS-MASQF Module -->
                 <section id="modulo-labs_masqf" class="module" style="padding:0; overflow:hidden;">
                     <iframe id="labs-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="LABS-MASQF"></iframe>
+                </section>
+
+                <!-- Modelador PDF Module -->
+                <section id="modulo-modelador_pdf" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="modelador-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none; display:block;" title="Modelador PDF"></iframe>
                 </section>
             </div>
         </main>
@@ -1744,7 +1931,8 @@ const TAB_CONFIG_GUARDS = [
     { elementId: 'btn-conf-perfiles',  permiso: 'TAB_CONF_PERFILES' },
     { elementId: 'btn-conf-skins',     permiso: 'TAB_CONF_SKINS' },
     { elementId: 'btn-conf-companias', permiso: 'TAB_CONF_COMPANIAS' },
-    { elementId: 'btn-conf-integraciones', permiso: 'TAB_CONF_INTEGRACIONES' }
+    { elementId: 'btn-conf-integraciones', permiso: 'TAB_CONF_INTEGRACIONES' },
+    { elementId: 'btn-conf-etl',           permiso: 'CONF_ETL_VER' }
 ];
 
 async function initTabGuardsConfig() {
@@ -1824,6 +2012,413 @@ document.addEventListener('DOMContentLoaded', () => {
     // También correr al cargar por si la URL ya apunta a configuración
     initTabGuardsConfig();
 });
+
+/* ── MOTOR DE ETL DE TARIFAS (NOFTRAB CLIENT JS) ── */
+window.etlTempFilename = '';
+window.etlFileColumns = [];
+window.etlPrevMapping = {};
+
+async function cargarETLInterfaz() {
+    const select = document.getElementById('etlAseguradora');
+    const token = localStorage.getItem('token_sesion');
+    
+    // Reset ui
+    document.getElementById('etlFile').value = '';
+    document.getElementById('etlStep2').style.display = 'none';
+    document.getElementById('etlStep3').style.display = 'none';
+    document.getElementById('etlUploadStatus').innerText = '';
+    document.getElementById('etlUploadStatus').style.color = '';
+    
+    try {
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/etl_tarifas.php?action=listar_companias', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await resp.json();
+        if (result.exito && Array.isArray(result.data)) {
+            select.innerHTML = '<option value="">Seleccione Aseguradora...</option>';
+            result.data.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.rnc})</option>`;
+            });
+        }
+    } catch(e) {
+        console.error('Error al cargar aseguradoras para ETL:', e);
+    }
+}
+
+async function actualizarMapeoPrevioETL(companiaId) {
+    if (!companiaId) {
+        window.etlPrevMapping = {};
+        return;
+    }
+    const token = localStorage.getItem('token_sesion');
+    try {
+        const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/etl_tarifas.php?action=obtener_mapeo&compania_id=${companiaId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await resp.json();
+        if (result.exito) {
+            window.etlPrevMapping = result.data || {};
+        } else {
+            window.etlPrevMapping = {};
+        }
+    } catch(e) {
+        window.etlPrevMapping = {};
+    }
+}
+
+async function subirYAnalizarETL() {
+    const fileInput = document.getElementById('etlFile');
+    const aseSelect = document.getElementById('etlAseguradora');
+    const status = document.getElementById('etlUploadStatus');
+    
+    if (!aseSelect.value) {
+        MQF.toast("Debe seleccionar una aseguradora de destino.", "warning");
+        return;
+    }
+    if (!fileInput.files[0]) {
+        MQF.toast("Debe seleccionar una planilla Excel o CSV.", "warning");
+        return;
+    }
+    
+    status.style.color = '#3182ce';
+    status.innerText = '⏳ Subiendo y analizando archivo en el servidor...';
+    
+    const fd = new FormData();
+    fd.append('file', fileInput.files[0]);
+    fd.append('compania_id', aseSelect.value);
+    
+    const token = localStorage.getItem('token_sesion');
+    
+    try {
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/etl_tarifas.php?action=upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: fd
+        });
+        const result = await resp.json();
+        
+        if (result.exito) {
+            status.style.color = 'green';
+            status.innerText = '✓ Archivo analizado correctamente.';
+            
+            window.etlTempFilename = result.temp_filename;
+            window.etlFileColumns = result.columns || [];
+            
+            // Mostrar paso 2
+            document.getElementById('etlStep2').style.display = 'block';
+            document.getElementById('etlStep3').style.display = 'none';
+            
+            // Rellenar hojas si es excel
+            const sheetSelect = document.getElementById('etlSheet');
+            const sheetGroup = document.getElementById('etlSheetGroup');
+            if (result.type === 'xlsx' && result.sheets.length > 0) {
+                sheetGroup.style.display = 'block';
+                sheetSelect.innerHTML = '';
+                result.sheets.forEach(s => {
+                    sheetSelect.innerHTML += `<option value="${s}">${s}</option>`;
+                });
+            } else {
+                sheetGroup.style.display = 'none';
+            }
+            
+            // Rellenar dropdowns de columnas
+            const colSelects = document.querySelectorAll('.col-mapping-select');
+            colSelects.forEach(sel => {
+                sel.innerHTML = '<option value="">-- Seleccione Columna --</option>';
+                window.etlFileColumns.forEach(c => {
+                    sel.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+            });
+            
+            // Intentar aplicar mappings anteriores o heurísticas
+            aplicarHeuristicaMapping(result.prev_mapping || {});
+            
+            // Si la planilla tiene estructura compleja (como Multiseguros) pre-seleccionar modo bloques
+            if (result.type === 'xlsx') {
+                document.getElementById('etlMode').value = 'blocks';
+            } else {
+                document.getElementById('etlMode').value = 'flat';
+            }
+            toggleEtlMode(document.getElementById('etlMode').value);
+            
+        } else {
+            status.style.color = 'red';
+            status.innerText = '❌ Error: ' + result.mensaje;
+            MQF.toast(result.mensaje, "error");
+        }
+    } catch(e) {
+        status.style.color = 'red';
+        status.innerText = '❌ Error de red';
+        MQF.toast("Falla de red al subir archivo.", "error");
+    }
+}
+
+function aplicarHeuristicaMapping(prevMap) {
+    const mappings = {
+        tipo_vehiculo: { keywords: ['TIPO', 'VEHICULO', 'CLASE', 'CATEGORIA'], elCol: 'etlMapTipoValCol' },
+        capacidad: { keywords: ['CAPACIDAD', 'CILIN', 'PASAJEROS', 'CANTIDAD', 'PESO'], elCol: 'etlMapCapValCol' },
+        uso: { keywords: ['USO', 'DESTINO', 'REGIMEN'], elCol: 'etlMapUsoValCol' },
+        cobertura: { keywords: ['COBERTURA', 'LIMITE', 'PLAN'], elCol: 'etlMapCobValCol' },
+        tarifa_base: { keywords: ['MULTISEGUROS', 'INTENSION', 'TARIFA', 'PRECIO', 'PRIMA', 'VENTA', 'BASE'], elCol: 'etlMapTarifaValCol' }
+    };
+    
+    for (const [field, cfg] of Object.entries(mappings)) {
+        const elCol = document.getElementById(cfg.elCol);
+        
+        // 1. Usar mapeo previo si existe
+        if (prevMap[field]) {
+            const prev = prevMap[field];
+            const typeEl = document.getElementById(`etlMap${field.charAt(0).toUpperCase() + field.slice(1)}Type`);
+            if (typeEl) {
+                typeEl.value = prev.type;
+                toggleMappingField(field, prev.type);
+            }
+            if (prev.type === 'fixed') {
+                const fixEl = document.getElementById(`etlMap${field.charAt(0).toUpperCase() + field.slice(1)}ValFix`);
+                if (fixEl) fixEl.value = prev.value;
+            } else {
+                elCol.value = prev.value;
+            }
+            continue;
+        }
+        
+        // 2. Heurística
+        let found = false;
+        for (const col of window.etlFileColumns) {
+            const colUpper = col.toUpperCase();
+            if (cfg.keywords.some(k => colUpper.includes(k))) {
+                elCol.value = col;
+                found = true;
+                break;
+            }
+        }
+        // Si no encuentra por nombre, mapear la primera columna para Capacidad por defecto
+        if (!found && field === 'capacidad' && window.etlFileColumns.length > 0) {
+            elCol.value = window.etlFileColumns[0];
+        }
+    }
+}
+
+function toggleEtlMode(mode) {
+    const mapTipo = document.getElementById('etlMapTipoGroup');
+    const mapUso = document.getElementById('etlMapUsoGroup');
+    const mapCob = document.getElementById('etlMapCobGroup');
+    
+    if (mode === 'blocks') {
+        mapTipo.style.opacity = '0.5';
+        mapTipo.style.pointerEvents = 'none';
+        mapUso.style.opacity = '0.5';
+        mapUso.style.pointerEvents = 'none';
+        mapCob.style.opacity = '0.5';
+        mapCob.style.pointerEvents = 'none';
+    } else {
+        mapTipo.style.opacity = '1';
+        mapTipo.style.pointerEvents = 'auto';
+        mapUso.style.opacity = '1';
+        mapUso.style.pointerEvents = 'auto';
+        mapCob.style.opacity = '1';
+        mapCob.style.pointerEvents = 'auto';
+    }
+}
+
+function toggleMappingField(field, type) {
+    const fieldName = field.charAt(0).toUpperCase() + field.slice(1);
+    const colEl = document.getElementById(`etlMap${fieldName}ValCol`);
+    const fixEl = document.getElementById(`etlMap${fieldName}ValFix`);
+    
+    if (type === 'fixed') {
+        colEl.style.display = 'none';
+        fixEl.style.display = 'block';
+    } else {
+        colEl.style.display = 'block';
+        fixEl.style.display = 'none';
+    }
+}
+
+async function previsualizarETL() {
+    const aseSelect = document.getElementById('etlAseguradora');
+    const mode = document.getElementById('etlMode').value;
+    const sheet = document.getElementById('etlSheet').value;
+    
+    if (!window.etlTempFilename) {
+        MQF.toast("Falta el archivo temporal del ETL.", "error");
+        return;
+    }
+    
+    // Construir JSON de mapeo
+    const mapping = { mode: mode };
+    const fields = ['tipo_vehiculo', 'capacidad', 'uso', 'cobertura', 'tarifa_base'];
+    
+    for (const f of fields) {
+        if (mode === 'blocks' && (f === 'tipo_vehiculo' || f === 'uso' || f === 'cobertura')) {
+            continue;
+        }
+        const fieldName = f.charAt(0).toUpperCase() + f.slice(1);
+        const typeEl = document.getElementById(`etlMap${fieldName}Type`);
+        const type = typeEl ? typeEl.value : 'column';
+        
+        if (type === 'fixed') {
+            mapping[f] = {
+                type: 'fixed',
+                value: document.getElementById(`etlMap${fieldName}ValFix`).value.trim()
+            };
+        } else {
+            mapping[f] = {
+                type: 'column',
+                value: document.getElementById(`etlMap${fieldName}ValCol`).value
+            };
+        }
+    }
+    
+    const token = localStorage.getItem('token_sesion');
+    
+    try {
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/etl_tarifas.php?action=preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                temp_filename: window.etlTempFilename,
+                mapping: mapping,
+                sheet_name: sheet
+            })
+        });
+        const result = await resp.json();
+        
+        if (result.exito) {
+            document.getElementById('etlStep3').style.display = 'block';
+            
+            const tbody = document.getElementById('etlPreviewBody');
+            tbody.innerHTML = '';
+            
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:red;">No se pudieron extraer registros con el mapeo especificado.</td></tr>';
+                return;
+            }
+            
+            result.data.forEach(r => {
+                const priceFmt = Number(r.tarifa_base).toLocaleString('es-DO', { style: 'currency', currency: 'DOP' });
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="padding:10px 12px;"><strong>${r.tipo_vehiculo}</strong></td>
+                        <td style="padding:10px 12px;">${r.capacidad}</td>
+                        <td style="padding:10px 12px;"><span style="font-size:10px; background:#eef2ff; color:#4338ca; padding:2px 6px; border-radius:4px;">${r.uso}</span></td>
+                        <td style="padding:10px 12px;">${r.cobertura}</td>
+                        <td style="padding:10px 12px; text-align:right; font-weight:bold; color:#16a34a;">${priceFmt}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('etlSummaryCounts').innerText = `Vista previa: mostrando ${result.data.length} de ${result.total_validos} registros válidos (Total filas leídas: ${result.total_procesados}).`;
+            
+            if (result.errores.length > 0) {
+                MQF.toast(`Se detectaron ${result.errores.length} advertencias durante la lectura.`, "warning");
+            }
+            
+            document.getElementById('etlStep3').scrollIntoView({ behavior: 'smooth' });
+            
+        } else {
+            MQF.toast(result.mensaje, "error");
+        }
+    } catch(e) {
+        MQF.toast("Error de red al previsualizar.", "error");
+    }
+}
+
+async function confirmarEImportarETL() {
+    const aseSelect = document.getElementById('etlAseguradora');
+    const mode = document.getElementById('etlMode').value;
+    const sheet = document.getElementById('etlSheet').value;
+    const justInput = document.getElementById('etlJustificacion');
+    const status = document.getElementById('etlImportStatus');
+    const discountCheck = document.getElementById('etlApplyDiscount');
+    
+    if (!aseSelect.value) {
+        MQF.toast("Aseguradora de destino no seleccionada.", "error");
+        return;
+    }
+    if (!window.etlTempFilename) {
+        MQF.toast("Falta el archivo temporal.", "error");
+        return;
+    }
+    
+    const just = justInput.value.trim();
+    if (just.length < 10) {
+        MQF.toast("La justificación de auditoría de NOFTRAB debe contener al menos 10 caracteres.", "error");
+        return;
+    }
+    
+    status.style.color = '#3182ce';
+    status.innerText = '⏳ Procesando inserción y grabando auditorías forenses...';
+    
+    // Construir JSON de mapeo
+    const mapping = { mode: mode };
+    const fields = ['tipo_vehiculo', 'capacidad', 'uso', 'cobertura', 'tarifa_base'];
+    
+    for (const f of fields) {
+        if (mode === 'blocks' && (f === 'tipo_vehiculo' || f === 'uso' || f === 'cobertura')) {
+            continue;
+        }
+        const fieldName = f.charAt(0).toUpperCase() + f.slice(1);
+        const typeEl = document.getElementById(`etlMap${fieldName}Type`);
+        const type = typeEl ? typeEl.value : 'column';
+        
+        if (type === 'fixed') {
+            mapping[f] = {
+                type: 'fixed',
+                value: document.getElementById(`etlMap${fieldName}ValFix`).value.trim()
+            };
+        } else {
+            mapping[f] = {
+                type: 'column',
+                value: document.getElementById(`etlMap${fieldName}ValCol`).value
+            };
+        }
+    }
+    
+    const token = localStorage.getItem('token_sesion');
+    
+    try {
+        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/etl_tarifas.php?action=import', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                temp_filename: window.etlTempFilename,
+                mapping: mapping,
+                sheet_name: sheet,
+                compania_id: parseInt(aseSelect.value),
+                justificacion: just,
+                aplicar_descuento_livianos: discountCheck.checked
+            })
+        });
+        const result = await resp.json();
+        
+        if (result.exito) {
+            status.style.color = 'green';
+            status.innerText = '✅ ' + result.mensaje;
+            MQF.toast("Tarifas importadas y auditadas exitosamente.", "success");
+            
+            justInput.value = '';
+            setTimeout(() => {
+                cargarETLInterfaz();
+            }, 3000);
+        } else {
+            status.style.color = 'red';
+            status.innerText = '❌ Error: ' + result.mensaje;
+            MQF.toast(result.mensaje, "error");
+        }
+    } catch(e) {
+        status.style.color = 'red';
+        status.innerText = '❌ Error de red';
+        MQF.toast("Error al conectar con la API de importación.", "error");
+    }
+}
+
 </script>
 </body>
 </html>

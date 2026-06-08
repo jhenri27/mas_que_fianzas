@@ -13,7 +13,7 @@
     <!-- Design System MQF -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
     
@@ -370,12 +370,12 @@
         if (window.LOGO_MQF_B64) {
             doc.addImage(window.LOGO_MQF_B64, 'PNG', 14, 10, 48, 21);
         } else {
-            doc.setFontSize(18); doc.setTextColor(25,99,163); doc.setFont(undefined,'bold');
+            doc.setFontSize(18); doc.setTextColor(25,99,163); doc.setFont('helvetica', 'bold');
             doc.text('MAS QUE FIANZAS', 14, 25);
         }
 
         // Encabezado derecho
-        doc.setFontSize(9); doc.setTextColor(50,50,50); doc.setFont(undefined,'normal');
+        doc.setFontSize(9); doc.setTextColor(50,50,50); doc.setFont('helvetica', 'normal');
         doc.text('Generado:', 148, 16);
         doc.text(new Date().toLocaleString('es-DO'), 196, 16, {align:'right'});
         doc.text('Modulo:', 148, 21);
@@ -384,13 +384,13 @@
         // Barra azul título
         doc.setFillColor(25,99,163);
         doc.rect(14, 36, 182, 10, 'F');
-        doc.setFontSize(13); doc.setTextColor(255,255,255); doc.setFont(undefined,'bold');
+        doc.setFontSize(13); doc.setTextColor(255,255,255); doc.setFont('helvetica', 'bold');
         doc.text('FICHA DE CLIENTE', 105, 43, {align:'center'});
 
         // Código cliente
         doc.setFillColor(220,235,248);
         doc.rect(14, 48, 182, 8, 'F');
-        doc.setFontSize(10); doc.setTextColor(25,99,163); doc.setFont(undefined,'bold');
+        doc.setFontSize(10); doc.setTextColor(25,99,163); doc.setFont('helvetica', 'bold');
         doc.text('Codigo de Cliente: ' + fmt(c.id), 16, 54);
 
         // Campos de datos
@@ -400,9 +400,9 @@
                 doc.setFillColor(220,235,248);
                 doc.rect(14, y-5, 182, 9, 'F');
             }
-            doc.setFont(undefined,'bold'); doc.setFontSize(10); doc.setTextColor(25,99,163);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(25,99,163);
             doc.text(label + ':', 16, y);
-            doc.setFont(undefined,'normal'); doc.setTextColor(50,50,50);
+            doc.setFont('helvetica', 'normal'); doc.setTextColor(50,50,50);
             doc.text(fmt(value), 75, y);
             doc.setDrawColor(220); doc.line(14, y+3, 196, y+3);
             y += 12;
@@ -422,11 +422,11 @@
         // Firma
         y += 15;
         doc.setLineWidth(0.5); doc.line(85, y, 140, y);
-        doc.setFont(undefined,'bold'); doc.setFontSize(9); doc.setTextColor(50,50,50);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(50,50,50);
         doc.text('Firma autorizada', 115, y+6, {align:'center'});
 
         // Footer
-        doc.setFont(undefined,'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
         doc.text('Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. Cod. postal: 10107, Republica Dominicana', 105, 278, {align:'center'});
         doc.text('Tel: +1 (829) 629-1952 | Email: info@masquefianzas.com', 105, 283, {align:'center'});
 

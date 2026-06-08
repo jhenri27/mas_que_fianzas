@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelador PDF - MÁS QUE FIANZAS</title>
+    <!-- Skin Engine y Design System -->
+    <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+    <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF.js para renderizado de PDF en el cliente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    
+    <style>
+        body {
+            background: var(--mqf-bg, #f8fafc);
+            font-family: var(--mqf-font, 'Outfit', sans-serif);
+            color: var(--mqf-text, #0f172a);
+            padding: 24px;
+            margin: 0;
+        }
+
+        .module-card {
+            background: var(--mqf-surface, #ffffff);
+            border: 1px solid var(--mqf-border, rgba(99, 102, 241, 0.12));
+            border-radius: 16px;
+            box-shadow: var(--mqf-shadow-premium, 0 10px 30px rgba(0,0,0,0.02));
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1.5px solid var(--mqf-border, #e2e8f0);
+            margin-bottom: 20px;
+            padding-bottom: 2px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--mqf-text-muted, #64748b);
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--mqf-primary, #4f46e5);
+            background: rgba(99, 102, 241, 0.04);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab-btn.active {
+            color: var(--mqf-primary, #4f46e5);
+            border-bottom-color: var(--mqf-primary, #4f46e5);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Split-view Editor */
+        .split-view-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            height: calc(100vh - 240px);
+            min-height: 500px;
+        }
+
+        .variables-panel {
+            background: var(--mqf-surface-2, #f8fafc);
+            border: 1px solid var(--mqf-border, #e2e8f0);
+            border-radius: 12px;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .variables-group-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--mqf-text-muted, #64748b);
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--mqf-border, #e2e8f0);
+            padding-bottom: 4px;
+        }
+
+        .variable-item {
+            background: #ffffff;
+            border: 1.5px solid var(--mqf-border, #e2e8f0);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            font-weight: 550;
+            color: var(--mqf-text, #1e293b);
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .variable-item:hover {
+            border-color: var(--mqf-primary, #6366f1);
+            background: var(--mqf-primary-light, #eef2ff);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.05);
+        }
+
+        .variable-item:active {
+            cursor: grabbing;
+        }
+
+        .editor-workspace {
+            background: #475569; /* Slate oscuro de contraste */
+            border-radius: 12px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px;
+            position: relative;
+        }
+
+        /* PDF Render Canvas */
+        .pdf-page-container {
+            position: relative;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+
+        .pdf-canvas {
+            display: block;
+        }
+
+        .pdf-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: crosshair;
+        }
+
+        /* Mapped field box in UI */
+        .mapped-field-box {
+            position: absolute;
+            border: 1.5px dashed var(--mqf-primary, #4f46e5);
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--mqf-primary, #4f46e5);
+            font-size: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+
+        .mapped-field-box:hover {
+            background: rgba(99, 102, 241, 0.3);
+            border-style: solid;
+        }
+
+        .mapped-field-box.active {
+            border: 2px solid var(--mqf-accent, #6366f1) !important;
+            background: rgba(99, 102, 241, 0.25) !important;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.6) !important;
+        }
+
+        .box-resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            cursor: ew-resize;
+            background: transparent;
+            z-index: 5;
+        }
+        .box-resize-handle:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+
+        .mapped-field-box .box-label {
+            padding: 2px 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .mapped-field-box .box-delete {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Formulario flotante de propiedades del campo */
+        .field-props-popover {
+            position: absolute;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--mqf-primary, #4f46e5);
+            outline: none;
+        }
+
+        /* =====================================================
+           NOFTRAB HEADER CONTRAST FIX — inline para garantía
+           Sobreescribe cualquier regla de h1/h2/h3 global
+           ===================================================== */
+        .mqf-module-header h1,
+        .mqf-module-header h2,
+        .mqf-module-header h3,
+        .mqf-module-header__title {
+            color: #ffffff !important;
+        }
+        .mqf-module-header p,
+        .mqf-module-header__subtitle {
+            color: rgba(255, 255, 255, 0.85) !important;
+        }
+    </style>
+</head>
+<body data-skin="indigo">
+
+    <div class="mqf-module-header">
+        <h1 class="mqf-module-header__title">📋 Modelador de Formularios Inteligentes y PDFs</h1>
+        <p class="mqf-module-header__subtitle">Automatiza el llenado oficial de documentos de Multiseguros, Seguros Reservas, Midas y APS.</p>
+    </div>
+
+    <!-- Gestión Superior / Ingesta de Plantillas -->
+    <div class="module-card">
+        <h3 style="margin-top: 0; font-size: 16px;"><i class="fa-solid fa-cloud-arrow-up"></i> Cargar Nueva Plantilla Oficial</h3>
+        <form id="formCargaPlantilla" onsubmit="subirNuevaPlantilla(event)" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end;">
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Nombre de la Plantilla *</label>
+                <input type="text" id="plantillaNombre" class="form-input" placeholder="Ej: Solicitud de Fianza Seguros Reservas" required>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Aseguradora Asociada *</label>
+                <select id="plantillaAseguradora" class="form-select" required>
+                    <option value="">Seleccione Aseguradora...</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Archivo PDF Oficial *</label>
+                <input type="file" id="plantillaArchivo" class="form-input" accept=".pdf" required style="padding: 5px 10px;">
+            </div>
+            
+            <button type="submit" class="mqf-btn mqf-btn--primary" style="height: 38px;"><i class="fa-solid fa-upload"></i> Subir y Analizar</button>
+        </form>
+    </div>
+
+    <!-- Navegación por Pestañas -->
+    <div class="tabs-header">
+        <button class="tab-btn active" onclick="cambiarPestaña('plantillas')" id="tabBtnPlantillas"><i class="fa-solid fa-list"></i> Plantillas Cargadas</button>
+        <button class="tab-btn" onclick="cambiarPestaña('mapeador')" id="tabBtnMapeador" disabled><i class="fa-solid fa-pencil"></i> Mapeador Split-View</button>
+        <button class="tab-btn" onclick="cambiarPestaña('pruebas')" id="tabBtnPruebas" disabled><i class="fa-solid fa-circle-check"></i> Pruebas de Autocompletado</button>
+    </div>
+
+    <!-- PESTAÑA 1: PLANTILLAS CARGADAS -->
+    <div id="tab-plantillas" class="tab-content active">
+        <div class="module-card">
+            <div class="mqf-table-wrapper">
+                <table class="mqf-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Aseguradora</th>
+                            <th>Campos Mapeados</th>
+                            <th>Tipo Documento</th>
+                            <th>Fecha Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaPlantillasCargadas">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--mqf-text-muted);">Cargando plantillas...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 2: MAPEADOR SPLIT-VIEW -->
+    <div id="tab-mapeador" class="tab-content">
+        <div class="split-view-container">
+            <!-- Izquierda: Mapeo de Variables MQF -->
+            <div class="variables-panel">
+                <h4 style="margin: 0; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-database" style="color: var(--mqf-primary)"></i> Variables del Sistema
+                </h4>
+                <p style="font-size: 11px; color: var(--mqf-text-muted); margin: 0; line-height: 1.4;">
+                    Arrastra una variable del sistema contable o de pólizas y suéltala sobre el PDF a la derecha para vincularla a esa posición.
+                </p>
+                
+                <div style="background: rgba(99, 102, 241, 0.05); padding: 12px; border-radius: 8px; border: 1.5px solid var(--mqf-border, rgba(99, 102, 241, 0.12)); display: flex; flex-direction: column; gap: 8px; margin-top: 10px; margin-bottom: 5px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin: 0;"><i class="fa-solid fa-eye"></i> Simulación en Tiempo Real</label>
+                    <select id="mapeadorSimulacionSelect" class="form-select" onchange="seleccionarSimulacionMapeador(this.value)" style="font-size: 12px; padding: 6px 10px;">
+                        <option value="">Seleccione cotización de prueba...</option>
+                    </select>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; margin: 4px 0 0 0; color: var(--mqf-text, #1e293b);">
+                        <input type="checkbox" id="chkMapeadorPreview" onchange="toggleMapeadorPreview(this.checked)" style="margin: 0;"> Ver valores reales en el lienzo
+                    </label>
+                    <button type="button" class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="generarPDFPreviewMapeador()" style="margin-top: 6px; width: 100%;"><i class="fa-solid fa-file-pdf"></i> Generar PDF Real</button>
+                    
+                    <!-- Controles de distribución de pantalla (solo visibles cuando hay un PDF generado) -->
+                    <div id="mapeadorLayoutSelector" style="display: none; flex-direction: column; gap: 6px; margin-top: 8px; border-top: 1px solid var(--mqf-border, rgba(99, 102, 241, 0.15)); padding-top: 8px;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b;">DISTRIBUCIÓN DE VISTA:</span>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
+                            <button type="button" class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="cambiarLayoutMapeador('editor')" id="btnLayoutEditor" style="padding: 2px 4px; font-size: 10px;" title="Solo Editor"><i class="fa-solid fa-pencil"></i></button>
+                            <button type="button" class="mqf-btn mqf-btn--secondary mqf-btn--sm active" onclick="cambiarLayoutMapeador('split')" id="btnLayoutSplit" style="padding: 2px 4px; font-size: 10px;" title="Vista Dividida"><i class="fa-solid fa-columns"></i></button>
+                            <button type="button" class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="cambiarLayoutMapeador('pdf')" id="btnLayoutPdf" style="padding: 2px 4px; font-size: 10px;" title="Solo PDF"><i class="fa-solid fa-file-lines"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="variables-list">
+                    <div class="variables-group-title">Datos Asegurado / Cliente</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'cliente.nombre')"><i class="fa-solid fa-user"></i> Nombre Completo</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'cliente.cedula')"><i class="fa-solid fa-address-card"></i> Cédula / RNC</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'cliente.telefono')"><i class="fa-solid fa-phone"></i> Teléfono</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'cliente.email')"><i class="fa-solid fa-envelope"></i> Correo Electrónico</div>
+
+                    <div class="variables-group-title" style="margin-top: 14px;">Datos de la Póliza / Fianza</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.numero_poliza')"><i class="fa-solid fa-file-invoice"></i> Nro de Póliza</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.monto_asegurado')"><i class="fa-solid fa-dollar-sign"></i> Valor Afianzado</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.fecha_inicio')"><i class="fa-solid fa-calendar-days"></i> Inicio Cobertura</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.fecha_fin')"><i class="fa-solid fa-calendar-xmark"></i> Fin Cobertura</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.beneficiario')"><i class="fa-solid fa-building-shield"></i> Beneficiario</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.objeto_fianza')"><i class="fa-solid fa-quote-left"></i> Objeto de la Fianza</div>
+
+                    <div class="variables-group-title" style="margin-top: 14px;">Datos Primas y Costos</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.prima_neta')"><i class="fa-solid fa-money-bill-wave"></i> Prima Neta</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.itbis')"><i class="fa-solid fa-percent"></i> ITBIS (18%)</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.total_pagar')"><i class="fa-solid fa-vault"></i> Total a Pagar</div>
+                    
+                    <div class="variables-group-title" style="margin-top: 14px;">Crear Campo de Entrada Manual</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, '')" style="border-style: dashed; border-color: var(--mqf-primary); color: var(--mqf-primary); background: transparent;"><i class="fa-solid fa-plus"></i> Entrada Personalizada</div>
+                </div>
+            </div>
+            
+            <!-- Derecha: Workspace con PDF y/o Previsualización PDF -->
+            <div id="editorWorkspaceWrapper" style="display: grid; grid-template-columns: 1fr; gap: 20px; height: 100%; min-height: 0; position: relative;">
+                <!-- Workspace con PDF y Drop Zones -->
+                <div class="editor-workspace" id="editorWorkspace" style="margin: 0; height: 100%; position: relative; width: 100%;">
+                    <div class="zoom-controls" style="position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px;">
+                        <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="zoomIn()" style="height: 32px; padding: 0 10px;" title="Acercar (Zoom +)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                        <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="zoomOut()" style="height: 32px; padding: 0 10px;" title="Alejar (Zoom -)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                        <span id="zoomPercentLabel" style="background: rgba(15, 23, 42, 0.85); color: white; padding: 0 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: flex; align-items: center; height: 32px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px);">125%</span>
+                    </div>
+                    <div id="pdfPagesContainer">
+                        <!-- Las páginas del PDF se renderizarán aquí -->
+                    </div>
+                </div>
+                <!-- Contenedor para la vista previa del PDF real -->
+                <div id="iframeMapeadorPreviewContainer" style="display: none; height: 100%; background: #334155; border-radius: 12px; border: 1px solid var(--mqf-border, #e2e8f0); overflow: hidden; position: relative;">
+                    <iframe id="iframeMapeadorPreview" src="about:blank" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+            <button class="mqf-btn mqf-btn--secondary" onclick="cancelarEdicion()"><i class="fa-solid fa-circle-xmark"></i> Cancelar</button>
+            <button class="mqf-btn mqf-btn--success" onclick="guardarMapeoConfig()"><i class="fa-solid fa-floppy-disk"></i> Guardar Mapeo</button>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 3: PRUEBAS DE AUTOCOMPLETADO -->
+    <div id="tab-pruebas" class="tab-content">
+        <div class="split-view-container" style="grid-template-columns: 350px 1fr;">
+            <!-- Izquierda: Entrada de Datos -->
+            <div class="variables-panel" style="background: #ffffff;">
+                <h4 style="margin: 0; font-size: 14px;"><i class="fa-solid fa-sliders"></i> Simulador de Solicitudes</h4>
+                <p style="font-size: 11px; color: var(--mqf-text-muted); margin: 0; line-height: 1.4;">
+                    Elige una póliza del sistema o una cotización de prueba para alimentar automáticamente los campos del formulario.
+                </p>
+                
+                <div class="form-group">
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Simular con Cotización del Sistema</label>
+                    <select id="simularCotizacionSelect" class="form-select" onchange="cargarDatosSimulacionCotizacion(this.value)">
+                        <option value="">Seleccione cotización...</option>
+                    </select>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid var(--mqf-border, #e2e8f0); margin: 10px 0;">
+                
+                <h5 style="margin: 0; font-size: 12px; color: var(--mqf-text-muted);">Campos Adicionales Requeridos por el PDF</h5>
+                <form id="formCamposManualesPrueba" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                    <!-- Se inyectarán dinámicamente campos que no están mapeados a variables globales -->
+                    <div style="font-size: 11px; color: var(--mqf-text-muted); font-style: italic;">Todos los campos del PDF están mapeados a variables del sistema.</div>
+                </form>
+                <button class="mqf-btn mqf-btn--primary" onclick="ejecutarAutollenadoSimulado()" style="margin-top: 15px; width: 100%;"><i class="fa-solid fa-wand-magic-sparkles"></i> Llenar y Generar PDF</button>
+                <button class="mqf-btn mqf-btn--secondary" onclick="cambiarPestaña('mapeador')" style="margin-top: 10px; width: 100%;"><i class="fa-solid fa-pencil"></i> Volver a Ajustar Variables</button>
+            </div>
+            
+            <!-- Derecha: Iframe del PDF Generado -->
+            <div class="editor-workspace" style="background: #334155; padding: 0;">
+                <iframe id="iframePreviewPDFGenerado" src="about:blank" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popover para edición de propiedades del campo de PDF (Font, color, etc.) -->
+    <div id="popoverPropiedadesCampo" class="field-props-popover" style="display: none;">
+        <h4 style="margin: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+            <span>🔧 Propiedades de Campo</span>
+            <button onclick="cerrarPopoverPropiedades()" style="background: transparent; border: none; font-size: 14px; cursor: pointer;">&times;</button>
+        </h4>
+        
+        <div class="form-group" style="margin: 0;">
+            <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Variable MQF Vinculada</label>
+            <input type="text" id="popoverVariable" class="form-input" readonly style="background: #f1f5f9;">
+        </div>
+
+        <div class="form-group" style="margin: 0;">
+            <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Nombre de Campo en el PDF (AcroForm)</label>
+            <input type="text" id="popoverCampoPDF" class="form-input" placeholder="Opcional. Ej: txtNombre">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Fuente</label>
+                <select id="popoverFontFamily" class="form-select">
+                    <option value="helvetica">Helvetica</option>
+                    <option value="times-roman">Times</option>
+                    <option value="courier">Courier</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Tamaño</label>
+                <select id="popoverFontSize" class="form-select">
+                    <option value="8">8 pt</option>
+                    <option value="9">9 pt</option>
+                    <option value="10" selected>10 pt</option>
+                    <option value="11">11 pt</option>
+                    <option value="12">12 pt</option>
+                    <option value="14">14 pt</option>
+                    <option value="16">16 pt</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Estilo</label>
+                <select id="popoverFontWeight" class="form-select">
+                    <option value="normal">Normal</option>
+                    <option value="bold">Negrita</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Color Texto</label>
+                <input type="color" id="popoverColor" class="form-input" style="height: 34px; padding: 2px;">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Alineación</label>
+                <select id="popoverAlineacion" class="form-select">
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centro</option>
+                    <option value="right">Derecha</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Ancho (mm)</label>
+                <input type="number" id="popoverAncho" class="form-input" min="5" max="250" step="1" placeholder="Ej: 50">
+            </div>
+        </div>
+
+        <div class="form-group" style="margin: 0; padding-top: 2px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 700; cursor: pointer; user-select: none; color: #64748b;">
+                <input type="checkbox" id="popoverFondoOpaco" style="margin: 0;"> Fondo Opaco (tapar texto detrás)
+            </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 8px;">
+            <button class="mqf-btn mqf-btn--danger mqf-btn--sm" onclick="eliminarCampoSeleccionado()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+            <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="aplicarPropiedadesCampo()"><i class="fa-solid fa-check"></i> Aplicar</button>
+        </div>
+    </div>
+
+    <!-- Script de lógica del modelador -->
+    <script src="../assets/api-client.js?v=9.0"></script>
+    <script src="../assets/components.js?v=9.0"></script>
+    <script src="../assets/modelador_pdf.js?v=12.0"></script>
+</body>
+</html>

@@ -131,6 +131,10 @@ class Dashboard {
                     // Ocultar nav-items no autorizados
                     document.querySelectorAll('.nav-item').forEach(item => {
                         const moduleName = item.dataset.module;
+                        if (moduleName === 'labs_masqf' || moduleName === 'modelador_pdf') {
+                            item.style.display = 'flex';
+                            return;
+                        }
                         if (moduleName && !modulosPermitidos[moduleName]) {
                             item.style.display = 'none';
                         } else {
@@ -726,8 +730,21 @@ class Dashboard {
             }
         }
 
-        // Actualizar título
+        // Si es modelador_pdf, forzar carga del iframe
+        if (modulo === 'modelador_pdf') {
+            const iframe = document.getElementById('modelador-iframe');
+            if (iframe) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/modelador_pdf.html?t=' + Date.now();
+                iframe.dataset.loaded = 'true';
+            }
+        }
 
+        // Actualizar visibilidad de nav-items
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const navItem = document.querySelector(`[onclick="dashboard.cambiarModulo('${modulo}')"]`);
+        if (navItem) navItem.classList.add('active');
+
+        // Actualizar título
         const titulo = document.getElementById('pageTitle');
         const titulos = {
             'dashboard': 'INICIO',
@@ -739,9 +756,10 @@ class Dashboard {
             'siniestros': 'SINIESTROS',
             'productos': 'PRODUCTOS',
             'reportes': 'REPORTES',
-            'usuarios': 'USUARIOS Y PERFILES',
+            'usuarios': 'USUARIOS',
             'centro_financiero': 'CENTRO FINANCIERO',
             'labs_masqf': 'LABS-MASQF (TECNOLOGÍA)',
+            'modelador_pdf': 'MODELADOR PDF',
             'configuracion': 'CONFIGURACIÓN'
         };
 

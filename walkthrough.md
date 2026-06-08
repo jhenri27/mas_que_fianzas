@@ -1,13 +1,31 @@
-# Walkthrough v8.0: Módulo de Fianzas — Funcionalidad Completa
+# Walkthrough v9.0: Rediseño Uniforme y Separación de Impresión de PDF
+**Normativa: NOFTRAB v9.0 | Fecha: 2026-06-08**
+
+---
+
+## Resumen de Cambios (v9.0)
+
+Esta versión resuelve la inconsistencia de diseño y flujo en el cotizador de **Seguros de Ley** (`cotizaciones.html`), separando de manera definitiva la lógica de guardado en la base de datos de la lógica de descarga de PDF, y aplicando un layout de ancho completo y columnas ordenadas.
+
+### 1. Separación de Lógica en Botones (Guardar vs. Imprimir)
+* **Botón Verde ("Guardar"):** Se renombró el botón principal a **Guardar** (o **Guardar Cambios** durante la edición). Se eliminó por completo la descarga automática de PDF de este flujo. Ahora el botón verde se concentra única y exclusivamente en persistir los datos en base de datos.
+* **Botón Azul ("Imprimir PDF"):** Se añadió un nuevo botón azul con icono de impresora (`fa-print`) que valida el formulario y genera la descarga del PDF de forma directa a través de un gesto síncrono del usuario.
+
+### 2. Rediseño Visual Uniforme (mqf-card de Ancho Completo)
+* **Estructura Principal:** Se retiraron los límites de ancho (`max-w-4xl`) y la rejilla externa asimétrica. Ahora la pestaña "Seguros de Ley" utiliza una estructura `mqf-card` w-full que abarca la totalidad del ancho de la pantalla, alineándose perfectamente con la pestaña "Fianzas" y el listado de "Pólizas".
+* **Secciones del Formulario:**
+  * **Datos del Cliente:** Agrupados en una sección dedicada con rejilla de **2 columnas** (Nombre y Cédula/RNC).
+  * **Datos del Vehículo:** Agrupados en una sección con rejilla de **3 columnas** (Tipo de vehículo, Uso y Capacidad/Cilindrada).
+  * **Sección de Resultados y Coberturas:** Panel interno estético de **2 columnas** que se visualiza al completar los datos del vehículo.
+
+---
+
+## Historial de Versiones Anteriores
+
+### Walkthrough v8.0: Módulo de Fianzas — Funcionalidad Completa
 **Normativa: NOFTRAB v8.0 | Fecha: 2026-06-03**
 
----
-
-## Resumen de Cambios
-
-Esta versión resuelve la concordancia y consistencia entre el **Módulo de Fianzas** (`fianzas.html`) y la **Ficha de Fianzas del Cotizador** (`cotizaciones.html`), implementando las mejores prácticas del mercado para sistemas de gestión de fianzas.
-
----
+Esta versión resolvió la concordancia y consistencia entre el **Módulo de Fianzas** (`fianzas.html`) y la **Ficha de Fianzas del Cotizador** (`cotizaciones.html`), implementando las mejores prácticas del mercado para sistemas de gestión de fianzas.
 
 ## Cambio 1: Backend — Action `actualizar` en fianzas.php
 

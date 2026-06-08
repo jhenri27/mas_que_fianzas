@@ -1,0 +1,190 @@
+<!-- frontend/html/editor.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelador PDF DOCS - Editor</title>
+    <link rel="stylesheet" href="../css/editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header (igual que tu plataforma) -->
+    <header class="main-header">
+        <div class="header-left">
+            <img src="../images/logo.png" alt="Logo" class="logo">
+            <h1>Modelador PDF DOCS</h1>
+        </div>
+        <div class="header-right">
+            <button class="btn-icon"><i class="fas fa-bell"></i></button>
+            <div class="user-menu">
+                <img src="../images/user.jpg" alt="User" class="user-avatar">
+                <span>Administrador Sistema</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>INICIO</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-folder"></i>
+                    <span>Mis PDFs</span>
+                </a>
+                <a href="#" class="nav-item primary">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nuevo PDF</span>
+                </a>
+                <div class="nav-section">
+                    <span class="nav-section-title">HERRAMIENTAS</span>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-th-large"></i>
+                        <span>Plantillas</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-cube"></i>
+                        <span>Campo</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Configuración</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <h2>Editor de Póliza de Seguro</h2>
+                    <span class="badge badge-draft">Borrador</span>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-secondary" onclick="editor.preview()">
+                        <i class="fas fa-eye"></i> Vista Previa
+                    </button>
+                    <button class="btn btn-secondary" onclick="editor.save()">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn btn-primary" onclick="editor.publish()">
+                        <i class="fas fa-paper-plane"></i> Publicar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor Container -->
+            <div class="editor-container">
+                <!-- Tabs -->
+                <div class="editor-tabs">
+                    <button class="tab active" data-tab="editor">
+                        <i class="fas fa-edit"></i> Editor
+                    </button>
+                    <button class="tab" data-tab="preview">
+                        <i class="fas fa-desktop"></i> Preview
+                    </button>
+                    <button class="tab" data-tab="data">
+                        <i class="fas fa-database"></i> Datos
+                    </button>
+                    <button class="tab" data-tab="settings">
+                        <i class="fas fa-cog"></i> Configuración
+                    </button>
+                </div>
+
+                <!-- Tab Content: Editor -->
+                <div class="tab-content active" id="tab-editor">
+                    <div class="split-view">
+                        <!-- Left: Form Builder -->
+                        <div class="split-panel split-left">
+                            <div class="panel-header">
+                                <h3>Formulario Online</h3>
+                                <div class="panel-actions">
+                                    <button class="btn-icon" title="Add Field">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <!-- Field Palette -->
+                                <div class="field-palette">
+                                    <div class="palette-category">
+                                        <h4>Básicos</h4>
+                                        <div class="palette-items">
+                                            <div class="palette-item" data-field-type="texto">
+                                                <i class="fas fa-font"></i> Texto
+                                            </div>
+                                            <div class="palette-item" data-field-type="numero">
+                                                <i class="fas fa-hashtag"></i> Número
+                                            </div>
+                                            <div class="palette-item" data-field-type="fecha">
+                                                <i class="fas fa-calendar"></i> Fecha
+                                            </div>
+                                            <div class="palette-item" data-field-type="email">
+                                                <i class="fas fa-envelope"></i> Email
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="palette-category">
+                                        <h4>Avanzados</h4>
+                                        <div class="palette-items">
+                                            <div class="palette-item" data-field-type="firma">
+                                                <i class="fas fa-signature"></i> Firma
+                                            </div>
+                                            <div class="palette-item" data-field-type="archivo">
+                                                <i class="fas fa-paperclip"></i> Archivo
+                                            </div>
+                                            <div class="palette-item" data-field-type="tabla">
+                                                <i class="fas fa-table"></i> Tabla
+                                            </div>
+                                            <div class="palette-item" data-field-type="calculado">
+                                                <i class="fas fa-calculator"></i> Calculado
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Canvas -->
+                                <div class="form-canvas" id="form-canvas">
+                                    <!-- Fields will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: PDF Preview -->
+                        <div class="split-panel split-right">
+                            <div class="panel-header">
+                                <h3>PDF Original</h3>
+                                <div class="panel-actions">
+                                    <button class="btn-icon" title="Zoom In">
+                                        <i class="fas fa-search-plus"></i>
+                                    </button>
+                                    <button class="btn-icon" title="Zoom Out">
+                                        <i class="fas fa-search-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="pdf-viewer" id="pdf-viewer">
+                                    <!-- PDF will be rendered here using PDF.js -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other tabs content... -->
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/editor.js"></script>
+    <script src="../js/field-builder.js"></script>
+    <script src="../js/pdf-viewer.js"></script>
+</body>
+</html>

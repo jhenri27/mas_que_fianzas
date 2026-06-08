@@ -259,7 +259,7 @@ try {
         $total       = floatval($datos['total'] ?? 0);
         $tasa_manual = (isset($datos['tasa_manual']) && !empty($datos['tasa_manual'])) ? floatval($datos['tasa_manual']) : null;
 
-        $stmt->bind_param('sssssssssssdidddssdi',
+        $stmt->bind_param('sssssssssssdidddsdi',
             $tipo, $subtipo, $cliente, $cedula, $telefono, $email, $beneficiario, $uso,
             $capacidad, $aseguradora, $cobertura,
             $monto_afianzado, $plazo, $prima_base,
@@ -284,6 +284,43 @@ try {
             if (insertar_cotizacion($db, $c)) $ok++;
         }
         respuestaJSON(true, "$ok cotizaciones importadas a la base de datos", ['insertadas' => $ok], 201);
+
+    // OBTENER (por ID)
+    } elseif ($action === 'obtener' && $metodo === 'GET') {
+        $id = intval($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            respuestaJSON(false, 'ID de cotización no válido', null, 400);
+        }
+        
+        $soloPropios = restringirSoloPropios($usuario_actual, 'Cotizaciones');
+        if ($soloPropios) {
+            $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE id = ? AND creado_por = ? LIMIT 1");
+            $stmt->bind_param('ii', $id, $usuario_actual);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE id = ? LIMIT 1");
+            $stmt->bind_param('i', $id);
+        }
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $cot = $res->fetch_assoc();
+        $stmt->close();
+        
+        if (!$cot) {
+            respuestaJSON(false, 'Cotización no encontrada', null, 404);
+        }
+        
+        if (!empty($cot['servicios_opcionales'])) {
+            $dec = json_decode($cot['servicios_opcionales'], true);
+            if (is_array($dec)) $cot['servicios_opcionales'] = $dec;
+        }
+        
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            "exito" => true,
+            "mensaje" => "Cotización obtenida con éxito",
+            "dato" => $cot
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        exit;
 
     // ELIMINAR (una o varias)
     } elseif ($action === 'eliminar' && $metodo === 'POST') {
@@ -312,7 +349,7 @@ try {
         }
 
     } else {
-        respuestaJSON(false, 'Endpoint no encontrado. Use ?action=listar|guardar|importar|eliminar', null, 404);
+        respuestaJSON(false, 'Endpoint no encontrado. Use ?action=listar|obtener|guardar|importar|eliminar', null, 404);
     }
 
 } catch (Exception $e) {

@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=9.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
     <style>
@@ -2393,6 +2393,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const anioInput = document.getElementById('proy-filtro-anio');
     if (mesSelect) mesSelect.value = hoy.getMonth() + 1;
     if (anioInput) anioInput.value = hoy.getFullYear();
+
+    // Redirección y autocompletado desde cotizaciones (Seguro de Ley)
+    setTimeout(() => {
+        const numCot = sessionStorage.getItem('convertir_cotizacion_numero');
+        if (numCot) {
+            sessionStorage.removeItem('convertir_cotizacion_numero');
+            abrirTab('tab-nueva');
+            iniciarWizard();
+            const input = document.getElementById('w-cotizacion-num');
+            if (input) {
+                input.value = numCot;
+                buscarCotizacion();
+            }
+        }
+    }, 200);
 });
 
 // ═══════════════════════════════════════
