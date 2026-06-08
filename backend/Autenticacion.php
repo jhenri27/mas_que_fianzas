@@ -25,7 +25,7 @@ class Autenticacion {
             // 1. Buscar usuario por username
             $sql = "SELECT u.id, u.username, u.password_hash, u.estado, u.email, u.nombre, u.apellido,
                            u.perfil_id, u.intentos_fallidos, u.bloqueado_hasta, u.requiere_cambio_password,
-                           p.nombre_perfil
+                           u.foto_perfil, p.nombre_perfil
                     FROM usuarios u
                     LEFT JOIN perfiles p ON u.perfil_id = p.id
                     WHERE u.username = ?";
@@ -126,6 +126,7 @@ class Autenticacion {
             $_SESSION['token_sesion'] = $token_sesion;
             $_SESSION['fecha_login'] = date('Y-m-d H:i:s');
             $_SESSION['requiere_cambio_password'] = $usuario['requiere_cambio_password'];
+            $_SESSION['foto_perfil'] = $usuario['foto_perfil'];
 
             // 8. Registrar en auditoría
             logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Login exitoso", 'exitoso', null, null, null, null, null);
@@ -138,7 +139,8 @@ class Autenticacion {
                     'requiere_cambio_password' => true,
                     'usuario_id' => $usuario['id'],
                     'perfil_id' => $usuario['perfil_id'],
-                    'token_sesion' => $token_sesion
+                    'token_sesion' => $token_sesion,
+                    'foto_perfil' => $usuario['foto_perfil']
                 ];
             }
 
@@ -149,6 +151,7 @@ class Autenticacion {
                 'perfil_id' => $usuario['perfil_id'],
                 'nombre_completo' => $_SESSION['nombre_completo'],
                 'perfil' => $usuario['nombre_perfil'],
+                'foto_perfil' => $usuario['foto_perfil'],
                 'token_sesion' => $token_sesion
             ];
 

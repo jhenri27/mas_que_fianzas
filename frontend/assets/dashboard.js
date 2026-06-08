@@ -55,6 +55,15 @@ class Dashboard {
             userName.textContent = this.usuarioActual.nombre_completo;
         }
 
+        // Actualizar avatar de usuario
+        const userAvatar = document.querySelector('.user-avatar');
+        if (userAvatar && this.usuarioActual && this.usuarioActual.foto_perfil) {
+            userAvatar.src = this.usuarioActual.foto_perfil + '?t=' + Date.now();
+        }
+
+        // Sincronizar perfil con backend de manera asíncrona
+        this.sincronizarPerfilConBackend();
+
         // Actualizar saludo
         const hora = new Date().getHours();
         let saludo = '¡Hola! ';
@@ -185,6 +194,52 @@ class Dashboard {
                     });
                 }
             });
+        }
+    }
+
+    async sincronizarPerfilConBackend() {
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            if (!token) return;
+            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+                credentials: 'include',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (data.exito && data.datos) {
+                const d = data.datos;
+                
+                // Actualizar localmente
+                const userName = document.getElementById('userName');
+                if (userName) userName.textContent = d.nombre + ' ' + d.apellido;
+                
+                const userGreeting = document.getElementById('userGreeting');
+                if (userGreeting) {
+                    const hora = new Date().getHours();
+                    let saludo = '¡Hola! ';
+                    if (hora < 12) saludo += 'Buenos días';
+                    else if (hora < 18) saludo += 'Buenas tardes';
+                    else saludo += 'Buenas noches';
+                    userGreeting.textContent = saludo + ', ' + (d.nombre + ' ' + d.apellido);
+                }
+
+                const userAvatar = document.querySelector('.user-avatar');
+                if (userAvatar && d.foto_perfil) {
+                    userAvatar.src = d.foto_perfil + '?t=' + Date.now();
+                }
+
+                // Actualizar localStorage
+                const usr = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+                usr.nombre = d.nombre;
+                usr.apellido = d.apellido;
+                usr.nombre_completo = d.nombre + ' ' + d.apellido;
+                usr.foto_perfil = d.foto_perfil;
+                localStorage.setItem('usuario_actual', JSON.stringify(usr));
+                this.usuarioActual = usr;
+            }
+        } catch(e) {
+            console.warn('[Dashboard] No se pudo sincronizar perfil con el backend:', e);
         }
     }
 
@@ -1592,6 +1647,15 @@ async function subirFotoPerfil(file) {
             const avatarHeader = document.querySelector('.user-avatar');
             if (avatarHeader && data.datos && data.datos.foto_url) {
                 avatarHeader.src = data.datos.foto_url + '?t=' + Date.now();
+                
+                // Actualizar localStorage
+                const usr = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+                usr.foto_perfil = data.datos.foto_url;
+                localStorage.setItem('usuario_actual', JSON.stringify(usr));
+                
+                if (window.dashboard) {
+                    window.dashboard.usuarioActual = usr;
+                }
             }
         } else {
             statusEl.textContent = '❌ ' + (data.mensaje || 'Error al subir foto.');
@@ -1637,6 +1701,10 @@ async function guardarMiPerfil() {
             const usr = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
             usr.nombre = nombre; usr.apellido = apellido; usr.nombre_completo = nombre + ' ' + apellido;
             localStorage.setItem('usuario_actual', JSON.stringify(usr));
+            
+            if (window.dashboard) {
+                window.dashboard.usuarioActual = usr;
+            }
             setTimeout(() => cerrarModal('modalMiPerfil'), 1500);
         } else {
             statusEl.textContent = '❌ ' + (data.mensaje || 'Error al guardar.');
