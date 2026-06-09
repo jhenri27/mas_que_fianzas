@@ -734,7 +734,11 @@
         const tipoBadge = '<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span>';
         // Fecha unificada
         const fecha = c.fecha || c.fecha_inicio || c.creado_en || '';
-        const fechaStr = fecha ? new Date(fecha).toLocaleDateString('es-DO') : '-';
+        // Fix TZ-shift: date-only strings ('YYYY-MM-DD') are parsed as UTC midnight,
+        // which shifts to the previous day in UTC-4 (America/Santo_Domingo).
+        // Appending 'T12:00:00' treats the date as local noon, preventing day rollback.
+        const fechaSafe = fecha && fecha.length === 10 ? fecha + 'T12:00:00' : fecha;
+        const fechaStr = fechaSafe ? new Date(fechaSafe).toLocaleDateString('es-DO') : '-';
 
         // Botones: Editar solo para cotizaciones del cotizador, PDF disponible para todos
         let btns = '';

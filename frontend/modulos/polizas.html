@@ -2364,7 +2364,9 @@ function fmtMoneda(n) {
 
 function formatFecha(f) {
     if (!f) return '—';
-    try { return new Date(f).toLocaleDateString('es-DO'); } catch { return f; }
+    // Fix TZ-shift: date-only 'YYYY-MM-DD' is parsed as UTC midnight → shifts to previous day in UTC-4
+    const safe = typeof f === 'string' && f.length === 10 ? f + 'T12:00:00' : f;
+    try { return new Date(safe).toLocaleDateString('es-DO'); } catch { return f; }
 }
 
 // Cerrar sugerencias al hacer click fuera
