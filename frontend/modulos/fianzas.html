@@ -1081,7 +1081,11 @@
 
   function fmtFecha(str) {
     if (!str) return '—';
-    const d = new Date(str);
+    // Fix TZ-shift: date-only 'YYYY-MM-DD' is parsed as UTC midnight
+    // which shifts to previous day in UTC-4 (America/Santo_Domingo).
+    // Appending 'T12:00:00' treats as local noon, preventing day rollback.
+    const safe = typeof str === 'string' && str.length === 10 ? str + 'T12:00:00' : str;
+    const d = new Date(safe);
     return isNaN(d.getTime()) ? str : d.toLocaleDateString('es-DO');
   }
 
