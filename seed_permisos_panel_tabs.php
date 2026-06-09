@@ -47,6 +47,8 @@ $modulos_def = [
     'cotizaciones' => ['icono' => '📈', 'ruta' => '/modulos/cotizaciones.php', 'orden' => 6],
     'configuracion'=> ['icono' => '⚙️', 'ruta' => '/modulos/configuracion.php','orden' => 8],
     'reportes'     => ['icono' => '📊', 'ruta' => '/modulos/reportes.php',      'orden' => 9],
+    'productos'    => ['icono' => '📦', 'ruta' => '/modulos/productos.html',    'orden' => 7],
+    'siniestros'   => ['icono' => '🚨', 'ruta' => '/modulos/siniestros.html',   'orden' => 11],
 ];
 
 /**
@@ -90,6 +92,18 @@ $funciones_def = [
         ['REP_VENTAS_LOGRADAS',  'Ver Reporte de Ventas Logradas',   'reportes' ],
         ['REP_MARGEN_COMERCIAL', 'Ver Reporte de Margen Comercial',  'reportes' ],
     ],
+    'productos' => [
+        ['TAB_PRO_CONSULTAR',  'Pestaña Consultar Catálogo de Productos',   'consultar'],
+        ['TAB_PRO_NUEVO',      'Pestaña Crear Nuevo Seguro / Fianza',       'crear'    ],
+        ['TAB_PRO_IMPORTAR',   'Pestaña Importar Tarifario Masivo',         'registrar'],
+        ['TAB_PRO_DEDUCIBLES', 'Subpanel de Gestión de Deducibles',         'editar'   ],
+    ],
+    'siniestros' => [
+        ['TAB_SIN_CONSULTAR',  'Pestaña Consultar Casos Activos',           'consultar'],
+        ['TAB_SIN_REGISTRAR',  'Pestaña Declarar Nuevo Incidente',          'crear'    ],
+        ['TAB_SIN_DICTAMEN',   'Dictaminar Aprobación de Reclamos',         'validar'  ],
+        ['TAB_SIN_LIQUIDAR',   'Liquidar / Pagar Indemnizaciones',          'registrar'],
+    ],
 ];
 
 /**
@@ -122,6 +136,14 @@ $malla = [
     'REP_VENTAS_GENERALES' => [1, 1, 1, 1, 0, 0, 1, 0],
     'REP_VENTAS_LOGRADAS'  => [1, 1, 1, 1, 0, 0, 1, 0],
     'REP_MARGEN_COMERCIAL' => [1, 0, 1, 1, 0, 0, 1, 0],
+    'TAB_PRO_CONSULTAR'  => [1, 1, 1, 1, 1, 0, 1, 1],
+    'TAB_PRO_NUEVO'      => [1, 1, 0, 1, 0, 0, 0, 0],
+    'TAB_PRO_IMPORTAR'   => [1, 1, 0, 1, 0, 0, 0, 0],
+    'TAB_PRO_DEDUCIBLES' => [1, 1, 0, 1, 0, 0, 0, 0],
+    'TAB_SIN_CONSULTAR'  => [1, 1, 1, 1, 1, 0, 1, 1],
+    'TAB_SIN_REGISTRAR'  => [1, 1, 0, 1, 1, 0, 0, 1],
+    'TAB_SIN_DICTAMEN'   => [1, 1, 0, 1, 0, 0, 0, 0],
+    'TAB_SIN_LIQUIDAR'   => [1, 0, 1, 0, 0, 0, 0, 0],
 ];
 
 // Orden de perfiles para la malla (índice 0 = perfil_id 1, etc.)
