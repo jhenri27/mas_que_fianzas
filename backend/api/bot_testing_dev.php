@@ -142,38 +142,61 @@ try {
             $logs[] = ["modulo" => "CHAT-CSR", "tipo" => "error", "mensaje" => "Prueba de chat omitida por fallos estructurales."];
         } else {
             try {
-                $db->begin_transaction();
-                // 1. Simular mensaje del usuario activando la palabra clave "bot"
-                $test_msg = "bot test CSR and BHN bot testing script " . rand(100, 999);
+                // Determinar URL base local para el loopback
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
+                $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                $chat_url = "$protocol://$host/PLATAFORMA_INTEGRADA/backend/api/chat.php";
                 
-                // Emisor: usuario actual, Receptor: 1 (Admin)
-                $stmt = $db->prepare("INSERT INTO mensajes_chat (emisor_id, receptor_id, mensaje, fecha_envio, leido) VALUES (?, 1, ?, NOW(), 0)");
-                $stmt->bind_param("is", $usuario_id, $test_msg);
-                $stmt->execute();
-                $msg_id = $stmt->insert_id;
-                $stmt->close();
+                // Realizar llamada CURL simulando el envío real con la sesión activa
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $chat_url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+                    'mensaje' => 'bot test autodiagnostico de sesion real',
+                    'receptor_id' => 1 // Admin
+                ]));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Bearer ' . $bearer_token,
+                    'Content-Type: application/json'
+                ]);
+                $resp = curl_exec($ch);
+                $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
                 
-                // Ejecutar la rutina lógica de respuesta automática del bot BHN de forma aislada
-                $primer_palabra = 'bot';
-                $bot_reply = "🤖 **BHN-Bot-HelpNow (Soporte Técnico)**: Hola, ¿en qué área necesitas asistencia técnica? (Simulación Bot Testing)";
+                if ($http_code !== 200) {
+                    $res_err = json_decode($resp, true);
+                    $msg_err = $res_err['mensaje'] ?? 'Error desconocido';
+                    throw new Exception("La API de chat retornó código HTTP $http_code. Detalle: $msg_err");
+                }
                 
-                $stmt_bot = $db->prepare("INSERT INTO mensajes_chat (emisor_id, receptor_id, mensaje, fecha_envio, leido) VALUES (1, ?, ?, NOW(), 0)");
-                $stmt_bot->bind_param("is", $usuario_id, $bot_reply);
-                $stmt_bot->execute();
-                $bot_msg_id = $stmt_bot->insert_id;
-                $stmt_bot->close();
-
-                // 2. Consultar si existen los mensajes insertados y el bot respondió
-                $check_user = $db->query("SELECT id FROM mensajes_chat WHERE id = $msg_id")->num_rows;
-                $check_bot = $db->query("SELECT id FROM mensajes_chat WHERE id = $bot_msg_id")->num_rows;
-
-                // Hacer rollback para no alterar la base de datos real (NOFTRAB)
-                $db->rollback();
-
-                if ($check_user === 1 && $check_bot === 1) {
-                    $logs[] = ["modulo" => "CHAT-CSR", "tipo" => "ok", "mensaje" => "Simulación de Chat y disparador BHN-Bot-HelpNow exitoso."];
+                $res_data = json_decode($resp, true);
+                if (!isset($res_data['exito']) || !$res_data['exito']) {
+                    throw new Exception("La API de chat reportó fallo: " . ($res_data['mensaje'] ?? 'N/D'));
+                }
+                
+                $msg_id = $res_data['datos']['id'] ?? null;
+                
+                // 2. Verificar que se haya insertado el mensaje del usuario y la respuesta automática del bot
+                $check_user = 0;
+                $check_bot = 0;
+                
+                if ($msg_id) {
+                    $check_user = $db->query("SELECT COUNT(*) as cnt FROM mensajes_chat WHERE id = " . intval($msg_id))->fetch_assoc()['cnt'];
+                    
+                    // Buscar la respuesta automática del bot generada para este usuario en los últimos 5 segundos
+                    $check_bot = $db->query("SELECT COUNT(*) as cnt FROM mensajes_chat WHERE emisor_id = 1 AND receptor_id = " . intval($usuario_id) . " AND mensaje LIKE '🤖%' AND fecha_envio >= NOW() - INTERVAL 5 SECOND")->fetch_assoc()['cnt'];
+                    
+                    // Limpieza inmediata en base de datos para cumplir con la inmutabilidad y evitar ruido
+                    $db->query("DELETE FROM mensajes_chat WHERE id = " . intval($msg_id));
+                    $db->query("DELETE FROM mensajes_chat WHERE emisor_id = 1 AND receptor_id = " . intval($usuario_id) . " AND fecha_envio >= NOW() - INTERVAL 5 SECOND");
+                }
+                
+                if ($check_user > 0 && $check_bot > 0) {
+                    $logs[] = ["modulo" => "CHAT-CSR", "tipo" => "ok", "mensaje" => "Prueba de Chat y disparador BHN-Bot-HelpNow validada con sesión real a través de API HTTP."];
                 } else {
-                    throw new Exception("El bot no respondió o los registros fallaron al persistir.");
+                    throw new Exception("El bot no respondió o los registros de prueba no persistieron en la base de datos.");
                 }
             } catch (Exception $e) {
                 $modulos["chat"] = ["ok" => false, "mensaje" => "Fallo de conexión o consulta de chat: " . $e->getMessage()];
