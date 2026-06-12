@@ -369,7 +369,7 @@ try {
         }
 
         $stmt_ins = $db->prepare("INSERT INTO mensajes_chat (emisor_id, receptor_id, mensaje, fecha_envio, leido, archivo_nombre, archivo_ruta, archivo_tipo, archivo_size, archivo_hash) VALUES (?, ?, ?, NOW(), 0, ?, ?, ?, ?, ?)");
-        $stmt_ins->bind_param("iissssiss", $usuario_id, $receptor_id, $mensaje, $archivo_nombre, $archivo_ruta, $archivo_tipo, $archivo_size, $archivo_hash);
+        $stmt_ins->bind_param("iissssis", $usuario_id, $receptor_id, $mensaje, $archivo_nombre, $archivo_ruta, $archivo_tipo, $archivo_size, $archivo_hash);
         
         if ($stmt_ins->execute()) {
             $nuevo_id = $stmt_ins->insert_id;

@@ -688,16 +688,15 @@ const MQF = (() => {
       sendBtn.disabled = false;
 
       let res;
+      const text = await response.text();
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         try {
-          res = await response.json();
+          res = JSON.parse(text);
         } catch (jsonErr) {
-          const text = await response.text();
           res = { exito: false, mensaje: 'Error al procesar JSON. Detalle: ' + text.substring(0, 100) };
         }
       } else {
-        const text = await response.text();
         res = { exito: false, mensaje: 'Error del Servidor (' + response.status + '): ' + text.substring(0, 100) };
       }
 

@@ -21365,3 +21365,33 @@ Stack trace:
 #0 C:\wamp64\www\PLATAFORMA_INTEGRADA\scratch\find_bot_test.php(37): mysqli->query('SELECT * FROM s...')
 #1 {main}
   thrown in C:\wamp64\www\PLATAFORMA_INTEGRADA\scratch\find_bot_test.php on line 37
+[12-Jun-2026 01:35:09 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[12-Jun-2026 01:35:09 America/Santo_Domingo] PHP Stack trace:
+[12-Jun-2026 01:35:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[12-Jun-2026 01:35:09 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[12-Jun-2026 01:35:09 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[12-Jun-2026 01:35:10 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[12-Jun-2026 01:35:10 America/Santo_Domingo] PHP Stack trace:
+[12-Jun-2026 01:35:10 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[12-Jun-2026 01:35:10 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[12-Jun-2026 01:35:10 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[12-Jun-2026 01:35:22 America/Santo_Domingo] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:372
+Stack trace:
+#0 C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php(372): mysqli_stmt->bind_param('iissssiss', 1, 12, 'bot', NULL, NULL, NULL, NULL, NULL)
+#1 {main}
+  thrown in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 372
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP Stack trace:
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP Stack trace:
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[12-Jun-2026 01:37:32 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[12-Jun-2026 01:38:03 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[12-Jun-2026 01:38:03 America/Santo_Domingo] PHP Stack trace:
+[12-Jun-2026 01:38:03 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[12-Jun-2026 01:38:03 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[12-Jun-2026 01:38:03 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
