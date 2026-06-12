@@ -67,6 +67,7 @@ try {
              respuestaJSON(false, 'Nombre/Razón Social y RNC son obligatorios', null, 400);
              exit;
         }
+        $datos['creado_por'] = $usuario_actual;
         $resultado = $manager->crearCliente($datos);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado, $resultado['exito'] ? 201 : 400);
 
@@ -76,7 +77,7 @@ try {
             respuestaJSON(false, 'Formato de importación inválido', null, 400);
             exit;
         }
-        $resultado = $manager->importarClientesMasivo($datos['clientes']);
+        $resultado = $manager->importarClientesMasivo($datos['clientes'], $usuario_actual);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado, 201);
 
     } elseif (strpos($ruta, '/editar/') !== false && $metodo === 'PUT') {
@@ -87,6 +88,12 @@ try {
              respuestaJSON(false, 'Nombre/Razón Social y RNC son obligatorios', null, 400);
              exit;
         }
+        if (restringirSoloPropios($usuario_actual, 'clientes')) {
+            if (!$manager->verificarCreador($id, $usuario_actual)) {
+                respuestaJSON(false, 'No tiene permiso para editar este cliente', null, 403);
+                exit;
+            }
+        }
         $resultado = $manager->editarCliente($id, $datos);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
@@ -95,21 +102,36 @@ try {
         if (!empty($_GET['search'])) {
             $q = '%' . $_GET['search'] . '%';
             $db = Database::getInstance()->getConnection();
-            $stmt = $db->prepare(
-                "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
-                        telefono, email,
-                        IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
-                        estado as estatus
-                 FROM clientes 
-                 WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
-                   AND estado = 'activo'
-                 ORDER BY nombre LIMIT 15"
-            );
-            $stmt->bind_param('sss', $q, $q, $q);
+            if (restringirSoloPropios($usuario_actual, 'clientes')) {
+                $stmt = $db->prepare(
+                    "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                            telefono, email,
+                            IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                            estado as estatus
+                     FROM clientes 
+                     WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
+                       AND estado = 'activo'
+                       AND creado_por = ?
+                     ORDER BY nombre LIMIT 15"
+                );
+                $stmt->bind_param('sssi', $q, $q, $q, $usuario_actual);
+            } else {
+                $stmt = $db->prepare(
+                    "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                            telefono, email,
+                            IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                            estado as estatus
+                     FROM clientes 
+                     WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
+                       AND estado = 'activo'
+                     ORDER BY nombre LIMIT 15"
+                );
+                $stmt->bind_param('sss', $q, $q, $q);
+            }
             $stmt->execute();
             $clientes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         } else {
-            $clientes = $manager->listarClientes();
+            $clientes = $manager->listarClientes($usuario_actual);
         }
         respuestaJSON(true, 'Clientes obtenidos', $clientes, 200);
 

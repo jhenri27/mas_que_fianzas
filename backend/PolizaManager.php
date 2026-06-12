@@ -279,6 +279,7 @@ class PolizaManager {
         } else {
             $poliza['alerta_prorrata_nivel'] = 'critico'; // Tiempo Temerario
         }
+        $poliza['riesgo_prorrata'] = $poliza['alerta_prorrata_nivel'];
     }
 }
 ?>

@@ -48,7 +48,28 @@ try {
             respuestaJSON(false, $resultado['mensaje'], null, 401);
         }
 
+    } elseif (strpos($ruta, '/verificar-2fa') !== false && $metodo === 'POST') {
+        // VERIFICAR 2FA
+        $datos = json_decode(file_get_contents('php://input'), true);
 
+        if (empty($datos['codigo_2fa'])) {
+            respuestaJSON(false, 'Código de doble factor (2FA) requerido', null, 400);
+        }
+
+        $resultado = $auth->verificar2FA($datos['codigo_2fa']);
+
+        if ($resultado['exito']) {
+            header('Content-Type: application/json; charset=utf-8');
+            http_response_code(200);
+            echo json_encode(array_merge([
+                'exito'     => true,
+                'mensaje'   => $resultado['mensaje'],
+                'timestamp' => date('Y-m-d H:i:s')
+            ], $resultado), JSON_UNESCAPED_UNICODE);
+            exit;
+        } else {
+            respuestaJSON(false, $resultado['mensaje'], null, 401);
+        }
 
     } elseif (strpos($ruta, '/logout') !== false && $metodo === 'POST') {
         // LOGOUT

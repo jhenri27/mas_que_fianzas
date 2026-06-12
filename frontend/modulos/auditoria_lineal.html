@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Lineal - Más Que Fianzas</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(226, 232, 240, 0.8);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        /* Dark Theme Support (Dynamic) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #0f172a;
+                --card-bg: rgba(30, 41, 59, 0.7);
+                --card-border: rgba(51, 65, 85, 0.8);
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+            }
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+        }
+
+        /* Glassmorphic Container */
+        .glass-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Search Box Layout */
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            font-family: inherit;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.9);
+            color: #1e293b;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        :is(body.dark-theme) .form-control {
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .btn {
+            font-family: inherit;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Timeline Styles */
+        .timeline-container {
+            position: relative;
+            margin-top: 30px;
+            padding-left: 30px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 9px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: var(--card-border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: -30px;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-body);
+            border: 3px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .timeline-badge.create { border-color: var(--success); background: var(--success); }
+        .timeline-badge.update { border-color: var(--primary); background: var(--primary); }
+        .timeline-badge.delete { border-color: var(--danger); background: var(--danger); }
+        .timeline-badge.read { border-color: var(--warning); background: var(--warning); }
+        .timeline-badge.ajuste { border-color: #8b5cf6; background: #8b5cf6; }
+
+        .timeline-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .timeline-content:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .operator-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .operator-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .operator-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .operator-details span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .event-meta {
+            text-align: right;
+        }
+
+        .event-time {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: block;
+        }
+
+        .event-action-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-create { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-update { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+        .badge-delete { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-read { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-ajuste { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+
+        .timeline-body {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .timeline-body p {
+            margin: 0 0 10px 0;
+        }
+
+        /* Rich Diff Grid */
+        .diff-viewer {
+            margin-top: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            font-family: monospace;
+            font-size: 12.5px;
+        }
+
+        .diff-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 1fr;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .diff-row:last-child {
+            border-bottom: none;
+        }
+
+        .diff-header {
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-muted);
+            padding: 8px 12px;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .diff-key {
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.01);
+            font-weight: 600;
+            word-break: break-all;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .diff-old {
+            padding: 8px 12px;
+            background: rgba(239, 68, 68, 0.05);
+            color: #c53030;
+            word-break: break-all;
+            border-right: 1px solid var(--card-border);
+        }
+
+        .diff-new {
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.05);
+            color: #15803d;
+            word-break: break-all;
+        }
+
+        .network-details {
+            display: flex;
+            gap: 15px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px dashed var(--card-border);
+            padding-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .network-details span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state span {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        /* Print Layout Optimization */
+        @media print {
+            body {
+                background: white;
+                color: black;
+                padding: 0;
+            }
+            .glass-panel {
+                border: none;
+                box-shadow: none;
+                background: none;
+                padding: 0;
+                backdrop-filter: none;
+            }
+            .search-box-panel, .btn-print-container {
+                display: none !important;
+            }
+            .timeline-container::before {
+                background: #ccc;
+            }
+            .timeline-content {
+                border: 1px solid #ccc;
+                background: white;
+                page-break-inside: avoid;
+            }
+            .diff-viewer {
+                border: 1px solid #ccc;
+            }
+            .diff-header, .diff-key {
+                background: #f0f0f0;
+            }
+            .diff-old {
+                background: #fee2e2 !important;
+            }
+            .diff-new {
+                background: #dcfce7 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-panel">
+        <div class="header-title">
+            <h2><span>📑</span> Bitácora de Auditoría Lineal (Inmutable)</h2>
+            <div class="btn-print-container">
+                <button type="button" class="btn btn-secondary" onclick="window.print()" id="btnPrint" style="display:none;">
+                    <span>🖨️</span> Imprimir Reporte
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel de Búsqueda -->
+        <div class="search-box-panel">
+            <form id="formFiltroAuditoria" onsubmit="buscarAuditoria(event)" class="search-grid" style="grid-template-columns: 2.5fr 1fr auto;">
+                <div class="form-group">
+                    <label for="inputBuscar">Búsqueda Inteligente (Universal)</label>
+                    <input type="text" id="inputBuscar" class="form-control" placeholder="Buscar por Cédula/RNC, Póliza #, Cotización #, NCF, Pago, Recibo o Usuario..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectModulo">Filtrar por Módulo</label>
+                    <select id="selectModulo" class="form-control">
+                        <option value="">Todos los Módulos</option>
+                        <option value="cotizaciones">Cotizaciones</option>
+                        <option value="polizas">Pólizas</option>
+                        <option value="fianzas">Fianzas</option>
+                        <option value="pagos">Pagos / Recibos</option>
+                        <option value="clientes">Clientes</option>
+                        <option value="usuarios">Usuarios / Operadores</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <span>🔍</span> Rastrear Historial
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timeline Render -->
+    <div class="glass-panel" id="panelTimeline" style="display:none;">
+        <h3 id="timelineDocTitle" style="font-size:16px; margin-bottom: 20px; border-bottom: 1.5px solid var(--card-border); padding-bottom: 10px; color: var(--primary);"></h3>
+        
+        <div class="timeline-container" id="timelineList">
+            <!-- Timeline elements inserted dynamically -->
+        </div>
+    </div>
+
+    <!-- Empty State / Bienvenido -->
+    <div class="glass-panel" id="panelBienvenido">
+        <div class="empty-state">
+            <span>📑</span>
+            <h3>Sistema de Trazabilidad Lineal NOFTRAB v4.0</h3>
+            <p>Ingresa cualquier identificador (Póliza #, Cotización #, Cédula/RNC, Recibo, NCF o Usuario) arriba para auditar cronológicamente la trazabilidad del documento y todas las acciones relacionadas.</p>
+        </div>
+    </div>
+
+    <script>
+        // Formateador de fechas
+        function formatDateTime(str) {
+            if (!str) return 'N/D';
+            const f = new Date(str);
+            return f.toLocaleString('es-DO', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+        }
+
+        async function buscarAuditoria(e) {
+            e.preventDefault();
+            
+            const buscar = document.getElementById('inputBuscar').value;
+            const modulo = document.getElementById('selectModulo').value;
+            const token = localStorage.getItem('token_sesion') || '';
+
+            const timelinePanel = document.getElementById('panelTimeline');
+            const bienvenidoPanel = document.getElementById('panelBienvenido');
+            const timelineList = document.getElementById('timelineList');
+            const timelineDocTitle = document.getElementById('timelineDocTitle');
+            const btnPrint = document.getElementById('btnPrint');
+
+            timelineList.innerHTML = '<div style="text-align:center; padding:30px; opacity:0.6;">🔍 Recuperando historial inmutable de la base de datos...</div>';
+            timelinePanel.style.display = 'block';
+            bienvenidoPanel.style.display = 'none';
+
+            try {
+                const response = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/auditoria_lineal.php?buscar=${encodeURIComponent(buscar)}&modulo=${encodeURIComponent(modulo)}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                const result = await response.json();
+                
+                if (result.exito && result.datos && result.datos.length > 0) {
+                    btnPrint.style.display = 'inline-flex';
+                    
+                    timelineDocTitle.innerText = `Historial Cronológico para: "${buscar}"` + (modulo ? ` (Filtrado por: ${modulo})` : '');
+                    
+                    let html = '';
+                    result.datos.forEach((event, idx) => {
+                        const avatarChar = event.usuario ? event.usuario.charAt(0).toUpperCase() : 'U';
+                        
+                        // Badge color logic
+                        let badgeClass = 'update';
+                        let badgeIcon = '📝';
+                        const op = event.operacion.toLowerCase();
+                        
+                        if (op === 'insert' || op === 'create' || event.tipo_evento === 'creacion') {
+                            badgeClass = 'create';
+                            badgeIcon = '➕';
+                        } else if (op === 'delete') {
+                            badgeClass = 'delete';
+                            badgeIcon = '❌';
+                        } else if (op === 'select' || op === 'read' || event.tipo_evento === 'consulta') {
+                            badgeClass = 'read';
+                            badgeIcon = '👁️';
+                        } else if (event.tipo_evento === 'ajuste_transaccion') {
+                            badgeClass = 'ajuste';
+                            badgeIcon = '🔧';
+                        }
+
+                        // Source Document Badge styling
+                        const labelDocMap = {
+                            'cotizaciones': 'Cotización',
+                            'polizas': 'Póliza',
+                            'fianzas': 'Fianza',
+                            'pagos': 'Pago / Recibo',
+                            'clientes': 'Cliente',
+                            'usuarios': 'Usuario'
+                        };
+                        const docLabel = labelDocMap[event.tabla_afectada] || event.tabla_afectada || 'General';
+                        const docBadgeHtml = `<span class="event-doc-badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 10px; border: 1px solid rgba(59, 130, 246, 0.2); text-transform: uppercase;">${docLabel} #${event.registro_id || ''}</span>`;
+
+                        // Build Diff View HTML if values exist and differ
+                        let diffHtml = '';
+                        const hasDiff = event.valor_anterior || event.valor_nuevo;
+                        
+                        if (hasDiff && typeof event.valor_anterior === 'object' && typeof event.valor_nuevo === 'object') {
+                            const valAnt = event.valor_anterior || {};
+                            const valNue = event.valor_nuevo || {};
+                            
+                            // Get unique keys
+                            const keys = Array.from(new Set([...Object.keys(valAnt), ...Object.keys(valNue)]));
+                            
+                            let rowsHtml = '';
+                            keys.forEach(k => {
+                                // Skip sensitive/system keys
+                                if (k === 'password' || k === 'token' || k === 'clave_acceso') return;
+                                
+                                const oldVal = valAnt[k] !== undefined ? JSON.stringify(valAnt[k]) : 'N/D';
+                                const newVal = valNue[k] !== undefined ? JSON.stringify(valNue[k]) : 'N/D';
+                                
+                                // Only show if they differ
+                                if (oldVal !== newVal) {
+                                    rowsHtml += `
+                                        <div class="diff-row">
+                                            <div class="diff-key">${k}</div>
+                                            <div class="diff-old">${oldVal.replace(/"/g, '')}</div>
+                                            <div class="diff-new">${newVal.replace(/"/g, '')}</div>
+                                        </div>
+                                    `;
+                                }
+                            });
+                            
+                            if (rowsHtml) {
+                                diffHtml = `
+                                    <div class="diff-viewer">
+                                        <div class="diff-row" style="background: rgba(0,0,0,0.03);">
+                                            <div class="diff-header">Atributo</div>
+                                            <div class="diff-header">Valor Anterior</div>
+                                            <div class="diff-header">Valor Nuevo</div>
+                                        </div>
+                                        ${rowsHtml}
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        html += `
+                            <div class="timeline-item" style="animation-delay: ${idx * 0.05}s">
+                                <div class="timeline-badge ${badgeClass}">${badgeIcon}</div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <div class="operator-info">
+                                            <div class="operator-avatar">${avatarChar}</div>
+                                            <div class="operator-details">
+                                                <h4>${event.usuario}</h4>
+                                                <span>Función: ${event.funcion}</span>
+                                            </div>
+                                        </div>
+                                        <div class="event-meta">
+                                            <span class="event-time">${formatDateTime(event.fecha)}</span>
+                                            <span class="event-action-badge badge-${badgeClass}">${event.tipo_evento.replace(/_/g, ' ')}</span>
+                                            ${docBadgeHtml}
+                                        </div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <p><strong>Descripción:</strong> ${event.descripcion}</p>
+                                        ${diffHtml}
+                                        <div class="network-details">
+                                            <span>🌐 <strong>IP:</strong> ${event.ip}</span>
+                                            <span>💻 <strong>Navegador / Cliente:</strong> ${event.user_agent}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    timelineList.innerHTML = html;
+                } else {
+                    btnPrint.style.display = 'none';
+                    timelineList.innerHTML = `
+                        <div class="empty-state">
+                            <span>🔍</span>
+                            <h3>No se encontraron registros de auditoría</h3>
+                            <p>No existen logs de transacciones registradas para la búsqueda "${buscar}".</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+                btnPrint.style.display = 'none';
+                timelineList.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--danger); font-weight:bold;">
+                        ❌ Ocurrió un error al cargar el historial: ${err.message || 'Error de red.'}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

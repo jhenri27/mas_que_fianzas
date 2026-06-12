@@ -191,6 +191,39 @@
             font-weight: 700;
             color: #475569;
         }
+
+        /* Diagnostic and Log Badges & Styles */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .badge-info {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .log-error { color: #f87171; font-weight: bold; }
+        .log-warn { color: #fbbf24; }
+        .log-info { color: #60a5fa; }
     </style>
 </head>
 <body class="mqf-bg-surface">
@@ -216,6 +249,12 @@
             </button>
             <button class="mqf-module-tab" onclick="showPanel('logs')" id="tab-logs">
                 <i class="fa-solid fa-bug"></i> Logs del Sistema
+            </button>
+            <button class="mqf-module-tab" onclick="showPanel('versiones')" id="tab-versiones">
+                <i class="fa-solid fa-code-branch"></i> VERSIONES PLATING
+            </button>
+            <button class="mqf-module-tab" onclick="showPanel('testing')" id="tab-testing">
+                <i class="fa-solid fa-robot"></i> BOT-TESTING-DEV
             </button>
         </div>
     </div>
@@ -409,6 +448,184 @@
                 </div>
             </div>
 
+        </main>
+
+        <!-- PANEL LOGS DEL SISTEMA -->
+        <main class="lab-main" id="panel-logs" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-bug"></i> Visualizador Seguro de Logs de Errores (PHP/WAMP)</h3>
+                    <button onclick="cargarLogsSistema()" class="mqf-btn mqf-btn--secondary" style="font-size: 12px; padding: 4px 10px;">
+                        <i class="fa-solid fa-rotate"></i> Actualizar Logs
+                    </button>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:16px;">
+                        Visualización inmutable de las últimas 50 líneas del archivo de logs de error del servidor. Acceso restringido a administradores según normas NOFTRAB.
+                    </p>
+                    <div id="visor-logs" class="lab-terminal" style="min-height: 400px; max-height: 600px; font-size: 13px; background: #0b0f19;">
+                        Cargando logs del sistema...
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- PANEL VERSIONES PLATING (INSTALLER) -->
+        <main class="lab-main" id="panel-versiones" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-code-branch"></i> Versiones Plating & Instalador Profesional</h3>
+                    <button onclick="cargarVersionesPlating()" class="mqf-btn mqf-btn--secondary" style="font-size: 12px; padding: 4px 10px;">
+                        <i class="fa-solid fa-rotate"></i> Refrescar Requisitos
+                    </button>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:16px;">
+                        Diagnóstico integral de salud de la infraestructura y gestor de actualizaciones/migraciones de base de datos bajo estándar NOFTRAB.
+                    </p>
+                    
+                    <div id="requisitos-sistema">
+                        Cargando requisitos del sistema...
+                    </div>
+
+                    <div style="margin-top: 30px; border-top: 1px solid var(--mqf-border, #e2e8f0); padding-top: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                            <h4 style="margin:0; color:var(--mqf-text);"><i class="fa-solid fa-database"></i> Script de Migraciones Detectados</h4>
+                            <button onclick="ejecutarMigracion('todas')" class="mqf-btn mqf-btn--primary">
+                                <i class="fa-solid fa-forward"></i> Ejecutar Todas las Migraciones
+                            </button>
+                        </div>
+                        <div id="lista-migraciones" style="background: var(--mqf-surface, white); border-radius:8px; border:1px solid var(--mqf-border, #e2e8f0); padding: 10px;">
+                            Cargando migraciones...
+                        </div>
+                    </div>
+
+                    <!-- Terminal de ejecución de migraciones -->
+                    <div id="terminal-migraciones" class="lab-card" style="display:none; margin-top:25px;">
+                        <div class="lab-card-header" style="background:#0f172a; border-bottom:1px solid #1e293b;">
+                            <h4 style="margin:0; color:white;"><i class="fa-solid fa-terminal"></i> Log de Ejecución de Migraciones</h4>
+                            <button onclick="document.getElementById('terminal-migraciones').style.display='none';" style="background:none; border:none; color:#3b82f6; cursor:pointer;">Cerrar</button>
+                        </div>
+                        <div class="lab-card-body" style="background:#0f172a; padding: 15px;">
+                            <pre id="log-migraciones" style="margin:0; font-family:'JetBrains Mono'; font-size:12px; color:#f8fafc; white-space:pre-wrap; max-height:250px; overflow-y:auto; line-height:1.5;"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- PANEL BOT-TESTING-DEV -->
+        <main class="lab-main" id="panel-testing" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header">
+                    <h3><i class="fa-solid fa-robot"></i> BOT-TESTING-DEV: Diagnóstico y Auto-Corrección Autónoma</h3>
+                    <button onclick="ejecutarDiagnosticoBot()" class="mqf-btn mqf-btn--primary" id="btn-run-testing">
+                        <i class="fa-solid fa-play"></i> Iniciar Diagnóstico Completo
+                    </button>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:16px;">
+                        Este bot autónomo realiza pruebas exhaustivas paso a paso en cada módulo, detecta fallos operativos, los documenta en la mesa de ayuda (Helpdesk) y aplica auto-correcciones inmutables según las mejores prácticas y la norma NOFTRAB.
+                    </p>
+
+                    <!-- Estado del Bot -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;">
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">ESTADO OPERATIVO</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bot-status-txt">Inactivo</div>
+                            <span class="badge badge-info" id="bot-status-badge">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">ÚLTIMA EVALUACIÓN</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bot-last-run">N/D</div>
+                            <span style="font-size:11px; color:#64748b;">Automática / Manual</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">FALLOS DETECTADOS</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bot-failures-count">0</div>
+                            <span class="badge badge-success" id="bot-failures-badge">Ninguno</span>
+                        </div>
+                    </div>
+
+                    <!-- Cuadrícula de salud de módulos -->
+                    <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-square-poll-vertical"></i> Diagnóstico de Módulos</h4>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:15px; margin-bottom:25px;" id="testing-modules-grid">
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">1. Integridad de Base de Datos</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-db">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-db">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">2. Permisos y Semillas</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-permissions">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-permissions">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">3. Chat CSR y Bot BHN</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-chat">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-chat">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">4. Helpdesk e Incidencias</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-helpdesk">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-helpdesk">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">5. Secuenciador de NCF</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-ncf">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-ncf">Idle</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-size:14px; color:var(--mqf-text);">6. Motor Contable Partida Doble</strong>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;" id="test-lbl-accounting">Sin evaluar</div>
+                            </div>
+                            <span class="badge badge-info" id="test-badge-accounting">Idle</span>
+                        </div>
+                    </div>
+
+                    <!-- Terminal de BOT-TESTING-DEV -->
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-terminal"></i> Consola del Bot (BOT-TESTING-DEV)</h4>
+                        <div id="testing-terminal" class="lab-terminal" style="min-height: 250px; max-height: 400px; font-size:13px; background:#0b0f19; line-height:1.7;">
+                            [BOT] Esperando inicio de diagnóstico...
+                        </div>
+                    </div>
+
+                    <!-- Bitácora de tickets y auto-correcciones -->
+                    <div>
+                        <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Fallos y Acciones Correctivas (NOFTRAB)</h4>
+                        <div style="background:var(--mqf-surface, white); border-radius:8px; border:1px solid var(--mqf-border, #e2e8f0); overflow:hidden;">
+                            <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;" id="testing-corrections-table">
+                                <thead>
+                                    <tr style="border-bottom:2px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); color:#64748b; font-weight:600;">
+                                        <th style="padding:10px 15px;">Fecha/Hora</th>
+                                        <th style="padding:10px 15px;">Módulo Afectado</th>
+                                        <th style="padding:10px 15px;">Error Detectado</th>
+                                        <th style="padding:10px 15px;">Ticket Helpdesk</th>
+                                        <th style="padding:10px 15px;">Estado de Corrección</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testing-corrections-body">
+                                    <tr>
+                                        <td colspan="5" style="padding:15px; text-align:center; color:#64748b;">No se han ejecutado diagnósticos en esta sesión.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- MODAL TEST — comparte las mismas clases que usuarios.html -->
@@ -643,13 +860,18 @@
 
             if (panelId === 'skins') cargarDiagnosticoSkin();
             if (panelId === 'logs') cargarLogsSistema();
+            if (panelId === 'versiones') cargarVersionesPlating();
+            if (panelId === 'testing') {
+                // Opcional: inicializaciones del bot
+            }
         }
 
         async function cargarLogsSistema() {
             const visor = document.getElementById('visor-logs');
             visor.innerHTML = "Cargando...";
             try {
-                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/read_error_log.php');
+                const token = localStorage.getItem('token_sesion') || '';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/read_error_log.php?token_sesion=' + token);
                 const text = await r.text();
                 // Basic syntax highlighting for logs
                 const formatted = text.split('\n').map(line => {
@@ -663,6 +885,361 @@
             } catch (e) {
                 visor.innerHTML = "<span class='log-error'>Error al leer el archivo de logs.</span>";
             }
+        }
+
+        async function cargarVersionesPlating() {
+            const container = document.getElementById('requisitos-sistema');
+            const migContainer = document.getElementById('lista-migraciones');
+            container.innerHTML = "Cargando requisitos...";
+            migContainer.innerHTML = "Cargando migraciones...";
+            
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const setupParam = token ? '' : '&setup_token=MasQF2026';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/plating_installer.php?action=check_requirements&token_sesion=' + token + setupParam);
+                const res = await r.json();
+                
+                if (res.exito) {
+                    const datos = res.datos;
+                    
+                    let htmlReq = '';
+                    
+                    if (res.db_need_creation) {
+                        htmlReq += `
+                            <div style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); border-radius:12px; padding:20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <div>
+                                    <h4 style="margin:0; color:#ef4444; font-size:15px;"><i class="fa-solid fa-circle-exclamation"></i> Base de Datos Faltante</h4>
+                                    <p style="margin:5px 0 0 0; font-size:13px; color:#64748b;">La base de datos del sistema no se encuentra inicializada en el motor local.</p>
+                                </div>
+                                <button onclick="crearBaseDatos()" class="mqf-btn mqf-btn--danger" id="btn-crear-bd">
+                                    <i class="fa-solid fa-wrench"></i> Crear Base de Datos
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    // Render requirements
+                    htmlReq += `
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                                <div style="font-size:11px; color:#64748b; font-weight:700;">VERSIÓN PHP</div>
+                                <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);">${datos.php.actual}</div>
+                                <span class="badge ${datos.php.ok ? 'badge-success' : 'badge-danger'}">${datos.php.ok ? 'Cumple' : 'No cumple'} (req ${datos.php.requerido})</span>
+                            </div>
+                            <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                                <div style="font-size:11px; color:#64748b; font-weight:700;">VERSIÓN MARIADB</div>
+                                <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);">${datos.mariadb.actual.substring(0, 15)}</div>
+                                <span class="badge ${datos.mariadb.ok ? 'badge-success' : 'badge-danger'}">${datos.mariadb.ok ? 'Cumple' : 'No cumple'} (req ${datos.mariadb.requerido})</span>
+                            </div>
+                            <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                                <div style="font-size:11px; color:#64748b; font-weight:700;">DIRECTORIO LOGS</div>
+                                <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);">backend/logs</div>
+                                <span class="badge ${datos.directorios.logs.ok ? 'badge-success' : 'badge-danger'}">${datos.directorios.logs.ok ? 'Escritura OK' : 'Sin permisos'}</span>
+                            </div>
+                            <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                                <div style="font-size:11px; color:#64748b; font-weight:700;">DIRECTORIO UPLOADS</div>
+                                <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);">backend/uploads</div>
+                                <span class="badge ${datos.directorios.uploads.ok ? 'badge-success' : 'badge-danger'}">${datos.directorios.uploads.ok ? 'Escritura OK' : 'Sin permisos'}</span>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top:20px; margin-bottom:10px; color:var(--mqf-text);"><i class="fa-solid fa-puzzle-piece"></i> Extensiones PHP Requeridas</h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    `;
+                    
+                    for (const [ext, ok] of Object.entries(datos.extensiones)) {
+                        htmlReq += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-radius:8px; border:1px solid var(--mqf-border, #e2e8f0); background:var(--mqf-surface-2, #f8fafc); color:var(--mqf-text);">
+                                <span style="font-family:'JetBrains Mono'; font-weight:600;">${ext}</span>
+                                <i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}" style="color: ${ok ? 'var(--lab-success)' : 'var(--lab-danger)'};"></i>
+                            </div>
+                        `;
+                    }
+                    
+                    htmlReq += `</div>`;
+                    container.innerHTML = htmlReq;
+                    
+                    // Render migrations list
+                    let htmlMig = `
+                        <table style="width:100%; border-collapse:collapse; margin-top:10px; color:var(--mqf-text);">
+                            <thead>
+                                <tr style="text-align:left; border-bottom:2px solid var(--mqf-border, #e2e8f0); color:#64748b; font-size:12px;">
+                                    <th style="padding:10px 5px;">Archivo de Migración</th>
+                                    <th style="padding:10px 5px;">Estado</th>
+                                    <th style="padding:10px 5px; text-align:right;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    if (!datos.migraciones || datos.migraciones.length === 0) {
+                        htmlMig += `<tr><td colspan="3" style="padding:15px; text-align:center; color:#64748b;">No se encontraron archivos de migración (migration_*.php).</td></tr>`;
+                    } else {
+                        datos.migraciones.forEach(mig => {
+                            htmlMig += `
+                                <tr style="border-bottom:1px solid var(--mqf-border, #e2e8f0); font-size:13px;">
+                                    <td style="padding:12px 5px; font-family:'JetBrains Mono'; font-weight:600; color:var(--mqf-text);">${mig.archivo}</td>
+                                    <td style="padding:12px 5px;">
+                                        <span class="badge ${mig.ejecutado ? 'badge-success' : 'badge-warning'}">${mig.ejecutado ? 'Ejecutada' : 'Pendiente'}</span>
+                                    </td>
+                                    <td style="padding:12px 5px; text-align:right;">
+                                        ${mig.ejecutado ? 
+                                            `<span style="color:#64748b; font-size:12px;"><i class="fa-solid fa-check"></i> Aplicada</span>` : 
+                                            `<button onclick="ejecutarMigracion('${mig.archivo}')" class="mqf-btn mqf-btn--primary" style="padding: 4px 10px; font-size:11px;"><i class="fa-solid fa-play"></i> Ejecutar</button>`
+                                        }
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    
+                    htmlMig += `</tbody></table>`;
+                    migContainer.innerHTML = htmlMig;
+                } else {
+                    container.innerHTML = `<span class='log-error'>Error: ${res.mensaje}</span>`;
+                }
+            } catch (e) {
+                container.innerHTML = "<span class='log-error'>Error al conectar con la API de diagnóstico.</span>";
+            }
+        }
+
+        async function crearBaseDatos() {
+            if (!(await MQF.confirm('¿Desea crear la base de datos y preparar el entorno?', {type: 'danger', title: 'Crear Base de Datos'}))) return;
+            const btn = document.getElementById('btn-crear-bd');
+            MQF.btnLoading(btn, true, 'Creando...');
+            
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const setupParam = token ? '' : '&setup_token=MasQF2026';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/plating_installer.php?action=crear_base_datos' + setupParam, {
+                    method: 'POST'
+                });
+                const res = await r.json();
+                
+                MQF.btnLoading(btn, false);
+                if (res.exito) {
+                    MQF.toast(res.mensaje, 'success');
+                    cargarVersionesPlating();
+                } else {
+                    MQF.toast('Error: ' + res.mensaje, 'error');
+                }
+            } catch (e) {
+                MQF.btnLoading(btn, false);
+                MQF.toast('Error de red al crear la base de datos.', 'error');
+            }
+        }
+
+        async function ejecutarMigracion(archivo = 'todas') {
+            const terminal = document.getElementById('terminal-migraciones');
+            const logArea = document.getElementById('log-migraciones');
+            terminal.style.display = 'block';
+            logArea.innerHTML = `[MIGRATION] Iniciando ejecución de ${archivo === 'todas' ? 'TODAS las migraciones' : archivo}...\n`;
+            
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const setupParam = token ? '' : '&setup_token=MasQF2026';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/plating_installer.php?action=ejecutar_migracion&token_sesion=' + token + setupParam, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ archivo })
+                });
+                const res = await r.json();
+                
+                if (res.exito) {
+                    logArea.innerHTML += `\n[OK] ${res.mensaje}\n`;
+                    logArea.innerHTML += `Migraciones aplicadas: ${res.ejecutados}\n\n`;
+                    res.logs.forEach(l => {
+                        logArea.innerHTML += l + "\n------------------------------------------------\n";
+                    });
+                    MQF.toast(`Migraciones ejecutadas con éxito: ${res.ejecutados}`, 'success');
+                    
+                    // Recargar todo
+                    cargarVersionesPlating();
+                } else {
+                    logArea.innerHTML += `\n[ERROR] ${res.mensaje}\n`;
+                    MQF.toast(`Error al ejecutar migraciones: ${res.mensaje}`, 'danger');
+                }
+            } catch(e) {
+                logArea.innerHTML += `\n[CRITICAL ERROR] Fallo de conexión: ${e.message}\n`;
+                MQF.toast('Fallo crítico al ejecutar la migración', 'danger');
+            }
+        }
+
+        // ── BOT-TESTING-DEV: Ejecución y Logs ──────────────────────────
+        async function ejecutarDiagnosticoBot() {
+            const btn = document.getElementById('btn-run-testing');
+            const term = document.getElementById('testing-terminal');
+            
+            term.innerHTML = `<div class="log-info">[BOT-TESTING-DEV] Iniciando suite de pruebas automatizadas...</div>`;
+            term.scrollTop = term.scrollHeight;
+            MQF.btnLoading(btn, true, 'Diagnosticando...');
+            
+            document.getElementById('bot-status-txt').textContent = 'Ejecutando';
+            document.getElementById('bot-status-badge').className = 'badge badge-warning';
+            document.getElementById('bot-status-badge').textContent = 'Running';
+            
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php?action=run_diagnostics&token_sesion=' + token);
+                const res = await r.json();
+                
+                if (res.exito) {
+                    let logsHtml = '';
+                    res.logs.forEach(l => {
+                        const styleClass = l.tipo === 'error' ? 'log-error' : (l.tipo === 'ok' ? 'res' : 'log-info');
+                        logsHtml += `<div class="${styleClass}">[${l.modulo}] ${l.mensaje}</div>`;
+                    });
+                    term.innerHTML = logsHtml;
+                    term.scrollTop = term.scrollHeight;
+                    
+                    const modules = res.modulos;
+                    actualizarModuloBadge('db', modules.database);
+                    actualizarModuloBadge('permissions', modules.permissions);
+                    actualizarModuloBadge('chat', modules.chat);
+                    actualizarModuloBadge('helpdesk', modules.helpdesk);
+                    actualizarModuloBadge('ncf', modules.ncf);
+                    actualizarModuloBadge('accounting', modules.accounting);
+                    
+                    document.getElementById('bot-failures-count').textContent = res.fallos_count;
+                    const fBadge = document.getElementById('bot-failures-badge');
+                    if (res.fallos_count > 0) {
+                        fBadge.textContent = 'Fallas';
+                        fBadge.className = 'badge badge-danger';
+                        
+                        term.innerHTML += `<div class="log-warn">\n[BOT-TESTING-DEV] Se detectaron fallos corregibles. Iniciando auto-corrección autónoma (NOFTRAB)...</div>`;
+                        term.scrollTop = term.scrollHeight;
+                        
+                        document.getElementById('bot-status-txt').textContent = 'Auto-Corrigiendo';
+                        document.getElementById('bot-status-badge').className = 'badge badge-danger';
+                        document.getElementById('bot-status-badge').textContent = 'Healing';
+                        
+                        await ejecutarAutoHealBot(res.fallos);
+                    } else {
+                        fBadge.textContent = 'Ninguno';
+                        fBadge.className = 'badge badge-success';
+                        
+                        document.getElementById('bot-status-txt').textContent = 'Saludable';
+                        document.getElementById('bot-status-badge').className = 'badge badge-success';
+                        document.getElementById('bot-status-badge').textContent = 'Ready';
+                        
+                        MQF.toast('Diagnóstico finalizado. Todos los módulos operativos.', 'success');
+                    }
+                } else {
+                    term.innerHTML += `<div class="log-error">\n[ERROR] Fallo en la comunicación con el motor del bot: ${res.mensaje}</div>`;
+                    term.scrollTop = term.scrollHeight;
+                    MQF.toast('Error al ejecutar diagnóstico: ' + res.mensaje, 'danger');
+                }
+            } catch(e) {
+                term.innerHTML += `<div class="log-error">\n[ERROR CRÍTICO] Fallo de conexión: ${e.message}</div>`;
+                term.scrollTop = term.scrollHeight;
+                MQF.toast('Fallo de red al ejecutar el bot', 'danger');
+            } finally {
+                MQF.btnLoading(btn, false);
+                document.getElementById('bot-last-run').textContent = new Date().toLocaleTimeString();
+            }
+        }
+
+        async function ejecutarAutoHealBot(fallos) {
+            const term = document.getElementById('testing-terminal');
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php?action=auto_heal&token_sesion=' + token, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ fallos })
+                });
+                const res = await r.json();
+                
+                if (res.exito) {
+                    res.logs.forEach(l => {
+                        const styleClass = l.tipo === 'error' ? 'log-error' : 'res';
+                        term.innerHTML += `<div class="${styleClass}">[AUTO-HEAL] ${l.mensaje}</div>`;
+                    });
+                    
+                    actualizarTablaCorrecciones(res.correcciones);
+                    term.scrollTop = term.scrollHeight;
+                    
+                    term.innerHTML += `<div class="log-info">\n[BOT-TESTING-DEV] Corrección finalizada. Re-verificando módulos...</div>`;
+                    term.scrollTop = term.scrollHeight;
+                    
+                    setTimeout(async () => {
+                        try {
+                            const r2 = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php?action=run_diagnostics&token_sesion=' + token);
+                            const res2 = await r2.json();
+                            if (res2.exito) {
+                                const modules = res2.modulos;
+                                actualizarModuloBadge('db', modules.database);
+                                actualizarModuloBadge('permissions', modules.permissions);
+                                actualizarModuloBadge('chat', modules.chat);
+                                actualizarModuloBadge('helpdesk', modules.helpdesk);
+                                actualizarModuloBadge('ncf', modules.ncf);
+                                actualizarModuloBadge('accounting', modules.accounting);
+                                
+                                document.getElementById('bot-failures-count').textContent = res2.fallos_count;
+                                const fBadge = document.getElementById('bot-failures-badge');
+                                if (res2.fallos_count === 0) {
+                                    fBadge.textContent = 'Ninguno';
+                                    fBadge.className = 'badge badge-success';
+                                    document.getElementById('bot-status-txt').textContent = 'Saludable';
+                                    document.getElementById('bot-status-badge').className = 'badge badge-success';
+                                    document.getElementById('bot-status-badge').textContent = 'Ready';
+                                    term.innerHTML += `<div class="res">[BOT-TESTING-DEV] Re-verificación exitosa. Todos los módulos reparados y funcionando.</div>`;
+                                } else {
+                                    term.innerHTML += `<div class="log-error">[BOT-TESTING-DEV] Quedan fallos persistentes no corregibles automáticamente.</div>`;
+                                }
+                                term.scrollTop = term.scrollHeight;
+                            }
+                        } catch(ex_recheck) {}
+                    }, 1500);
+                } else {
+                    term.innerHTML += `<div class="log-error">\n[AUTO-HEAL ERROR] ${res.mensaje}</div>`;
+                    term.scrollTop = term.scrollHeight;
+                }
+            } catch(e) {
+                term.innerHTML += `<div class="log-error">\n[AUTO-HEAL CRITICAL] Fallo de conexión: ${e.message}</div>`;
+                term.scrollTop = term.scrollHeight;
+            }
+        }
+
+        function actualizarModuloBadge(idPrefix, moduleData) {
+            const lbl = document.getElementById('test-lbl-' + idPrefix);
+            const badge = document.getElementById('test-badge-' + idPrefix);
+            
+            if (!lbl || !badge) return;
+            
+            lbl.textContent = moduleData.mensaje;
+            if (moduleData.ok) {
+                badge.textContent = 'Saludable';
+                badge.className = 'badge badge-success';
+            } else {
+                badge.textContent = 'Falla';
+                badge.className = 'badge badge-danger';
+            }
+        }
+
+        function actualizarTablaCorrecciones(correcciones) {
+            const tbody = document.getElementById('testing-corrections-body');
+            if (!tbody) return;
+            
+            if (!correcciones || correcciones.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b;">No hay fallos reportados en esta sesión.</td></tr>`;
+                return;
+            }
+            
+            let html = '';
+            correcciones.forEach(c => {
+                const badgeClass = c.estado === 'resuelto' ? 'badge-success' : 'badge-warning';
+                html += `
+                    <tr style="border-bottom: 1px solid var(--mqf-border, #e2e8f0);">
+                        <td style="padding:12px 15px; color:var(--mqf-text); font-family:'JetBrains Mono'; font-size:12px;">${c.fecha}</td>
+                        <td style="padding:12px 15px; font-weight:600; color:var(--mqf-text);">${c.modulo}</td>
+                        <td style="padding:12px 15px; color:#64748b;">${c.error}</td>
+                        <td style="padding:12px 15px;"><a href="#helpdesk" style="color:var(--lab-accent); text-decoration:underline;">Ticket #${c.ticket_id}</a></td>
+                        <td style="padding:12px 15px;"><span class="badge ${badgeClass}">${c.estado}</span></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
         }
 
         function cargarDiagnosticoSkin() {

@@ -180,6 +180,46 @@ try {
         }
         
         if (insertar_cotizacion($db, $datos, $usuario_actual)) {
+            // --- MOTOR DE NOTIFICACIONES AUTOMÁTICAS (NOFTRAB) ---
+            try {
+                require_once '../NotificacionesEngine.php';
+                $total_fmt  = 'RD$ ' . number_format(floatval($datos['total'] ?? 0), 2, '.', ',');
+                $prima_fmt  = 'RD$ ' . number_format(floatval($datos['prima_base'] ?? 0), 2, '.', ',');
+                $monto_fmt  = 'RD$ ' . number_format(floatval($datos['monto_afianzado'] ?? 0), 2, '.', ',');
+                $tipo_label = ($datos['tipo'] === 'FIANZA') ? 'Fianza' : 'Seguro de Ley';
+                $ctx_notif  = array_merge($datos, [
+                    'creado_por'  => $usuario_actual,
+                    'fecha_local' => date('d/m/Y H:i', strtotime($datos['fecha'] ?? 'now')),
+                    'monto_fmt'   => $monto_fmt,
+                    'total_fmt'   => $total_fmt,
+                    'prima_fmt'   => $prima_fmt,
+                    'tipo_label'  => $tipo_label,
+                    // Aliases en MAYÚSCULAS para variables del template {{VAR}}
+                    'NUMERO'      => $datos['numero'],
+                    'CLIENTE'     => $datos['cliente']     ?? '',
+                    'CEDULA'      => $datos['cedula']      ?? '',
+                    'EMAIL'       => $datos['email']       ?? '',
+                    'TELEFONO'    => $datos['telefono']    ?? '',
+                    'TIPO'        => $datos['tipo']        ?? '',
+                    'TIPO_LABEL'  => $tipo_label,
+                    'SUBTIPO'     => $datos['subtipo']     ?? '',
+                    'ASEGURADORA' => $datos['aseguradora'] ?? '',
+                    'TOTAL_FMT'   => $total_fmt,
+                    'PRIMA_FMT'   => $prima_fmt,
+                    'MONTO_FMT'   => $monto_fmt,
+                    'PLAZO'       => $datos['plazo']       ?? '0',
+                    'FECHA_LOCAL' => date('d/m/Y H:i', strtotime($datos['fecha'] ?? 'now')),
+                    'BENEFICIARIO'=> $datos['beneficiario'] ?? '',
+                    'COBERTURA'   => $datos['cobertura']   ?? '',
+                    'USO'         => $datos['uso']         ?? '',
+                    'CAPACIDAD'   => $datos['capacidad']   ?? '',
+                ]);
+                notif_disparar($db, 'COTIZACION_NUEVA', $ctx_notif, $datos['numero'], $usuario_actual);
+            } catch (\Exception $eNotif) {
+                error_log('Notificación COTIZACION_NUEVA fallida: ' . $eNotif->getMessage());
+            }
+
+
             // --- INTEGRACIÓN CENTRO FINANCIERO (HOOKS) ---
             try {
                 require_once '../MotorContable.php';
@@ -195,8 +235,8 @@ try {
                     'modulo' => 'COTIZACIONES',
                     'id' => $db->insert_id,
                     'ncf' => $ncf,
-                    'comision' => $datos['total'] * 0.10, // Ejemplo: 10% comisión
-                    'itbis' => ($datos['total'] * 0.10) * 0.18, // ITBIS s/comisión
+                    'comision' => $datos['total'] * 0.10,
+                    'itbis' => ($datos['total'] * 0.10) * 0.18,
                     'monto_neto' => $datos['total'] - ($datos['total'] * 0.10)
                 ]);
 
@@ -208,8 +248,6 @@ try {
                 ], 201);
 
             } catch (\Exception $e) {
-                // Si falla la contabilidad, el registro principal ya se guardó.
-                // Logueamos pero devolvemos éxito de la venta para no interferir.
                 error_log("Error Contable en Cotizacion: " . $e->getMessage());
                 respuestaJSON(true, 'Cotizacion guardada (Contabilidad pendiente)', ['numero' => $datos['numero']], 201);
             }

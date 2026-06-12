@@ -110,41 +110,20 @@ class Dashboard {
                     window.MQF_PERMISOS = permisos; // Guardado global para iframes (Norma NOFTRAB)
                     const modulosPermitidos = {'dashboard': true, 'mi-perfil': true};
                     
-                    // Agrupar permisos por modulo_id
-                    const moduloConEjecutable = {};
+                    // Mapear los módulos que sí tienen al menos una función ejecutable de forma dinámica
                     permisos.forEach(p => {
-                        const moduloId = parseInt(p.modulo_id);
-                        if (!moduloConEjecutable.hasOwnProperty(moduloId)) {
-                            moduloConEjecutable[moduloId] = false;
-                        }
-                        if (parseInt(p.puede_ejecutar) === 1) {
-                            moduloConEjecutable[moduloId] = true;
-                        }
-                    });
-                    
-                    // Mapear los módulos que sí tienen al menos una función ejecutable
-                    const idToCode = {
-                        1: 'dashboard', 2: 'clientes', 3: 'polizas', 4: 'fianzas',
-                        5: 'pagos', 6: 'cotizaciones', 7: 'productos', 8: 'configuracion',
-                        9: 'reportes', 10: 'siniestros', 11: 'usuarios', 12: 'comisiones', 13: 'centro_financiero'
-                    };
-                    
-                    Object.entries(moduloConEjecutable).forEach(([modIdStr, tieneAcceso]) => {
-                        const modId = parseInt(modIdStr);
-                        const modCod = idToCode[modId];
-                        if (modCod && tieneAcceso) {
-                            modulosPermitidos[modCod] = true;
+                        const moduloName = p.nombre_modulo;
+                        if (moduloName && parseInt(p.puede_ejecutar) === 1) {
+                            modulosPermitidos[moduloName] = true;
                         }
                     });
                     
                     // Ocultar nav-items no autorizados
                     document.querySelectorAll('.nav-item').forEach(item => {
                         const moduleName = item.dataset.module;
-                        if (moduleName === 'labs_masqf' || moduleName === 'modelador_pdf') {
+                        if (moduleName === 'perfil_data') {
                             item.style.display = 'flex';
-                            return;
-                        }
-                        if (moduleName && !modulosPermitidos[moduleName]) {
+                        } else if (moduleName && !modulosPermitidos[moduleName]) {
                             item.style.display = 'none';
                         } else {
                             item.style.display = 'flex';
@@ -170,7 +149,7 @@ class Dashboard {
                     // Fallback preventivo si no devuelve permisos exitosos
                     console.warn('[Dashboard] API de perfiles no retornó permisos válidos. Aplicando fallback preventivo.');
                     if (this.usuarioActual.perfil === 'Socio Comercial PDV') {
-                        const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil'];
+                        const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil', 'perfil_data'];
                         document.querySelectorAll('.nav-item').forEach(item => {
                             const moduleName = item.dataset.module;
                             if (!fallback.includes(moduleName)) {
@@ -187,7 +166,7 @@ class Dashboard {
                 
                 // Fallback por defecto si no hay conexión (Socio Comercial PDV limitado)
                 if (this.usuarioActual.perfil === 'Socio Comercial PDV') {
-                    const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil'];
+                    const fallback = ['dashboard', 'cotizaciones', 'clientes', 'polizas', 'reportes', 'mi-perfil', 'perfil_data'];
                     document.querySelectorAll('.nav-item').forEach(item => {
                         const moduleName = item.dataset.module;
                         if (!fallback.includes(moduleName)) item.style.display = 'none';
@@ -716,6 +695,24 @@ class Dashboard {
             moduloElement.classList.add('active');
         }
 
+        // Si es auditoria_lineal, forzar carga del iframe
+        if (modulo === 'auditoria_lineal') {
+            const iframe = document.getElementById('auditoria-lineal-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/auditoria_lineal.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
+        // Si es helpdesk, forzar carga del iframe
+        if (modulo === 'helpdesk') {
+            const iframe = document.getElementById('helpdesk-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/helpdesk.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
         // Si es cotizaciones, forzar carga del iframe con versión para evitar caché
         if (modulo === 'cotizaciones') {
             console.log('Loading cotizaciones module...');
@@ -812,6 +809,15 @@ class Dashboard {
             }
         }
 
+        // Si es perfil_data, forzar carga del iframe
+        if (modulo === 'perfil_data') {
+            const iframe = document.getElementById('perfil-data-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/perfil_data.html?v=1';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
         // Actualizar visibilidad de nav-items
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         const navItem = document.querySelector(`[onclick="dashboard.cambiarModulo('${modulo}')"]`);
@@ -833,7 +839,10 @@ class Dashboard {
             'centro_financiero': 'CENTRO FINANCIERO',
             'labs_masqf': 'LABS-MASQF (TECNOLOGÍA)',
             'modelador_pdf': 'MODELADOR PDF',
-            'configuracion': 'CONFIGURACIÓN'
+            'configuracion': 'CONFIGURACIÓN',
+            'perfil_data': 'PERFIL DATA (MIS ACCESOS)',
+            'auditoria_lineal': 'AUDITORÍA LINEAL',
+            'helpdesk': 'HELPDESK E INCIDENCIAS'
         };
 
         if (titulo) {
@@ -1361,6 +1370,8 @@ class Dashboard {
         
         if (!perfilId) {
             wrapper.style.display = 'none';
+            const resumenContainer = document.getElementById('perfilResumenInfoContainer');
+            if (resumenContainer) resumenContainer.style.display = 'none';
             return;
         }
         
@@ -1458,6 +1469,41 @@ class Dashboard {
             status.textContent = 'Malla de permisos cargada.';
             status.style.color = '#10b981';
             setTimeout(() => status.textContent = '', 2000);
+
+            // Cargar datos del perfil data para resumen superior
+            const resumenContainer = document.getElementById('perfilResumenInfoContainer');
+            if (resumenContainer) {
+                fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfil_data.php?perfil_id=${perfilId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.exito && res.datos && res.datos.perfil) {
+                        const p = res.datos.perfil;
+                        document.getElementById('perfilResumenNombre').textContent = p.nombre_perfil;
+                        document.getElementById('perfilResumenNivel').textContent = p.nivel_jerarquico;
+                        
+                        const badge = document.getElementById('perfilResumenEstado');
+                        badge.textContent = p.estado.toUpperCase();
+                        if (p.estado.toLowerCase() === 'activo') {
+                            badge.style.background = '#dcfce7';
+                            badge.style.color = '#15803d';
+                        } else {
+                            badge.style.background = '#fee2e2';
+                            badge.style.color = '#b91c1c';
+                        }
+                        
+                        const initial = p.nombre_perfil.charAt(0).toUpperCase();
+                        document.getElementById('perfilResumenAvatar').textContent = initial;
+                        resumenContainer.style.display = 'flex';
+                    } else {
+                        resumenContainer.style.display = 'none';
+                    }
+                })
+                .catch(() => {
+                    resumenContainer.style.display = 'none';
+                });
+            }
             
         } catch (error) {
             console.error('Error cargando permisos de perfil:', error);

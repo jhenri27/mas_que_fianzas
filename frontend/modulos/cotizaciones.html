@@ -1014,6 +1014,7 @@
       const [price, setPrice] = React.useState(0);
       const [cliente, setCliente] = React.useState('');
       const [cedula, setCedula] = React.useState('');
+      const [emailCliente, setEmailCliente] = React.useState('');
       const [editingId, setEditingId] = React.useState(null);
       const [editingNum, setEditingNum] = React.useState(null);
       const [errors, setErrors] = React.useState({});
@@ -1046,6 +1047,7 @@
           setPrice(c.prima_base || 0);
           setCliente(c.cliente || '');
           setCedula(c.cedula || '');
+          setEmailCliente(c.email || c.cliente_email || '');
           setSelectedCoverage(c.cobertura || '');
           
           // Asegurar que servicios_opcionales sea un objeto
@@ -1308,6 +1310,8 @@
           numero: numCot,
           cliente: cliente,
           cedula: cedula,
+          email: emailCliente,
+          telefono: '',
           uso: uso,
           capacidad: capacidad,
           aseguradora: insurer,
@@ -1329,12 +1333,13 @@
           setIsSaving(false);
           if (res.exito) {
             const finalNum = res.datos?.numero || data.numero;
-            MQF.toast('Cotización ' + (isEdit ? 'actualizada' : 'guardada') + ': ' + finalNum, 'success');
+            // Modal de confirmación NOFTRAB (reemplaza el toast simple)
+            mostrarModalNotifNOFTRAB(finalNum, emailCliente, isEdit);
             setEditingId(null);
             setEditingNum(null);
             // Restablecer campos
             setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
-            setCliente(''); setCedula('');
+            setCliente(''); setCedula(''); setEmailCliente('');
             cargarHistorial();
           } else {
             MQF.toast('Error: ' + res.mensaje, 'error');
@@ -1356,6 +1361,7 @@
           numero: numCot,
           cliente: cliente,
           cedula: cedula,
+          email: emailCliente,
           uso: uso,
           capacidad: capacidad,
           aseguradora: insurer,
@@ -1402,7 +1408,7 @@
             <h3 className="mqf-card-title">🚗 Nueva Cotización de Seguro de Ley</h3>
           </div>
           
-          {/* SECCIÓN CLIENTE: 2 columnas */}
+          {/* SECCIÓN CLIENTE: 2 columnas + email ancho completo */}
           <div className="border-b border-gray-200 pb-4 mb-4">
             <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Datos del Cliente</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1416,8 +1422,39 @@
                 <input type="text" value={cedula} onChange={e=>{setCedula(e.target.value); setErrors(prev=>{ const n={...prev}; delete n.cedula; return n; });}} placeholder="000-0000000-0" className="mqf-input" />
                 {errors.cedula && <div className="text-sm text-red-600 mt-1">{errors.cedula}</div>}
               </div>
+              <div className="mqf-form-group" style={{gridColumn:'1/-1'}}>
+                <label style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
+                  <i className="fa-solid fa-envelope" style={{color:'#6366f1',fontSize:'13px'}}></i>
+                  Correo Electrónico del Cliente
+                  <span style={{fontSize:'11px',fontWeight:'400',color:'#6366f1',background:'#eef2ff',padding:'2px 9px',borderRadius:'10px',border:'1px solid #c7d2fe'}}>
+                    📋 recomendado — notificación NOFTRAB
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  id="seg-email"
+                  value={emailCliente}
+                  onChange={e => setEmailCliente(e.target.value)}
+                  placeholder="correo@cliente.com — Se enviará copia de la cotización"
+                  className="mqf-input"
+                  style={{borderColor: emailCliente ? '#6366f1' : '#e5e7eb', transition:'border-color .2s'}}
+                />
+                {!emailCliente && (
+                  <p style={{fontSize:'11px',color:'#d97706',marginTop:'5px',display:'flex',alignItems:'center',gap:'5px'}}>
+                    <i className="fa-solid fa-triangle-exclamation"></i>
+                    Sin correo del cliente, la notificación se enviará únicamente al Perfil Responsable y la Plataforma.
+                  </p>
+                )}
+                {emailCliente && (
+                  <p style={{fontSize:'11px',color:'#059669',marginTop:'5px',display:'flex',alignItems:'center',gap:'5px'}}>
+                    <i className="fa-solid fa-circle-check"></i>
+                    Al guardar, se notificará automáticamente a <strong>{emailCliente}</strong>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
+
 
           {/* SECCIÓN VEHÍCULO: 3 columnas */}
           <div className="border-b border-gray-200 pb-4 mb-4">
@@ -1561,7 +1598,7 @@
                       setEditingId(null);
                       setEditingNum(null);
                       setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
-                      setCliente(''); setCedula('');
+                      setCliente(''); setCedula(''); setEmailCliente('');
                       cargarHistorial();
                     } else {
                       MQF.toast('Error: ' + res.mensaje, 'error');
@@ -1585,7 +1622,7 @@
               setEditingId(null);
               setEditingNum(null);
               setType(''); setUso(''); setCapacidad(''); setInsurer(''); setPrice(0); setErrors({}); setSelectedCoverage(''); setOptionalSelected({}); setUsarNCF(false);
-              setCliente(''); setCedula('');
+              setCliente(''); setCedula(''); setEmailCliente('');
             }} className="mqf-btn mqf-btn--secondary">
               <i className="fa-solid fa-rotate-left"></i> {editingId ? 'Cancelar Edición' : 'Restablecer'}
             </button>
@@ -1694,5 +1731,176 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL NOFTRAB — Confirmación de Notificación Automática
+     Cumplimiento: Notificación inmediata, evidencia de envío
+════════════════════════════════════════════════════════════ -->
+<div id="noftrab-notif-modal" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:rgba(15,23,42,0.72); backdrop-filter:blur(6px);
+  align-items:center; justify-content:center;
+" onclick="if(event.target===this) cerrarModalNotifNOFTRAB()">
+  <div style="
+    background:#fff; border-radius:20px; max-width:520px; width:calc(100%-32px);
+    box-shadow:0 32px 80px rgba(99,102,241,0.25), 0 0 0 1px rgba(99,102,241,0.1);
+    overflow:hidden; animation:mqfModalIn .28s cubic-bezier(.34,1.56,.64,1);
+  ">
+    <!-- Header verde éxito -->
+    <div style="background:linear-gradient(135deg,#059669,#10b981); padding:24px 28px 20px; position:relative;">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="
+          width:52px; height:52px; border-radius:50%;
+          background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;
+          font-size:24px; flex-shrink:0;
+        ">✅</div>
+        <div>
+          <h3 style="color:#fff; font-size:17px; font-weight:700; margin:0 0 2px;">Cotización Guardada</h3>
+          <p id="noftrab-modal-num" style="color:rgba(255,255,255,0.85); font-size:13px; margin:0; font-family:monospace; letter-spacing:.5px;"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuerpo notificación -->
+    <div style="padding:24px 28px;">
+      <div style="
+        background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px;
+        padding:16px 18px; margin-bottom:18px;
+      ">
+        <p style="font-size:13px; font-weight:600; color:#065f46; margin:0 0 10px; display:flex; align-items:center; gap:7px;">
+          <i class="fa-solid fa-bell" style="color:#059669;"></i>
+          Notificación Automática Enviada
+        </p>
+        <div id="noftrab-modal-recipients" style="display:flex; flex-direction:column; gap:7px;"></div>
+      </div>
+
+      <!-- Aviso NOFTRAB -->
+      <div style="
+        background:#fef3c7; border:1px solid #fde68a; border-radius:10px;
+        padding:12px 16px; margin-bottom:18px; display:flex; gap:10px; align-items:flex-start;
+      ">
+        <i class="fa-solid fa-shield-halved" style="color:#d97706; margin-top:2px; flex-shrink:0;"></i>
+        <p style="font-size:12px; color:#92400e; margin:0; line-height:1.6;">
+          <strong>Evidencia NOFTRAB:</strong> Este correo constituye constancia auditada de la cotización generada.
+          Ni el cliente ni el SPDV podrán alegar datos distintos a los contenidos en dicha notificación.
+        </p>
+      </div>
+
+      <!-- Call to action -->
+      <p style="font-size:13px; color:#374151; margin:0 0 20px; text-align:center; line-height:1.6;">
+        <i class="fa-solid fa-inbox" style="color:#6366f1;"></i>
+        <strong>Valide en su buzón de entrada que recibió la notificación.</strong>
+      </p>
+
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button onclick="cerrarModalNotifNOFTRAB()" style="
+          background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff;
+          border:none; border-radius:10px; padding:11px 28px;
+          font-size:14px; font-weight:600; cursor:pointer;
+          box-shadow:0 4px 14px rgba(99,102,241,0.4);
+          transition:transform .15s, box-shadow .15s;
+        " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(99,102,241,0.5)';"
+           onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 14px rgba(99,102,241,0.4)';">
+          <i class="fa-solid fa-check"></i> Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes mqfModalIn {
+  from { opacity:0; transform:scale(.88) translateY(20px); }
+  to   { opacity:1; transform:scale(1)  translateY(0); }
+}
+</style>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// NOFTRAB — Modal de Confirmación de Notificación Automática
+// ══════════════════════════════════════════════════════════════
+function mostrarModalNotifNOFTRAB(numeroCot, emailCliente, isEdit) {
+  const modal   = document.getElementById('noftrab-notif-modal');
+  const numEl   = document.getElementById('noftrab-modal-num');
+  const recips  = document.getElementById('noftrab-modal-recipients');
+  if (!modal) return;
+
+  // Número de cotización
+  numEl.textContent = '# ' + numeroCot + (isEdit ? ' — Actualizada' : ' — Nueva');
+
+  // Lista de destinatarios de notificación
+  const items = [];
+  // 1. Perfil Responsable (siempre)
+  const usuario = JSON.parse(localStorage.getItem('usuario_actual') || '{}');
+  const emailResp = usuario.email || usuario.correo || '—';
+  items.push({ icon: '👤', label: 'Perfil Responsable', email: emailResp, color: '#6366f1' });
+  // 2. Cliente (si proporcionó email)
+  if (emailCliente && emailCliente.trim()) {
+    items.push({ icon: '🧾', label: 'Cliente del documento', email: emailCliente.trim(), color: '#059669' });
+  } else {
+    items.push({ icon: '⚠️', label: 'Cliente', email: 'Sin correo — notificación omitida', color: '#d97706', omitido: true });
+  }
+  // 3. Plataforma
+  const cfg = (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {};
+  const emailPlat = cfg.empresa_correo || 'info@masquefianzas.com';
+  items.push({ icon: '🏢', label: 'MAS QUE FIANZAS (Plataforma)', email: emailPlat, color: '#0891b2' });
+
+  recips.innerHTML = items.map(it => `
+    <div style="display:flex; align-items:center; gap:10px; padding:7px 10px;
+      background:${it.omitido ? '#fef9c3' : '#f8fafc'}; border-radius:8px;
+      border:1px solid ${it.omitido ? '#fde68a' : '#e2e8f0'};">
+      <span style="font-size:15px;">${it.icon}</span>
+      <div style="flex:1; min-width:0;">
+        <p style="font-size:11px; font-weight:600; color:${it.color}; margin:0;">${it.label}</p>
+        <p style="font-size:12px; color:#64748b; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${it.email}</p>
+      </div>
+      <span style="font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600;
+        background:${it.omitido ? '#fef3c7' : '#dcfce7'}; color:${it.omitido ? '#d97706' : '#059669'};">
+        ${it.omitido ? 'omitido' : '✓ enviado'}
+      </span>
+    </div>
+  `).join('');
+
+  modal.style.display = 'flex';
+}
+
+function cerrarModalNotifNOFTRAB() {
+  const modal = document.getElementById('noftrab-notif-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// Hook Fianzas: reemplaza toast por modal NOFTRAB al guardar
+// ══════════════════════════════════════════════════════════════
+(function parcheFianzasModal() {
+  // Esperar a que guardarCotizacion esté definida y luego envolverla
+  document.addEventListener('DOMContentLoaded', function() {
+    const _orig = window.guardarCotizacion;
+    if (typeof _orig !== 'function') return;
+    window.guardarCotizacion = async function() {
+      // Interceptar la respuesta del API parcheando MQF.toast temporalmente
+      const _origToast = MQF.toast.bind(MQF);
+      let _capturadoNum = null;
+      MQF.toast = function(msg, type) {
+        if (type === 'success' && msg && msg.includes('Cotización guardada')) {
+          // Extraer número
+          const m = msg.match(/FZ-[\w-]+/);
+          _capturadoNum = m ? m[0] : msg.replace('✅ Cotización guardada: ', '');
+        } else {
+          _origToast(msg, type); // Pasar los demás toasts (error, warning)
+        }
+      };
+      await _orig.apply(this, arguments);
+      MQF.toast = _origToast; // Restaurar
+
+      if (_capturadoNum) {
+        const emailFianza = (document.getElementById('f_email') || {}).value || '';
+        mostrarModalNotifNOFTRAB(_capturadoNum, emailFianza, false);
+      }
+    };
+  });
+})();
+</script>
+
 </body>
 </html>

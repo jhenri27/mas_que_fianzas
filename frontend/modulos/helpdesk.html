@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helpdesk e Incidencias - Más Que Fianzas</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-glow: rgba(79, 70, 229, 0.15);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --card-border: rgba(226, 232, 240, 0.8);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        /* Dark Theme Support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #0f172a;
+                --card-bg: rgba(30, 41, 59, 0.7);
+                --card-border: rgba(51, 65, 85, 0.8);
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+            }
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            height: calc(100vh - 40px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+        }
+
+        /* Layout Grid */
+        .helpdesk-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            flex: 1;
+            height: 100%;
+            min-height: 0; /* Important for flex scrolling */
+        }
+
+        @media (max-width: 900px) {
+            .helpdesk-layout {
+                grid-template-columns: 1fr;
+            }
+            .helpdesk-detail {
+                display: none !important;
+            }
+            .helpdesk-detail.active {
+                display: flex !important;
+                position: fixed;
+                inset: 20px;
+                z-index: 100;
+            }
+        }
+
+        /* Glass Panels */
+        .glass-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Left Column: Tickets list */
+        .helpdesk-list-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-title-row h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.03);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .filter-tab {
+            flex: 1;
+            padding: 6px 4px;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        :is(body.dark-theme) .filter-tab.active {
+            background: rgba(30, 41, 59, 0.9);
+            color: var(--primary-light);
+        }
+
+        .tickets-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Ticket Card style */
+        .ticket-item {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .ticket-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+        }
+
+        .ticket-item.active {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        :is(body.dark-theme) .ticket-item.active {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .ticket-item-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .ticket-item-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ticket-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .priority-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .priority-dot::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .priority-dot.alta::before { background: var(--danger); }
+        .priority-dot.media::before { background: var(--warning); }
+        .priority-dot.baja::before { background: var(--success); }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-abierto { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .status-en_proceso { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-resuelto { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        /* Right Column: Ticket details and chat */
+        .helpdesk-detail {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .detail-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .detail-title h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .detail-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Relojes y Contadores SLA */
+        .sla-clocks {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        .sla-clock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sla-clock-title {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .sla-clock-val {
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .sla-clock-val.expired {
+            color: var(--danger);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            to { opacity: 0.5; }
+        }
+
+        /* Message Stream */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+
+        .message-bubble.yo {
+            align-self: flex-end;
+        }
+
+        .message-bubble.otro {
+            align-self: flex-start;
+        }
+
+        .message-bubble.bot {
+            align-self: flex-start;
+            max-width: 90%;
+        }
+
+        .message-info {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: flex;
+            gap: 8px;
+        }
+
+        .message-bubble.yo .message-info {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .message-bubble.yo .message-content {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message-bubble.otro .message-content {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            border-bottom-left-radius: 2px;
+        }
+
+        .message-bubble.bot .message-content {
+            background: rgba(79, 70, 229, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--primary-light);
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Reply Input Bar */
+        .reply-bar {
+            padding: 15px 20px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .reply-input {
+            flex: 1;
+            font-family: inherit;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: white;
+            color: #1e293b;
+            font-size: 13.5px;
+            outline: none;
+            resize: none;
+            height: 38px;
+            box-sizing: border-box;
+        }
+
+        :is(body.dark-theme) .reply-input {
+            background: rgba(15, 23, 42, 0.8);
+            color: #f8fafc;
+        }
+
+        /* Admin Controls */
+        .admin-controls-card {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 10px 20px 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            width: 500px;
+            max-width: 90vw;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Buttons & Forms general */
+        .btn {
+            font-family: inherit;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary { background: rgba(0,0,0,0.05); color: var(--text-main); border: 1px solid var(--card-border); }
+        .btn-secondary:hover { background: rgba(0,0,0,0.1); }
+        .btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 6px; }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-control {
+            font-family: inherit;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            font-size: 13px;
+            outline: none;
+            background: white;
+            color: #1e293b;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .badge-tier {
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .tier-1 { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .tier-2 { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .tier-3 { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+    </style>
+</head>
+<body>
+
+    <div class="helpdesk-layout">
+        
+        <!-- Left Side: Ticket List -->
+        <div class="glass-panel helpdesk-sidebar">
+            <div class="helpdesk-list-header">
+                <div class="list-title-row">
+                    <h3>Incidencias</h3>
+                    <button class="btn btn-primary btn-sm" onclick="abrirModalCrear()">
+                        <span>➕</span> Nueva
+                    </button>
+                </div>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" id="tab-t-todos" onclick="filtrarTickets('todos')">Todos</button>
+                    <button class="filter-tab" id="tab-t-abierto" onclick="filtrarTickets('abierto')">Abiertos</button>
+                    <button class="filter-tab" id="tab-t-en_proceso" onclick="filtrarTickets('en_proceso')">En Proceso</button>
+                    <button class="filter-tab" id="tab-t-resuelto" onclick="filtrarTickets('resuelto')">Resueltos</button>
+                </div>
+            </div>
+            
+            <div class="tickets-scroll-area" id="ticketsList">
+                <div style="text-align:center; padding: 20px; opacity:0.6; font-size:12px;">Cargando tickets...</div>
+            </div>
+        </div>
+
+        <!-- Right Side: Details and Conversation -->
+        <div class="glass-panel helpdesk-detail" id="ticketDetailPanel">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-muted); flex-direction:column; gap:10px;">
+                <span style="font-size:48px;">🛎️</span>
+                <h3>Helpdesk Técnico Integrado</h3>
+                <p>Selecciona una incidencia del panel izquierdo para iniciar la conversación o realizar soporte.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal: Crear Ticket -->
+    <div id="modalCrearTicket" class="modal">
+        <form class="modal-content" onsubmit="crearTicketSubmit(event)">
+            <div class="modal-header">
+                <h3>Reportar Nueva Incidencia</h3>
+                <button type="button" class="modal-close" onclick="cerrarModalCrear()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="selectModulo">Módulo del Sistema Afectado</label>
+                    <select id="selectModulo" class="form-control" required>
+                        <option value="cotizaciones">Cotizaciones</option>
+                        <option value="polizas">Emisión Pólizas</option>
+                        <option value="fianzas">Fianzas</option>
+                        <option value="pagos">Pagos / Caja</option>
+                        <option value="clientes">Clientes</option>
+                        <option value="seguridad">Seguridad / Accesos</option>
+                        <option value="general">General / Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputTitulo">Asunto / Título Resumido</label>
+                    <input type="text" id="inputTitulo" class="form-control" required placeholder="Ej: Error al calcular prima de fianza" maxlength="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="inputPrioridad">Prioridad Inicial</label>
+                    <select id="inputPrioridad" class="form-control" required>
+                        <option value="baja">Baja (24 horas SLA)</option>
+                        <option value="media" selected>Media (8 horas SLA)</option>
+                        <option value="alta">Alta (2 horas SLA)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputDescripcion">Descripción Detallada del Problema</label>
+                    <textarea id="inputDescripcion" class="form-control" rows="5" required placeholder="Describa el comportamiento del sistema, pasos para reproducir y cualquier mensaje de error que visualice..." style="resize:none;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalCrear()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btnCrearTicket">Registrar Ticket</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let ticketsCache = [];
+        let ticketSeleccionadoId = null;
+        let filtroActual = 'todos';
+        let usuarioActual = null;
+        let cronometroSlaTimer = null;
+
+        // Cargar usuario e inicializar
+        window.addEventListener('DOMContentLoaded', async () => {
+            await cargarUsuarioActual();
+            await cargarTickets();
+            
+            // Recargar lista cada 60 seg
+            setInterval(cargarTickets, 60000);
+        });
+
+        async function cargarUsuarioActual() {
+            try {
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '') }
+                });
+                const result = await response.json();
+                if(result.exito && result.datos) {
+                    usuarioActual = result.datos;
+                }
+            } catch(e) {
+                console.error('Error cargando usuario actual:', e);
+            }
+        }
+
+        async function cargarTickets() {
+            try {
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/helpdesk.php', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '') }
+                });
+                const result = await response.json();
+                if(result.exito && result.tickets) {
+                    ticketsCache = result.tickets;
+                    renderListaTickets();
+                    
+                    if(ticketSeleccionadoId) {
+                        // Recargar mensajes
+                        await cargarDetalleTicket(ticketSeleccionadoId, false);
+                    }
+                }
+            } catch(e) {
+                console.error('Error cargando tickets:', e);
+            }
+        }
+
+        function renderListaTickets() {
+            const listDiv = document.getElementById('ticketsList');
+            let filtered = ticketsCache;
+            
+            if(filtroActual !== 'todos') {
+                filtered = ticketsCache.filter(t => t.estado === filtroActual);
+            }
+            
+            if(filtered.length === 0) {
+                listDiv.innerHTML = '<div style="text-align:center; padding:30px; opacity:0.5; font-size:12px;">No hay incidencias en esta lista.</div>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(t => {
+                const activeClass = (parseInt(t.id) === ticketSeleccionadoId) ? 'active' : '';
+                const fecha = new Date(t.fecha_creacion).toLocaleDateString();
+                
+                html += `
+                    <div class="ticket-item ${activeClass}" onclick="cargarDetalleTicket(${t.id})">
+                        <div class="ticket-item-header">
+                            <span>ID #${t.id} - ${t.modulo_afectado}</span>
+                            <span>${fecha}</span>
+                        </div>
+                        <div class="ticket-item-title">${escapeHtml(t.titulo)}</div>
+                        <div class="ticket-item-footer">
+                            <span class="priority-dot ${t.priority || t.prioridad}">${t.priority || t.prioridad}</span>
+                            <span class="status-badge status-${t.estado}">${t.estado.replace(/_/g, ' ')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+
+        function filtrarTickets(estado) {
+            filtroActual = estado;
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-t-${estado}`).classList.add('active');
+            renderListaTickets();
+        }
+
+        async function cargarDetalleTicket(id, scrollDown = true) {
+            ticketSeleccionadoId = parseInt(id);
+            renderListaTickets(); // Actualizar clase active en lista
+
+            const detailPanel = document.getElementById('ticketDetailPanel');
+            
+            try {
+                const response = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/helpdesk.php?ticket_id=${id}`, {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '') }
+                });
+                const result = await response.json();
+                
+                if(result.exito && result.ticket) {
+                    const tk = result.ticket;
+                    const mensajes = result.mensajes || [];
+                    
+                    // Admin UI controls
+                    const esAdmin = usuarioActual && (usuarioActual.id === 1 || usuarioActual.nombre_perfil === 'Administrador' || usuarioActual.perfil_id === 1);
+                    
+                    let adminControlsHtml = '';
+                    if (esAdmin) {
+                        adminControlsHtml = `
+                            <div class="admin-controls-card">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:12px; font-weight:700; color:var(--primary);">CONTROL ADMINISTRADOR:</span>
+                                    <select id="cambioEstadoSelect" class="form-control btn-sm" style="font-size:11px; padding:3px 8px;">
+                                        <option value="abierto" ${tk.estado === 'abierto' ? 'selected' : ''}>Abierto</option>
+                                        <option value="en_proceso" ${tk.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
+                                        <option value="resuelto" ${tk.estado === 'resuelto' ? 'selected' : ''}>Resuelto</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="enviarRespuestaAdmin()">Aplicar Cambio</button>
+                            </div>
+                        `;
+                    }
+
+                    // Render Messages
+                    let msgHtml = '';
+                    mensajes.forEach(m => {
+                        let bubbleClass = m.yo ? 'yo' : 'otro';
+                        if (m.origen === 'bot') bubbleClass = 'bot';
+                        
+                        msgHtml += `
+                            <div class="message-bubble ${bubbleClass}">
+                                <div class="message-info">
+                                    <span>${escapeHtml(m.nombre_usuario)}</span>
+                                    <span>•</span>
+                                    <span>${m.fecha_envio.substring(11, 16)}</span>
+                                </div>
+                                <div class="message-content">${m.mensaje.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                    });
+
+                    detailPanel.innerHTML = `
+                        <div class="detail-header">
+                            <div class="detail-title">
+                                <h3>${escapeHtml(tk.titulo)}</h3>
+                                <p>Reportado por: <strong>${escapeHtml(tk.creador_nombre + ' ' + tk.creador_apellido)}</strong> en <strong>${tk.modulo_afectado.toUpperCase()}</strong></p>
+                            </div>
+                            <!-- Relojes SLA -->
+                            <div class="sla-clocks">
+                                <div class="sla-clock-item">
+                                    <span class="sla-clock-title">Límite SLA</span>
+                                    <span class="sla-clock-val" style="font-size:11px;">${new Date(tk.sla_limite).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                                <div class="sla-clock-item">
+                                    <span class="sla-clock-title">Estado SLA</span>
+                                    <span class="sla-clock-val" id="slaCountdown">-</span>
+                                </div>
+                                <div class="sla-clock-item">
+                                    <span class="sla-clock-title">Nivel SLA</span>
+                                    <span id="slaTierBadge" class="badge-tier tier-1">Tier 1</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${adminControlsHtml}
+
+                        <div class="messages-container" id="messagesStream">
+                            <div style="background:#f1f5f9; border:1px solid var(--card-border); border-radius:10px; padding:12px; font-size:12.5px; margin-bottom:10px; color:var(--text-main);">
+                                <strong>Reporte inicial:</strong> ${escapeHtml(tk.descripcion).replace(/\n/g, '<br>')}
+                            </div>
+                            ${msgHtml}
+                        </div>
+
+                        <div class="reply-bar">
+                            <input type="text" id="inputReplyMsg" class="reply-input" placeholder="Escribe tu respuesta técnica aquí..." onkeydown="if(event.key==='Enter') enviarRespuesta()"/>
+                            <button class="btn btn-primary" onclick="enviarRespuesta()">
+                                <span>📤</span> Responder
+                            </button>
+                        </div>
+                    `;
+
+                    // Start SLA Countdown
+                    startSlaTimer(new Date(tk.fecha_creacion), new Date(tk.sla_limite), tk.estado === 'resuelto');
+                    
+                    if(scrollDown) {
+                        setTimeout(() => {
+                            const stream = document.getElementById('messagesStream');
+                            if(stream) stream.scrollTop = stream.scrollHeight;
+                        }, 50);
+                    }
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function startSlaTimer(fechaCreacion, fechaLimite, estaResuelto) {
+            if (cronometroSlaTimer) clearInterval(cronometroSlaTimer);
+            
+            const timerSpan = document.getElementById('slaCountdown');
+            const tierBadge = document.getElementById('slaTierBadge');
+
+            if (estaResuelto) {
+                timerSpan.textContent = "RESUELTO";
+                timerSpan.className = "sla-clock-val";
+                tierBadge.textContent = "COMPLETO";
+                tierBadge.className = "badge-tier tier-1";
+                return;
+            }
+
+            const updateTimer = () => {
+                const ahora = new Date();
+                const difCreacionSegundos = Math.floor((ahora - fechaCreacion) / 1000);
+                const difLimiteMili = fechaLimite - ahora;
+
+                // TIER SLA LOGIC
+                // Tier 1: < 5 minutos
+                // Tier 2: 5 - 15 minutos
+                // Tier 3: > 15 minutos
+                const minsTranscurridos = difCreacionSegundos / 60;
+                if(minsTranscurridos < 5) {
+                    tierBadge.textContent = "Tier 1 (IA)";
+                    tierBadge.className = "badge-tier tier-1";
+                } else if(minsTranscurridos >= 5 && minsTranscurridos < 15) {
+                    tierBadge.textContent = "Tier 2 (Bot BHN)";
+                    tierBadge.className = "badge-tier tier-2";
+                } else {
+                    tierBadge.textContent = "Tier 3 (Humano)";
+                    tierBadge.className = "badge-tier tier-3";
+                }
+
+                if (difLimiteMili <= 0) {
+                    timerSpan.textContent = "EXPIRADO";
+                    timerSpan.className = "sla-clock-val expired";
+                    clearInterval(cronometroSlaTimer);
+                    return;
+                }
+
+                const totalMins = Math.floor(difLimiteMili / 1000 / 60);
+                const horas = Math.floor(totalMins / 60);
+                const minutos = totalMins % 60;
+                const segundos = Math.floor((difLimiteMili / 1000) % 60);
+
+                const formatNum = (n) => n.toString().padStart(2, '0');
+                
+                timerSpan.textContent = `${formatNum(horas)}:${formatNum(minutos)}:${formatNum(segundos)}`;
+                timerSpan.className = "sla-clock-val";
+            };
+
+            updateTimer();
+            cronometroSlaTimer = setInterval(updateTimer, 1000);
+        }
+
+        async function enviarRespuesta() {
+            const input = document.getElementById('inputReplyMsg');
+            const msg = input.value.trim();
+            if(!msg) return;
+
+            input.disabled = true;
+
+            const payload = {
+                ticket_id: ticketSeleccionadoId,
+                mensaje: msg
+            };
+
+            try {
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/helpdesk.php?action=responder', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.exito) {
+                    input.value = '';
+                    await cargarDetalleTicket(ticketSeleccionadoId, true);
+                }
+            } catch(e) {
+                console.error(e);
+            } finally {
+                input.disabled = false;
+                setTimeout(() => input.focus(), 50);
+            }
+        }
+
+        async function enviarRespuestaAdmin() {
+            const input = document.getElementById('inputReplyMsg');
+            const estadoSelect = document.getElementById('cambioEstadoSelect');
+            const msg = input.value.trim() || `Estado cambiado a: ${estadoSelect.value.replace(/_/g, ' ')}`;
+
+            const payload = {
+                ticket_id: ticketSeleccionadoId,
+                mensaje: msg,
+                nuevo_estado: estadoSelect.value
+            };
+
+            try {
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/helpdesk.php?action=responder', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.exito) {
+                    input.value = '';
+                    await cargarTickets();
+                    await cargarDetalleTicket(ticketSeleccionadoId, true);
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // Modales
+        function abrirModalCrear() {
+            document.getElementById('modalCrearTicket').style.display = 'flex';
+        }
+
+        function cerrarModalCrear() {
+            document.getElementById('modalCrearTicket').style.display = 'none';
+            document.getElementById('selectModulo').value = 'cotizaciones';
+            document.getElementById('inputTitulo').value = '';
+            document.getElementById('inputDescripcion').value = '';
+            document.getElementById('inputPrioridad').value = 'media';
+        }
+
+        async function crearTicketSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnCrearTicket');
+            btn.disabled = true;
+
+            const payload = {
+                modulo_afectado: document.getElementById('selectModulo').value,
+                titulo: document.getElementById('inputTitulo').value,
+                descripcion: document.getElementById('inputDescripcion').value,
+                prioridad: document.getElementById('inputPrioridad').value
+            };
+
+            try {
+                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/helpdesk.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.exito) {
+                    cerrarModalCrear();
+                    await cargarTickets();
+                    if (result.ticket_id) {
+                        await cargarDetalleTicket(result.ticket_id, true);
+                    }
+                } else {
+                    alert('Error: ' + result.mensaje);
+                }
+            } catch(err) {
+                console.error(err);
+                alert('Ocurrió un error de red al reportar el ticket.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Utility
+        function escapeHtml(text) {
+            if(!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>

@@ -68,7 +68,7 @@ try {
     switch ($method) {
         case 'GET':
             if ($action === 'get_reporte') {
-                $reporte = $cobroManager->obtenerReporteProrataYFinanzas();
+                $reporte = $cobroManager->obtenerReporteProrataYFinanzas($usuario_id);
                 echo json_encode(["exito" => true, "data" => $reporte]);
             } elseif ($action === 'listar_gestiones') {
                 $polizaId = intval($_GET['poliza_id'] ?? 0);

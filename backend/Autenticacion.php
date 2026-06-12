@@ -25,7 +25,7 @@ class Autenticacion {
             // 1. Buscar usuario por username
             $sql = "SELECT u.id, u.username, u.password_hash, u.estado, u.email, u.nombre, u.apellido,
                            u.perfil_id, u.intentos_fallidos, u.bloqueado_hasta, u.requiere_cambio_password,
-                           u.foto_perfil, p.nombre_perfil
+                           u.foto_perfil, u.ultimo_cambio_password, p.nombre_perfil
                     FROM usuarios u
                     LEFT JOIN perfiles p ON u.perfil_id = p.id
                     WHERE u.username = ?";
@@ -51,9 +51,22 @@ class Autenticacion {
 
             // 2. Validar que el usuario no esté bloqueado
             if ($usuario['estado'] === 'bloqueado') {
-                $this->logSmtp("[AUTH] Login BLOQUEADO - cuenta bloqueada | username: {$usuario['username']} | ID: {$usuario['id']} | intentos acumulados: {$usuario['intentos_fallidos']}", 'WARNING');
-                logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Intento de acceso a cuenta bloqueada", 'fallido', 'Usuario bloqueado', null, null, null, null);
-                return ['exito' => false, 'mensaje' => 'Tu cuenta ha sido bloqueada. Contacta al administrador.'];
+                if ($usuario['bloqueado_hasta'] && strtotime($usuario['bloqueado_hasta']) < time()) {
+                    // El bloqueo temporal ya expiró, liberamos la cuenta automáticamente
+                    $sql_liberar = "UPDATE usuarios SET estado = 'activo', intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id = ?";
+                    $stmt_liberar = $this->db->prepare($sql_liberar);
+                    $stmt_liberar->bind_param("i", $usuario['id']);
+                    $stmt_liberar->execute();
+                    $stmt_liberar->close();
+                    
+                    $usuario['estado'] = 'activo';
+                    $usuario['intentos_fallidos'] = 0;
+                    $usuario['bloqueado_hasta'] = null;
+                } else {
+                    $this->logSmtp("[AUTH] Login BLOQUEADO - cuenta bloqueada | username: {$usuario['username']} | ID: {$usuario['id']} | intentos acumulados: {$usuario['intentos_fallidos']}", 'WARNING');
+                    logAudit($usuario['id'], 'login', 'autenticacion', 'LOGIN', "Intento de acceso a cuenta bloqueada", 'fallido', 'Usuario bloqueado', null, null, null, null);
+                    return ['exito' => false, 'mensaje' => 'Tu cuenta ha sido bloqueada. Contacta al administrador.'];
+                }
             }
 
             // 3. Validar que el usuario esté activo
@@ -93,6 +106,22 @@ class Autenticacion {
                 }
             }
 
+            // Validar expiración de clave (PASSWORD_EXPIRATION_DAYS)
+            $requiere_cambio = (int)$usuario['requiere_cambio_password'];
+            if (!$requiere_cambio && !empty($usuario['ultimo_cambio_password'])) {
+                $limite = strtotime($usuario['ultimo_cambio_password']) + (PASSWORD_EXPIRATION_DAYS * 24 * 60 * 60);
+                if ($limite < time()) {
+                    // Forzar cambio de contraseña por expiración
+                    $sql_force = "UPDATE usuarios SET requiere_cambio_password = 1 WHERE id = ?";
+                    $stmt_force = $this->db->prepare($sql_force);
+                    $stmt_force->bind_param("i", $usuario['id']);
+                    $stmt_force->execute();
+                    $stmt_force->close();
+                    
+                    $usuario['requiere_cambio_password'] = 1;
+                }
+            }
+
             // 5. Login exitoso - Resets
             $sql_reset = "UPDATE usuarios 
                          SET intentos_fallidos = 0, 
@@ -104,6 +133,24 @@ class Autenticacion {
             $stmt_reset->bind_param("i", $usuario['id']);
             $stmt_reset->execute();
             $stmt_reset->close();
+
+            // Si Doble Factor (2FA) está habilitado
+            if (TWO_FACTOR_ENABLED) {
+                $_SESSION['temp_2fa_usuario_id'] = $usuario['id'];
+                $_SESSION['temp_2fa_username'] = $usuario['username'];
+                $_SESSION['temp_2fa_perfil_id'] = $usuario['perfil_id'];
+                $_SESSION['temp_2fa_foto_perfil'] = $usuario['foto_perfil'];
+                $_SESSION['temp_2fa_nombre_completo'] = $usuario['nombre'] . ' ' . $usuario['apellido'];
+                $_SESSION['temp_2fa_perfil'] = $usuario['nombre_perfil'];
+                $_SESSION['temp_2fa_requiere_cambio_password'] = $usuario['requiere_cambio_password'];
+                
+                return [
+                    'exito' => true,
+                    'requiere_2fa' => true,
+                    'usuario_id' => $usuario['id'],
+                    'mensaje' => 'Código de doble factor (2FA) requerido. Use 123456 para pruebas.'
+                ];
+            }
 
             // 6. Crear sesión en base de datos
             $token_sesion = $this->generarTokenSesion();
@@ -218,6 +265,14 @@ class Autenticacion {
             if ($sesion['estado'] !== 'activo') {
                 return ['exito' => false, 'mensaje' => 'Usuario inactivo o bloqueado'];
             }
+
+            // Sliding Session Lease: Actualizar fecha de expiración
+            $nueva_fecha = date('Y-m-d H:i:s', strtotime('+' . SESSION_TIMEOUT_MINUTES . ' minutes'));
+            $sql_update = "UPDATE sesiones_usuario SET fecha_expiracion = ? WHERE id = ?";
+            $stmt_upd = $this->db->prepare($sql_update);
+            $stmt_upd->bind_param("si", $nueva_fecha, $sesion['id']);
+            $stmt_upd->execute();
+            $stmt_upd->close();
 
             return ['exito' => true, 'sesion' => $sesion];
 
@@ -498,6 +553,80 @@ class Autenticacion {
             return ['exito' => false, 'mensaje' => 'Error: ' . $e->getMessage()];
         }
     }
-}
 
+    /**
+     * Verificar código de doble factor (2FA) mock
+     */
+    public function verificar2FA($codigo_2fa, $ip_cliente = null, $user_agent = null) {
+        try {
+            if ($codigo_2fa !== '123456') {
+                return ['exito' => false, 'mensaje' => 'Código de doble factor (2FA) incorrecto. Use 123456 para pruebas.'];
+            }
+
+            if (!isset($_SESSION['temp_2fa_usuario_id'])) {
+                return ['exito' => false, 'mensaje' => 'No hay una solicitud de 2FA activa. Inicie sesión nuevamente.'];
+            }
+
+            $usuario_id = $_SESSION['temp_2fa_usuario_id'];
+            $username = $_SESSION['temp_2fa_username'];
+            $perfil_id = $_SESSION['temp_2fa_perfil_id'];
+            $nombre_completo = $_SESSION['temp_2fa_nombre_completo'];
+            $perfil = $_SESSION['temp_2fa_perfil'];
+            $foto_perfil = $_SESSION['temp_2fa_foto_perfil'];
+            $requiere_cambio_password = $_SESSION['temp_2fa_requiere_cambio_password'];
+
+            $ip_cliente = $ip_cliente ?? $_SERVER['REMOTE_ADDR'] ?? 'DESCONOCIDA';
+            $user_agent = $user_agent ?? $_SERVER['HTTP_USER_AGENT'] ?? 'DESCONOCIDA';
+
+            // Generar token de sesión único
+            $token_sesion = $this->generarTokenSesion();
+            $fecha_expiracion = date('Y-m-d H:i:s', strtotime('+' . SESSION_TIMEOUT_MINUTES . ' minutes'));
+
+            // Crear sesión en base de datos
+            $sql_sesion = "INSERT INTO sesiones_usuario 
+                          (usuario_id, token_sesion, direccion_ip, navegador_user_agent, fecha_expiracion, activa) 
+                          VALUES (?, ?, ?, ?, ?, 1)";
+            $stmt_sesion = $this->db->prepare($sql_sesion);
+            $stmt_sesion->bind_param("issss", $usuario_id, $token_sesion, $ip_cliente, $user_agent, $fecha_expiracion);
+            $stmt_sesion->execute();
+            $stmt_sesion->close();
+
+            // Configurar sesión final
+            $_SESSION['usuario_id'] = $usuario_id;
+            $_SESSION['username'] = $username;
+            $_SESSION['nombre_completo'] = $nombre_completo;
+            $_SESSION['perfil'] = $perfil;
+            $_SESSION['perfil_id'] = $perfil_id;
+            $_SESSION['token_sesion'] = $token_sesion;
+            $_SESSION['fecha_login'] = date('Y-m-d H:i:s');
+            $_SESSION['requiere_cambio_password'] = $requiere_cambio_password;
+            $_SESSION['foto_perfil'] = $foto_perfil;
+
+            // Limpiar variables temporales
+            unset($_SESSION['temp_2fa_usuario_id']);
+            unset($_SESSION['temp_2fa_username']);
+            unset($_SESSION['temp_2fa_perfil_id']);
+            unset($_SESSION['temp_2fa_foto_perfil']);
+            unset($_SESSION['temp_2fa_nombre_completo']);
+            unset($_SESSION['temp_2fa_perfil']);
+            unset($_SESSION['temp_2fa_requiere_cambio_password']);
+
+            logAudit($usuario_id, 'login', 'autenticacion', 'LOGIN_2FA', "Autenticación 2FA exitosa", 'exitoso');
+
+            return [
+                'exito' => true,
+                'mensaje' => 'Autenticación 2FA exitosa',
+                'usuario_id' => $usuario_id,
+                'perfil_id' => $perfil_id,
+                'nombre_completo' => $nombre_completo,
+                'perfil' => $perfil,
+                'foto_perfil' => $foto_perfil,
+                'token_sesion' => $token_sesion
+            ];
+
+        } catch (Exception $e) {
+            return ['exito' => false, 'mensaje' => 'Error en validación 2FA: ' . $e->getMessage()];
+        }
+    }
+}
 ?>

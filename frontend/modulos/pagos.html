@@ -894,14 +894,16 @@
                 console.warn('No se pudieron leer los permisos del parent iframe', e);
             }
 
-            if (tienePgc || !token) {
+            if (tienePgc) {
                 const tabBtn = document.getElementById('tab-btn-pgc');
                 if (tabBtn) tabBtn.style.display = 'inline-block';
-            } else {
+            } else if (token) {
                 api.solicitud('/cobros.php?action=get_bot_config', 'GET')
                     .then(res => {
-                        const tabBtn = document.getElementById('tab-btn-pgc');
-                        if (tabBtn) tabBtn.style.display = 'inline-block';
+                        if (res.exito) {
+                            const tabBtn = document.getElementById('tab-btn-pgc');
+                            if (tabBtn) tabBtn.style.display = 'inline-block';
+                        }
                     })
                     .catch(err => {
                         console.warn('Acceso restringido a PGC (403)');
@@ -1593,6 +1595,7 @@
                     return;
                 }
 
+                const cfg = getInstitutionalData();
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
@@ -1610,13 +1613,13 @@
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(14);
                 doc.setTextColor(30, 41, 59);
-                doc.text("MAS QUE FIANZAS +QF, SRL", 42, 20);
+                doc.text(cfg.empresa_nombre, 42, 20);
 
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(9);
                 doc.setTextColor(100, 116, 139);
-                doc.text("Licencia CMS-1561-A · RNC: 133-53573-4", 42, 25);
-                doc.text("Av. Winston Churchill, Santo Domingo, Rep. Dom.", 42, 29);
+                doc.text("Licencia CMS-1561-A · RNC: " + cfg.empresa_rnc, 42, 25);
+                doc.text(cfg.empresa_direccion, 42, 29);
 
                 // Caja de Comprobante / Recibo
                 doc.setDrawColor(226, 232, 240);
@@ -1760,10 +1763,11 @@
         }
 
         function renderizarReportePGC(data) {
+            const buckets = data.aging_buckets || {};
             document.getElementById('kpi-dso').textContent = Math.round(data.dso || 0) + ' días';
-            document.getElementById('kpi-aging-0-30').textContent = fmt(data.aging_buckets['0-30'] || 0);
-            document.getElementById('kpi-aging-31-90').textContent = fmt((data.aging_buckets['31-60'] || 0) + (data.aging_buckets['61-90'] || 0));
-            document.getElementById('kpi-aging-over-90').textContent = fmt(data.aging_buckets['90+'] || 0);
+            document.getElementById('kpi-aging-0-30').textContent = fmt(buckets['0-30'] || 0);
+            document.getElementById('kpi-aging-31-90').textContent = fmt((buckets['31-60'] || 0) + (buckets['61-90'] || 0));
+            document.getElementById('kpi-aging-over-90').textContent = fmt(buckets['90+'] || 0);
 
             renderizarTablaPGC(data.polizas || []);
         }
@@ -2040,6 +2044,18 @@
                 console.error(err);
                 MQF.toast('Error de red al guardar la gestión', 'error');
             }
+        }
+
+        function getInstitutionalData() {
+            return (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {
+                empresa_nombre: 'MAS QUE FIANZAS',
+                empresa_rnc: '133-53573-4',
+                empresa_correo: 'info@masquefianzas.com',
+                empresa_direccion: 'Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN.',
+                empresa_telefono: '+1 (829) 629-1952',
+                empresa_web: 'https://www.masquefianzas.com.do',
+                empresa_redes: {}
+            };
         }
     </script>
 </body>

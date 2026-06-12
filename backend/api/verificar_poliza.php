@@ -12,15 +12,43 @@ header("Access-Control-Allow-Origin: *");
 
 require_once '../config.php';
 
+try {
+    $db = Database::getInstance()->getConnection();
+    
+    // Obtener info institucional pública
+    $empresa_correo = 'info@masquefianzas.com';
+    $empresa_telefono = '(829) 629-1952';
+    $res_conf = $db->query("SELECT clave_config, valor_config FROM configuracion_sistema WHERE clave_config IN ('EMPRESA_CORREO', 'EMPRESA_TELEFONO')");
+    if ($res_conf) {
+        while ($row_conf = $res_conf->fetch_assoc()) {
+            if ($row_conf['clave_config'] === 'EMPRESA_CORREO' && !empty($row_conf['valor_config'])) {
+                $empresa_correo = $row_conf['valor_config'];
+            }
+            if ($row_conf['clave_config'] === 'EMPRESA_TELEFONO' && !empty($row_conf['valor_config'])) {
+                $empresa_telefono = $row_conf['valor_config'];
+            }
+        }
+    }
+} catch (Exception $e) {
+    $empresa_correo = 'info@masquefianzas.com';
+    $empresa_telefono = '(829) 629-1952';
+}
+
 $numero = $_GET['n'] ?? '';
 
 if (empty($numero)) {
-    echo json_encode(["exito" => false, "mensaje" => "Número de póliza no proporcionado"]);
+    echo json_encode([
+        "exito" => false,
+        "mensaje" => "Número de póliza no proporcionado",
+        "empresa" => [
+            "correo" => $empresa_correo,
+            "telefono" => $empresa_telefono
+        ]
+    ]);
     exit;
 }
 
 try {
-    $db = Database::getInstance()->getConnection();
     
     $sql = "SELECT 
                 p.numero_poliza,
@@ -54,7 +82,11 @@ try {
         echo json_encode([
             "exito" => false,
             "mensaje" => "Póliza no encontrada en nuestros registros",
-            "numero" => $numero
+            "numero" => $numero,
+            "empresa" => [
+                "correo" => $empresa_correo,
+                "telefono" => $empresa_telefono
+            ]
         ]);
         exit;
     }
@@ -81,10 +113,21 @@ try {
             "fecha_emision"   => $poliza['fecha_emision'],
             "fecha_vencimiento" => $poliza['fecha_vencimiento'],
             "verificado_en"   => date('Y-m-d H:i:s')
+        ],
+        "empresa" => [
+            "correo" => $empresa_correo,
+            "telefono" => $empresa_telefono
         ]
     ]);
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["exito" => false, "mensaje" => "Error al verificar la póliza"]);
+    echo json_encode([
+        "exito" => false,
+        "mensaje" => "Error al verificar la póliza",
+        "empresa" => [
+            "correo" => $empresa_correo ?? 'info@masquefianzas.com',
+            "telefono" => $empresa_telefono ?? '(829) 629-1952'
+        ]
+    ]);
 }

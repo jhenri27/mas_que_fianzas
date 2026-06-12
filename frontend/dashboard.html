@@ -88,6 +88,18 @@
                     <span class="icon">⚙️</span>
                     <span class="label">CONFIGURACIÓN</span>
                 </a>
+                <a href="#" class="nav-item" data-module="perfil_data">
+                    <span class="icon">👤</span>
+                    <span class="label">PERFIL DATA</span>
+                </a>
+                <a href="#" class="nav-item" data-module="auditoria_lineal" id="nav-item-auditoria_lineal" style="display:none;">
+                    <span class="icon">📑</span>
+                    <span class="label">AUDITORÍA LINEAL</span>
+                </a>
+                <a href="#" class="nav-item" data-module="helpdesk" id="nav-item-helpdesk" style="display:none;">
+                    <span class="icon">🛎️</span>
+                    <span class="label">HELPDESK</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -332,11 +344,14 @@
                     <div class="config-layout">
                         <!-- Sidebar de Configuración -->
                         <div class="config-sidebar">
-                            <button id="btn-conf-generales" class="config-nav-btn active" data-target="config-generales">
+                            <button id="btn-conf-generales" class="config-nav-btn active" data-target="config-generales" onclick="cargarConfigGenerales()">
                                 <span>🌐</span> Generales
                             </button>
-                            <button id="btn-conf-seguridad" class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp();">
-                                <span>🔐</span> Seguridad y Accesos
+                            <button id="btn-conf-seguridad" class="config-nav-btn" data-target="config-seguridad" onclick="cargarConfigSmtp(); cargarLogsSmtp(); cambiarSubTabSeguridad('smtp');">
+                                <span>🛡️</span> Seguridad y Accesos
+                            </button>
+                            <button id="btn-conf-notificaciones" class="config-nav-btn" data-target="config-notificaciones" onclick="notif_cargarFlujos();">
+                                <span>🔔</span> Flujos de Notificaciones
                             </button>
                             <button id="btn-conf-perfiles" class="config-nav-btn" data-target="config-perfiles" onclick="dashboard.cargarRejillaPerfiles();">
                                 <span>🛡️</span> Perfiles y Permisos
@@ -369,6 +384,18 @@
                                         <select id="selectPerfilPermisos" class="form-control select-perfil-permisos" onchange="dashboard.cargarPermisosPerfilSeleccionado(this.value)">
                                             <option value="">Seleccione perfil...</option>
                                         </select>
+                                    </div>
+
+                                    <!-- Ficha de Perfil Data (Resumen Superior) -->
+                                    <div id="perfilResumenInfoContainer" style="display:none; align-items:center; gap:15px; padding:15px; background:rgba(0,0,0,0.05); border:1px solid #e2e8f0; border-radius:10px; margin-bottom:20px;">
+                                        <div id="perfilResumenAvatar" style="width:40px; height:40px; border-radius:50%; background:var(--primary-color, #4f46e5); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;"></div>
+                                        <div style="flex:1;">
+                                            <div id="perfilResumenNombre" style="font-weight:700; font-size:14px; color:var(--text-main, #1e293b);"></div>
+                                            <div style="font-size:12px; color:#718096;">Nivel Jerárquico: <span id="perfilResumenNivel" style="font-weight:600;"></span></div>
+                                        </div>
+                                        <div>
+                                            <span id="perfilResumenEstado" style="padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700;"></span>
+                                        </div>
                                     </div>
 
                                     <div id="wrapperMallaPermisos" style="display:none;">
@@ -414,92 +441,412 @@
 
                             <!-- Panel Generales -->
                             <div id="config-generales" class="config-panel active">
-                                <div class="opciones-configuracion">
-                                    <!-- Cambiar Logo -->
+                                <div class="opciones-configuracion" style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
+                                    
+                                    <!-- Datos institucionales de la Plataforma -->
                                     <div class="config-card">
+                                        <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Datos institucionales de la Plataforma</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Configura la información de identidad corporativa de la plataforma. Estos datos son utilizados para generar documentos oficiales (PDFs) y resolver las notificaciones auditadas.</p>
+                                        
+                                        <form id="formConfigGenerales" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" onsubmit="guardarConfigGenerales(event)">
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Nombre de la Plataforma / Empresa</label>
+                                                <input type="text" id="empNombre" class="form-control" required placeholder="MAS QUE FIANZAS">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>RNC (Registro Contribuyente)</label>
+                                                <input type="text" id="empRnc" class="form-control" required placeholder="133-53573-4">
+                                            </div>
+                                            <div class="form-group" style="margin:0; grid-column: 1 / -1;">
+                                                <label>Correo Electrónico Institucional (Correo de la Plataforma)</label>
+                                                <input type="email" id="empCorreo" class="form-control" required placeholder="contacto@empresa.com">
+                                                <small style="color:#718096; font-size:11px;">Este correo se usará como destinatario 'Plataforma' en los flujos de notificaciones.</small>
+                                            </div>
+                                            <div class="form-group" style="margin:0; grid-column: 1 / -1;">
+                                                <label>Dirección Física Principal</label>
+                                                <input type="text" id="empDireccion" class="form-control" required placeholder="Av. Principal #123, Santo Domingo">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Teléfono de Contacto</label>
+                                                <input type="text" id="empTelefono" class="form-control" required placeholder="809-555-0123">
+                                            </div>
+                                            <div class="form-group" style="margin:0;">
+                                                <label>Página Web</label>
+                                                <input type="text" id="empWeb" class="form-control" placeholder="https://www.empresa.com">
+                                            </div>
+                                            
+                                            <!-- Redes Sociales -->
+                                            <div style="grid-column: 1 / -1; border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 15px;">
+                                                <h4 style="margin: 0 0 10px 0; font-size: 13px; color:#4a5568;">Redes Sociales</h4>
+                                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                                                    <div class="form-group" style="margin:0;">
+                                                        <label><i class="fab fa-instagram" style="color:#e1306c;"></i> Instagram</label>
+                                                        <input type="text" id="empInsta" class="form-control" placeholder="https://instagram.com/perfil">
+                                                    </div>
+                                                    <div class="form-group" style="margin:0;">
+                                                        <label><i class="fab fa-facebook" style="color:#1877f2;"></i> Facebook</label>
+                                                        <input type="text" id="empFb" class="form-control" placeholder="https://facebook.com/perfil">
+                                                    </div>
+                                                    <div class="form-group" style="margin:0;">
+                                                        <label><i class="fab fa-twitter" style="color:#1da1f2;"></i> Twitter / X</label>
+                                                        <input type="text" id="empTwitter" class="form-control" placeholder="https://twitter.com/perfil">
+                                                    </div>
+                                                    <div class="form-group" style="margin:0;">
+                                                        <label><i class="fab fa-linkedin" style="color:#0a66c2;"></i> LinkedIn</label>
+                                                        <input type="text" id="empLinkedin" class="form-control" placeholder="https://linkedin.com/company/perfil">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:10px;">
+                                                <button type="submit" class="btn btn-primary">💾 Guardar Datos Institucionales</button>
+                                            </div>
+                                            <div id="configGeneralesStatus" style="grid-column: 1 / -1; font-size:13px; font-weight:bold;"></div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Cambiar Logo -->
+                                    <div class="config-card" style="align-self: start;">
                                         <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Cambiar Logo de la Plataforma</h3>
                                         <p style="font-size:13px; color:#718096; margin-bottom:15px;">Este logo se actualizará en las pantallas (login y menús) y en los documentos PDF (Cotizaciones, etc.). Se prefiere formato PNG con fondo transparente.</p>
                                         
-                                        <img id="previewLogo" src="assets/logo_mqf.png?v=latest" alt="Logo Actual" style="max-width:180px; max-height:80px; object-fit:contain; background:#f8fafc; padding:10px; border-radius:4px; margin-bottom:15px; display:block;">
+                                        <img id="previewLogo" src="assets/logo_mqf.png?v=latest" alt="Logo Actual" style="max-width:180px; max-height:80px; object-fit:contain; background:#f8fafc; padding:10px; border-radius:4px; margin-bottom:15px; display:block; margin: 0 auto;">
                                         
                                         <form id="formLogoUpload" enctype="multipart/form-data">
                                             <input type="file" id="inputLogoImg" accept="image/png, image/jpeg, image/x-icon" style="display:none;" onchange="document.getElementById('fileNameLogo').textContent = this.files[0] ? this.files[0].name : '';">
-                                            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                                                <button type="button" class="btn" style="background:#e2e8f0; color:#4a5568;" onclick="document.getElementById('inputLogoImg').click();">Seleccionar Archivo</button>
-                                                <span id="fileNameLogo" style="font-size:13px; color:#4a5568; align-self:center;"></span>
+                                            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px; align-items:center;">
+                                                <button type="button" class="btn" style="background:#e2e8f0; color:#4a5568; width:100%;" onclick="document.getElementById('inputLogoImg').click();">Seleccionar Archivo</button>
+                                                <span id="fileNameLogo" style="font-size:13px; color:#4a5568; text-align:center; word-break:break-all;"></span>
                                             </div>
-                                            <button type="button" class="btn btn-primary" onclick="subirLogo()">Subir y Guardar Logo</button>
+                                            <button type="button" class="btn btn-primary" style="width:100%;" onclick="subirLogo()">Subir y Guardar Logo</button>
                                         </form>
-                                        <div id="logoUploadStatus" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+                                        <div id="logoUploadStatus" style="margin-top:10px; font-size:13px; font-weight:bold; text-align:center;"></div>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Panel Seguridad -->
                             <div id="config-seguridad" class="config-panel">
-                                <div class="opciones-configuracion" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                                    
-                                    <!-- SMTP Config -->
-                                    <div class="config-card" style="grid-column: 1 / -1;">
-                                        <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Servidor de Correo (SMTP)</h3>
-                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Configura las credenciales necesarias para el envío de correos (ej. funciones de recuperación de acceso).</p>
+                                <div class="notif-tabs" style="margin-bottom: 20px;">
+                                    <button type="button" class="notif-tab active" id="tab-seguridad-smtp" onclick="cambiarSubTabSeguridad('smtp')">📧 Servidor SMTP y Logs</button>
+                                    <button type="button" class="notif-tab" id="tab-seguridad-politicas" onclick="cambiarSubTabSeguridad('politicas')">🔐 Políticas de Seguridad Setup</button>
+                                </div>
+
+                                <div id="panel-subtab-smtp" class="notif-tab-panel active" style="display:block;">
+                                    <div class="opciones-configuracion" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                                         
-                                        <form id="formSmtpConfig" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" onsubmit="guardarConfigSmtp(event)">
+                                        <!-- SMTP Config -->
+                                        <div class="config-card" style="grid-column: 1 / -1;">
+                                            <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Servidor de Correo (SMTP)</h3>
+                                            <p style="font-size:13px; color:#718096; margin-bottom:15px;">Configura las credenciales necesarias para el envío de correos (ej. funciones de recuperación de acceso).</p>
+                                            
+                                            <form id="formSmtpConfig" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" onsubmit="guardarConfigSmtp(event)">
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Servidor (Host)</label>
+                                                    <input type="text" id="smtpServer" class="form-control" required placeholder="mail.midominio.com">
+                                                </div>
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Puerto</label>
+                                                    <input type="number" id="smtpPort" class="form-control" required placeholder="465">
+                                                </div>
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Usuario (Correo)</label>
+                                                    <input type="text" id="smtpUser" class="form-control" required placeholder="info@midominio.com">
+                                                </div>
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Contraseña</label>
+                                                    <input type="password" id="smtpPass" class="form-control" required placeholder="******">
+                                                </div>
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Encriptación</label>
+                                                    <select id="smtpEncryption" class="form-control">
+                                                        <option value="ssl">SSL</option>
+                                                        <option value="tls">TLS</option>
+                                                        <option value="">Ninguna</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group" style="margin:0;">
+                                                    <label>Timeout (seg)</label>
+                                                    <input type="number" id="smtpTimeout" class="form-control" value="10">
+                                                </div>
+                                                
+                                                <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:10px;">
+                                                    <button type="submit" class="btn btn-primary">Guardar SMTP</button>
+                                                    <button type="button" class="btn btn-secondary" id="btnTestSmtp" onclick="probarConexionSmtp()">Probar Conexión</button>
+                                                </div>
+                                                <div id="smtpStatus" style="grid-column: 1 / -1; font-size:13px; font-weight:bold;"></div>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- SMTP Logs -->
+                                        <div class="config-card" style="grid-column: 1 / -1;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                                <h3 style="margin:0; color:#2c3e50; font-size:16px;">Logs de Envíos de Correo</h3>
+                                                <div>
+                                                    <button type="button" class="btn btn-secondary" style="font-size:12px; padding: 4px 10px;" onclick="cargarLogsSmtp()">Recargar</button>
+                                                    <button type="button" class="btn" style="background:#fed7d7; color:#c53030; font-size:12px; padding: 4px 10px;" onclick="limpiarLogsSmtp()">Limpiar</button>
+                                                </div>
+                                            </div>
+                                            <div class="log-viewer">
+                                                <pre id="smtpLogContent">Cargando logs...</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sub-tab Políticas de Seguridad Setup (NOFTRAB) -->
+                                <div id="panel-subtab-politicas" class="notif-tab-panel" style="display:none;">
+                                    <div class="config-card" style="max-width:800px; margin: 0 auto;">
+                                        <h3 style="margin-top:0; color:#2c3e50; font-size:16px;">Políticas de Seguridad Setup (NOFTRAB)</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Establece los parámetros y tiempos para la expiración de sesión, bloqueo de cuenta por intentos fallidos, duración del bloqueo, expiración de clave de acceso y autenticación de doble factor (2FA).</p>
+                                        
+                                        <form id="formPoliticasSeguridad" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;" onsubmit="guardarPoliticasSeguridad(event)">
                                             <div class="form-group" style="margin:0;">
-                                                <label>Servidor (Host)</label>
-                                                <input type="text" id="smtpServer" class="form-control" required placeholder="mail.midominio.com">
+                                                <label style="font-weight:600; font-size:13px;">Expiración de Sesión (Minutos)</label>
+                                                <input type="number" id="secSessionTimeout" class="form-control" required min="1" max="1440" placeholder="30">
                                             </div>
                                             <div class="form-group" style="margin:0;">
-                                                <label>Puerto</label>
-                                                <input type="number" id="smtpPort" class="form-control" required placeholder="465">
+                                                <label style="font-weight:600; font-size:13px;">Intentos Máximos de Acceso</label>
+                                                <input type="number" id="secMaxLoginAttempts" class="form-control" required min="1" max="20" placeholder="5">
                                             </div>
                                             <div class="form-group" style="margin:0;">
-                                                <label>Usuario (Correo)</label>
-                                                <input type="text" id="smtpUser" class="form-control" required placeholder="info@midominio.com">
+                                                <label style="font-weight:600; font-size:13px;">Duración del Bloqueo (Minutos)</label>
+                                                <input type="number" id="secLockoutTime" class="form-control" required min="1" max="1440" placeholder="30">
                                             </div>
                                             <div class="form-group" style="margin:0;">
-                                                <label>Contraseña</label>
-                                                <input type="password" id="smtpPass" class="form-control" required placeholder="******">
+                                                <label style="font-weight:600; font-size:13px;">Expiración de Clave (Días)</label>
+                                                <input type="number" id="secPasswordExpiration" class="form-control" required min="1" max="365" placeholder="90">
                                             </div>
-                                            <div class="form-group" style="margin:0;">
-                                                <label>Encriptación</label>
-                                                <select id="smtpEncryption" class="form-control">
-                                                    <option value="ssl">SSL</option>
-                                                    <option value="tls">TLS</option>
-                                                    <option value="">Ninguna</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group" style="margin:0;">
-                                                <label>Timeout (seg)</label>
-                                                <input type="number" id="smtpTimeout" class="form-control" value="10">
+                                            <div class="form-group" style="grid-column: 1 / -1; display:flex; align-items:center; gap:10px; margin-top:10px;">
+                                                <label class="switch" style="position:relative; display:inline-block; width:44px; height:24px; margin:0;">
+                                                    <input type="checkbox" id="secTwoFactorEnabled" style="opacity:0; width:0; height:0;">
+                                                    <span class="slider" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#cbd5e1; transition:.4s; border-radius:24px;"></span>
+                                                </label>
+                                                <span style="font-size:13px; font-weight:600; color:#4a5568;">Habilitar Autenticación de Doble Factor (2FA)</span>
                                             </div>
                                             
-                                            <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:10px;">
-                                                <button type="submit" class="btn btn-primary">Guardar SMTP</button>
-                                                <button type="button" class="btn btn-secondary" id="btnTestSmtp" onclick="probarConexionSmtp()">Probar Conexión</button>
+                                            <style>
+                                                /* Toggle Switch Style */
+                                                .switch {
+                                                    position: relative;
+                                                    display: inline-block;
+                                                    width: 44px;
+                                                    height: 24px;
+                                                }
+                                                .switch input {
+                                                    opacity: 0;
+                                                    width: 0;
+                                                    height: 0;
+                                                }
+                                                .slider {
+                                                    position: absolute;
+                                                    cursor: pointer;
+                                                    top: 0;
+                                                    left: 0;
+                                                    right: 0;
+                                                    bottom: 0;
+                                                    background-color: #cbd5e1;
+                                                    transition: .4s;
+                                                    border-radius: 24px;
+                                                }
+                                                .slider:before {
+                                                    position: absolute;
+                                                    content: "";
+                                                    height: 18px;
+                                                    width: 18px;
+                                                    left: 3px;
+                                                    bottom: 3px;
+                                                    background-color: white;
+                                                    transition: .4s;
+                                                    border-radius: 50%;
+                                                }
+                                                input:checked + .slider {
+                                                    background-color: #4f46e5;
+                                                }
+                                                input:focus + .slider {
+                                                    box-shadow: 0 0 1px #4f46e5;
+                                                }
+                                                input:checked + .slider:before {
+                                                    transform: translateX(20px);
+                                                }
+                                            </style>
+
+                                            <div style="grid-column: 1 / -1; display:flex; gap:10px; margin-top:15px;">
+                                                <button type="submit" class="btn btn-primary">Guardar Políticas</button>
+                                                <button type="button" class="btn btn-secondary" onclick="cargarPoliticasSeguridadSetup()">Recargar Valores</button>
                                             </div>
-                                            <div id="smtpStatus" style="grid-column: 1 / -1; font-size:13px; font-weight:bold;"></div>
+                                            <div id="politicasStatus" style="grid-column: 1 / -1; font-size:13px; font-weight:bold;"></div>
                                         </form>
-                                    </div>
-                                    
-                                    <!-- SMTP Logs -->
-                                    <div class="config-card" style="grid-column: 1 / -1;">
-                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                            <h3 style="margin:0; color:#2c3e50; font-size:16px;">Logs de Envíos de Correo</h3>
-                                            <div>
-                                                <button type="button" class="btn btn-secondary" style="font-size:12px; padding: 4px 10px;" onclick="cargarLogsSmtp()">Recargar</button>
-                                                <button type="button" class="btn" style="background:#fed7d7; color:#c53030; font-size:12px; padding: 4px 10px;" onclick="limpiarLogsSmtp()">Limpiar</button>
-                                            </div>
-                                        </div>
-                                        <div class="log-viewer">
-                                            <pre id="smtpLogContent">Cargando logs...</pre>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- ═══════════════════════════════════════════════════════════
+                                 PANEL: Flujos de Notificaciones (NOFTRAB)
+                            ════════════════════════════════════════════════════════════ -->
+                            <div id="config-notificaciones" class="config-panel">
+                              <style>
+                                /* ── Notificaciones Panel Styles ── */
+                                .notif-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+                                .notif-tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:2px solid #e2e8f0; }
+                                .notif-tab { padding:8px 18px; border:none; background:none; cursor:pointer; font-size:13px; font-weight:600; color:#64748b; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .2s; }
+                                .notif-tab.active { color:#4f46e5; border-bottom-color:#4f46e5; }
+                                .notif-tab-panel { display:none; }
+                                .notif-tab-panel.active { display:block; }
+                                .notif-flujo-card { background:#fff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px 20px; margin-bottom:12px; display:flex; align-items:center; gap:14px; transition:box-shadow .2s; }
+                                .notif-flujo-card:hover { box-shadow:0 4px 16px rgba(79,70,229,.1); }
+                                .notif-flujo-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700; }
+                                .notif-flujo-badge.activo { background:#dcfce7; color:#16a34a; }
+                                .notif-flujo-badge.inactivo { background:#fee2e2; color:#dc2626; }
+                                .notif-evento-pill { display:inline-block; background:#ede9fe; color:#5b21b6; font-size:11px; font-weight:700; padding:2px 9px; border-radius:12px; letter-spacing:.3px; }
+                                .notif-form-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
+                                .notif-form-overlay.open { display:flex; }
+                                .notif-form-modal { background:#fff; border-radius:16px; width:860px; max-width:96vw; max-height:90vh; overflow-y:auto; padding:28px 32px; position:relative; }
+                                .notif-dest-row { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:center; margin-bottom:8px; }
+                                .notif-tpl-toolbar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+                                .notif-var-btn { padding:3px 9px; border:1.5px solid #c7d2fe; border-radius:6px; font-size:11px; font-weight:600; color:#4f46e5; background:#eef2ff; cursor:pointer; transition:background .15s; }
+                                .notif-var-btn:hover { background:#c7d2fe; }
+                                .notif-log-pill { display:inline-block; padding:2px 9px; border-radius:12px; font-size:11px; font-weight:700; }
+                                .notif-log-pill.enviado  { background:#dcfce7; color:#16a34a; }
+                                .notif-log-pill.fallido  { background:#fee2e2; color:#dc2626; }
+                                .notif-log-pill.omitido  { background:#fef9c3; color:#92400e; }
+                                .notif-empty { text-align:center; padding:40px; color:#94a3b8; font-size:14px; }
+                              </style>
+
+                              <div class="config-card" style="grid-column: 1 / -1;">
+                                <div class="notif-header">
+                                  <div>
+                                    <h3 style="margin:0; color:#2c3e50; font-size:16px; font-weight:700;">⚙️ Configuración de Flujos de Notificaciones</h3>
+                                    <p style="font-size:13px; color:#64748b; margin:4px 0 0;">
+                                      Configura envíos automáticos de correo para cada documento o evento de la plataforma. Cumplimiento NOFTRAB.
+                                    </p>
+                                  </div>
+                                  <button class="btn btn-primary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="notif_abrirFormulario()">
+                                    <i class="fa-solid fa-plus"></i> Nuevo Flujo
+                                  </button>
+                                </div>
+
+                                <!-- Sub-tabs -->
+                                <div class="notif-tabs">
+                                  <button class="notif-tab active" onclick="notif_showTab('flujos', this)">🔔 Flujos Configurados</button>
+                                  <button class="notif-tab" onclick="notif_showTab('logs', this); notif_cargarLogs();">📋 Historial de Envíos</button>
+                                </div>
+
+                                <!-- Tab: Flujos -->
+                                <div id="notif-panel-flujos" class="notif-tab-panel active">
+                                  <div id="notif-lista-flujos">
+                                    <div class="notif-empty"><i class="fa-solid fa-spinner fa-spin"></i> Cargando flujos...</div>
+                                  </div>
+                                </div>
+
+                                <!-- Tab: Logs -->
+                                <div id="notif-panel-logs" class="notif-tab-panel">
+                                  <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+                                    <input type="text" id="notif-log-search" placeholder="Buscar por referencia (ej: FZ-2026-00001)" class="form-control" style="max-width:280px; font-size:13px;" oninput="notif_cargarLogs()">
+                                    <select id="notif-log-evento" class="form-control" style="max-width:220px; font-size:13px;" onchange="notif_cargarLogs()">
+                                      <option value="">— Todos los eventos —</option>
+                                    </select>
+                                    <button class="btn" style="font-size:13px; padding:8px 14px; background:#f1f5f9; color:#334155;" onclick="notif_cargarLogs()">🔄 Refrescar</button>
+                                  </div>
+                                  <div class="table-responsive" style="border-radius:10px; overflow:hidden; border:1px solid #e2e8f0; background:#fff;">
+                                    <table class="premium-table" style="width:100%; border-collapse:collapse; font-size:12px;">
+                                      <thead>
+                                        <tr style="background:#f8fafc; font-size:12px; font-weight:700; color:#475569;">
+                                          <th style="padding:12px 14px;">Fecha</th>
+                                          <th style="padding:12px 14px;">Evento</th>
+                                          <th style="padding:12px 14px;">Referencia</th>
+                                          <th style="padding:12px 14px;">Destinatario</th>
+                                          <th style="padding:12px 14px;">Flujo</th>
+                                          <th style="padding:12px 14px; text-align:center;">Estado</th>
+                                          <th style="padding:12px 14px;">Detalle</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="notif-logs-body">
+                                        <tr><td colspan="7" class="notif-empty">Cargando...</td></tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- MODAL: Crear / Editar Flujo -->
+                            <div class="notif-form-overlay" id="notif-modal-overlay">
+                              <div class="notif-form-modal">
+                                <button onclick="notif_cerrarFormulario()" style="position:absolute;top:16px;right:20px;border:none;background:none;font-size:22px;cursor:pointer;color:#94a3b8;">✕</button>
+                                <h3 style="margin:0 0 20px; font-size:17px; font-weight:700; color:#1e1b4b;" id="notif-modal-title">Nuevo Flujo de Notificación</h3>
+
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                                  <div>
+                                    <label style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:5px;">Nombre del flujo *</label>
+                                    <input type="text" id="notif-f-nombre" class="form-control" placeholder="Ej: Notificación de Cotización Nueva">
+                                  </div>
+                                  <div>
+                                    <label style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:5px;">Evento que lo dispara *</label>
+                                    <select id="notif-f-evento" class="form-control" onchange="notif_actualizarVariables()">
+                                      <option value="">Seleccione un evento...</option>
+                                    </select>
+                                  </div>
+                                  <div style="grid-column:1/-1;">
+                                    <label style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:5px;">Descripción</label>
+                                    <input type="text" id="notif-f-desc" class="form-control" placeholder="Descripción corta del propósito del flujo">
+                                  </div>
+                                </div>
+
+                                <!-- Destinatarios -->
+                                <div style="margin-bottom:16px;">
+                                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                    <label style="font-size:13px; font-weight:700; color:#1e1b4b;">📬 Destinatarios</label>
+                                    <button type="button" class="btn" style="font-size:12px; padding:5px 12px; background:#f1f5f9;" onclick="notif_agregarDestinatario()">+ Agregar</button>
+                                  </div>
+                                  <div id="notif-dest-lista">
+                                    <!-- Filas dinámicas -->
+                                  </div>
+                                  <p style="font-size:11px; color:#9ca3af; margin:6px 0 0;">
+                                    Tipos: <strong>Perfil Responsable</strong> (usuario que creó el doc), <strong>Aseguradora</strong> (email de la aseg. seleccionada), <strong>Plataforma</strong> (correo institucional SMTP), <strong>Cliente</strong> (email del cliente), <strong>Fijo</strong> (email manual).
+                                  </p>
+                                </div>
+
+                                <!-- Asunto -->
+                                <div style="margin-bottom:14px;">
+                                  <label style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:5px;">Asunto del correo *</label>
+                                  <input type="text" id="notif-f-asunto" class="form-control" placeholder="Ej: Nueva cotización {{NUMERO}} — {{CLIENTE}}">
+                                </div>
+
+                                <!-- Variables disponibles -->
+                                <div style="margin-bottom:10px;">
+                                  <p style="font-size:12px; font-weight:600; color:#4f46e5; margin:0 0 6px;">Variables disponibles (haz clic para insertar en el cuerpo):</p>
+                                  <div class="notif-tpl-toolbar" id="notif-vars-toolbar">
+                                    <span style="color:#9ca3af; font-size:12px;">Selecciona un evento para ver las variables</span>
+                                  </div>
+                                </div>
+
+                                <!-- Cuerpo HTML -->
+                                <div style="margin-bottom:18px;">
+                                  <label style="font-size:13px; font-weight:600; color:#374151; display:block; margin-bottom:5px;">Cuerpo del correo (HTML) *</label>
+                                  <textarea id="notif-f-cuerpo" class="form-control" rows="10" style="font-family:monospace; font-size:12px; resize:vertical;"
+                                    placeholder="Escribe el HTML del correo. Usa {{VARIABLE}} para datos dinámicos."></textarea>
+                                </div>
+
+                                <!-- Estado y botones -->
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                  <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; color:#374151;">
+                                    <input type="checkbox" id="notif-f-activo" checked style="width:16px; height:16px;"> Flujo activo
+                                  </label>
+                                  <div style="display:flex; gap:10px;">
+                                    <button class="btn" style="background:#f1f5f9; color:#334155; font-size:13px;" onclick="notif_cerrarFormulario()">Cancelar</button>
+                                    <button class="btn btn-primary" style="font-size:13px; padding:9px 22px;" onclick="notif_guardarFlujo()">
+                                      <i class="fa-solid fa-save"></i> Guardar Flujo
+                                    </button>
+                                  </div>
+                                </div>
+                                <input type="hidden" id="notif-f-id">
+                              </div>
+                            </div>
+
                             <!-- Panel Compañías -->
                             <div id="config-companias" class="config-panel">
+
                                 <div class="config-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                                         <div>
@@ -960,7 +1307,164 @@
                                 statusDiv.innerText = '❌ Error de red: ' + e.message;
                             }
                         }
-                    </script>
+
+                        window.MQF_CONFIG = null;
+                        async function initGlobalConfig() {
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_generales.php');
+                                const result = await response.json();
+                                if (result.exito && result.datos) {
+                                    window.MQF_CONFIG = result.datos;
+                                }
+                            } catch(e) {
+                                console.error('Error loading global config:', e);
+                            }
+                        }
+
+                        async function cargarConfigGenerales() {
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_generales.php');
+                                const result = await response.json();
+                                if(result.exito && result.datos) {
+                                    document.getElementById('empNombre').value = result.datos.empresa_nombre || '';
+                                    document.getElementById('empRnc').value = result.datos.empresa_rnc || '';
+                                    document.getElementById('empCorreo').value = result.datos.empresa_correo || '';
+                                    document.getElementById('empDireccion').value = result.datos.empresa_direccion || '';
+                                    document.getElementById('empTelefono').value = result.datos.empresa_telefono || '';
+                                    document.getElementById('empWeb').value = result.datos.empresa_web || '';
+                                    
+                                    const redes = result.datos.empresa_redes || {};
+                                    document.getElementById('empInsta').value = redes.instagram || '';
+                                    document.getElementById('empFb').value = redes.facebook || '';
+                                    document.getElementById('empTwitter').value = redes.twitter || '';
+                                    document.getElementById('empLinkedin').value = redes.linkedin || '';
+                                    
+                                    window.MQF_CONFIG = result.datos;
+                                }
+                            } catch(e) {
+                                console.error('Error cargando config generales:', e);
+                            }
+                        }
+
+                        async function guardarConfigGenerales(event) {
+                            event.preventDefault();
+                            const statusDiv = document.getElementById('configGeneralesStatus');
+                            statusDiv.style.color = 'blue';
+                            statusDiv.innerText = 'Guardando datos institucionales...';
+                            
+                            const payload = {
+                                empresa_nombre: document.getElementById('empNombre').value.trim(),
+                                empresa_rnc: document.getElementById('empRnc').value.trim(),
+                                empresa_correo: document.getElementById('empCorreo').value.trim(),
+                                empresa_direccion: document.getElementById('empDireccion').value.trim(),
+                                empresa_telefono: document.getElementById('empTelefono').value.trim(),
+                                empresa_web: document.getElementById('empWeb').value.trim(),
+                                empresa_redes: {
+                                    instagram: document.getElementById('empInsta').value.trim(),
+                                    facebook: document.getElementById('empFb').value.trim(),
+                                    twitter: document.getElementById('empTwitter').value.trim(),
+                                    linkedin: document.getElementById('empLinkedin').value.trim()
+                                }
+                            };
+                            
+                            try {
+                                const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_generales.php', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                const result = await response.json();
+                                if (result.exito) {
+                                    statusDiv.style.color = 'green';
+                                    statusDiv.innerText = '✅ ' + result.mensaje;
+                                    window.MQF_CONFIG = payload;
+                                    setTimeout(() => { statusDiv.innerText = ''; }, 3000);
+                                } else {
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ Error: ' + result.mensaje;
+                                }
+                            } catch (e) {
+                                statusDiv.style.color = 'red';
+                                statusDiv.innerText = '❌ Error de red: ' + e.message;
+                            }
+                            }
+
+                            // --- Funciones de Políticas de Seguridad Setup (NOFTRAB) ---
+                            function cambiarSubTabSeguridad(subtab) {
+                                // Cambiar clase activa en los botones de pestañas
+                                document.getElementById('tab-seguridad-smtp').classList.toggle('active', subtab === 'smtp');
+                                document.getElementById('tab-seguridad-politicas').classList.toggle('active', subtab === 'politicas');
+                                
+                                // Mostrar/ocultar paneles correspondientes
+                                document.getElementById('panel-subtab-smtp').style.display = subtab === 'smtp' ? 'grid' : 'none';
+                                document.getElementById('panel-subtab-politicas').style.display = subtab === 'politicas' ? 'block' : 'none';
+                                
+                                if (subtab === 'politicas') {
+                                    cargarPoliticasSeguridadSetup();
+                                }
+                            }
+
+                            async function cargarPoliticasSeguridadSetup() {
+                                try {
+                                    const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_seguridad.php');
+                                    const result = await response.json();
+                                    if(result.exito && result.datos) {
+                                        document.getElementById('secSessionTimeout').value = result.datos.session_timeout_minutes || 30;
+                                        document.getElementById('secMaxLoginAttempts').value = result.datos.max_login_attempts || 5;
+                                        document.getElementById('secLockoutTime').value = result.datos.lockout_time_minutes || 30;
+                                        document.getElementById('secPasswordExpiration').value = result.datos.password_expiration_days || 90;
+                                        document.getElementById('secTwoFactorEnabled').checked = result.datos.two_factor_enabled || false;
+                                    }
+                                } catch(e) {
+                                    console.error('Error cargando políticas de seguridad:', e);
+                                }
+                            }
+
+                            async function guardarPoliticasSeguridad(e) {
+                                e.preventDefault();
+                                const statusDiv = document.getElementById('politicasStatus');
+                                statusDiv.style.color = 'blue';
+                                statusDiv.innerText = 'Guardando...';
+                                
+                                const data = {
+                                    session_timeout_minutes: parseInt(document.getElementById('secSessionTimeout').value),
+                                    max_login_attempts: parseInt(document.getElementById('secMaxLoginAttempts').value),
+                                    lockout_time_minutes: parseInt(document.getElementById('secLockoutTime').value),
+                                    password_expiration_days: parseInt(document.getElementById('secPasswordExpiration').value),
+                                    two_factor_enabled: document.getElementById('secTwoFactorEnabled').checked
+                                };
+                                
+                                try {
+                                    const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/config_seguridad.php', {
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'},
+                                        body: JSON.stringify(data)
+                                    });
+                                    const result = await response.json();
+                                    
+                                    if(result.exito) {
+                                        statusDiv.style.color = 'green';
+                                        statusDiv.innerText = '✅ ' + result.mensaje;
+                                        if(typeof MQF !== 'undefined' && MQF.toast) {
+                                            MQF.toast(result.mensaje, "success");
+                                        }
+                                        setTimeout(() => statusDiv.innerText = '', 3000);
+                                    } else {
+                                        statusDiv.style.color = 'red';
+                                        statusDiv.innerText = '❌ ' + result.mensaje;
+                                        if(typeof MQF !== 'undefined' && MQF.toast) {
+                                            MQF.toast(result.mensaje, "error");
+                                        }
+                                    }
+                                } catch(err) {
+                                    statusDiv.style.color = 'red';
+                                    statusDiv.innerText = '❌ Error de red';
+                                    if(typeof MQF !== 'undefined' && MQF.toast) {
+                                        MQF.toast("Error al guardar las políticas de seguridad", "error");
+                                    }
+                                }
+                            }
+                        </script>
                 </section>
 
                 <!-- Centro Financiero Module -->
@@ -976,6 +1480,21 @@
                 <!-- Modelador PDF Module -->
                 <section id="modulo-modelador_pdf" class="module" style="padding:0; overflow:hidden;">
                     <iframe id="modelador-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none; display:block;" title="Modelador PDF"></iframe>
+                </section>
+
+                <!-- Perfil Data Module -->
+                <section id="modulo-perfil_data" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="perfil-data-iframe" src="" style="width:100%; height:calc(100vh - 70px); border:none; display:block;" title="Perfil Data"></iframe>
+                </section>
+
+                <!-- Auditoría Lineal Module -->
+                <section id="modulo-auditoria_lineal" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="auditoria-lineal-iframe" src="" style="width:100%; height:calc(100vh - 70px); border:none; display:block;" title="Auditoría Lineal"></iframe>
+                </section>
+
+                <!-- Helpdesk Module -->
+                <section id="modulo-helpdesk" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="helpdesk-iframe" src="" style="width:100%; height:calc(100vh - 70px); border:none; display:block;" title="Helpdesk"></iframe>
                 </section>
             </div>
         </main>
@@ -1908,6 +2427,9 @@
 
     // Activar el panel correcto al hacer click en config-nav-btn
     document.addEventListener('DOMContentLoaded', function() {
+      if (typeof initGlobalConfig === 'function') initGlobalConfig();
+      if (typeof cargarConfigGenerales === 'function') cargarConfigGenerales();
+
       document.querySelectorAll('.config-nav-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var target = btn.dataset.target;
@@ -1926,13 +2448,14 @@
 // NOFTRAB Tab Guards — Configuración Dashboard v1.0
 // ═══════════════════════════════════════════════════
 const TAB_CONFIG_GUARDS = [
-    { elementId: 'btn-conf-generales', permiso: 'TAB_CONF_GENERALES' },
-    { elementId: 'btn-conf-seguridad', permiso: 'TAB_CONF_SEGURIDAD' },
-    { elementId: 'btn-conf-perfiles',  permiso: 'TAB_CONF_PERFILES' },
-    { elementId: 'btn-conf-skins',     permiso: 'TAB_CONF_SKINS' },
-    { elementId: 'btn-conf-companias', permiso: 'TAB_CONF_COMPANIAS' },
-    { elementId: 'btn-conf-integraciones', permiso: 'TAB_CONF_INTEGRACIONES' },
-    { elementId: 'btn-conf-etl',           permiso: 'CONF_ETL_VER' }
+    { elementId: 'btn-conf-generales',       permiso: 'TAB_CONF_GENERALES' },
+    { elementId: 'btn-conf-seguridad',       permiso: 'TAB_CONF_SEGURIDAD' },
+    { elementId: 'btn-conf-notificaciones',  permiso: 'TAB_CONF_NOTIFICACIONES' },
+    { elementId: 'btn-conf-perfiles',        permiso: 'TAB_CONF_PERFILES' },
+    { elementId: 'btn-conf-skins',           permiso: 'TAB_CONF_SKINS' },
+    { elementId: 'btn-conf-companias',       permiso: 'TAB_CONF_COMPANIAS' },
+    { elementId: 'btn-conf-integraciones',   permiso: 'TAB_CONF_INTEGRACIONES' },
+    { elementId: 'btn-conf-etl',             permiso: 'CONF_ETL_VER' }
 ];
 
 async function initTabGuardsConfig() {
@@ -1978,7 +2501,7 @@ async function initTabGuardsConfig() {
         });
 
         // 6. Activar el primer botón visible del config-sidebar
-        const configBtnIds = ['btn-conf-generales', 'btn-conf-seguridad', 'btn-conf-perfiles', 'btn-conf-skins'];
+        const configBtnIds = ['btn-conf-generales', 'btn-conf-seguridad', 'btn-conf-notificaciones', 'btn-conf-perfiles', 'btn-conf-skins'];
         for (const id of configBtnIds) {
             const el = document.getElementById(id);
             if (el && el.style.display !== 'none') {
@@ -2419,6 +2942,394 @@ async function confirmarEImportarETL() {
     }
 }
 
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MÓDULO: Flujos de Notificaciones JS Engine — NOFTRAB v1.0
+════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── Estado del módulo ──────────────────────────────────────
+  let notif_catalogo = [];   // Catálogo de eventos del backend
+  let notif_flujos   = [];   // Lista de flujos cargados
+  let notif_destIdx  = 0;    // Contador para IDs únicos de filas
+
+  // ── Tipos de destinatarios ─────────────────────────────────
+  const TIPOS_DEST = [
+    { value: 'perfil_responsable', label: '👤 Perfil Responsable' },
+    { value: 'aseguradora',        label: '🏢 Aseguradora del documento' },
+    { value: 'plataforma',         label: '🌐 Plataforma (correo SMTP)' },
+    { value: 'cliente',            label: '🧑 Cliente del documento' },
+    { value: 'fijo',               label: '✉️ Email fijo (manual)' },
+  ];
+
+  // ── API helper ────────────────────────────────────────────
+  const notif_api = (action, method = 'GET', body = null, params = '') => {
+    const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || '';
+    const url   = `/PLATAFORMA_INTEGRADA/backend/api/notificaciones.php?action=${action}${params}`;
+    const opts  = {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(url, opts).then(r => r.json());
+  };
+
+  // ── Cambio de sub-tab ─────────────────────────────────────
+  window.notif_showTab = (tab, btn) => {
+    document.querySelectorAll('.notif-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.notif-tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const el = document.getElementById('notif-panel-' + tab);
+    if (el) el.classList.add('active');
+  };
+
+  // ── Cargar catálogo de eventos ────────────────────────────
+  async function notif_cargarCatalogo() {
+    try {
+      const res = await notif_api('listar_eventos');
+      if (res.exito) {
+        notif_catalogo = res.datos || res.data || [];
+        // Poblar select de evento en modal
+        const sel = document.getElementById('notif-f-evento');
+        if (sel) {
+          sel.innerHTML = '<option value="">Seleccione un evento...</option>';
+          notif_catalogo.forEach(ev => {
+            sel.innerHTML += `<option value="${ev.evento}">[${ev.modulo}] ${ev.label}</option>`;
+          });
+        }
+        // Poblar select de filtro en logs
+        const selLog = document.getElementById('notif-log-evento');
+        if (selLog) {
+          selLog.innerHTML = '<option value="">— Todos los eventos —</option>';
+          notif_catalogo.forEach(ev => {
+            selLog.innerHTML += `<option value="${ev.evento}">${ev.label}</option>`;
+          });
+        }
+      }
+    } catch(e) { console.warn('notif_cargarCatalogo:', e); }
+  }
+
+  // ── Cargar flujos ─────────────────────────────────────────
+  window.notif_cargarFlujos = async () => {
+    await notif_cargarCatalogo();
+    const cont = document.getElementById('notif-lista-flujos');
+    if (!cont) return;
+    cont.innerHTML = '<div class="notif-empty"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</div>';
+    try {
+      const res = await notif_api('listar');
+      if (!res.exito) { cont.innerHTML = `<div class="notif-empty">⚠️ ${res.mensaje}</div>`; return; }
+      notif_flujos = res.datos || res.data || [];
+
+      if (!notif_flujos.length) {
+        cont.innerHTML = `
+          <div class="notif-empty">
+            <div style="font-size:36px; margin-bottom:12px;">🔔</div>
+            <p style="font-weight:600; color:#475569;">No hay flujos configurados</p>
+            <p style="font-size:12px;">Haz clic en <strong>Nuevo Flujo</strong> para crear el primero.</p>
+          </div>`;
+        return;
+      }
+
+      cont.innerHTML = notif_flujos.map(f => {
+        const esActivo = f.activo === 1 || f.activo === '1';
+        const dests    = (f.destinatarios || []).map(d => {
+          const tipo = TIPOS_DEST.find(t => t.value === d.tipo);
+          return `<span style="font-size:11px; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:10px; display:inline-block; margin:2px;">${tipo ? tipo.label : d.tipo}${d.email_fijo ? ' — ' + d.email_fijo : ''}</span>`;
+        }).join('');
+
+        return `
+          <div class="notif-flujo-card">
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap;">
+                <strong style="font-size:14px; color:#1e1b4b;">${escH(f.nombre)}</strong>
+                <span class="notif-evento-pill">${escH(f.evento)}</span>
+                <span class="notif-flujo-badge ${esActivo ? 'activo' : 'inactivo'}">${esActivo ? '✅ Activo' : '⛔ Inactivo'}</span>
+              </div>
+              ${f.descripcion ? `<p style="font-size:12px; color:#64748b; margin:0 0 6px;">${escH(f.descripcion)}</p>` : ''}
+              <div style="display:flex; flex-wrap:wrap; gap:4px;">${dests}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+              <button class="btn" style="font-size:12px; padding:5px 12px; background:#eef2ff; color:#4f46e5;" onclick="notif_abrirFormulario(${f.id})">✏️ Editar</button>
+              <button class="btn" style="font-size:12px; padding:5px 12px; background:${esActivo ? '#fef3c7' : '#dcfce7'}; color:${esActivo ? '#92400e' : '#166534'};" onclick="notif_toggle(${f.id})">${esActivo ? '⏸ Desactivar' : '▶️ Activar'}</button>
+              <button class="btn" style="font-size:12px; padding:5px 12px; background:#fee2e2; color:#dc2626;" onclick="notif_eliminar(${f.id}, '${escH(f.nombre).replace(/'/g,"\\'")}')">🗑 Eliminar</button>
+            </div>
+          </div>`;
+      }).join('');
+    } catch(e) {
+      cont.innerHTML = `<div class="notif-empty">❌ Error: ${e.message}</div>`;
+    }
+  };
+
+  function escH(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Abrir modal ────────────────────────────────────────────
+  window.notif_abrirFormulario = async (id = null) => {
+    await notif_cargarCatalogo();
+    notif_destIdx = 0;
+    document.getElementById('notif-f-id').value      = id || '';
+    document.getElementById('notif-f-nombre').value  = '';
+    document.getElementById('notif-f-evento').value  = '';
+    document.getElementById('notif-f-desc').value    = '';
+    document.getElementById('notif-f-asunto').value  = '';
+    document.getElementById('notif-f-cuerpo').value  = '';
+    document.getElementById('notif-f-activo').checked = true;
+    document.getElementById('notif-dest-lista').innerHTML = '';
+    document.getElementById('notif-vars-toolbar').innerHTML = '<span style="color:#9ca3af;font-size:12px;">Selecciona un evento para ver las variables</span>';
+    document.getElementById('notif-modal-title').textContent = id ? 'Editar Flujo de Notificación' : 'Nuevo Flujo de Notificación';
+
+    if (id) {
+      const flujo = notif_flujos.find(f => f.id == id);
+      if (flujo) {
+        document.getElementById('notif-f-nombre').value  = flujo.nombre;
+        document.getElementById('notif-f-evento').value  = flujo.evento;
+        document.getElementById('notif-f-desc').value    = flujo.descripcion || '';
+        document.getElementById('notif-f-asunto').value  = flujo.asunto_tpl;
+        document.getElementById('notif-f-cuerpo').value  = flujo.cuerpo_tpl;
+        document.getElementById('notif-f-activo').checked = flujo.activo == 1;
+        notif_actualizarVariables();
+        (flujo.destinatarios || []).forEach(d => notif_agregarDestinatario(d));
+      }
+    } else {
+      // Plantilla piloto por defecto (Cotizaciones)
+      document.getElementById('notif-f-cuerpo').value = notif_plantillaPiloto();
+    }
+
+    if (!document.getElementById('notif-dest-lista').children.length) {
+      notif_agregarDestinatario({ tipo: 'perfil_responsable' });
+    }
+
+    document.getElementById('notif-modal-overlay').classList.add('open');
+  };
+
+  window.notif_cerrarFormulario = () => {
+    document.getElementById('notif-modal-overlay').classList.remove('open');
+  };
+
+  // ── Actualizar variables disponibles ──────────────────────
+  window.notif_actualizarVariables = () => {
+    const evento = document.getElementById('notif-f-evento').value;
+    const ev     = notif_catalogo.find(e => e.evento === evento);
+    const toolbar = document.getElementById('notif-vars-toolbar');
+    if (!ev || !ev.variables) {
+      toolbar.innerHTML = '<span style="color:#9ca3af;font-size:12px;">Selecciona un evento para ver las variables</span>';
+      return;
+    }
+    toolbar.innerHTML = ev.variables.map(v =>
+      `<span class="notif-var-btn" onclick="notif_insertarVar('{{${v}}}')" title="Insertar {{${v}}}">${v}</span>`
+    ).join('');
+  };
+
+  window.notif_insertarVar = (variable) => {
+    const ta  = document.getElementById('notif-f-cuerpo');
+    const pos = ta.selectionStart;
+    const before = ta.value.substring(0, pos);
+    const after  = ta.value.substring(ta.selectionEnd);
+    ta.value = before + variable + after;
+    ta.selectionStart = ta.selectionEnd = pos + variable.length;
+    ta.focus();
+  };
+
+  // ── Destinatarios ─────────────────────────────────────────
+  window.notif_agregarDestinatario = (data = {}) => {
+    const idx = notif_destIdx++;
+    const lista = document.getElementById('notif-dest-lista');
+    const div = document.createElement('div');
+    div.className = 'notif-dest-row';
+    div.id = `notif-dest-${idx}`;
+
+    const opcionesTipo = TIPOS_DEST.map(t =>
+      `<option value="${t.value}" ${data.tipo === t.value ? 'selected' : ''}>${t.label}</option>`
+    ).join('');
+
+    div.innerHTML = `
+      <select class="form-control notif-dest-tipo" style="font-size:13px;" onchange="notif_toggleEmailFijo(${idx})" id="notif-dest-tipo-${idx}">
+        ${opcionesTipo}
+      </select>
+      <input type="email" class="form-control notif-dest-email" id="notif-dest-email-${idx}" 
+             placeholder="email@destino.com" style="font-size:13px;"
+             value="${data.email_fijo || ''}"
+             ${data.tipo !== 'fijo' ? 'style="display:none" disabled' : ''}>
+      <button type="button" class="btn" style="padding:6px 10px; background:#fee2e2; color:#dc2626; border-radius:8px;" 
+              onclick="document.getElementById('notif-dest-${idx}').remove()">✕</button>`;
+    lista.appendChild(div);
+    notif_toggleEmailFijo(idx);
+  };
+
+  window.notif_toggleEmailFijo = (idx) => {
+    const tipo  = document.getElementById(`notif-dest-tipo-${idx}`);
+    const email = document.getElementById(`notif-dest-email-${idx}`);
+    if (!tipo || !email) return;
+    const esFijo = tipo.value === 'fijo';
+    email.style.display = esFijo ? '' : 'none';
+    email.disabled      = !esFijo;
+  };
+
+  function notif_leerDestinatarios() {
+    const rows = document.querySelectorAll('#notif-dest-lista .notif-dest-row');
+    return Array.from(rows).map(row => {
+      const tipo  = row.querySelector('.notif-dest-tipo')?.value  || '';
+      const email = row.querySelector('.notif-dest-email')?.value || '';
+      return tipo === 'fijo' ? { tipo, email_fijo: email } : { tipo };
+    }).filter(d => d.tipo);
+  }
+
+  // ── Guardar flujo ─────────────────────────────────────────
+  window.notif_guardarFlujo = async () => {
+    const id          = document.getElementById('notif-f-id').value;
+    const nombre      = document.getElementById('notif-f-nombre').value.trim();
+    const evento      = document.getElementById('notif-f-evento').value;
+    const desc        = document.getElementById('notif-f-desc').value.trim();
+    const asunto_tpl  = document.getElementById('notif-f-asunto').value.trim();
+    const cuerpo_tpl  = document.getElementById('notif-f-cuerpo').value;
+    const activo      = document.getElementById('notif-f-activo').checked;
+    const destinatarios = notif_leerDestinatarios();
+
+    if (!nombre)      { MQF.toast('El nombre del flujo es obligatorio', 'warning'); return; }
+    if (!evento)      { MQF.toast('Selecciona el evento que dispara el flujo', 'warning'); return; }
+    if (!asunto_tpl)  { MQF.toast('El asunto del correo es obligatorio', 'warning'); return; }
+    if (!cuerpo_tpl)  { MQF.toast('El cuerpo del correo es obligatorio', 'warning'); return; }
+    if (!destinatarios.length) { MQF.toast('Agrega al menos un destinatario', 'warning'); return; }
+
+    const payload = { nombre, evento, descripcion: desc, destinatarios, asunto_tpl, cuerpo_tpl, activo };
+    if (id) payload.id = parseInt(id);
+
+    try {
+      const res = await notif_api('guardar', 'POST', payload);
+      if (res.exito) {
+        MQF.toast(id ? '✅ Flujo actualizado' : '✅ Flujo creado correctamente', 'success');
+        notif_cerrarFormulario();
+        notif_cargarFlujos();
+      } else {
+        MQF.toast('Error: ' + res.mensaje, 'error');
+      }
+    } catch(e) { MQF.toast('Error de conexión: ' + e.message, 'error'); }
+  };
+
+  // ── Toggle activo ──────────────────────────────────────────
+  window.notif_toggle = async (id) => {
+    try {
+      const res = await notif_api('toggle', 'POST', { id });
+      if (res.exito) { MQF.toast(res.mensaje, 'success'); notif_cargarFlujos(); }
+      else           { MQF.toast('Error: ' + res.mensaje, 'error'); }
+    } catch(e) { MQF.toast('Error: ' + e.message, 'error'); }
+  };
+
+  // ── Eliminar flujo ─────────────────────────────────────────
+  window.notif_eliminar = async (id, nombre) => {
+    if (!confirm(`¿Eliminar el flujo "${nombre}"?\n\nEsta acción no se puede deshacer.`)) return;
+    try {
+      const res = await notif_api('eliminar', 'POST', { id });
+      if (res.exito) { MQF.toast('✅ Flujo eliminado', 'success'); notif_cargarFlujos(); }
+      else           { MQF.toast('Error: ' + res.mensaje, 'error'); }
+    } catch(e) { MQF.toast('Error: ' + e.message, 'error'); }
+  };
+
+  // ── Cargar logs ────────────────────────────────────────────
+  window.notif_cargarLogs = async () => {
+    const tbody  = document.getElementById('notif-logs-body');
+    if (!tbody) return;
+    const ref    = document.getElementById('notif-log-search')?.value.trim() || '';
+    const evento = document.getElementById('notif-log-evento')?.value || '';
+    tbody.innerHTML = '<tr><td colspan="7" class="notif-empty"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+
+    let params = '';
+    if (ref)    params += '&referencia=' + encodeURIComponent(ref);
+    if (evento) params += '&evento='     + encodeURIComponent(evento);
+
+    try {
+      const res = await notif_api('listar_logs', 'GET', null, params);
+      if (!res.exito || !res.datos?.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="notif-empty">No hay registros de envío</td></tr>';
+        return;
+      }
+      tbody.innerHTML = (res.datos || res.data || []).map(log => {
+        const cls   = log.resultado || 'omitido';
+        const fecha = log.created_at ? log.created_at.replace('T',' ').substring(0,16) : '';
+        return `<tr>
+          <td style="padding:10px 14px; color:#374151;">${fecha}</td>
+          <td style="padding:10px 14px;"><span class="notif-evento-pill">${escH(log.evento)}</span></td>
+          <td style="padding:10px 14px; font-weight:600; color:#1e1b4b;">${escH(log.referencia||'—')}</td>
+          <td style="padding:10px 14px; color:#374151;">${escH(log.destinatario)}</td>
+          <td style="padding:10px 14px; color:#64748b;">${escH(log.flujo_nombre||'—')}</td>
+          <td style="padding:10px 14px; text-align:center;"><span class="notif-log-pill ${cls}">${cls.toUpperCase()}</span></td>
+          <td style="padding:10px 14px; color:#64748b; font-size:11px;">${escH(log.detalle||'')}</td>
+        </tr>`;
+      }).join('');
+    } catch(e) {
+      tbody.innerHTML = `<tr><td colspan="7" class="notif-empty">❌ ${e.message}</td></tr>`;
+    }
+  };
+
+  // ── Plantilla piloto HTML para cotizaciones ────────────────
+  function notif_plantillaPiloto() {
+    return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:30px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+      <!-- HEADER -->
+      <tr><td style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:28px 32px;text-align:center;">
+        <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700;letter-spacing:.5px;">MAS QUE FIANZAS</h1>
+        <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px;">Notificación Automática — {{TIPO_LABEL}}</p>
+      </td></tr>
+      <!-- BODY -->
+      <tr><td style="padding:28px 32px;">
+        <p style="color:#374151;font-size:15px;margin:0 0 20px;">Estimado(a),</p>
+        <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 20px;">
+          Se ha generado una nueva <strong>{{TIPO_LABEL}}</strong> en la plataforma MAS QUE FIANZAS.
+          A continuación el resumen:
+        </p>
+        <!-- Datos del documento -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:20px;">
+          <tr style="background:#f5f3ff;">
+            <td style="padding:12px 16px;font-weight:700;color:#4338ca;font-size:13px;width:40%;">N° de Referencia</td>
+            <td style="padding:12px 16px;color:#1e1b4b;font-size:13px;font-weight:700;">{{NUMERO}}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:600;color:#374151;font-size:13px;">Cliente</td>
+            <td style="padding:12px 16px;color:#374151;font-size:13px;">{{CLIENTE}}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="padding:12px 16px;font-weight:600;color:#374151;font-size:13px;">Aseguradora</td>
+            <td style="padding:12px 16px;color:#374151;font-size:13px;">{{ASEGURADORA}}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:600;color:#374151;font-size:13px;">Tipo</td>
+            <td style="padding:12px 16px;color:#374151;font-size:13px;">{{SUBTIPO}}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="padding:12px 16px;font-weight:600;color:#374151;font-size:13px;">Prima</td>
+            <td style="padding:12px 16px;color:#374151;font-size:13px;">RD$ {{PRIMA_FMT}}</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:700;color:#4338ca;font-size:14px;">TOTAL</td>
+            <td style="padding:12px 16px;color:#4338ca;font-size:16px;font-weight:800;">RD$ {{TOTAL_FMT}}</td>
+          </tr>
+          <tr style="background:#f9fafb;">
+            <td style="padding:12px 16px;font-weight:600;color:#374151;font-size:13px;">Fecha</td>
+            <td style="padding:12px 16px;color:#374151;font-size:13px;">{{FECHA_LOCAL}}</td>
+          </tr>
+        </table>
+        <p style="color:#6b7280;font-size:12px;line-height:1.6;margin:0;">
+          Este correo fue generado automáticamente por la plataforma MAS QUE FIANZAS.
+          Por favor no responda a este mensaje.
+        </p>
+      </td></tr>
+      <!-- FOOTER -->
+      <tr><td style="background:#f5f3ff;padding:16px 32px;text-align:center;">
+        <p style="color:#6b7280;font-size:11px;margin:0;">© 2026 MAS QUE FIANZAS — Sistema Integrado de Gestión</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+  }
+
+})();
 </script>
 </body>
 </html>

@@ -819,7 +819,7 @@
         <div class="wiz-panel active" id="wpanel-1">
           <div class="decl-banner">
             <div class="decl-banner-logo">+ QUE FIANZAS "Cotización"</div>
-            <p>Somos <strong>MAS QUE FIANZAS +QF, SRL</strong>, Corredores de Seguros, registrados bajo el <strong>RNC: 133-53573-4</strong> y con <strong>Licencia No. CMS-1561-A</strong></p>
+            <p id="fza-welcome-msg">Somos <strong>MAS QUE FIANZAS +QF, SRL</strong>, Corredores de Seguros, registrados bajo el <strong>RNC: 133-53573-4</strong> y con <strong>Licencia No. CMS-1561-A</strong></p>
             <p>¡¡Gracias por llegar hasta aquí.. Ya Puedes realizar la cotización de tu fianza!!</p>
             <p>Para mejorar tu experiencia debes tener la información de: <em>Pliego de Licitación o Contrato</em></p>
             <span class="timing"><i class="fa-regular fa-clock"></i> Tiempo aproximado: 3 a 5 minutos</span>
@@ -2400,6 +2400,7 @@
       const total      = parseFloat(data.total || pbase + itbis);
       const ncf        = data.ncf || data.usar_ncf || false;
 
+      const cfg = getInstitutionalData();
       // ── HEADER ──
       doc.setFillColor(30, 58, 138);
       doc.rect(0, 0, W, 40, 'F');
@@ -2408,8 +2409,8 @@
       doc.setFontSize(18); doc.setFont('helvetica', 'bold');
       doc.text('CERTIFICADO DE FIANZA', W / 2, 18, { align: 'center' });
       doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-      doc.text('MAS QUE FIANZAS +QF, SRL', W / 2, 26, { align: 'center' });
-      doc.text('RNC: 133-53573-4 · Licencia No. CMS-1561-A', W / 2, 32, { align: 'center' });
+      doc.text(cfg.empresa_nombre, W / 2, 26, { align: 'center' });
+      doc.text('RNC: ' + cfg.empresa_rnc + ' · Licencia No. CMS-1561-A', W / 2, 32, { align: 'center' });
       y = 48;
 
       // N° y Fecha
@@ -2494,7 +2495,7 @@
       // PIE
       doc.setFillColor(30,58,138); doc.rect(0,285,W,12,'F');
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(255,255,255);
-      doc.text('MAS QUE FIANZAS +QF, SRL · RNC: 133-53573-4 · Licencia No. CMS-1561-A', W/2, 291, { align:'center' });
+      doc.text(cfg.empresa_nombre + ' · RNC: ' + cfg.empresa_rnc + ' · Licencia No. CMS-1561-A', W/2, 291, { align:'center' });
       doc.text('Documento generado electrónicamente · ' + new Date().toLocaleString('es-DO'), W/2, 295, { align:'center' });
 
       doc.save('fianza_' + num + '.pdf');
@@ -2607,10 +2608,31 @@
     }
   });
 
+  function getInstitutionalData() {
+    return (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {
+        empresa_nombre: 'MAS QUE FIANZAS',
+        empresa_rnc: '133-53573-4',
+        empresa_correo: 'info@masquefianzas.com',
+        empresa_direccion: 'Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN.',
+        empresa_telefono: '+1 (829) 629-1952',
+        empresa_web: 'https://www.masquefianzas.com.do',
+        empresa_redes: {}
+    };
+  }
+
+  function renderWelcomeMessage() {
+    const cfg = getInstitutionalData();
+    const el = document.getElementById('fza-welcome-msg');
+    if (el && cfg) {
+      el.innerHTML = `Somos <strong>${cfg.empresa_nombre}</strong>, Corredores de Seguros, registrados bajo el <strong>RNC: ${cfg.empresa_rnc}</strong> y con <strong>Licencia No. CMS-1561-A</strong>`;
+    }
+  }
+
   // ═══════════════════════════════════════════════════════
   // INIT
   // ═══════════════════════════════════════════════════════
   document.addEventListener('DOMContentLoaded', function() {
+    if (typeof renderWelcomeMessage === 'function') renderWelcomeMessage();
     // Verificar wizard btn estado al cargar paso 1
     const btnSig = document.getElementById('btn-wiz-siguiente');
     if (btnSig) btnSig.disabled = true;

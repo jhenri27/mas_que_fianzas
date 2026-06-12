@@ -10,13 +10,16 @@
 // UTILIDADES COMUNES
 // ==========================================
 const POLIZA_DOCS = {
-    EMPRESA: {
-        nombre: 'MAS QUE FIANZAS, S.R.L.',
-        rnc: '131-12345-6',
-        telefono: '(829) 629-1952',
-        email: 'info@masquefianzas.com',
-        direccion: 'Ave. 27 de Febrero #234, Suite-304, La Esperilla, Santo Domingo, RD',
-        base_url: window.location.origin + window.location.pathname.replace(/\/frontend\/.*/, '')
+    get EMPRESA() {
+        const cfg = (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {};
+        return {
+            nombre: cfg.empresa_nombre || 'MAS QUE FIANZAS, S.R.L.',
+            rnc: cfg.empresa_rnc || '133-53573-4',
+            telefono: cfg.empresa_telefono || '(829) 629-1952',
+            email: cfg.empresa_correo || 'info@masquefianzas.com',
+            direccion: cfg.empresa_direccion || 'Ave. 27 de Febrero #234, Suite-304, La Esperilla, Santo Domingo, RD',
+            base_url: window.location.origin + window.location.pathname.replace(/\/frontend\/.*/, '')
+        };
     },
     COLORES: {
         navy: [0, 51, 102],

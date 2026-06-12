@@ -25,7 +25,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Completo',
                 'Gerente Contador' => 'Completo',
                 'Gerente Comercial' => 'Completo',
-                'Socio Comercial' => 'Parcial',
+                'Socio Comercial PDV' => 'Parcial',
                 'Cajero' => 'Parcial',
                 'Auditor' => 'Completo',
                 'Usuario' => 'Parcial'
@@ -35,7 +35,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Consultar/Editar',
                 'Gerente Contador' => 'Consultar',
                 'Gerente Comercial' => 'Crear/Editar',
-                'Socio Comercial' => 'Consultar',
+                'Socio Comercial PDV' => 'Consultar',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar'
@@ -45,7 +45,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Crear/Editar',
                 'Gerente Contador' => 'Consultar',
                 'Gerente Comercial' => 'Crear/Editar',
-                'Socio Comercial' => 'Consultar',
+                'Socio Comercial PDV' => 'Consultar',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar'
@@ -55,7 +55,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Crear/Editar',
                 'Gerente Contador' => 'Consultar',
                 'Gerente Comercial' => 'Crear/Editar',
-                'Socio Comercial' => 'Consultar',
+                'Socio Comercial PDV' => 'Consultar',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar'
@@ -65,7 +65,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'No',
                 'Gerente Contador' => 'Validar/Reportes',
                 'Gerente Comercial' => 'Consultar',
-                'Socio Comercial' => 'No',
+                'Socio Comercial PDV' => 'No',
                 'Cajero' => 'Registrar',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar propio'
@@ -75,7 +75,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Crear/Editar',
                 'Gerente Contador' => 'No',
                 'Gerente Comercial' => 'Crear/Editar',
-                'Socio Comercial' => 'Crear/Editar',
+                'Socio Comercial PDV' => 'Crear/Editar',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Crear propio'
@@ -85,7 +85,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Crear/Editar',
                 'Gerente Contador' => 'Consultar',
                 'Gerente Comercial' => 'Consultar',
-                'Socio Comercial' => 'No',
+                'Socio Comercial PDV' => 'No',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'No'
@@ -95,7 +95,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Parámetros técnicos',
                 'Gerente Contador' => 'Parámetros contables',
                 'Gerente Comercial' => 'No',
-                'Socio Comercial' => 'No',
+                'Socio Comercial PDV' => 'No',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'No'
@@ -105,7 +105,7 @@ class PerfilManager {
                 'Gerente Técnico' => 'Técnicos',
                 'Gerente Contador' => 'Financieros',
                 'Gerente Comercial' => 'Comerciales',
-                'Socio Comercial' => 'Comerciales',
+                'Socio Comercial PDV' => 'Comerciales',
                 'Cajero' => 'Caja',
                 'Auditor' => 'Todos',
                 'Usuario' => 'Limitados'
@@ -115,10 +115,40 @@ class PerfilManager {
                 'Gerente Técnico' => 'Crear/Editar',
                 'Gerente Contador' => 'Consultar',
                 'Gerente Comercial' => 'Seguimiento',
-                'Socio Comercial' => 'Consultar',
+                'Socio Comercial PDV' => 'Consultar',
                 'Cajero' => 'No',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar propio'
+            ],
+            'Perfil Data' => [
+                'Administrador' => 'Completo',
+                'Gerente Técnico' => 'Completo',
+                'Gerente Contador' => 'Completo',
+                'Gerente Comercial' => 'Completo',
+                'Socio Comercial PDV' => 'Completo',
+                'Cajero' => 'Completo',
+                'Auditor' => 'Completo',
+                'Usuario' => 'Completo'
+            ],
+            'Auditoría Lineal' => [
+                'Administrador' => 'Total',
+                'Gerente Técnico' => 'No',
+                'Gerente Contador' => 'No',
+                'Gerente Comercial' => 'No',
+                'Socio Comercial PDV' => 'No',
+                'Cajero' => 'No',
+                'Auditor' => 'Consultar',
+                'Usuario' => 'No'
+            ],
+            'Helpdesk' => [
+                'Administrador' => 'Total',
+                'Gerente Técnico' => 'Total',
+                'Gerente Contador' => 'Consultar',
+                'Gerente Comercial' => 'Consultar',
+                'Socio Comercial PDV' => 'Consultar',
+                'Cajero' => 'Registrar',
+                'Auditor' => 'Consultar',
+                'Usuario' => 'Consultar'
             ]
         ];
     }

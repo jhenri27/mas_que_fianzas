@@ -428,7 +428,10 @@ async function inicializarFiltrosReporte() {
     
     // Configurar el email por defecto
     const inputDestino = document.getElementById('rep-email-destino');
-    if (inputDestino) inputDestino.value = 'pastorandersonhenriquez@gmail.com';
+    if (inputDestino) {
+        const cfg = (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {};
+        inputDestino.value = cfg.empresa_correo || 'info@masquefianzas.com';
+    }
 }
 
 function aplicarGuardsSubreportes(codigosPermisos) {

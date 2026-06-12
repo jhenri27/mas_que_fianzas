@@ -258,9 +258,17 @@ window.imprimirCliente = function(id) {
     doc.text('Firma autorizada', 115, y + 6, {align: 'center'});
 
     // Footer corporativo
+    const cfg = (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {
+        empresa_nombre: 'MAS QUE FIANZAS',
+        empresa_rnc: '133-53573-4',
+        empresa_correo: 'info@masquefianzas.com',
+        empresa_direccion: 'Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN. Código postal: 10107, República Dominicana',
+        empresa_telefono: '+1 (829) 629-1952',
+        empresa_web: 'https://www.masquefianzas.com.do'
+    };
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150);
-    doc.text('Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN. Código postal: 10107, República Dominicana', 105, 278, {align:'center'});
-    doc.text('Tel: +1 (829) 629-1952 | Email: info@masquefianzas.com', 105, 283, {align:'center'});
+    doc.text(cfg.empresa_direccion, 105, 278, {align:'center'});
+    doc.text('Tel: ' + cfg.empresa_telefono + ' | Email: ' + cfg.empresa_correo, 105, 283, {align:'center'});
 
     doc.autoPrint();
     const blob = doc.output('blob');

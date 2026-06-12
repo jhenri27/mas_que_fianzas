@@ -19,10 +19,6 @@ define('APP_TIMEZONE', 'America/Santo_Domingo');
 // ==================== CONFIGURACIÓN DE SEGURIDAD ====================
 define('HASH_ALGORITHM', PASSWORD_BCRYPT);
 define('HASH_COST', 10);
-define('SESSION_TIMEOUT_MINUTES', 30);
-define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_TIME_MINUTES', 30);
-define('PASSWORD_EXPIRATION_DAYS', 90);
 
 // ==================== CONFIGURACIÓN DE API ====================
 define('API_BASE_URL', 'http://localhost/PLATAFORMA_INTEGRADA/backend/api');
@@ -49,7 +45,6 @@ define('MAIL_FROM', 'sistemas@masquefianzas.com');
 define('MAIL_FROM_NAME', 'MAS QUE FIANZAS');
 
 // ==================== CONFIGURACIÓN DE DOS FACTORES ====================
-define('TWO_FACTOR_ENABLED', false); // Opcional, cambiar a true para habilitar
 define('TWO_FACTOR_PROVIDER', 'totp'); // 'email' o 'totp'
 
 // ==================== MANEJO DE ERRORES ====================
@@ -82,7 +77,7 @@ class Database {
             $this->conn->query("SET SESSION sql_mode='STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'");
         } catch (Exception $e) {
             error_log("Error de base de datos: " . $e->getMessage());
-            die("Error de conexión a base de datos");
+            throw new Exception("Error de conexión a base de datos: " . $e->getMessage(), $e->getCode());
         }
     }
 
@@ -99,6 +94,32 @@ class Database {
 
     public function __clone() {}
     public function __wakeup() {}
+}
+
+// Resolviendo dinámicamente constantes de seguridad desde la Base de Datos (Norma NOFTRAB)
+try {
+    $db_conf = Database::getInstance()->getConnection();
+    $res_conf = $db_conf->query("SELECT clave_config, valor_config FROM configuracion_sistema WHERE clave_config IN ('INTENTOS_LOGIN_MAX', 'MINUTOS_BLOQUEO', 'DIAS_EXPIRATION_PASSWORD', 'SESION_TIMEOUT_MINUTES', 'DOS_FACTOR_OPCIONAL')");
+    
+    $db_values = [];
+    if ($res_conf) {
+        while ($row = $res_conf->fetch_assoc()) {
+            $db_values[$row['clave_config']] = $row['valor_config'];
+        }
+    }
+    
+    define('SESSION_TIMEOUT_MINUTES', isset($db_values['SESION_TIMEOUT_MINUTES']) ? (int)$db_values['SESION_TIMEOUT_MINUTES'] : 30);
+    define('MAX_LOGIN_ATTEMPTS', isset($db_values['INTENTOS_LOGIN_MAX']) ? (int)$db_values['INTENTOS_LOGIN_MAX'] : 5);
+    define('LOCKOUT_TIME_MINUTES', isset($db_values['MINUTOS_BLOQUEO']) ? (int)$db_values['MINUTOS_BLOQUEO'] : 30);
+    define('PASSWORD_EXPIRATION_DAYS', isset($db_values['DIAS_EXPIRATION_PASSWORD']) ? (int)$db_values['DIAS_EXPIRATION_PASSWORD'] : 90);
+    define('TWO_FACTOR_ENABLED', isset($db_values['DOS_FACTOR_OPCIONAL']) ? ((int)$db_values['DOS_FACTOR_OPCIONAL'] === 1) : false);
+} catch (Exception $e) {
+    // Fallback estático preventivo
+    define('SESSION_TIMEOUT_MINUTES', 30);
+    define('MAX_LOGIN_ATTEMPTS', 5);
+    define('LOCKOUT_TIME_MINUTES', 30);
+    define('PASSWORD_EXPIRATION_DAYS', 90);
+    define('TWO_FACTOR_ENABLED', false);
 }
 
 // ==================== FUNCIONES GLOBALES DE UTILIDAD ====================

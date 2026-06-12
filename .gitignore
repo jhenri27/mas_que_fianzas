@@ -1,4 +1,4 @@
-﻿# Logs del servidor
+# Logs del servidor
 backend/logs/
 *.log
 
@@ -16,3 +16,11 @@ Thumbs.db
 # Editores
 .vscode/
 .idea/
+
+# Carpetas de pruebas / scratch
+scratch/
+backend/scratch/
+tasks/dev/
+*.zip
+test_pgc.php
+frontend/assets/fotos/

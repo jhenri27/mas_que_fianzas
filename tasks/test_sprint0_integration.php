@@ -365,7 +365,7 @@ echo "\n📂 PROBANDO S0.8: DEPOSITOS DIFERIDOS Y VERIFICACION PUBLICADA POR QR.
 
 // A. Crear archivo temporal de prueba para simular el depósito bancario
 $temp_file = tempnam(sys_get_temp_dir(), 'depo_soporte_') . '.pdf';
-file_put_contents($temp_file, '%PDF-1.4 mock content for validation');
+file_put_contents($temp_file, '%PDF-1.4 mock content for validation ' . uniqid());
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, "$base_url/pagos.php?action=registrar");

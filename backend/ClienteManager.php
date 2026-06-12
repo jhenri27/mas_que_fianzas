@@ -12,7 +12,11 @@ class ClienteManager {
         }
     }
 
-    public function listarClientes() {
+    public function listarClientes($usuario_id = null) {
+        $where = "";
+        if ($usuario_id !== null && restringirSoloPropios($usuario_id, 'clientes')) {
+            $where = " WHERE creado_por = " . (int)$usuario_id;
+        }
         // Mapear nombres de la BD a lo que el frontend espera
         $sql = "SELECT id, 
                        nombre as nombre_razon_social, 
@@ -23,7 +27,7 @@ class ClienteManager {
                        comisionante,
                        codigo_comisionante,
                        nombre_comisionante
-                FROM clientes ORDER BY id DESC";
+                FROM clientes " . $where . " ORDER BY id DESC";
         $result = $this->db->query($sql);
         $clientes = [];
         if ($result && $result->num_rows > 0) {
@@ -35,8 +39,8 @@ class ClienteManager {
     }
 
     public function crearCliente($datos) {
-        $sql = "INSERT INTO clientes (numero_cliente, cedula, nombre, tipo_cliente, email, telefono, direccion, estado, comisionante, codigo_comisionante, nombre_comisionante) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO clientes (numero_cliente, cedula, nombre, tipo_cliente, email, telefono, direccion, estado, comisionante, codigo_comisionante, nombre_comisionante, creado_por) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
@@ -55,8 +59,9 @@ class ClienteManager {
         $comisionante = $datos['comisionante'] ?? null;
         $codigo_comisionante = $datos['codigo_comisionante'] ?? null;
         $nombre_comisionante = $datos['nombre_comisionante'] ?? null;
+        $creado_por = isset($datos['creado_por']) ? (int)$datos['creado_por'] : null;
         
-        $stmt->bind_param("sssssssssss", 
+        $stmt->bind_param("sssssssssssi", 
             $numero_cliente, 
             $cedula, 
             $nombre, 
@@ -67,7 +72,8 @@ class ClienteManager {
             $estado,
             $comisionante,
             $codigo_comisionante,
-            $nombre_comisionante
+            $nombre_comisionante,
+            $creado_por
         );
         
         try {
@@ -123,12 +129,12 @@ class ClienteManager {
         return ['exito' => false, 'mensaje' => 'Error al actualizar cliente en BD: ' . $error];
     }
 
-    public function importarClientesMasivo($clientesArray) {
+    public function importarClientesMasivo($clientesArray, $usuario_id = null) {
         $exitos = 0;
         $errores = 0;
         
-        $sql = "INSERT INTO clientes (numero_cliente, cedula, nombre, tipo_cliente, email, telefono, direccion, estado) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO clientes (numero_cliente, cedula, nombre, tipo_cliente, email, telefono, direccion, estado, creado_por) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
         
         if (!$stmt) {
@@ -148,7 +154,9 @@ class ClienteManager {
             $estado_raw = strtolower($datos['estatus'] ?? 'activo');
             $estado = in_array($estado_raw, ['activo', 'inactivo', 'suspendido']) ? $estado_raw : 'activo';
             
-            $stmt->bind_param("ssssssss", $numero_cliente, $cedula, $nombre, $tipo_cliente, $email, $telefono, $direccion, $estado);
+            $creado_por = $usuario_id ? (int)$usuario_id : null;
+            
+            $stmt->bind_param("ssssssssi", $numero_cliente, $cedula, $nombre, $tipo_cliente, $email, $telefono, $direccion, $estado, $creado_por);
             
             try {
                 if ($stmt->execute()) {
@@ -164,6 +172,20 @@ class ClienteManager {
         
         $stmt->close();
         return ['exito' => true, 'insertados' => $exitos, 'errores' => $errores, 'mensaje' => "Importación procesada."];
+    }
+
+    public function verificarCreador($cliente_id, $usuario_id) {
+        $sql = "SELECT creado_por FROM clientes WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) return false;
+        
+        $stmt->bind_param("i", $cliente_id);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        if (!$res) return false;
+        return (int)$res['creado_por'] === (int)$usuario_id;
     }
 }
 ?>

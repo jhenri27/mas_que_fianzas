@@ -3,6 +3,18 @@
  * Requiere SheetJS (xlsx), jsPDF, jsPDF-AutoTable, JSZip en el HTML
  */
 
+function getInstitutionalData() {
+    return (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {
+        empresa_nombre: 'MAS QUE FIANZAS',
+        empresa_rnc: '133-53573-4',
+        empresa_correo: 'info@masquefianzas.com',
+        empresa_direccion: 'Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN.',
+        empresa_telefono: '+1 (829) 629-1952',
+        empresa_web: 'https://www.masquefianzas.com.do',
+        empresa_redes: {}
+    };
+}
+
 // ======== EXPORTACIÓN ========
 
 function exportarListado(formato, modulo = 'clientes') {
@@ -121,6 +133,7 @@ function imprimirItem(id, modulo = 'clientes') {
 }
 
 function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
+    const cfg = getInstitutionalData();
     const formatter = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' });
     const fmt = (n) => formatter.format(n || 0);
 
@@ -137,7 +150,7 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
         }
     } else {
         doc.setFontSize(22); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
-        doc.text('MAS QUE FIANZAS', 14, 25);
+        doc.text(cfg.empresa_nombre, 14, 25);
     }
     
     // Header Right
@@ -292,8 +305,8 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
 
     // Footer Address dinámico
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
-    doc.text('Ave. 27 de febrero #234, Suite-304, La esperilla, Santo Domingo. DN. Código postal: 10107, República Dominicana', 105, 280, {align: 'center'});
-    doc.text('Tel: +1 (829) 629-1952 | Email: info@masquefianzas.com', 105, 284, {align: 'center'});
+    doc.text(cfg.empresa_direccion + ' | RNC: ' + cfg.empresa_rnc, 105, 280, {align: 'center'});
+    doc.text('Tel: ' + cfg.empresa_telefono + ' | Email: ' + cfg.empresa_correo + ' | Web: ' + cfg.empresa_web, 105, 284, {align: 'center'});
 
     try {
         doc.save(c.numero ? `${c.numero}.pdf` : 'cotizacion.pdf');

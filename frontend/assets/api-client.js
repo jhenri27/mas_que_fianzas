@@ -247,59 +247,239 @@ document.addEventListener('DOMContentLoaded', () => {
     window.MQF_CAN_CREATE = true;
     window.MQF_CAN_EDIT = true;
     window.MQF_CAN_DELETE = true;
+    window.MQF_CAN_IMPORT = true;
+    window.MQF_CAN_PRINT = true;
     
+    function aplicarPermisosYFiltros(tieneAcceso, modulePerms, fileBasename) {
+        if (!tieneAcceso) {
+            // BLOQUEAR ACCESO: Registrar intento fallido en auditoría (Norma NOFTRAB)
+            api.registrarActividad(fileBasename, 'Intento de acceso no autorizado (bloqueado por iframe protection)', 'fallido');
+            
+            document.documentElement.innerHTML = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso Denegado</title>
+    <style>
+        :root {
+            --bg-color: #0f1117;
+            --card-bg: #1e2433;
+            --text-color: #e2e8f0;
+            --text-muted: #64748b;
+            --primary: #ef4444;
+            --primary-glow: rgba(239, 68, 68, 0.15);
+            --border: #2d3748;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 80px; height: 4px;
+            background-color: var(--primary);
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+        
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background-color: var(--primary-glow);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .icon-wrapper svg {
+            width: 40px;
+            height: 40px;
+            color: var(--primary);
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.025em;
+        }
+        
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ef444415;
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+            transform: translateY(-1px);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-wrapper">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+        </div>
+        <h1>Acceso Restringido</h1>
+        <p>No tienes los privilegios de seguridad necesarios para acceder al módulo <strong>${fileBasename.replace(/_/g, ' ').toUpperCase()}</strong>. Este intento ha sido auditado de acuerdo a los protocolos NOFTRAB.</p>
+        <button class="btn" onclick="if (window.parent && window.parent !== window) { window.parent.location.reload(); } else { window.location.href = '/PLATAFORMA_INTEGRADA/frontend/'; }">Regresar al Inicio</button>
+    </div>
+</body>
+</html>
+            `;
+            window.stop();
+            return;
+        }
+        
+        window.MQF_CAN_CREATE = modulePerms.some(p => parseInt(p.crear_datos) === 1);
+        window.MQF_CAN_EDIT = modulePerms.some(p => parseInt(p.editar_datos) === 1);
+        window.MQF_CAN_DELETE = modulePerms.some(p => parseInt(p.eliminar_datos) === 1);
+        window.MQF_CAN_IMPORT = modulePerms.some(p => parseInt(p.importar_datos) === 1);
+        window.MQF_CAN_PRINT = modulePerms.some(p => parseInt(p.exportar_datos) === 1);
+        
+        let cssRules = '';
+        if (!window.MQF_CAN_CREATE) {
+            cssRules += '[onclick*="abrirModal"], [onclick*="abrirAsistente"], .btn-crear { display: none !important; }\n';
+        }
+        if (!window.MQF_CAN_EDIT) {
+            cssRules += '[onclick*="editar"], [onclick*="Editar"], .btn-editar { display: none !important; }\n';
+        }
+        if (!window.MQF_CAN_DELETE) {
+            cssRules += '[onclick*="eliminar"], [onclick*="Eliminar"], [onclick*="borrar"], .btn-danger { display: none !important; }\n';
+        }
+        if (!window.MQF_CAN_IMPORT) {
+            cssRules += '[onclick*="importar"], [onclick*="Importar"], .btn-importar { display: none !important; }\n';
+        }
+        if (!window.MQF_CAN_PRINT) {
+            cssRules += '[onclick*="imprimir"], [onclick*="Imprimir"], [onclick*="pdf"], [onclick*="PDF"], .btn-imprimir { display: none !important; }\n';
+        }
+        
+        if (cssRules) {
+            const style = document.createElement('style');
+            style.textContent = cssRules;
+            document.head.appendChild(style);
+        }
+    }
+
     try {
-        if (window.parent && window.parent.MQF_PERMISOS) {
-            const permisos = window.parent.MQF_PERMISOS;
-            const path = window.location.pathname.toLowerCase();
+        const path = window.location.pathname.toLowerCase();
+        
+        // Solo aplicar la protección de acceso granular a archivos dentro de /modulos/
+        if (!path.includes('/modulos/')) {
+            return;
+        }
+
+        const fileBasename = path.split('/').pop().replace(/\.(html|php)$/, '').replace(/-/g, '_');
+        const modulosExcluidos = ['dashboard', 'mi_perfil', 'index', 'login', 'perfil_data'];
+        
+        if (!modulosExcluidos.includes(fileBasename)) {
+            const usuarioActual = (window.parent && window.parent.api) ? window.parent.api.obtenerUsuarioActual() : api.obtenerUsuarioActual();
+            const perfilId = usuarioActual ? parseInt(usuarioActual.perfil_id, 10) : null;
             
-            const idToCode = {
-                1: 'dashboard', 2: 'clientes', 3: 'polizas', 4: 'fianzas',
-                5: 'pagos', 6: 'cotizaciones', 7: 'productos', 8: 'configuracion',
-                9: 'reportes', 10: 'siniestros', 11: 'usuarios'
-            };
-            
-            let currentModId = null;
-            for (const [id, code] of Object.entries(idToCode)) {
-                if (path.includes(code)) {
-                    currentModId = parseInt(id);
-                    break;
-                }
+            // Bypass para administrador
+            if (perfilId === 1) {
+                return;
             }
             
-            if (currentModId) {
-                const modulePerms = permisos.filter(p => parseInt(p.modulo_id) === currentModId);
-                if (modulePerms.length > 0) {
-                    window.MQF_CAN_CREATE = modulePerms.some(p => parseInt(p.crear_datos) === 1);
-                    window.MQF_CAN_EDIT = modulePerms.some(p => parseInt(p.editar_datos) === 1);
-                    window.MQF_CAN_DELETE = modulePerms.some(p => parseInt(p.eliminar_datos) === 1);
-                    window.MQF_CAN_IMPORT = modulePerms.some(p => parseInt(p.importar_datos) === 1);
-                    window.MQF_CAN_PRINT = modulePerms.some(p => parseInt(p.imprimir_datos) === 1);
-                    
-                    // Inyectar CSS dinámico (Global por módulo) para asegurar NOFTRAB Compliance en renderizados asíncronos
-                    let cssRules = '';
-                    if (!window.MQF_CAN_CREATE) {
-                        cssRules += '[onclick*="abrirModal"], [onclick*="abrirAsistente"], .btn-crear { display: none !important; }\n';
+            let tieneAcceso = false;
+            let modulePerms = [];
+            
+            if (window.parent && window.parent.MQF_PERMISOS) {
+                const permisos = window.parent.MQF_PERMISOS;
+                modulePerms = permisos.filter(p => p.nombre_modulo === fileBasename);
+                tieneAcceso = modulePerms.some(p => parseInt(p.puede_ejecutar) === 1);
+                aplicarPermisosYFiltros(tieneAcceso, modulePerms, fileBasename);
+            } else if (perfilId) {
+                // Si se carga directamente, hacer consulta a perfiles API
+                document.documentElement.style.display = 'none';
+                
+                const token = localStorage.getItem('token_sesion') || '';
+                fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles.php/obtener/${perfilId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(resp => resp.json())
+                .then(result => {
+                    document.documentElement.style.display = '';
+                    if (result.exito && result.datos && Array.isArray(result.datos.permisos)) {
+                        const permisos = result.datos.permisos;
+                        modulePerms = permisos.filter(p => p.nombre_modulo === fileBasename);
+                        tieneAcceso = modulePerms.some(p => parseInt(p.puede_ejecutar) === 1);
+                        aplicarPermisosYFiltros(tieneAcceso, modulePerms, fileBasename);
+                    } else {
+                        aplicarPermisosYFiltros(false, [], fileBasename);
                     }
-                    if (!window.MQF_CAN_EDIT) {
-                        cssRules += '[onclick*="editar"], [onclick*="Editar"], .btn-editar { display: none !important; }\n';
-                    }
-                    if (!window.MQF_CAN_DELETE) {
-                        cssRules += '[onclick*="eliminar"], [onclick*="Eliminar"], [onclick*="borrar"], .btn-danger { display: none !important; }\n';
-                    }
-                    if (!window.MQF_CAN_IMPORT) {
-                        cssRules += '[onclick*="importar"], [onclick*="Importar"], .btn-importar { display: none !important; }\n';
-                    }
-                    if (!window.MQF_CAN_PRINT) {
-                        cssRules += '[onclick*="imprimir"], [onclick*="Imprimir"], [onclick*="pdf"], [onclick*="PDF"], .btn-imprimir { display: none !important; }\n';
-                    }
-                    
-                    if (cssRules) {
-                        const style = document.createElement('style');
-                        style.textContent = cssRules;
-                        document.head.appendChild(style);
-                    }
-                }
+                })
+                .catch(() => {
+                    document.documentElement.style.display = '';
+                    aplicarPermisosYFiltros(false, [], fileBasename);
+                });
+            } else {
+                aplicarPermisosYFiltros(false, [], fileBasename);
             }
         }
     } catch (e) {

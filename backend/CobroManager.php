@@ -110,10 +110,14 @@ class CobroManager {
     /**
      * Devuelve estadísticas, aging buckets y KPIs globales para el PGC
      */
-    public function obtenerReporteProrataYFinanzas() {
-        // 1. Obtener todas las pólizas activas con sus prorrata inyectada
+    public function obtenerReporteProrataYFinanzas($usuario_id = null) {
+        // 1. Obtener todas las pólizas activas con sus prorrata inyectada (filtrado si aplica)
         $polizaManager = new PolizaManager();
-        $todas = $polizaManager->obtenerPolizas();
+        $filtros = [];
+        if ($usuario_id && restringirSoloPropios($usuario_id, 'pagos')) {
+            $filtros['emitida_por'] = $usuario_id;
+        }
+        $todas = $polizaManager->obtenerPolizas($filtros);
 
         $totalReceivable = 0;
         $totalRiesgoTemerario = 0;
@@ -141,13 +145,29 @@ class CobroManager {
         // DSO = (Receivable / Total Billed) * 365
         $dso = ($totalPrimaAcumulada > 0) ? round(($totalReceivable / $totalPrimaAcumulada) * 365, 0) : 0;
 
-        // 3. Tasa de cumplimiento de promesas de pago
+        // 3. Tasa de cumplimiento de promesas de pago (filtrado si aplica)
+        $where_p = "WHERE tipo_gestion = 'promesa_pago'";
+        $params_p = [];
+        $types_p = "";
+        if ($usuario_id && restringirSoloPropios($usuario_id, 'pagos')) {
+            $where_p .= " AND usuario_id = ?";
+            $params_p[] = $usuario_id;
+            $types_p .= "i";
+        }
+        
         $sql_p = "SELECT 
                     SUM(CASE WHEN estado_promesa = 'cumplida' THEN 1 ELSE 0 END) as cumplidas,
                     SUM(CASE WHEN estado_promesa IN ('cumplida', 'incumplida') THEN 1 ELSE 0 END) as totales
                   FROM cf_gestiones_cobro 
-                  WHERE tipo_gestion = 'promesa_pago'";
-        $res_p = $this->db->query($sql_p);
+                  $where_p";
+        
+        $stmt_p = $this->db->prepare($sql_p);
+        if ($types_p) {
+            $stmt_p->bind_param($types_p, ...$params_p);
+        }
+        $stmt_p->execute();
+        $res_p = $stmt_p->get_result();
+        
         $cumplimientoPromesas = 100;
         if ($res_p && $row = $res_p->fetch_assoc()) {
             $totales = intval($row['totales'] ?? 0);
@@ -156,18 +176,34 @@ class CobroManager {
                 $cumplimientoPromesas = round(($cumplidas / $totales) * 100, 1);
             }
         }
+        if ($stmt_p) $stmt_p->close();
 
-        // 4. Aging Buckets (Antigüedad de saldos vencidos en cuotas de pagos)
-        // Agrupamos cuotas pendientes (pendiente) vencidas por la diferencia de días entre su fecha_pago y hoy.
+        // 4. Aging Buckets (Antigüedad de saldos vencidos en cuotas de pagos - filtrado si aplica)
+        $where_aging = "WHERE pa.estado_pago = 'pendiente' AND pa.fecha_pago < DATE(NOW())";
+        $params_ag = [];
+        $types_ag = "";
+        if ($usuario_id && restringirSoloPropios($usuario_id, 'pagos')) {
+            $where_aging .= " AND po.emitida_por = ?";
+            $params_ag[] = $usuario_id;
+            $types_ag .= "i";
+        }
+
         $sql_aging = "SELECT 
-                        SUM(CASE WHEN DATEDIFF(NOW(), fecha_pago) BETWEEN 1 AND 30 THEN monto ELSE 0 END) as bucket_0_30,
-                        SUM(CASE WHEN DATEDIFF(NOW(), fecha_pago) BETWEEN 31 AND 60 THEN monto ELSE 0 END) as bucket_31_60,
-                        SUM(CASE WHEN DATEDIFF(NOW(), fecha_pago) BETWEEN 61 AND 90 THEN monto ELSE 0 END) as bucket_61_90,
-                        SUM(CASE WHEN DATEDIFF(NOW(), fecha_pago) > 90 THEN monto ELSE 0 END) as bucket_90_mas
-                      FROM pagos
-                      WHERE estado_pago = 'pendiente' AND fecha_pago < DATE(NOW())";
+                        SUM(CASE WHEN DATEDIFF(NOW(), pa.fecha_pago) BETWEEN 1 AND 30 THEN pa.monto ELSE 0 END) as bucket_0_30,
+                        SUM(CASE WHEN DATEDIFF(NOW(), pa.fecha_pago) BETWEEN 31 AND 60 THEN pa.monto ELSE 0 END) as bucket_31_60,
+                        SUM(CASE WHEN DATEDIFF(NOW(), pa.fecha_pago) BETWEEN 61 AND 90 THEN pa.monto ELSE 0 END) as bucket_61_90,
+                        SUM(CASE WHEN DATEDIFF(NOW(), pa.fecha_pago) > 90 THEN pa.monto ELSE 0 END) as bucket_90_mas
+                      FROM pagos pa
+                      INNER JOIN polizas po ON pa.poliza_id = po.id
+                      $where_aging";
         
-        $res_aging = $this->db->query($sql_aging);
+        $stmt_ag = $this->db->prepare($sql_aging);
+        if ($types_ag) {
+            $stmt_ag->bind_param($types_ag, ...$params_ag);
+        }
+        $stmt_ag->execute();
+        $res_aging = $stmt_ag->get_result();
+        
         $aging = [
             '0_30' => 0.00,
             '31_60' => 0.00,
@@ -180,8 +216,17 @@ class CobroManager {
             $aging['61_90'] = floatval($row_ag['bucket_61_90'] ?? 0);
             $aging['90_mas'] = floatval($row_ag['bucket_90_mas'] ?? 0);
         }
+        if ($stmt_ag) $stmt_ag->close();
 
         return [
+            'dso' => $dso,
+            'aging_buckets' => [
+                '0-30' => $aging['0_30'],
+                '31-60' => $aging['31_60'],
+                '61-90' => $aging['61_90'],
+                '90+' => $aging['90_mas']
+            ],
+            'polizas' => $todas,
             'kpis' => [
                 'dso' => $dso,
                 'total_receivable' => $totalReceivable,
@@ -193,8 +238,7 @@ class CobroManager {
                     'critico' => $alertaCritico
                 ]
             ],
-            'aging' => $aging,
-            'polizas' => $todas
+            'aging' => $aging
         ];
     }
 

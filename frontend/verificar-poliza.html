@@ -250,9 +250,9 @@
     <div class="card-footer">
         <a href="http://localhost/PLATAFORMA_INTEGRADA/frontend/login.html"><i class="fa-solid fa-arrow-left"></i> Ir al Sistema</a>
         &nbsp;&nbsp;|&nbsp;&nbsp;
-        <i class="fa-solid fa-phone"></i> (829) 629-1952
+        <span id="footer-tel-span"><i class="fa-solid fa-phone"></i> (829) 629-1952</span>
         &nbsp;&nbsp;|&nbsp;&nbsp;
-        <i class="fa-solid fa-envelope"></i> info@masquefianzas.com
+        <span id="footer-email-span"><i class="fa-solid fa-envelope"></i> info@masquefianzas.com</span>
     </div>
 </div>
 
@@ -268,14 +268,36 @@
             verificarPoliza(numeroBuscado);
         } else {
             mostrar('st-empty');
+            // Cargar info institucional pública de la empresa para el pie de página
+            fetch(`${API_URL}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.empresa) {
+                        actualizarFooterEmpresa(d.empresa);
+                    }
+                })
+                .catch(e => console.warn('No se pudo cargar la info institucional', e));
         }
     });
+
+    function actualizarFooterEmpresa(empresa) {
+        if (empresa.telefono) {
+            document.getElementById('footer-tel-span').innerHTML = `<i class="fa-solid fa-phone"></i> ${empresa.telefono}`;
+        }
+        if (empresa.correo) {
+            document.getElementById('footer-email-span').innerHTML = `<i class="fa-solid fa-envelope"></i> ${empresa.correo}`;
+        }
+    }
 
     async function verificarPoliza(numero) {
         mostrar('st-loading');
         try {
             const r = await fetch(`${API_URL}?n=${encodeURIComponent(numero)}`);
             const d = await r.json();
+
+            if (d.empresa) {
+                actualizarFooterEmpresa(d.empresa);
+            }
 
             if (!d.exito) {
                 mostrar('st-error');

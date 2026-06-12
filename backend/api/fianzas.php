@@ -327,6 +327,12 @@ if ($metodo === 'GET' && $action === 'listar') {
     $params  = [];
     $types   = '';
 
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $where[] = "f.creado_por = ?";
+        $params[] = $usuario_id;
+        $types .= 'i';
+    }
+
     if ($estado) { $where[] = "f.estado = ?"; $params[] = $estado; $types .= 's'; }
     if ($aseguradora_id > 0) { $where[] = "f.aseguradora_id = ?"; $params[] = $aseguradora_id; $types .= 'i'; }
     if ($busqueda) {
@@ -400,16 +406,26 @@ if ($metodo === 'POST' && $action === 'actualizar_estado') {
     if (!in_array($nuevo_est, $estados_validos)) respuestaJSON(false, 'Estado no válido', null, 400);
     if (strlen($justif) < 9) respuestaJSON(false, 'La justificación debe tener al menos 9 caracteres', null, 400);
 
-    $stmt_prev = $db->prepare("SELECT estado, numero_fianza FROM fianzas WHERE id = ? LIMIT 1");
-    $stmt_prev->bind_param('i', $fianza_id);
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $stmt_prev = $db->prepare("SELECT estado, numero_fianza FROM fianzas WHERE id = ? AND creado_por = ? LIMIT 1");
+        $stmt_prev->bind_param('ii', $fianza_id, $usuario_id);
+    } else {
+        $stmt_prev = $db->prepare("SELECT estado, numero_fianza FROM fianzas WHERE id = ? LIMIT 1");
+        $stmt_prev->bind_param('i', $fianza_id);
+    }
     $stmt_prev->execute();
     $prev = $stmt_prev->get_result()->fetch_assoc();
     $stmt_prev->close();
 
     if (!$prev) respuestaJSON(false, 'Fianza no encontrada', null, 404);
 
-    $stmt = $db->prepare("UPDATE fianzas SET estado = ? WHERE id = ?");
-    $stmt->bind_param('si', $nuevo_est, $fianza_id);
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $stmt = $db->prepare("UPDATE fianzas SET estado = ? WHERE id = ? AND creado_por = ?");
+        $stmt->bind_param('sii', $nuevo_est, $fianza_id, $usuario_id);
+    } else {
+        $stmt = $db->prepare("UPDATE fianzas SET estado = ? WHERE id = ?");
+        $stmt->bind_param('si', $nuevo_est, $fianza_id);
+    }
     $ok = $stmt->execute();
     $stmt->close();
 
@@ -462,14 +478,25 @@ if ($metodo === 'GET' && $action === 'obtener') {
     $fianza_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
     if ($fianza_id <= 0) respuestaJSON(false, 'ID inválido', null, 400);
 
-    $stmt = $db->prepare("
-        SELECT f.*, fa.nombre AS aseguradora_nombre, fa.rnc AS aseguradora_rnc
-        FROM fianzas f
-        INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
-        WHERE f.id = ?
-        LIMIT 1
-    ");
-    $stmt->bind_param('i', $fianza_id);
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $stmt = $db->prepare("
+            SELECT f.*, fa.nombre AS aseguradora_nombre, fa.rnc AS aseguradora_rnc
+            FROM fianzas f
+            INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
+            WHERE f.id = ? AND f.creado_por = ?
+            LIMIT 1
+        ");
+        $stmt->bind_param('ii', $fianza_id, $usuario_id);
+    } else {
+        $stmt = $db->prepare("
+            SELECT f.*, fa.nombre AS aseguradora_nombre, fa.rnc AS aseguradora_rnc
+            FROM fianzas f
+            INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
+            WHERE f.id = ?
+            LIMIT 1
+        ");
+        $stmt->bind_param('i', $fianza_id);
+    }
     $stmt->execute();
     $fianza = $stmt->get_result()->fetch_assoc();
     $stmt->close();
@@ -491,6 +518,18 @@ if ($metodo === 'GET' && $action === 'estadisticas') {
     }
 
     $mes_actual = date('Y-m');
+    $where_sql = "WHERE estado != 'cancelada'";
+    $where_ase = "WHERE f.estado != 'cancelada'";
+    $params = [];
+    $types = '';
+
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $where_sql .= " AND creado_por = ?";
+        $where_ase .= " AND f.creado_por = ?";
+        $params[] = $usuario_id;
+        $types .= 'i';
+    }
+
     $sql = "
         SELECT
           COUNT(*) AS total_fianzas,
@@ -503,10 +542,14 @@ if ($metodo === 'GET' && $action === 'estadisticas') {
           SUM(CASE WHEN DATE_FORMAT(creado_en,'%Y-%m') = '$mes_actual' THEN total ELSE 0 END) AS ingreso_mes_actual,
           SUM(CASE WHEN DATE_FORMAT(creado_en,'%Y-%m') = '$mes_actual' THEN 1 ELSE 0 END) AS fianzas_mes_actual
         FROM fianzas
-        WHERE estado != 'cancelada'
+        $where_sql
     ";
-    $res  = $db->query($sql);
-    $data = $res->fetch_assoc();
+
+    $stmt_est = $db->prepare($sql);
+    if ($types) $stmt_est->bind_param($types, ...$params);
+    $stmt_est->execute();
+    $data = $stmt_est->get_result()->fetch_assoc();
+    $stmt_est->close();
 
     // Por aseguradora
     $sql_ase = "
@@ -515,13 +558,18 @@ if ($metodo === 'GET' && $action === 'estadisticas') {
                SUM(f.total) AS ingreso_total
         FROM fianzas f
         INNER JOIN fianza_aseguradoras fa ON f.aseguradora_id = fa.id
-        WHERE f.estado != 'cancelada'
+        $where_ase
         GROUP BY fa.id, fa.nombre
         ORDER BY ingreso_total DESC
     ";
-    $res_ase = $db->query($sql_ase);
+
+    $stmt_ase = $db->prepare($sql_ase);
+    if ($types) $stmt_ase->bind_param($types, ...$params);
+    $stmt_ase->execute();
+    $res_ase = $stmt_ase->get_result();
     $por_aseguradora = [];
     while ($row = $res_ase->fetch_assoc()) $por_aseguradora[] = $row;
+    $stmt_ase->close();
 
     respuestaJSON(true, 'OK', array_merge($data, ['por_aseguradora' => $por_aseguradora]));
 }
@@ -540,8 +588,13 @@ if ($metodo === 'POST' && $action === 'actualizar') {
     if ($fianza_id <= 0) respuestaJSON(false, 'ID de fianza requerido para actualizar', null, 400);
 
     // Obtener estado anterior para auditoría y lógica contable
-    $stmt_prev = $db->prepare("SELECT estado, numero_fianza, prima_base, itbis, total, fecha_inicio, aseguradora_id, categoria_id FROM fianzas WHERE id = ? LIMIT 1");
-    $stmt_prev->bind_param('i', $fianza_id);
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $stmt_prev = $db->prepare("SELECT estado, numero_fianza, prima_base, itbis, total, fecha_inicio, aseguradora_id, categoria_id FROM fianzas WHERE id = ? AND creado_por = ? LIMIT 1");
+        $stmt_prev->bind_param('ii', $fianza_id, $usuario_id);
+    } else {
+        $stmt_prev = $db->prepare("SELECT estado, numero_fianza, prima_base, itbis, total, fecha_inicio, aseguradora_id, categoria_id FROM fianzas WHERE id = ? LIMIT 1");
+        $stmt_prev->bind_param('i', $fianza_id);
+    }
     $stmt_prev->execute();
     $prev = $stmt_prev->get_result()->fetch_assoc();
     $stmt_prev->close();
@@ -606,36 +659,70 @@ if ($metodo === 'POST' && $action === 'actualizar') {
     }
 
     // Actualizar registro
-    $sql_upd = "UPDATE fianzas SET
-        cliente_nombre      = ?,
-        cliente_cedula      = ?,
-        cliente_telefono    = ?,
-        cliente_email       = ?,
-        objeto_referencia   = ?,
-        beneficiario        = ?,
-        numero_contrato     = ?,
-        observaciones       = ?,
-        monto_afianzado     = ?,
-        plazo_meses         = ?,
-        fecha_inicio        = ?,
-        fecha_vencimiento   = ?,
-        prima_base          = ?,
-        itbis               = ?,
-        total               = ?,
-        estado              = ?,
-        modificado_en       = NOW()
-        WHERE id = ?";
+    if (restringirSoloPropios($usuario_id, 'fianzas')) {
+        $sql_upd = "UPDATE fianzas SET
+            cliente_nombre      = ?,
+            cliente_cedula      = ?,
+            cliente_telefono    = ?,
+            cliente_email       = ?,
+            objeto_referencia   = ?,
+            beneficiario        = ?,
+            numero_contrato     = ?,
+            observaciones       = ?,
+            monto_afianzado     = ?,
+            plazo_meses         = ?,
+            fecha_inicio        = ?,
+            fecha_vencimiento   = ?,
+            prima_base          = ?,
+            itbis               = ?,
+            total               = ?,
+            estado              = ?,
+            modificado_en       = NOW()
+            WHERE id = ? AND creado_por = ?";
 
-    $stmt_upd = $db->prepare($sql_upd);
-    $stmt_upd->bind_param('ssssssssdissdddsi',
-        $nom, $ced, $tel, $email,
-        $objeto, $benef, $num_cont, $obs,
-        $monto_afianzado, $plazo_meses,
-        $fecha_inicio, $fecha_venc,
-        $pbase, $itbis, $total,
-        $nuevo_estado,
-        $fianza_id
-    );
+        $stmt_upd = $db->prepare($sql_upd);
+        $stmt_upd->bind_param('ssssssssdissdddsii',
+            $nom, $ced, $tel, $email,
+            $objeto, $benef, $num_cont, $obs,
+            $monto_afianzado, $plazo_meses,
+            $fecha_inicio, $fecha_venc,
+            $pbase, $itbis, $total,
+            $nuevo_estado,
+            $fianza_id,
+            $usuario_id
+        );
+    } else {
+        $sql_upd = "UPDATE fianzas SET
+            cliente_nombre      = ?,
+            cliente_cedula      = ?,
+            cliente_telefono    = ?,
+            cliente_email       = ?,
+            objeto_referencia   = ?,
+            beneficiario        = ?,
+            numero_contrato     = ?,
+            observaciones       = ?,
+            monto_afianzado     = ?,
+            plazo_meses         = ?,
+            fecha_inicio        = ?,
+            fecha_vencimiento   = ?,
+            prima_base          = ?,
+            itbis               = ?,
+            total               = ?,
+            estado              = ?,
+            modificado_en       = NOW()
+            WHERE id = ?";
+
+        $stmt_upd = $db->prepare($sql_upd);
+        $stmt_upd->bind_param('ssssssssdissdddsi',
+            $nom, $ced, $tel, $email,
+            $objeto, $benef, $num_cont, $obs,
+            $monto_afianzado, $plazo_meses,
+            $fecha_inicio, $fecha_venc,
+            $pbase, $itbis, $total,
+            $nuevo_estado,
+            $fianza_id
+        );
+    }
 
     if (!$stmt_upd->execute()) {
         error_log("Error actualizar fianza: " . $stmt_upd->error);

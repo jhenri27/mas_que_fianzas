@@ -49,6 +49,10 @@ $modulos_def = [
     'reportes'     => ['icono' => '📊', 'ruta' => '/modulos/reportes.php',      'orden' => 9],
     'productos'    => ['icono' => '📦', 'ruta' => '/modulos/productos.html',    'orden' => 7],
     'siniestros'   => ['icono' => '🚨', 'ruta' => '/modulos/siniestros.html',   'orden' => 11],
+    'labs_masqf'   => ['icono' => '🧪', 'ruta' => '/modulos/labs-masqf.html',   'orden' => 10],
+    'modelador_pdf'=> ['icono' => '📄', 'ruta' => '/modulos/modelador_pdf.html','orden' => 14],
+    'auditoria_lineal'=> ['icono' => '📑', 'ruta' => '/modulos/auditoria_lineal.html','orden' => 16],
+    'helpdesk'     => ['icono' => '🛎️', 'ruta' => '/modulos/helpdesk.html',   'orden' => 17],
 ];
 
 /**
@@ -80,10 +84,13 @@ $funciones_def = [
         ['TAB_COT_HISTORIAL',  'Pestaña Historial de Cotizaciones', 'reportes' ],
     ],
     'configuracion' => [
-        ['TAB_CONF_GENERALES', 'Subpanel Configuración General',     'consultar'],
-        ['TAB_CONF_SEGURIDAD', 'Subpanel Seguridad y Accesos SMTP',  'editar'   ],
-        ['TAB_CONF_PERFILES',  'Subpanel Perfiles y Permisos',       'editar'   ],
-        ['TAB_CONF_SKINS',     'Subpanel UX y Apariencia',           'editar'   ],
+        ['TAB_CONF_GENERALES',       'Subpanel Configuración General',            'consultar'],
+        ['TAB_CONF_SEGURIDAD',       'Subpanel Seguridad y Accesos SMTP',         'editar'   ],
+        ['TAB_CONF_NOTIFICACIONES',  'Subpanel Flujos de Notificaciones',         'editar'   ],
+        ['CONF_NOTIF_EDITAR',        'Crear/Editar/Eliminar Flujos de Notif.',     'completo' ],
+        ['TAB_CONF_PERFILES',        'Subpanel Perfiles y Permisos',              'editar'   ],
+        ['TAB_CONF_SKINS',           'Subpanel UX y Apariencia',                  'editar'   ],
+        ['CONF_SEGURIDAD_POLITICAS_EDITAR', 'Configurar Políticas de Seguridad',   'editar'   ],
     ],
     'reportes' => [
         ['TAB_REP_MODELADOR',  'Pestaña Modelador PDF-DOCS',        'consultar'],
@@ -103,6 +110,23 @@ $funciones_def = [
         ['TAB_SIN_REGISTRAR',  'Pestaña Declarar Nuevo Incidente',          'crear'    ],
         ['TAB_SIN_DICTAMEN',   'Dictaminar Aprobación de Reclamos',         'validar'  ],
         ['TAB_SIN_LIQUIDAR',   'Liquidar / Pagar Indemnizaciones',          'registrar'],
+    ],
+    'labs_masqf' => [
+        ['TAB_LABS_VER',       'Ver Labs de Tecnología',                   'consultar'],
+    ],
+    'modelador_pdf' => [
+        ['TAB_PDF_MODELADOR',  'Ver Modelador PDF',                         'consultar'],
+    ],
+    'auditoria_lineal' => [
+        ['AUDITORIA_LINEAL_VER', 'Ver Auditoría Lineal', 'consultar'],
+    ],
+    'helpdesk' => [
+        ['HELPDESK_VER', 'Ver Tickets Propios', 'consultar'],
+        ['HELPDESK_ADMINISTRAR', 'Administrar Helpdesk', 'editar'],
+    ],
+    'dashboard' => [
+        ['CHAT_CSR_ACCESO', 'Acceso a Chat-CSR', 'consultar'],
+        ['CHAT_CSR_SUPERVISAR', 'Supervisar Chats', 'editar'],
     ],
 ];
 
@@ -127,11 +151,13 @@ $malla = [
     'TAB_COT_SEGUROS'    => [1, 1, 0, 1, 1, 0, 1, 1],
     'TAB_COT_FIANZAS'    => [1, 1, 0, 1, 1, 0, 1, 1],
     'TAB_COT_HISTORIAL'  => [1, 1, 1, 1, 1, 0, 1, 1],
-    'TAB_CONF_GENERALES' => [1, 0, 0, 0, 0, 0, 1, 0],
-    'TAB_CONF_SEGURIDAD' => [1, 1, 0, 0, 0, 0, 1, 0],
-    'TAB_CONF_PERFILES'  => [1, 0, 0, 0, 0, 0, 1, 0],
-    'TAB_CONF_SKINS'     => [1, 1, 0, 1, 0, 0, 1, 0],
-    'TAB_REP_MODELADOR'  => [1, 1, 0, 1, 1, 0, 1, 1],
+    'TAB_CONF_GENERALES'      => [1, 0, 0, 0, 0, 0, 1, 0],
+    'TAB_CONF_SEGURIDAD'      => [1, 1, 0, 0, 0, 0, 1, 0],
+    'TAB_CONF_NOTIFICACIONES' => [1, 1, 0, 0, 0, 0, 0, 0],
+    'CONF_NOTIF_EDITAR'       => [1, 1, 0, 0, 0, 0, 0, 0],
+    'TAB_CONF_PERFILES'       => [1, 0, 0, 0, 0, 0, 1, 0],
+    'TAB_CONF_SKINS'          => [1, 1, 0, 1, 0, 0, 1, 0],
+    'TAB_REP_MODELADOR'  => [1, 1, 0, 1, 0, 0, 1, 0],
     'TAB_REP_GENERALES'  => [1, 1, 1, 1, 0, 0, 1, 0],
     'REP_VENTAS_GENERALES' => [1, 1, 1, 1, 0, 0, 1, 0],
     'REP_VENTAS_LOGRADAS'  => [1, 1, 1, 1, 0, 0, 1, 0],
@@ -144,6 +170,14 @@ $malla = [
     'TAB_SIN_REGISTRAR'  => [1, 1, 0, 1, 1, 0, 0, 1],
     'TAB_SIN_DICTAMEN'   => [1, 1, 0, 1, 0, 0, 0, 0],
     'TAB_SIN_LIQUIDAR'   => [1, 0, 1, 0, 0, 0, 0, 0],
+    'TAB_LABS_VER'       => [1, 1, 0, 1, 0, 0, 1, 0],
+    'TAB_PDF_MODELADOR'  => [1, 1, 0, 1, 0, 0, 1, 0],
+    'AUDITORIA_LINEAL_VER' => [1, 0, 0, 0, 0, 0, 1, 0],
+    'HELPDESK_VER' => [1, 1, 1, 1, 1, 1, 1, 1],
+    'HELPDESK_ADMINISTRAR' => [1, 1, 0, 0, 0, 0, 0, 0],
+    'CONF_SEGURIDAD_POLITICAS_EDITAR' => [1, 0, 0, 0, 0, 0, 0, 0],
+    'CHAT_CSR_ACCESO' => [1, 1, 1, 1, 1, 1, 1, 1],
+    'CHAT_CSR_SUPERVISAR' => [1, 1, 0, 1, 0, 0, 0, 0],
 ];
 
 // Orden de perfiles para la malla (índice 0 = perfil_id 1, etc.)
