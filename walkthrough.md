@@ -49,8 +49,10 @@ Se implementó la personalización y redistribución de colores en las letras y 
 - **MULTISEGUROS**: Adopta un tono azul oscuro premium (`#1e3a8a`).
 - Se actualizaron los íconos vectoriales SVG correspondientes en los fallbacks dinámicos del bot en [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php).
 
-### 5. Sincronización Automática de Estados (Seguros de Ley ➔ Comparativa)
-Se corrigió la falta de sincronización del formulario principal con la pestaña comparativa:
-- Se implementó un `React.useEffect` reactivo en el componente principal `App` (Seguros de Ley) que publica automáticamente los valores actualizados de `cliente`, `cedula`, `emailCliente`, `type`, `uso`, `capacidad`, `optionalSelected` y `usarNCF` en la variable global compartida `window.sharedCotizadorState`.
-- Al mismo tiempo, este `useEffect` dispara el evento personalizado `'update-comparativa'`, notificando en tiempo real a `ComparativaApp` para refrescar de inmediato el Panel Resumido Comparativo sin requerir recargas ni acciones adicionales del usuario.
+### 5. Sincronización Automática y Controles Directos en el Panel Comparativo
+Se implementó un sistema robusto y bidireccional de control de datos para la comparación multi-tarifa:
+- **Barra de Selección Glassmorphic en Comparativa:** Se diseñó e integró un panel superior de controles en la pestaña "Panel Resumido Comparativo" que contiene los campos de datos del cliente (Nombre, Cédula/RNC, Correo) y del vehículo (Tipo, Uso, Capacidad/Cilindrada).
+- **Sincronización Bidireccional en Tiempo Real:** El componente principal de Seguros de Ley (`App`) y el Panel Comparativo (`ComparativaApp`) leen y actualizan el mismo estado global `window.sharedCotizadorState`. Al cambiar un campo en cualquiera de las pestañas, este cambio se refleja de inmediato en la otra pestaña gracias a efectos reactivos cruzados y el evento de actualización.
+- **Entrada Directa de Datos:** Si el usuario accede al panel de comparación con los campos vacíos, ahora puede "provisionar" los datos directamente en esta pestaña, mostrando el comparador de inmediato y manteniendo sincronizado el formulario tradicional de Seguros de Ley por si desea emitir la póliza desde allí.
+
 

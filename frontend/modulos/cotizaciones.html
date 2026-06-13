@@ -1021,6 +1021,24 @@
     const PRICING_JSON_PATH = 'pricing-data/pricing_multiseguros.json?v=' + Date.now();
     const OPTIONS_JSON_PATH = 'pricing-data/options.json?v=' + Date.now();
 
+    const TIPO_VALUES = ['AUTOMOVILES','AUTOBUS','CAMION (CAMA O CAJA)','CAMIONES CABEZOTE, TRACTOR O PATANA','CAMIONES VOLTEO','CAMIONETAS','FURGONETAS','JEEP','MAQUINAS PESADAS CON AUTOPROPULSION','MINIVAN / VANETTES','MOTOCICLETAS','PLACA DE DEMOSTRACION','REMOLQUES'];
+    const USO_VALUES = ['PRIVADO','PUBLICO','RENT CAR'];
+    const CAPACIDAD_MAP = {
+      'MOTOCICLETAS': ['Hasta 250 cc','Mas de 250 cc','Mas de 350 cc','Bicicleta Eléctrica','Patineta Eléctrica','Buggy','Cuatrimoto','Motonetas (Trimotor)','Four Wheel'],
+      'AUTOMOVILES': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
+      'JEEP': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
+      'MINIVAN / VANETTES': ['Hasta 7 pasajeros','Hasta 9  pasajeros'],
+      'CAMIONETAS': ['Hasta 1/2 Tonelada (Platanera)','Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada y/o 5 Pasajeros'],
+      'FURGONETAS': ['Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada'],
+      'AUTOBUS': ['Hasta 10 Pasajeros','Hasta 20 Pasajeros','Hasta 30 Pasajeros','Hasta 40 Pasajeros','Hasta 50 Pasajeros'],
+      'CAMION (CAMA O CAJA)': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
+      'CAMIONES VOLTEO': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
+      'CAMIONES CABEZOTE, TRACTOR O PATANA': ['Hasta 6 Toneladas','Hasta 18 Toneladas','Hasta 40 Toneladas','Hasta 60 Toneladas'],
+      'MAQUINAS PESADAS CON AUTOPROPULSION': ['Sobre ruedas de gomas','Sobre Orugas','Grúas Móviles, excluyendo RC de Carga'],
+      'PLACA DE DEMOSTRACION': ['Vehiculos hasta 6 Pasajeros','Vehiculos de mas de 6 Pasajeros'],
+      'REMOLQUES': ['Automoviles y Station','Jeeps y Vanettes','Camionetas','Camiones']
+    };
+
     function currency(v){ return Number(v).toLocaleString('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 2 }); }
 
     function App(){
@@ -1105,26 +1123,27 @@
         window.dispatchEvent(new CustomEvent('update-comparativa'));
       }, [type, uso, capacidad, insurer, price, cliente, cedula, emailCliente, optionalSelected, usarNCF]);
 
-      const TIPO_VALUES = ['AUTOMOVILES','AUTOBUS','CAMION (CAMA O CAJA)','CAMIONES CABEZOTE, TRACTOR O PATANA','CAMIONES VOLTEO','CAMIONETAS','FURGONETAS','JEEP','MAQUINAS PESADAS CON AUTOPROPULSION','MINIVAN / VANETTES','MOTOCICLETAS','PLACA DE DEMOSTRACION','REMOLQUES'];
-      const tipos = TIPO_VALUES;
-      const USO_VALUES = ['PRIVADO','PUBLICO','RENT CAR'];
-      const usos = React.useMemo(()=> USO_VALUES, []);
+      React.useEffect(() => {
+        const handleUpdate = () => {
+          const s = window.sharedCotizadorState;
+          if (!s) return;
+          if (s.cliente !== cliente) setCliente(s.cliente || '');
+          if (s.cedula !== cedula) setCedula(s.cedula || '');
+          if (s.emailCliente !== emailCliente) setEmailCliente(s.emailCliente || '');
+          if (s.type !== type) setType(s.type || '');
+          if (s.uso !== uso) setUso(s.uso || '');
+          if (s.capacidad !== capacidad) setCapacidad(s.capacidad || '');
+          if (s.insurer !== insurer) setInsurer(s.insurer || '');
+          if (s.price !== price) setPrice(s.price || 0);
+          if (JSON.stringify(s.optionalSelected) !== JSON.stringify(optionalSelected)) setOptionalSelected(s.optionalSelected || {});
+          if (s.usarNCF !== usarNCF) setUsarNCF(!!s.usarNCF);
+        };
+        window.addEventListener('update-comparativa', handleUpdate);
+        return () => window.removeEventListener('update-comparativa', handleUpdate);
+      }, [cliente, cedula, emailCliente, type, uso, capacidad, insurer, price, optionalSelected, usarNCF]);
 
-      const CAPACIDAD_MAP = {
-        'MOTOCICLETAS': ['Hasta 250 cc','Mas de 250 cc','Mas de 350 cc','Bicicleta Eléctrica','Patineta Eléctrica','Buggy','Cuatrimoto','Motonetas (Trimotor)','Four Wheel'],
-        'AUTOMOVILES': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
-        'JEEP': ['Hasta 4 Cilindros','Hasta 6 Cilindros','Más de 6 Cilindros'],
-        'MINIVAN / VANETTES': ['Hasta 7 pasajeros','Hasta 9  pasajeros'],
-        'CAMIONETAS': ['Hasta 1/2 Tonelada (Platanera)','Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada y/o 5 Pasajeros'],
-        'FURGONETAS': ['Hasta 3/4 Tonelada','Hasta 1 Tonelada','Hasta 2 Tonelada'],
-        'AUTOBUS': ['Hasta 10 Pasajeros','Hasta 20 Pasajeros','Hasta 30 Pasajeros','Hasta 40 Pasajeros','Hasta 50 Pasajeros'],
-        'CAMION (CAMA O CAJA)': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
-        'CAMIONES VOLTEO': ['Hasta 3 Toneladas','Hasta 6 Toneladas','Más de 6 Toneladas'],
-        'CAMIONES CABEZOTE, TRACTOR O PATANA': ['Hasta 6 Toneladas','Hasta 18 Toneladas','Hasta 40 Toneladas','Hasta 60 Toneladas'],
-        'MAQUINAS PESADAS CON AUTOPROPULSION': ['Sobre ruedas de gomas','Sobre Orugas','Grúas Móviles, excluyendo RC de Carga'],
-        'PLACA DE DEMOSTRACION': ['Vehiculos hasta 6 Pasajeros','Vehiculos de mas de 6 Pasajeros'],
-        'REMOLQUES': ['Automoviles y Station','Jeeps y Vanettes','Camionetas','Camiones']
-      };
+      const tipos = TIPO_VALUES;
+      const usos = React.useMemo(()=> USO_VALUES, []);
 
       const capacidades = React.useMemo(()=>{
         if(type && CAPACIDAD_MAP[type]) return CAPACIDAD_MAP[type];
@@ -1916,36 +1935,117 @@
         });
       }
 
-      if (!state || !state.type || !state.uso || !state.capacidad) {
-        return (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="text-6xl mb-6 animate-bounce">🚗</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Panel Resumido Comparativo</h3>
-            <p className="max-w-md text-slate-400 text-sm leading-relaxed">
-              Por favor, ingrese los datos del cliente y del vehículo en la pestaña <strong>🚗 Seguros de Ley</strong> para ver la comparación de tarifas en tiempo real.
-            </p>
-          </div>
-        );
+      function updateSharedState(key, val) {
+        window.sharedCotizadorState = {
+          ...(window.sharedCotizadorState || {
+            type: '',
+            uso: '',
+            capacidad: '',
+            insurer: '',
+            price: 0,
+            cliente: '',
+            cedula: '',
+            emailCliente: '',
+            optionalSelected: {},
+            usarNCF: false
+          }),
+          [key]: val
+        };
+        window.dispatchEvent(new CustomEvent('update-comparativa'));
       }
+
+      const isConfigured = state && state.type && state.uso && state.capacidad;
 
       return (
         <div className="max-w-7xl mx-auto text-white">
-          {/* Header Dashboard */}
-          <div className="mb-8 p-6 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-800 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <span className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">Cotización Rápida</span>
-              <h2 className="text-2xl font-extrabold text-white mt-1">Comparativa de Seguro de Ley</h2>
-              <p className="text-slate-400 text-sm mt-1">Cliente: <strong className="text-white">{state.cliente || 'A QUIEN CORRESPONDA'}</strong> | Ced/RNC: <strong className="text-white">{state.cedula || 'N/A'}</strong></p>
+          {/* Glassmorphic Selector Bar */}
+          <div className="mb-8 p-6 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-800 shadow-2xl">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <i className="fa-solid fa-sliders text-indigo-400"></i>
+              Datos para la Comparación
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Cliente</label>
+                <input type="text" value={state?.cliente || ''} onChange={e => updateSharedState('cliente', e.target.value)} placeholder="Nombre completo" className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+              </div>
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Cédula / RNC</label>
+                <input type="text" value={state?.cedula || ''} onChange={e => updateSharedState('cedula', e.target.value)} placeholder="000-0000000-0" className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+              </div>
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                <input type="email" value={state?.emailCliente || ''} onChange={e => updateSharedState('emailCliente', e.target.value)} placeholder="correo@cliente.com" className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors" />
+              </div>
             </div>
-            <div className="text-right bg-slate-800/40 p-3 rounded-lg border border-slate-700/60">
-              <div className="text-xs text-slate-400">Vehículo Seleccionado</div>
-              <div className="font-bold text-indigo-300">{state.type}</div>
-              <div className="text-xs text-slate-400 mt-1">{state.capacidad} | Uso: {state.uso}</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tipo de Vehículo</label>
+                <select value={state?.type || ''} onChange={e => {
+                  const val = e.target.value;
+                  window.sharedCotizadorState = {
+                    ...(window.sharedCotizadorState || {}),
+                    type: val,
+                    uso: '',
+                    capacidad: ''
+                  };
+                  window.dispatchEvent(new CustomEvent('update-comparativa'));
+                }} className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors">
+                  <option value="">Seleccione Tipo...</option>
+                  {TIPO_VALUES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Uso</label>
+                <select value={state?.uso || ''} onChange={e => {
+                  const val = e.target.value;
+                  window.sharedCotizadorState = {
+                    ...(window.sharedCotizadorState || {}),
+                    uso: val,
+                    capacidad: ''
+                  };
+                  window.dispatchEvent(new CustomEvent('update-comparativa'));
+                }} disabled={!state?.type} className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-40">
+                  <option value="">Seleccione Uso...</option>
+                  {USO_VALUES.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <div className="mqf-form-group">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Capacidad / Cilindrada</label>
+                <select value={state?.capacidad || ''} onChange={e => updateSharedState('capacidad', e.target.value)} disabled={!state?.uso} className="w-full bg-slate-850 border border-slate-750 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors disabled:opacity-40">
+                  <option value="">Seleccione Capacidad...</option>
+                  {state?.type && CAPACIDAD_MAP[state.type] && CAPACIDAD_MAP[state.type].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Grid de Aseguradoras */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {!isConfigured ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-900/40 rounded-2xl border border-slate-800/80 p-8 shadow-xl">
+              <div className="text-6xl mb-6 animate-bounce">🚗</div>
+              <h3 className="text-xl font-bold text-white mb-2">Esperando Selección</h3>
+              <p className="max-w-md text-slate-400 text-sm leading-relaxed">
+                Por favor complete los campos superiores de vehículo (Tipo, Uso y Capacidad) para ver la comparativa de tarifas en tiempo real.
+              </p>
+            </div>
+          ) : (
+            <div>
+              {/* Header Dashboard Info */}
+              <div className="mb-8 p-6 rounded-2xl bg-slate-900/40 border border-slate-800 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <span className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">Propuestas Listas</span>
+                  <h2 className="text-2xl font-extrabold text-white mt-1">Comparativa de Seguro de Ley</h2>
+                  <p className="text-slate-400 text-sm mt-1">Cliente: <strong className="text-white">{state.cliente || 'A QUIEN CORRESPONDA'}</strong> | Ced/RNC: <strong className="text-white">{state.cedula || 'N/A'}</strong></p>
+                </div>
+                <div className="text-right bg-slate-800/20 p-3 rounded-lg border border-slate-700/40">
+                  <div className="text-xs text-slate-400">Vehículo Seleccionado</div>
+                  <div className="font-bold text-indigo-300">{state.type}</div>
+                  <div className="text-xs text-slate-400 mt-1">{state.capacidad} | Uso: {state.uso}</div>
+                </div>
+              </div>
+
+              {/* Grid de Aseguradoras */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {comparisons.map(comp => {
               if (!comp.available) {
                 return (
@@ -2035,8 +2135,10 @@
             })}
           </div>
         </div>
-      );
-    }
+      )}
+    </div>
+  );
+}
 
     ReactDOM.createRoot(document.getElementById('root-comparativa')).render(<ComparativaApp />);
 
