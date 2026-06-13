@@ -727,9 +727,14 @@
         }
 
         // Badge de origen visual
-        const badgeOrigen = origen === 'fianzas'
-          ? '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>'
-          : '<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 6px;border-radius:8px;">⚡ Cotizador</span>';
+        let badgeOrigen = '';
+        if (origen === 'fianzas') {
+          badgeOrigen = '<span style="font-size:10px;background:#ede9fe;color:#4338ca;padding:2px 6px;border-radius:8px;">🧙 Wizard</span>';
+        } else if (c.origen === 'bot') {
+          badgeOrigen = '<span style="font-size:10px;background:#eff6ff;color:#1d4ed8;padding:2px 6px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-robot"></i> Bot BBS</span>';
+        } else {
+          badgeOrigen = '<span style="font-size:10px;background:#f0fdf4;color:#15803d;padding:2px 6px;border-radius:8px;">⚡ Cotizador</span>';
+        }
         // Tipo badge
         const tipoBadge = '<span style="background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:4px;font-size:12px;">' + (c.tipo || '-') + '</span>';
         // Fecha unificada
@@ -920,7 +925,9 @@
       // Detección robusta: por tipo, por prefijo SL o por mención de Automóviles
       const esSeguro = (c.tipo || '').toUpperCase().includes('SEGURO') || 
                        (c.numero || '').toUpperCase().startsWith('SL-') ||
-                       (c.subtipo || '').toUpperCase().includes('AUTOMOVIL');
+                       (c.numero || '').toUpperCase().startsWith('COT-') ||
+                       /^(AUTOMOVILES|MOTOCICLETAS|JEEP|CAMIONETAS|MINIVAN|AUTOBUS|CAMION|REMOLQUES)/i.test(c.tipo || '') ||
+                       /^(AUTOMOVILES|MOTOCICLETAS|JEEP|CAMIONETAS|MINIVAN|AUTOBUS|CAMION|REMOLQUES)/i.test(c.subtipo || '');
 
       if (esSeguro) {
         window.dispatchEvent(new CustomEvent('edit-cotizacion', { detail: c }));

@@ -100,10 +100,10 @@
   /* Z-INDEX */
   --mqf-z-dropdown:       100;
   --mqf-z-sticky:         150;
-  --mqf-z-modal-bg:       200;
-  --mqf-z-modal:          210;
-  --mqf-z-toast:          300;
-  --mqf-z-tooltip:        400;
+  --mqf-z-modal-bg:       20000;
+  --mqf-z-modal:          20100;
+  --mqf-z-toast:          30000;
+  --mqf-z-tooltip:        40000;
 
   /* COMPATIBILIDAD con nombres anteriores (no romper módulos existentes) */
   --primary-color:        var(--mqf-primary);

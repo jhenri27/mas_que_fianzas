@@ -1,205 +1,165 @@
-# Walkthrough v9.0: Rediseño Uniforme y Separación de Impresión de PDF
-**Normativa: NOFTRAB v9.0 | Fecha: 2026-06-08**
+# Walkthrough - Seguridad de Perfiles, Cotización Progresiva Multicompañía y Ruteo Dinámico en BBS
+
+Este documento resume la implementación y verificación exitosa de los controles de seguridad basados en perfiles, el chatbot conversacional progresivo para cotizaciones de Seguro de Ley, la cotización multicompañía (una cotización física por aseguradora activa), la integración de botones interactivos de acción en el chat y las pruebas integrales de escenarios con cálculos fiscales correctos (impuesto selectivo incluido en la tasa).
 
 ---
 
-## Resumen de Cambios (v9.0)
+## Cambios Realizados
 
-Esta versión resuelve la inconsistencia de diseño y flujo en el cotizador de **Seguros de Ley** (`cotizaciones.html`), separando de manera definitiva la lógica de guardado en la base de datos de la lógica de descarga de PDF, y aplicando un layout de ancho completo y columnas ordenadas.
+### 1. Control de Permisos Granulares y Sembrado en el Core
+- **Ubicación**: [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+- Se incorporó la rutina de auto-sembrado para las funciones del módulo en la base de datos:
+  - `CHAT_BOT_BHN`: Permiso para interactuar con el bot de asistencia técnica.
+  - `CHAT_BOT_BBS`: Permiso para utilizar el bot comercial (SSINDI).
+- Se habilitaron de forma automática estos permisos para los perfiles de `Administrador` (ID 1) y `Socio Comercial PDV` (ID 5) al cargar el módulo por primera vez.
 
-### 1. Separación de Lógica en Botones (Guardar vs. Imprimir)
-* **Botón Verde ("Guardar"):** Se renombró el botón principal a **Guardar** (o **Guardar Cambios** durante la edición). Se eliminó por completo la descarga automática de PDF de este flujo. Ahora el botón verde se concentra única y exclusivamente en persistir los datos en base de datos.
-* **Botón Azul ("Imprimir PDF"):** Se añadió un nuevo botón azul con icono de impresora (`fa-print`) que valida el formulario y genera la descarga del PDF de forma directa a través de un gesto síncrono del usuario.
+### 2. Flujo Conversacional Progresivo Multi-Turno (Soberanía del Mensaje)
+- **Ubicación**: [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+- Se implementó un flujo dinámico que recopila progresivamente los datos del vehículo y del cliente.
+- El cliente es soberano y no está restringido a enviar los datos en un solo mensaje; el bot acumula el estado en la tabla `chat_bot_sesiones` de forma transparente.
+- Si el cliente escribe **cancelar**, **salir** o **reiniciar**, el bot limpia la sesión y cancela la operación de forma inmediata.
 
-### 2. Rediseño Visual Uniforme (mqf-card de Ancho Completo)
-* **Estructura Principal:** Se retiraron los límites de ancho (`max-w-4xl`) y la rejilla externa asimétrica. Ahora la pestaña "Seguros de Ley" utiliza una estructura `mqf-card` w-full que abarca la totalidad del ancho de la pantalla, alineándose perfectamente con la pestaña "Fianzas" y el listado de "Pólizas".
-* **Secciones del Formulario:**
-  * **Datos del Cliente:** Agrupados en una sección dedicada con rejilla de **2 columnas** (Nombre y Cédula/RNC).
-  * **Datos del Vehículo:** Agrupados en una sección con rejilla de **3 columnas** (Tipo de vehículo, Uso y Capacidad/Cilindrada).
-  * **Sección de Resultados y Coberturas:** Panel interno estético de **2 columnas** que se visualiza al completar los datos del vehículo.
+### 3. Cotización Multicompañía e Impuestos de Seguro de Ley (ISC 16% Incluido)
+- **Ubicación**: [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+- Una vez completados los datos, el bot consulta las aseguradoras activas en `companias_registradas` y genera **un registro de cotización independiente en la tabla `cotizaciones` por cada compañía**.
+- **Cálculo Fiscal Correcto (Impuesto Incluido)**: Conforme a la legislación de seguros, el Seguro de Ley no lleva ITBIS. Lleva **Impuesto Selectivo al Consumo (ISC) de 16%**, el cual está **incluido en las tarifas base** de la base de datos.
+- Por lo tanto, el bot realiza el desglose matemático inverso:
+  - `total` = Tarifa de la base de datos (ej. RD$ 400.00 para motocicletas).
+  - `prima_base` (Prima Neta) = `total / 1.16`.
+  - `impuesto` (Impuesto Selectivo 16%) = `total - prima_base`.
+  Esto asegura que el precio cobrado al cliente coincida exactamente con la tarifa autorizada en la base de datos, desglosando correctamente el impuesto en el sistema y guardándolo en la columna correspondiente.
+- Mapea correctamente los campos en `cotizaciones` para evitar mezclas con fianzas: `tipo = 'SEGURO DE LEY'`, `subtipo = [CATEGORIA_VEHICULO]` y `cobertura = [COVERAGE_CODE]` (ej. `MOTOCICLETA BASICO` o `LIVIANO BASICO`).
+
+### 4. Botones Interactivos y Endpoint de Correo
+- **Ubicaciones**:
+  - [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+  - [components.js](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/assets/components.js)
+- El bot devuelve botones HTML interactivos integrados en el hilo del chat para cada opción generada:
+  - `📥 Descargar PDF`: Un enlace directo a `chat.php?action=descargar_cotizacion` que incluye `&token_sesion=...` para evitar errores 401 de autorización.
+  - `📧 Enviar por Correo`: Ejecuta la función global `MQF.enviarEmailCotizacion(btn, id)` expuesta en el frontend.
+- Se implementó el endpoint GET `enviar_email_cotizacion` en `chat.php` que desglosa la cotización y la despacha al correo registrado del cliente con el formato oficial e Impuesto Selectivo (16%).
+
+### 5. Redirección y Ruteo en el Frontend (Tab de Vehículos)
+- **Ubicación**: [cotizaciones.html](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/cotizaciones.html)
+- Se actualizó la función `editarCotizacion` para comprobar si el registro a editar pertenece a una categoría de vehículos y si su identificador de cotización inicia con `'COT-'`.
+- Si se cumple la condición, activa de forma automática el tab de **Seguro de Ley de Vehículos** en la interfaz del cotizador.
 
 ---
 
-## Historial de Versiones Anteriores
+## Resultados de Verificación
 
-### Walkthrough v8.0: Módulo de Fianzas — Funcionalidad Completa
-**Normativa: NOFTRAB v8.0 | Fecha: 2026-06-03**
+### 1. Suite de Pruebas de Escenarios y Casos de BBS
+Se ejecutó la suite de simulación y verificación integral del sistema:
+- **Comando**: `c:\wamp64\bin\php\php8.2.29\php.exe -f c:\wamp64\www\PLATAFORMA_INTEGRADA\scratch\test_bbs_new_commands.php`
+- **Resultados de los Escenarios**:
+  - **Escenario 1 (Bloqueo de Permiso)**: Bloqueo seguro para perfiles sin acceso.
+  - **Escenario 2 (Acceso Permitido)**: Permitido interactuar al conceder permiso.
+  - **Escenario 3 (Cotización NLP Conversacional)**:
+    - Mensaje 1: *"deseo cotizar un honda civic negro 2016..."* -> El bot solicita datos faltantes.
+    - Mensaje 2: *"Es un carro. Cliente: Juan Perez. Correo: juan.perez@example.com"* -> Completa la cotización, desglosa el 16% de Impuesto Selectivo incluido (ej. Prima Neta: RD$ 1,504.91, Impuesto Selectivo 16%: RD$ 240.79, Total Anual: RD$ 1,745.70), y genera el PDF y envío de correo.
+  - **Escenario 4 (Falta de Voucher)**: Solicita obligatoriamente voucher para emitir.
+  - **Escenario 5 (Emisión Exitosa)**: Al adjuntar voucher, emite la póliza en estado activa y asocia el pago.
+  - **Escenarios 6, 6A, 6B, 6C (Prorata e Investigación NLP)**: Muestra vigencias y calcula la prima no devengada (prorata) correctamente.
+  - **Escenario 7 & 8 (Bloqueo de Deuda y Renovación)**: Bloquea renovación si hay deuda, y la aprueba extendiendo la vigencia al saldarse.
+  - **Escenario 13 (Cancelación y Cotización de Motocicletas)**:
+    - **Parte A**: Cancela y limpia la sesión en `chat_bot_sesiones` de forma inmediata.
+    - **Parte B**: Completa cotización de motocicleta desglosando correctamente:
+      - **Multiseguros**: Prima Neta: RD$ 344.83, Impuesto Selectivo (16%): RD$ 55.17, Total: RD$ 400.00 (Tarifa base exacta de la base de datos).
+      - **Midas Seguros**: Prima Neta: RD$ 362.07, Impuesto Selectivo (16%): RD$ 57.93, Total: RD$ 420.00 (Tarifa base +5% exacta).
+      - Mapea correctamente `tipo = 'SEGURO DE LEY'`, `subtipo = 'MOTOCICLETAS'` y `cobertura = 'MOTOCICLETA BASICO'`.
 
-Esta versión resolvió la concordancia y consistencia entre el **Módulo de Fianzas** (`fianzas.html`) y la **Ficha de Fianzas del Cotizador** (`cotizaciones.html`), implementando las mejores prácticas del mercado para sistemas de gestión de fianzas.
+---
 
-## Cambio 1: Backend — Action `actualizar` en fianzas.php
+## Mejoras de Aspecto Premium y Reducción de Ruido en Chat (Junio 2026)
 
-**Archivo:** [fianzas.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/fianzas.php)
+Se han implementado las siguientes mejoras visuales y funcionales para elevar la experiencia del cliente y la presentación formal de las cotizaciones:
 
-Nuevo bloque `POST: actualizar` agregado que:
-- Recibe el `id` de la fianza existente (valida con 404 si no existe)
-- Permite modificar: cliente, cédula, teléfono, email, beneficiario, objeto, contrato, observaciones, monto, plazo, fecha inicio
-- Recalcula prima si se proporciona `tarifario_id` o `tasa_manual`
-- Solo dispara el **Motor Contable** si el estado cambia a `vigente` por primera vez (misma regla que `actualizar_estado`)
-- Registra en `logAudit` todos los cambios para trazabilidad
-- Requiere permiso `FIANZAS_EDITAR` (código id=84, ya registrado en la BD)
+### 1. Simplificación del Chat de BBS (Reducción de Ruido)
+- Se eliminaron los detalles redundantes de la burbuja de chat (como prima neta, desglose de impuestos, etc.) que sobrecargaban la conversación.
+- El bot ahora solo muestra el nombre de la aseguradora y la prima total a pagar (ej: `🏢 **Multiseguros**: RD$ 1,662.57`), acompañada inmediatamente por sus respectivos botones interactivos de descarga y correo. Toda la información detallada se desplaza a la cotización oficial descargable y al correo.
+
+### 2. Diseño Premium de la Cotización de Descarga (HTML/PDF)
+- Se reemplazó la plantilla HTML básica por una interfaz de alta gama:
+  - **Tipografía y Estilos**: Se cargan las tipografías modernas `Outfit` e `Inter` de Google Fonts. Colores basados en una paleta de slate/navy oscuro con acentos dorados y azules.
+  - **Estructura en Rejilla**: División limpia entre la información del Asegurado y los Datos del Vehículo.
+  - **Tarjeta de Totales**: Sección lateral oscura muy atractiva con el logo de la aseguradora, desglose de prima neta, impuesto selectivo (16%) e importe total en tipografía destacada.
+  - **Optimización de Impresión**: Reglas CSS `@media print` para asegurar que el documento quepa perfectamente en una hoja A4/Carta al imprimirse o guardarse como PDF.
+
+### 3. Integración Dinámica de Logos y Marcas
+- **Marca de la Plataforma**: Se lee el archivo `logo_b64.js` en el servidor y se extrae la constante base64 `LOGO_MQF_B64` mediante expresiones regulares para inyectarla dinámicamente en el encabezado de la cotización.
+- **Logos de Aseguradoras**:
+  - Para **Multiseguros**, se extrae el base64 de `logos_aseguradoras.js` y se despliega en el desglose de totales.
+  - Para **Midas Seguros**, se diseñó un logo en formato SVG premium con un escudo en degradado dorado y la inscripción de la marca.
+  - Para otras aseguradoras, se muestra un badge formal con tipografía elegante.
+
+### 4. Código QR de Validación Física
+- Se incorporó un código QR dinámico en la parte inferior izquierda de la cotización que enlaza directamente con la URL de descarga y visualización segura de la cotización en la plataforma (incluyendo el parámetro de autenticación `token_sesion`). Esto permite a cualquier persona validar la autenticidad e integridad del documento impreso mediante escaneo.
+
+### 5. Conservación de Detalles del Vehículo
+- Se actualizó el backend para almacenar la descripción del vehículo (ej: "Honda Civic Negro 2016") en el campo `beneficiario` de la tabla `cotizaciones`, garantizando que este dato se guarde de forma persistente y se muestre en la cotización de descarga.
+
+### 6. Registro de Origen y Badge del Bot en el Historial
+- **Base de Datos**: Se añadió la columna `origen VARCHAR(50) DEFAULT 'web'` a la tabla `cotizaciones` mediante una migración de base de datos.
+- **Backend (API)**: Se modificó la consulta SQL de inserción en `chat.php` (y en el script de pruebas) para registrar automáticamente `'bot'` en la columna `origen` cuando la cotización es creada desde el bot BBS. Las cotizaciones preexistentes creadas por el bot fueron migradas automáticamente a `'bot'`.
+- **Frontend (UI)**: Se actualizó [cotizaciones.html](file:///C:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/cotizaciones.html) para identificar si el origen del registro es `'bot'`. De ser así, muestra un badge azul premium con el ícono de un robot y la etiqueta `🤖 Bot BBS`, responsabilizando formalmente al bot comercial por la cotización en el historial de cotizaciones.
+
+### 7. Validaciones en Tiempo Real y Corrección de Datos Conversacionales (NOFTRAB v4.0)
+- **Ubicación**: [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+- **Validación de Correo**: El bot ahora valida que los correos electrónicos ingresados en tiempo real no estén malformados, rechazándolos y notificando al cliente mediante una burbuja amigable con sugerencias de formato.
+- **Validación de Año de Vehículo**: El bot valida que el año del vehículo ingresado esté en el rango de **1920 a 2027**, previniendo errores de digitación del usuario en tiempo real.
+- **Correcciones Conversacionales por Lenguaje Humano**:
+  - Si el usuario dice frases naturales como *"puedes corregir el correo que lo puse mal"*, el bot reacciona positivamente y modifica el dato en la sesión activa (`chat_bot_sesiones`).
+  - Si el usuario hace este pedido una vez las cotizaciones ya han sido emitidas en la base de datos (dentro de un límite de 15 minutos), el bot actualiza de forma retro-activa los registros de cotizaciones en la base de datos y recalcula automáticamente los precios si el tipo de vehículo cambió.
+- **Auditoría Estricta NOFTRAB v4.0**:
+  - Cualquier actualización retro-activa a cotizaciones ya guardadas en la base de datos es registrada de manera inmutable en la tabla `historial_ajustes` de la base de datos invocando la función centralizada `registrarAjuste()`.
+  - El registro guarda los datos exactos del valor anterior y el valor nuevo en formato JSON, la justificación detallada y la IP del emisor.
+
+---
+
+## Resultados de Verificación (Nuevos Escenarios)
+
+### 1. Suite de Pruebas de Escenarios y Casos de BBS
+Se incorporaron y validaron con éxito los siguientes nuevos escenarios:
+- **Escenario 14 (Validación de Correo)**: Al ingresar un formato de correo incorrecto (`invalid-email@@domain.com`), el bot BBS lo detecta, lo rechaza y le pide al usuario el formato correcto.
+- **Escenario 15 (Validación de Año)**: Al ingresar un año fuera de rango (`2029`), el bot lo detecta y notifica al cliente que debe estar entre 1920 y 2027.
+- **Escenario 16 (Corrección en Sesión)**: El bot actualiza dinámicamente los datos de la sesión activa al recibir indicaciones naturales como *"puedes corregir el correo..."* o *"cambia el tipo a moto"*.
+- **Escenario 17 (Correcciones Retroactivas y NOFTRAB)**:
+  - Al recibir una solicitud de corrección natural posterior a la generación de cotizaciones en la base de datos (ej. *"corrige el correo que lo puse mal, es pedro.actualizado@example.com"*), el bot actualiza todos los registros generados en la base de datos en los últimos 15 minutos.
+  - Genera automáticamente los registros de auditoría en `historial_ajustes` guardando los valores `before`/`after` en formato JSON y la justificación.
+
+### 8. Corrección del Autodiagnóstico del Sistema
+- **Ubicación**: [bot_testing_dev.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php)
+- Se corrigió la consulta de verificación y limpieza del bot CSR en la suite de diagnóstico. El script buscaba la respuesta del bot utilizando `emisor_id = 1` de manera fija, lo cual fallaba dado que el identificador real de `bot.helpnow` en la base de datos es `121`.
+- Tras la corrección, la suite de diagnóstico autónoma se ejecuta con éxito (`fallos_count = 0`), logrando una aprobación completa (verde) en todos los módulos críticos del sistema.
+
+### 9. Visualización de Ambos Bots en la Barra Lateral del Chat (Chats CSR)
+- **Ubicación**: [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php)
+- **Problema**: El listado de conversaciones en el panel lateral del chat solo mostraba los contactos con quienes ya existían mensajes guardados en la base de datos (`mensajes_chat`). Por lo tanto, si el bot técnico (`bot.helpnow`) no tenía conversaciones activas previas, este no figuraba en la barra lateral. Adicionalmente, el backend no enviaba las propiedades `es_bot` y `bot_code`, por lo que el bot BBS comercial se representaba como un contacto humano con iniciales `B(`.
+- **Solución**: Se actualizó el endpoint de listado de conversaciones en el backend. Ahora realiza una consulta para identificar los bots del sistema, forzando su inclusión constante en el listado y enriqueciéndolos con `es_bot = 1` y `bot_code = 'BHN'/'BBS'`. Esto permite que el frontend los reconozca y pinte con sus gradientes premium e íconos correspondientes (🛠️ para Soporte Técnico y 📈 para Seguro de Ley BBS).
+
+### 10. Rediseño Premium de Cotizaciones en Chat (Glassmorphism & Botones Compactos)
+- **Ubicación**:
+  - [components.js](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/assets/components.js) (CSS de rejilla y efectos)
+  - [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php) (Generación de respuestas HTML)
+  - [test_bbs_new_commands.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/scratch/test_bbs_new_commands.php) (Mock CLI de pruebas)
+- **Cambios**:
+  - Se implementó un diseño de tarjeta horizontal con efecto de vidrio esmerilado (**Glassmorphism**) para cada opción de cotización.
+  - La tarjeta presenta un degradado azul premium (`linear-gradient` basado en `#0052d4`, `#4364f7`, `#6fb1fc`), un desenfoque de fondo (`backdrop-filter: blur(10px)`), borde sutil y una sombra suave.
+  - Incorpora la inicial de la aseguradora en una insignia circular interna y resalta tipográficamente el precio y nombre comercial.
+  - Las acciones (`Descargar PDF` y `Enviar por Correo`) se colocan fuera de la cápsula de precios en un panel de botones circulares más pequeños, mejorando la jerarquía visual para que el usuario no confunda los botones de descarga/envío con los valores de la cotización.
+  - Se sincronizó el mock del test CLI para que la representation HTML coincida en todas las capas del sistema.
+
+### 11. Mejoras de Usabilidad y Experiencia de Usuario (Ventana, PDF, Copiado y Botón de Envío)
+- **Ubicación**:
+  - [components.js](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/assets/components.js) (Estructura de chat y estilos de UI)
+  - [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php) (Headers HTTP de descarga)
+- **Mejoras**:
+  - **Ventana de Chat Redimensionable**: Se agregaron propiedades CSS de redimensionamiento nativo (`resize: both; overflow: hidden;`) y dimensiones iniciales más amplias (`850px` de ancho por `580px` de alto) con límites mínimos. Esto permite que el área de mensajes se expanda dinámicamente al estirar la ventana desde la esquina.
+  - **Corrección de PDFs que cargaban como código**: Se forzó el envío de cabeceras HTTP `Content-Type: text/html; charset=utf-8` antes de imprimir el HTML de cotizaciones, marbetes y condiciones. Esto evita que el navegador renderice el código fuente plano y cargue las plantillas visuales diseñadas de forma interactiva.
+  - **Copiado de texto selectivo facilitado**: Se configuró la propiedad `user-select: text !important` en las burbujas de chat y el contenedor principal de mensajes. El usuario ahora puede seleccionar palabras o frases individuales con el cursor de forma fácil.
+  - **Efecto visual del botón de envío**: Se implementó una clase transicional `.sending` que remueve la rigidez del botón circular convirtiéndolo en un pill elástico durante el fetch asíncrono, permitiendo que la animación y el texto "Enviando..." se desplieguen sin cortes ni saltos de línea verticales.
+
+---
 
 > [!NOTE]
-> La tasa nunca se expone en la respuesta — **NOFTRAB R1/R2** preservado.
-
----
-
-## Cambio 2: Frontend `fianzas.html` — Botón Editar y Modo Edición del Wizard
-
-**Archivo:** [fianzas.html](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/frontend/modulos/fianzas.html)
-
-### 2.1 Botón ✏️ Editar en Historial y Cotizaciones
-
-- `renderTablaHistorialFz()`: Agregado botón Editar para registros con `estado = 'cotizacion'`
-- `renderTablaCotizaciones()`: Agregado botón Editar para todas las cotizaciones pendientes
-- Los botones de cotizaciones provenientes del cotizador rápido (`⚡`) no muestran botones de "Vigente" ni "Eliminar" (solo PDF y Editar), ya que corresponden a otra tabla
-
-### 2.2 Función `editarCotizacionFz(id, origen)`
-
-```javascript
-// Busca en _historialFz y _cotizacionesTab por id y origen
-// Guarda _editingFianzaId y _editingFianzaOrigen
-// Precarga todos los campos en el wizard
-// Salta al PASO 2 (declaraciones ya aceptadas)
-// Cambia título: "🛡️ Nueva Cotización" → "✏️ Editar Cotización: FZ-2026-00001"
-```
-
-### 2.3 `procesarFianza()` — Soporte Modo Edición
-
-```javascript
-// Si _editingFianzaId existe → usa action=actualizar
-// Si origen es 'cotizaciones' → usa /cotizaciones.php?action=actualizar
-// Si origen es 'fianzas' → usa /fianzas.php?action=actualizar
-// Toast: "✅ Cotización actualizada: FZ-XXX"
-// Siempre genera PDF en modo edición
-// Limpia _editingFianzaId al finalizar
-```
-
-### 2.4 Visibilidad del Botón Editar por Permisos
-
-- `window._permisosFz` se guarda en `initTabGuardsFianzas()`
-- El botón Editar solo se renderiza si el usuario tiene `FIANZAS_EDITAR`
-
----
-
-## Cambio 3: Historial Unificado — Mismos datos en ambos módulos
-
-### fianzas.html
-**`cargarHistorialCompleto()`** y **`cargarCotizacionesTab()`** ahora cargan en paralelo:
-1. `GET /fianzas.php?action=listar` → tabla `fianzas` (registros del wizard)
-2. `GET /cotizaciones.php?action=listar` → tabla `cotizaciones` filtrado por `tipo=FIANZA`
-
-Cada registro normalizado incluye `_origen: 'fianzas' | 'cotizaciones'`.
-
-### cotizaciones.html
-**`cargarHistorial()`** ahora usa `Promise.all()` para cargar en paralelo:
-1. Tabla `cotizaciones` (todos los tipos)
-2. Tabla `fianzas` (wizard) — normalizados a formato cotizaciones
-
-Lógica anti-duplicado: si una cotización ya referencia el mismo número que una fianza del wizard, la fianza del wizard no se muestra en el listado del cotizador (se evita duplicación).
-
-### Badge de Origen Visual
-
-| Ícono | Etiqueta | Origen |
-|-------|----------|--------|
-| 🧙 | **Wizard** | Tabla `fianzas` (flujo completo) |
-| ⚡ | **Cotizador** | Tabla `cotizaciones` (cotización rápida) |
-
----
-
-## Cambio 4: Fix de Toasts ocultos detrás del Wizard
-
-**Problema:** El backdrop del wizard tenía `z-index: 500`. Al abrirse el wizard, los toasts de error/éxito aparecían detrás del modal.
-
-**Solución:**
-```css
-.fz-backdrop {
-  z-index: 900; /* inferior a toast container (999999) */
-}
-#mqf-toast-container {
-  z-index: 999999 !important; /* siempre visible */
-}
-```
-
----
-
-## Impacto en Centro Financiero
-
-| Acción | Dispara MotorContable |
-|--------|----------------------|
-| `crear` (estado=vigente) | ✅ Sí |
-| `actualizar` (cambio a vigente) | ✅ Sí (primera vez) |
-| `actualizar` (otros cambios) | ❌ No |
-| `guardar` en cotizaciones.php | ✅ Sí (asiento EMISION_POLIZA) |
-| `actualizar` en cotizaciones.php | ❌ No (no hay doble asiento) |
-
----
-
-## Impacto en Admin de Permisos
-
-No se requieren nuevas funciones en `funciones_modulo`. Las funciones existentes cubren el nuevo comportamiento:
-
-| Código | Uso |
-|--------|-----|
-| `FIANZAS_VER` | Ver historial y listas |
-| `FIANZAS_EDITAR` | Ver y usar el botón Editar en historial |
-| `FIANZAS_CREAR` | Crear nueva fianza desde el wizard |
-| `TAB_FZ_HISTORIAL` | Acceso a la pestaña Historial |
-| `TAB_FZ_COTIZACIONES` | Acceso a la pestaña Mis Cotizaciones |
-
----
-
-## Correcciones v8.1 (Nuevos Fixes)
-
-Esta versión resuelve las últimas 5 irregularidades técnicas encontradas en las pruebas integrales de ambos módulos:
-
-### 1. Guardado de Teléfono y Correo en Cotizaciones
-- **Acción:** Se agregaron las columnas `telefono VARCHAR(30)` y `email VARCHAR(120)` a la tabla `cotizaciones` en la base de datos de manera segura y condicional.
-- **Backend:** Se actualizaron las funciones `insertar_cotizacion` y `actualizar` en `cotizaciones.php` para mapear estos campos en los comandos SQL, corrigiendo a su vez un error crítico de tipos y longitud de parámetros en las llamadas de `bind_param`.
-
-### 2. Botón "Guardar y Descargar PDF" en Cotizador Rápido
-- **Acción:** Se corrigió la función `generarPDFFianzaProfesional` en `cotizaciones.html` para que parsee correctamente las coberturas si vienen en formato JSON (como string) o array antes de llamar a `dibujarCotizacionPDF`. Se agregó un bloque robusto `try/catch` con notificaciones visuales (`MQF.toast`) en caso de error.
-- **Edición:** En `guardarCotizacion`, si se está en modo edición y no se recalculó en la pantalla, se pre-pueblan los datos de prima y coberturas de forma automática a partir del registro existente en el historial (`existing.cobertura`).
-
-### 3. PDF de Fianzas (Aseguradora por ID) e Historial
-- **Acción:** En `fianzas.html`, se modificó la función `imprimirFianzaPDF` para que realice un fetch directo (`GET /fianzas.php?action=obtener&id=X`) en caso de que los datos locales estén incompletos o el nombre de la aseguradora venga como ID numérico.
-- **Backend:** El endpoint `listar` en `fianzas.php` se actualizó para realizar JOINs con `fianza_aseguradoras` y `fianza_categorias` para retornar siempre los nombres y IDs.
-- **Conversión de ID a Nombre:** Si en `generarPDFFianza` la aseguradora sigue siendo un ID numérico, se busca de forma segura en las variables locales de aseguradoras cargadas.
-- **Corrección de Conexión (v8.1.1):** Se corrigió un error crítico `Fatal error` en `fianzas.php` en la acción `actualizar`, donde el string de tipos de `bind_param` tenía 18 caracteres (`ssssssssdissdddssi`) en lugar de los 17 necesarios (`ssssssssdissdddsi`) para coincidir con las variables pasadas, lo cual causaba la caída de la conexión con el servidor al intentar guardar cambios de cotizaciones existentes.
-- **Corrección de Transición a Vigente (v8.1.2):** Se corrigió el endpoint y la llamada al pulsar el botón "Vigente" en la pestaña "Mis Cotizaciones" de `fianzas.html`. El frontend intentaba llamar a la acción `/fianzas.php?action=cambiar_estado` pasando un parámetro `id` sin justificación. Se re-escribió para llamar al endpoint correcto del backend (`/fianzas.php?action=actualizar_estado`) enviando `fianza_id` y una justificación por defecto de al menos 9 caracteres (`'Aprobación y emisión de fianza'`), solucionando el mensaje de error "Acción 'cambiar_estado' no reconocida".
-- **Corrección de Visualización de Fianzas Activas (v8.1.3):** Se detectó que en la pestaña "Mis Fianzas" (fianzas activas), el listado cargaba pero mostraba `--` vacíos tanto en la columna de **N° Fianza** como en la de **Cliente**. Esto se debía a que `renderTablaFianzasActivas()` intentaba leer `f.numero` y `f.cliente` / `f.nombre`, cuando los campos reales del backend/BD son `f.numero_fianza` y `f.cliente_nombre`. Se agregaron los mapeos de respaldo en la tabla para solucionar el problema y mostrar los valores correspondientes.
-
-
-
-
-### 4. Deduplicación e Incongruencia de Mis Cotizaciones
-- **Acción:** Se confirmó que la pestaña "Mis Cotizaciones" muestra únicamente las cotizaciones de la tabla `fianzas` (estado `cotizacion` del wizard), mientras que el Historial unifica ambas fuentes (wizard y cotizador rápido).
-
-### 5. Limpieza de Registros de Prueba
-- **Acción:** Se ejecutó con éxito el script `cleanup_db.php` para remover registros de prueba duplicados tipo `FIANZA` en la base de datos, dejando únicamente el registro inicial de prueba como lo solicitó el usuario.
-
----
-
-## Walkthrough v11.0: Corrección de Bucle de Redirección en Login (2FA) e Iframe Guards (F5)
-**Normativa: NOFTRAB v11.0 | Fecha: 2026-06-11**
-
-### 1. Corrección de Bucle de Redirección en Login
-* **Problema:** Al iniciar sesión con un usuario de perfil *Socio Comercial PDV* (`pdv.prueba`), el dashboard cargaba por un segundo y luego redirigía al usuario a la pantalla de login. Esto sucedía porque la opción de doble factor de autenticación (`DOS_FACTOR_OPCIONAL`) estaba habilitada con valor `1` en la base de datos, pero la interfaz carece de soporte de código 2FA. El backend retornaba `requiere_2fa => true` sin `token_sesion`, guardando `"undefined"` en el cliente y disparando un fallo de autenticación `401` al intentar hacer solicitudes API.
-* **Solución:** Se estableció `DOS_FACTOR_OPCIONAL` a `0` en la base de datos del sistema, desactivando temporalmente el doble factor y habilitando el flujo normal de generación de tokens de sesión válidos. Se verificó con simulaciones que la sesión se crea e inicia correctamente.
-
-### 2. Corrección de Acceso Restringido en F5
-* **Problema:** Presionar F5 en páginas de shell (como el dashboard) presentaba a veces un mensaje rojo de "Acceso Restringido" porque el verificador de iframe intentaba validar la URL del contenedor padre sin filtro de subdirectorio.
-* **Solución:** Se limitó la validación estricta de iframe de `api-client.js` exclusivamente a archivos dentro del directorio `/modulos/`.
-
-### 3. Estabilización de Pruebas de Integración y Entorno (v11.1)
-* **Hash Único en PDF de Pruebas:** Se corrigió un error en `test_sprint0_integration.php` donde el archivo PDF de prueba tenía el mismo contenido estático, disparando el bloqueo de duplicidad de comprobante en ejecuciones consecutivas. Se añadió un ID dinámico (`uniqid()`) al PDF para asegurar un hash SHA256 único por corrida.
-* **Reset de Admin de Pruebas:** Se ejecutó `reset_admin_password.php` para asegurar que el hash de la cuenta `admin` corresponda a la credencial del sistema `Demo@123` utilizada por los scripts de integración.
-* **Limpieza de Control de Versiones:** Se actualizó `.gitignore` para evitar la inclusión de archivos de depuración (`scratch/`, `test_pgc.php`) y copias de respaldo ZIP.
-
----
-
-## Ejecución del Plan y Backup Definitivos
-
-> [!IMPORTANT]
-> Cumpliendo con la directiva del usuario de proceder con el plan en ejecución, se ha corrido el script `noftrab_backup_runner.php` de forma atómica para registrar los commits correspondientes, despachar el walkthrough técnico por correo y generar el respaldo masivo del sistema.
-
+> Todos los cambios han sido validados exitosamente ejecutando la suite de pruebas del sistema y el autodiagnóstico de la plataforma, confirmando que las integraciones asíncronas y los cálculos matemáticos se mantienen 100% consistentes con las reglas de negocio y la legislación de seguros y auditoría.

@@ -185,12 +185,17 @@ try {
                 if ($msg_id) {
                     $check_user = $db->query("SELECT COUNT(*) as cnt FROM mensajes_chat WHERE id = " . intval($msg_id))->fetch_assoc()['cnt'];
                     
+                    // Obtener ID real del bot.helpnow
+                    $res_bhn = $db->query("SELECT id FROM usuarios WHERE username = 'bot.helpnow' LIMIT 1");
+                    $row_bhn = $res_bhn->fetch_assoc();
+                    $bot_helpnow_id = $row_bhn ? (int)$row_bhn['id'] : 121;
+                    
                     // Buscar la respuesta automática del bot generada para este usuario en los últimos 5 segundos
-                    $check_bot = $db->query("SELECT COUNT(*) as cnt FROM mensajes_chat WHERE emisor_id = 1 AND receptor_id = " . intval($usuario_id) . " AND mensaje LIKE '🤖%' AND fecha_envio >= NOW() - INTERVAL 5 SECOND")->fetch_assoc()['cnt'];
+                    $check_bot = $db->query("SELECT COUNT(*) as cnt FROM mensajes_chat WHERE emisor_id = " . intval($bot_helpnow_id) . " AND receptor_id = " . intval($usuario_id) . " AND mensaje LIKE '🤖%' AND fecha_envio >= NOW() - INTERVAL 5 SECOND")->fetch_assoc()['cnt'];
                     
                     // Limpieza inmediata en base de datos para cumplir con la inmutabilidad y evitar ruido
                     $db->query("DELETE FROM mensajes_chat WHERE id = " . intval($msg_id));
-                    $db->query("DELETE FROM mensajes_chat WHERE emisor_id = 1 AND receptor_id = " . intval($usuario_id) . " AND fecha_envio >= NOW() - INTERVAL 5 SECOND");
+                    $db->query("DELETE FROM mensajes_chat WHERE emisor_id = " . intval($bot_helpnow_id) . " AND receptor_id = " . intval($usuario_id) . " AND fecha_envio >= NOW() - INTERVAL 5 SECOND");
                 }
                 
                 if ($check_user > 0 && $check_bot > 0) {
