@@ -43,10 +43,10 @@ Se corrió la suite de simulación en el servidor local para confirmar el correc
 
 ### 4. Re-ordenamiento y Personalización de Colores de Marca
 Se implementó la personalización y redistribución de colores en las letras y detalles de las cotizaciones impresas en PDF/HTML y en el panel comparativo:
-- **MIDAS SEGUROS**: Adopta el color rojo oficial (`#dc2626` / `#ef4444`) que pertenecía a Pepín.
-- **SEGUROS PATRIA**: Adopta el color naranja/dorado (`#b45309` / `#f59e0b`) que pertenecía a Midas.
-- **SEGUROS PEPÍN**: Adopta el color verde (`#16a34a` / `#10b981`) que pertenecía a Patria.
-- **MULTISEGUROS**: Adopta un nuevo tono azul oscuro premium (`#1e3a8a`).
+- **MIDAS SEGUROS**: Adopta el color verde oficial (`#16a34a` / `#10b981`).
+- **SEGUROS PATRIA**: Adopta el color rojo oficial (`#dc2626` / `#ef4444`).
+- **SEGUROS PEPÍN**: Adopta el color naranja/dorado oficial (`#b45309` / `#f59e0b`).
+- **MULTISEGUROS**: Adopta un tono azul oscuro premium (`#1e3a8a`).
 - Se actualizaron los íconos vectoriales SVG correspondientes en los fallbacks dinámicos del bot en [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php).
 
 ### 5. Sincronización Automática de Estados (Seguros de Ley ➔ Comparativa)

@@ -99,13 +99,13 @@ function renderPremiumQuoteHTML($cot) {
     $brand_logo = "";
     
     if (strpos($aseguradora_upper, 'MIDAS') !== false) {
-        $brand_color = "#dc2626"; // red (gets pepin's color)
+        $brand_color = "#16a34a"; // green
         $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/midas_seguros.png.txt';
         $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
         if ($logo_data) {
             $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Midas Seguros">';
         } else {
-            $brand_logo = '<svg style="width:36px;height:36px;fill:#dc2626;" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/></svg>';
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#16a34a;" viewBox="0 0 24 24"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/></svg>';
         }
     } elseif (strpos($aseguradora_upper, 'MULTI') !== false) {
         $brand_color = "#1e3a8a"; // dark blue (azul oscuro)
@@ -117,22 +117,22 @@ function renderPremiumQuoteHTML($cot) {
             $brand_logo = '<svg style="width:36px;height:36px;fill:#1e3a8a;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/></svg>';
         }
     } elseif (strpos($aseguradora_upper, 'PATRIA') !== false) {
-        $brand_color = "#b45309"; // gold (gets midas's color)
+        $brand_color = "#dc2626"; // red
         $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/seguros_patria.png.txt';
         $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
         if ($logo_data) {
             $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Seguros Patria">';
         } else {
-            $brand_logo = '<svg style="width:36px;height:36px;fill:#d97706;" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>';
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#dc2626;" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>';
         }
     } elseif (strpos($aseguradora_upper, 'PEP') !== false) {
-        $brand_color = "#16a34a"; // green (gets patria's color)
+        $brand_color = "#b45309"; // gold (orange)
         $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/seguros_pepin.jpg.txt';
         $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
         if ($logo_data) {
             $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Seguros Pepín">';
         } else {
-            $brand_logo = '<svg style="width:36px;height:36px;fill:#16a34a;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#d97706;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
         }
     } else {
         $brand_logo = '<svg style="width:36px;height:36px;fill:#4f46e5;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
