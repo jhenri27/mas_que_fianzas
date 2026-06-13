@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cotizaciones - MAS QUE FIANZAS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
   <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
   <link rel="stylesheet" href="../assets/components.css?v=9.0">
@@ -18,6 +19,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- Logo MQF en Base64 (necesario para PDFs) -->
   <script src="../assets/logo_b64.js?v=4"></script>
+  <!-- Logos de Aseguradoras en Base64 -->
+  <script src="../assets/logos_aseguradoras.js?v=4"></script>
   <!-- API Client -->
   <script src="../assets/api-client.js?v=8.0.0"></script>
   <!-- Motor de exportación con dibujarCotizacionPDF() -->
@@ -1144,68 +1147,147 @@
         ]
       };
 
-      const RAW_RULES = [
-      ['MOTOCICLETAS','Hasta 250 cc','MOTOCICLETA BASICO','MULTISEGUROS','400'],
-      ['MOTOCICLETAS','Mas de 250 cc','MOTOCICLETA BASICO','MULTISEGUROS','772'],
-      ['MOTOCICLETAS','Mas de 350 cc','MOTOCICLETA BASICO','MULTISEGUROS','1229'],
-      ['MOTOCICLETAS','Bicicleta Eléctrica','MOTOCICLETA BASICO','MULTISEGUROS','750'],
-      ['MOTOCICLETAS','Patineta Eléctrica','MOTOCICLETA BASICO','MULTISEGUROS','750'],
-      ['MOTOCICLETAS','Buggy','LIVIANO BASICO','MULTISEGUROS','1662.57'],
-      ['MOTOCICLETAS','Cuatrimoto','LIVIANO BASICO','MULTISEGUROS','1662.57'],
-      ['MOTOCICLETAS','Motonetas (Trimotor)','LIVIANO BASICO','MULTISEGUROS','1662.57'],
-      ['MOTOCICLETAS','Four Wheel','LIVIANO BASICO','MULTISEGUROS','1662.57'],
-      ['AUTOMOVILES','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','1662.57'],
-      ['AUTOMOVILES','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','1671.88'],
-      ['AUTOMOVILES','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','2139.34'],
-      ['AUTOMOVILES','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','2445.10'],
-      ['AUTOMOVILES','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','3185.00'],
-      ['AUTOMOVILES','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','3395.70'],
-      ['JEEP','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','2111.20'],
-      ['JEEP','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','2322.32'],
-      ['JEEP','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','2554.56'],
-      ['JEEP','Hasta 4 Cilindros','LIVIANO BASICO','MULTISEGUROS','2902.76'],
-      ['JEEP','Hasta 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','3836.70'],
-      ['JEEP','Más de 6 Cilindros','LIVIANO BASICO','MULTISEGUROS','4435.48'],
-      ['MINIVAN / VANETTES','Hasta 7 pasajeros','LIVIANO BASICO','MULTISEGUROS','2923.20'],
-      ['MINIVAN / VANETTES','Hasta 9  pasajeros','LIVIANO BASICO','MULTISEGUROS','4209.40'],
-      ['MINIVAN / VANETTES','Hasta 7 pasajeros','LIVIANO BASICO','MULTISEGUROS','3507.84'],
-      ['MINIVAN / VANETTES','Hasta 9  pasajeros','LIVIANO BASICO','MULTISEGUROS','5051.29'],
-      ['CAMIONETAS','Hasta 1/2 Tonelada (Platanera)','LIVIANO BASICO','MULTISEGUROS','1666'],
-      ['CAMIONETAS','Hasta 3/4 Tonelada','LIVIANO BASICO','MULTISEGUROS','2111.20'],
-      ['CAMIONETAS','Hasta 1 Tonelada','LIVIANO BASICO','MULTISEGUROS','2639.14'],
-      ['CAMIONETAS','Hasta 2 Tonelada y/o 5 Pasajeros','LIVIANO BASICO','MULTISEGUROS','2952.74'],
-      ['FURGONETAS','Hasta 3/4 Tonelada','LIVIANO BASICO','MULTISEGUROS','2111.20'],
-      ['FURGONETAS','Hasta 1 Tonelada','LIVIANO BASICO','MULTISEGUROS','2639.14'],
-      ['FURGONETAS','Hasta 2 Tonelada','LIVIANO BASICO','MULTISEGUROS','2952.74'],
-      ['AUTOBUS','Hasta 10 Pasajeros','PESADO PLUS','MULTISEGUROS','3973.72'],
-      ['AUTOBUS','Hasta 20 Pasajeros','PESADO PLUS','MULTISEGUROS','5242.37'],
-      ['AUTOBUS','Hasta 30 Pasajeros','PESADO PLUS','MULTISEGUROS','6516.30'],
-      ['AUTOBUS','Hasta 40 Pasajeros','PESADO PLUS','MULTISEGUROS','7785.05'],
-      ['AUTOBUS','Hasta 50 Pasajeros','PESADO PLUS','MULTISEGUROS','9053.80'],
-      ['AUTOBUS','Hasta 10 Pasajeros','PESADO PLUS','MULTISEGUROS','9216.20'],
-      ['AUTOBUS','Hasta 20 Pasajeros','PESADO PLUS','MULTISEGUROS','11307.10'],
-      ['AUTOBUS','Hasta 30 Pasajeros','PESADO PLUS','MULTISEGUROS','13357.40'],
-      ['AUTOBUS','Hasta 40 Pasajeros','PESADO PLUS','MULTISEGUROS','15433.08'],
-      ['AUTOBUS','Hasta 50 Pasajeros','PESADO PLUS','MULTISEGUROS','17503.67'],
-      ['CAMION (CAMA O CAJA)','Hasta 3 Toneladas','PESADO PLUS','MULTISEGUROS','4760.35'],
-      ['CAMION (CAMA O CAJA)','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','6008.80'],
-      ['CAMION (CAMA O CAJA)','Más de 6 Toneladas','PESADO PLUS','MULTISEGUROS','6757.97'],
-      ['CAMIONES VOLTEO','Hasta 3 Toneladas','PESADO PLUS','MULTISEGUROS','4760.35'],
-      ['CAMIONES VOLTEO','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','6008.80'],
-      ['CAMIONES VOLTEO','Más de 6 Toneladas','PESADO PLUS','MULTISEGUROS','6757.97'],
-      ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 6 Toneladas','PESADO PLUS','MULTISEGUROS','6333.60'],
-      ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 18 Toneladas','PESADO PLUS','MULTISEGUROS','7658.17'],
-      ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 40 Toneladas','PESADO PLUS','MULTISEGUROS','8317.93'],
-      ['CAMIONES CABEZOTE, TRACTOR O PATANA','Hasta 60 Toneladas','PESADO PLUS','MULTISEGUROS','8982.75'],
-      ['MAQUINAS PESADAS CON AUTOPROPULSION','Sobre ruedas de gomas','PESADO PLUS','MULTISEGUROS','8317.93'],
-      ['MAQUINAS PESADAS CON AUTOPROPULSION','Sobre Orugas','PESADO PLUS','MULTISEGUROS','8317.93'],
-      ['MAQUINAS PESADAS CON AUTOPROPULSION','Grúas Móviles, excluyendo RC de Carga','PESADO PLUS','MULTISEGUROS','8317.93'],
-      ['PLACA DE DEMOSTRACION','Vehiculos hasta 6 Pasajeros','PESADO PLUS','MULTISEGUROS','6855.10'],
-      ['PLACA DE DEMOSTRACION','Vehiculos de mas de 6 Pasajeros','PESADO PLUS','MULTISEGUROS','11242.36'],
-      ['REMOLQUES','Automoviles y Station','PESADO PLUS','MULTISEGUROS','1266.11'],
-      ['REMOLQUES','Jeeps y Vanettes','PESADO PLUS','MULTISEGUROS','2405.92'],
-      ['REMOLQUES','Camionetas','PESADO PLUS','MULTISEGUROS','2146.20'],
-      ['REMOLQUES','Camiones','PESADO PLUS','MULTISEGUROS','3281.04']
+                  const RAW_RULES = [
+      ['MOTOCICLETAS', 'Hasta 250 cc', 'MOTOCICLETA BASICO', 'MULTISEGUROS', '400'],
+      ['MOTOCICLETAS', 'Mas de 250 cc', 'MOTOCICLETA BASICO', 'MULTISEGUROS', '772'],
+      ['MOTOCICLETAS', 'Mas de 350 cc', 'MOTOCICLETA BASICO', 'MULTISEGUROS', '1229'],
+      ['MOTOCICLETAS', 'Bicicleta Eléctrica', 'MOTOCICLETA BASICO', 'MULTISEGUROS', '750'],
+      ['MOTOCICLETAS', 'Patineta Eléctrica', 'MOTOCICLETA BASICO', 'MULTISEGUROS', '750'],
+      ['MOTOCICLETAS', 'Buggy', 'LIVIANO BASICO', 'MULTISEGUROS', '1662.57'],
+      ['MOTOCICLETAS', 'Cuatrimoto', 'LIVIANO BASICO', 'MULTISEGUROS', '1662.57'],
+      ['MOTOCICLETAS', 'Motonetas (Trimotor)', 'LIVIANO BASICO', 'MULTISEGUROS', '1662.57'],
+      ['MOTOCICLETAS', 'Four Wheel', 'LIVIANO BASICO', 'MULTISEGUROS', '1662.57'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '1662.57'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '1671.88'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2139.34'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2445.1'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '3185'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '3395.7'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2111.2'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2322.32'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2554.56'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '2902.76'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '3836.7'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'MULTISEGUROS', '4435.48'],
+      ['MINIVAN / VANETTES', 'Hasta 7 pasajeros', 'LIVIANO BASICO', 'MULTISEGUROS', '2923.2'],
+      ['MINIVAN / VANETTES', 'Hasta 9  pasajeros', 'LIVIANO BASICO', 'MULTISEGUROS', '4209.4'],
+      ['MINIVAN / VANETTES', 'Hasta 7 pasajeros', 'LIVIANO BASICO', 'MULTISEGUROS', '3507.84'],
+      ['MINIVAN / VANETTES', 'Hasta 9  pasajeros', 'LIVIANO BASICO', 'MULTISEGUROS', '5051.29'],
+      ['CAMIONETAS', 'Hasta 1/2 Tonelada (Platanera)', 'LIVIANO BASICO', 'MULTISEGUROS', '1666'],
+      ['CAMIONETAS', 'Hasta 3/4 Tonelada', 'LIVIANO BASICO', 'MULTISEGUROS', '2111.2'],
+      ['CAMIONETAS', 'Hasta 1 Tonelada', 'LIVIANO BASICO', 'MULTISEGUROS', '2639.14'],
+      ['CAMIONETAS', 'Hasta 2 Tonelada y/o 5 Pasajeros', 'LIVIANO BASICO', 'MULTISEGUROS', '2952.74'],
+      ['FURGONETAS', 'Hasta 3/4 Tonelada', 'LIVIANO BASICO', 'MULTISEGUROS', '2111.2'],
+      ['FURGONETAS', 'Hasta 1 Tonelada', 'LIVIANO BASICO', 'MULTISEGUROS', '2639.14'],
+      ['FURGONETAS', 'Hasta 2 Tonelada', 'LIVIANO BASICO', 'MULTISEGUROS', '2952.74'],
+      ['AUTOBUS', 'Hasta 10 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '3973.72'],
+      ['AUTOBUS', 'Hasta 20 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '5242.37'],
+      ['AUTOBUS', 'Hasta 30 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '6516.3'],
+      ['AUTOBUS', 'Hasta 40 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '7785.05'],
+      ['AUTOBUS', 'Hasta 50 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '9053.8'],
+      ['AUTOBUS', 'Hasta 10 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '9216.2'],
+      ['AUTOBUS', 'Hasta 20 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '11307.1'],
+      ['AUTOBUS', 'Hasta 30 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '13357.4'],
+      ['AUTOBUS', 'Hasta 40 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '15433.08'],
+      ['AUTOBUS', 'Hasta 50 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '17503.67'],
+      ['CAMION (CAMA O CAJA)', 'Hasta 3 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '4760.35'],
+      ['CAMION (CAMA O CAJA)', 'Hasta 6 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '6008.8'],
+      ['CAMION (CAMA O CAJA)', 'Más de 6 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '6757.97'],
+      ['CAMIONES VOLTEO', 'Hasta 3 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '4760.35'],
+      ['CAMIONES VOLTEO', 'Hasta 6 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '6008.8'],
+      ['CAMIONES VOLTEO', 'Más de 6 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '6757.97'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 6 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '6333.6'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 18 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '7658.17'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 40 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '8317.93'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 60 Toneladas', 'PESADO PLUS', 'MULTISEGUROS', '8982.75'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Sobre ruedas de gomas', 'PESADO PLUS', 'MULTISEGUROS', '8317.93'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Sobre Orugas', 'PESADO PLUS', 'MULTISEGUROS', '8317.93'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Grúas Móviles, excluyendo RC de Carga', 'PESADO PLUS', 'MULTISEGUROS', '8317.93'],
+      ['PLACA DE DEMOSTRACION', 'Vehiculos hasta 6 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '6855.1'],
+      ['PLACA DE DEMOSTRACION', 'Vehiculos de mas de 6 Pasajeros', 'PESADO PLUS', 'MULTISEGUROS', '11242.36'],
+      ['REMOLQUES', 'Automoviles y Station', 'PESADO PLUS', 'MULTISEGUROS', '1266.11'],
+      ['REMOLQUES', 'Jeeps y Vanettes', 'PESADO PLUS', 'MULTISEGUROS', '2405.92'],
+      ['REMOLQUES', 'Camionetas', 'PESADO PLUS', 'MULTISEGUROS', '2146.2'],
+      ['REMOLQUES', 'Camiones', 'PESADO PLUS', 'MULTISEGUROS', '3281.04'],
+      ['MOTOCICLETAS', 'Hasta 250 cc', 'MOTOCICLETA BASICO', 'Midas Seguros', '420'],
+      ['MOTOCICLETAS', 'Mas de 250 cc', 'MOTOCICLETA BASICO', 'Midas Seguros', '810.6'],
+      ['MOTOCICLETAS', 'Mas de 350 cc', 'MOTOCICLETA BASICO', 'Midas Seguros', '1290.45'],
+      ['MOTOCICLETAS', 'Bicicleta Eléctrica', 'MOTOCICLETA BASICO', 'Midas Seguros', '787.5'],
+      ['MOTOCICLETAS', 'Patineta Eléctrica', 'MOTOCICLETA BASICO', 'Midas Seguros', '787.5'],
+      ['MOTOCICLETAS', 'Buggy', 'LIVIANO BASICO', 'Midas Seguros', '1745.7'],
+      ['MOTOCICLETAS', 'Cuatrimoto', 'LIVIANO BASICO', 'Midas Seguros', '1745.7'],
+      ['MOTOCICLETAS', 'Motonetas (Trimotor)', 'LIVIANO BASICO', 'Midas Seguros', '1745.7'],
+      ['MOTOCICLETAS', 'Four Wheel', 'LIVIANO BASICO', 'Midas Seguros', '1745.7'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '1745.7'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '1755.47'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '2246.31'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '2567.36'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '3344.25'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '3565.49'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '2216.76'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '2438.44'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '2682.29'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '3047.9'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '4028.54'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Midas Seguros', '4657.25'],
+      ['MINIVAN / VANETTES', 'Hasta 7 pasajeros', 'LIVIANO BASICO', 'Midas Seguros', '3069.36'],
+      ['MINIVAN / VANETTES', 'Hasta 9  pasajeros', 'LIVIANO BASICO', 'Midas Seguros', '4419.87'],
+      ['MINIVAN / VANETTES', 'Hasta 7 pasajeros', 'LIVIANO BASICO', 'Midas Seguros', '3683.23'],
+      ['MINIVAN / VANETTES', 'Hasta 9  pasajeros', 'LIVIANO BASICO', 'Midas Seguros', '5303.85'],
+      ['CAMIONETAS', 'Hasta 1/2 Tonelada (Platanera)', 'LIVIANO BASICO', 'Midas Seguros', '1749.3'],
+      ['CAMIONETAS', 'Hasta 3/4 Tonelada', 'LIVIANO BASICO', 'Midas Seguros', '2216.76'],
+      ['CAMIONETAS', 'Hasta 1 Tonelada', 'LIVIANO BASICO', 'Midas Seguros', '2771.1'],
+      ['CAMIONETAS', 'Hasta 2 Tonelada y/o 5 Pasajeros', 'LIVIANO BASICO', 'Midas Seguros', '3100.38'],
+      ['FURGONETAS', 'Hasta 3/4 Tonelada', 'LIVIANO BASICO', 'Midas Seguros', '2216.76'],
+      ['FURGONETAS', 'Hasta 1 Tonelada', 'LIVIANO BASICO', 'Midas Seguros', '2771.1'],
+      ['FURGONETAS', 'Hasta 2 Tonelada', 'LIVIANO BASICO', 'Midas Seguros', '3100.38'],
+      ['AUTOBUS', 'Hasta 10 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '4172.41'],
+      ['AUTOBUS', 'Hasta 20 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '5504.49'],
+      ['AUTOBUS', 'Hasta 30 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '6842.12'],
+      ['AUTOBUS', 'Hasta 40 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '8174.3'],
+      ['AUTOBUS', 'Hasta 50 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '9506.49'],
+      ['AUTOBUS', 'Hasta 10 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '9677.01'],
+      ['AUTOBUS', 'Hasta 20 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '11872.46'],
+      ['AUTOBUS', 'Hasta 30 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '14025.27'],
+      ['AUTOBUS', 'Hasta 40 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '16204.73'],
+      ['AUTOBUS', 'Hasta 50 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '18378.85'],
+      ['CAMION (CAMA O CAJA)', 'Hasta 3 Toneladas', 'PESADO PLUS', 'Midas Seguros', '4998.37'],
+      ['CAMION (CAMA O CAJA)', 'Hasta 6 Toneladas', 'PESADO PLUS', 'Midas Seguros', '6309.24'],
+      ['CAMION (CAMA O CAJA)', 'Más de 6 Toneladas', 'PESADO PLUS', 'Midas Seguros', '7095.87'],
+      ['CAMIONES VOLTEO', 'Hasta 3 Toneladas', 'PESADO PLUS', 'Midas Seguros', '4998.37'],
+      ['CAMIONES VOLTEO', 'Hasta 6 Toneladas', 'PESADO PLUS', 'Midas Seguros', '6309.24'],
+      ['CAMIONES VOLTEO', 'Más de 6 Toneladas', 'PESADO PLUS', 'Midas Seguros', '7095.87'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 6 Toneladas', 'PESADO PLUS', 'Midas Seguros', '6650.28'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 18 Toneladas', 'PESADO PLUS', 'Midas Seguros', '8041.08'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 40 Toneladas', 'PESADO PLUS', 'Midas Seguros', '8733.83'],
+      ['CAMIONES CABEZOTE, TRACTOR O PATANA', 'Hasta 60 Toneladas', 'PESADO PLUS', 'Midas Seguros', '9431.89'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Sobre ruedas de gomas', 'PESADO PLUS', 'Midas Seguros', '8733.83'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Sobre Orugas', 'PESADO PLUS', 'Midas Seguros', '8733.83'],
+      ['MAQUINAS PESADAS CON AUTOPROPULSION', 'Grúas Móviles, excluyendo RC de Carga', 'PESADO PLUS', 'Midas Seguros', '8733.83'],
+      ['PLACA DE DEMOSTRACION', 'Vehiculos hasta 6 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '7197.86'],
+      ['PLACA DE DEMOSTRACION', 'Vehiculos de mas de 6 Pasajeros', 'PESADO PLUS', 'Midas Seguros', '11804.48'],
+      ['REMOLQUES', 'Automoviles y Station', 'PESADO PLUS', 'Midas Seguros', '1329.42'],
+      ['REMOLQUES', 'Jeeps y Vanettes', 'PESADO PLUS', 'Midas Seguros', '2526.22'],
+      ['REMOLQUES', 'Camionetas', 'PESADO PLUS', 'Midas Seguros', '2253.51'],
+      ['REMOLQUES', 'Camiones', 'PESADO PLUS', 'Midas Seguros', '3445.09'],
+      ['MOTOCICLETAS', 'Hasta 250 cc', 'MOTOCICLETA BASICO', 'Seguros Patria', '1189'],
+      ['MOTOCICLETAS', 'Mas de 250 cc', 'MOTOCICLETA BASICO', 'Seguros Patria', '1508'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '1924.44'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '2454.27'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '2605.65'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '2429.04'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '3135.48'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Seguros Patria', '3337.32'],
+      ['CAMIONETAS', 'Hasta 1/2 Tonelada (Platanera)', 'LIVIANO BASICO', 'Seguros Patria', '3125.04'],
+      ['MOTOCICLETAS', 'Hasta 250 cc', 'MOTOCICLETA BASICO', 'Seguros Pepín', '893.2'],
+      ['MOTOCICLETAS', 'Mas de 250 cc', 'MOTOCICLETA BASICO', 'Seguros Pepín', '893.2'],
+      ['AUTOMOVILES', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2324.99'],
+      ['AUTOMOVILES', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2324.99'],
+      ['AUTOMOVILES', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2324.99'],
+      ['JEEP', 'Hasta 4 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2829.59'],
+      ['JEEP', 'Hasta 6 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2829.59'],
+      ['JEEP', 'Más de 6 Cilindros', 'LIVIANO BASICO', 'Seguros Pepín', '2829.59'],
+      ['CAMIONETAS', 'Hasta 1/2 Tonelada (Platanera)', 'LIVIANO BASICO', 'Seguros Pepín', '3334.19']
     ];
 
       const RULES_MAP = RAW_RULES.reduce((acc, r)=>{
@@ -1639,7 +1721,301 @@
     }
 
     ReactDOM.createRoot(document.getElementById('root-seguros')).render(<App />);
-  </script>
+  
+
+    // =========================================================================
+    // COMPARATIVA APP (GLASSMORPHISM PREMIUM)
+    // =========================================================================
+    function ComparativaApp() {
+      const [state, setState] = React.useState(null);
+      const [pricingRows, setPricingRows] = React.useState([]);
+      const [loadingEmit, setLoadingEmit] = React.useState(null);
+
+      React.useEffect(() => {
+        fetch(PRICING_JSON_PATH)
+          .then(r => r.json())
+          .then(data => setPricingRows(data || []))
+          .catch(e => console.error(e));
+
+        const handleUpdate = () => {
+          setState(window.sharedCotizadorState || null);
+        };
+
+        window.addEventListener('update-comparativa', handleUpdate);
+        handleUpdate();
+        return () => window.removeEventListener('update-comparativa', handleUpdate);
+      }, []);
+
+      const activeInsurers = React.useMemo(() => [
+        { name: 'MULTISEGUROS', color: '#6366f1', logo: window.LOGO_MULTISEGUROS_B64 || null, key: 'MULTISEGUROS' },
+        { name: 'Midas Seguros', color: '#f59e0b', logo: window.LOGO_MIDAS_SEGUROS_B64 || null, key: 'MIDAS' },
+        { name: 'Seguros Patria', color: '#10b981', logo: window.LOGO_SEGUROS_PATRIA_B64 || null, key: 'PATRIA' },
+        { name: 'Seguros Pepín', color: '#ef4444', logo: window.LOGO_SEGUROS_PEPIN_B64 || null, key: 'PEPIN' }
+      ], []);
+
+      const comparisons = React.useMemo(() => {
+        if (!state || !state.type || !state.uso || !state.capacidad) return [];
+
+        return activeInsurers.map(ins => {
+          const match = pricingRows.find(r => 
+            (r.tipo_vehiculo || '').toUpperCase() === state.type.toUpperCase() &&
+            (r.uso || '').toUpperCase() === state.uso.toUpperCase() &&
+            (r.capacidad || '').trim().toUpperCase() === state.capacidad.trim().toUpperCase() &&
+            (r.aseguradora || '').toUpperCase().includes(ins.key)
+          );
+
+          if (!match) return { ...ins, available: false };
+
+          const price = parseFloat(match.prima || 0);
+
+          const OPTIONAL_SERVICES = [
+            { id: 'ASIST_VIAL_LIV', price: 2600 },
+            { id: 'ASIST_VIAL_PES', price: 4600 },
+            { id: 'CASA_CONDUCTOR', price: 1020 },
+            { id: 'CENTRO_AUTOMOVILISTA', price: 1020 }
+          ];
+
+          const totalOptional = OPTIONAL_SERVICES.reduce((acc, s) => {
+            if (match.cobertura && match.cobertura.includes('LIVIANO') && s.id === 'ASIST_VIAL_PES') return acc;
+            if (match.cobertura && match.cobertura.includes('PESADO') && s.id === 'ASIST_VIAL_LIV') return acc;
+            if (state.optionalSelected[s.id]) return acc + s.price;
+            return acc;
+          }, 0);
+
+          const total = price + totalOptional;
+          const primaBaseNet = Math.round((price / 1.16) * 100) / 100;
+          const iscVal = Math.round((price - primaBaseNet) * 100) / 100;
+
+          const optNet = Math.round((totalOptional / 1.18) * 100) / 100;
+          const optTax = Math.round((totalOptional - optNet) * 100) / 100;
+
+          return {
+            ...ins,
+            available: true,
+            cobertura: match.cobertura,
+            prima: price,
+            primaNet: primaBaseNet,
+            isc: iscVal,
+            optional: totalOptional,
+            optNet: optNet,
+            optTax: optTax,
+            total: total
+          };
+        });
+      }, [state, pricingRows, activeInsurers]);
+
+      function handleDownloadPDF(comp) {
+        const numCot = 'SL-TEMP-' + Math.floor(Math.random() * 9000 + 1000);
+        const data = {
+          tipo: 'SEGURO DE LEY',
+          subtipo: state.type,
+          numero: numCot,
+          cliente: state.cliente || 'A QUIEN CORRESPONDA',
+          cedula: state.cedula || '000-0000000-0',
+          email: state.emailCliente || '',
+          uso: state.uso,
+          capacidad: state.capacidad,
+          aseguradora: comp.name,
+          cobertura: comp.cobertura,
+          plazo: 0,
+          prima_base: comp.prima,
+          servicios_opcionales: state.optionalSelected,
+          prima_mensual: 0,
+          impuesto: 0,
+          total: comp.total,
+          usar_ncf: state.usarNCF,
+          fecha: new Date().toISOString()
+        };
+        
+        if (typeof dibujarCotizacionPDF === 'function') {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          dibujarCotizacionPDF(doc, data, window.LOGO_MQF_B64 || null, null);
+          MQF.toast('✅ PDF generado para ' + comp.name, 'success');
+        } else {
+          MQF.toast('Motor PDF no disponible', 'error');
+        }
+      }
+
+      function handleShare(comp) {
+        const text = `Cotización MAS QUE FIANZAS - Seguro de Ley\n` +
+                     `Cliente: ${state.cliente || 'A QUIEN CORRESPONDA'}\n` +
+                     `Vehículo: ${state.type} (${state.capacidad})\n` +
+                     `Aseguradora: ${comp.name}\n` +
+                     `Cobertura: ${comp.cobertura}\n` +
+                     `Prima Total Anual: RD$ ${comp.total.toLocaleString('es-DO')}\n` +
+                     `Válido por 30 días.`;
+        navigator.clipboard.writeText(text).then(() => {
+          MQF.toast('📋 Detalles copiados al portapapeles', 'success');
+        }).catch(e => {
+          MQF.toast('Error al copiar', 'error');
+        });
+      }
+
+      function handleEmitPolicy(comp) {
+        setLoadingEmit(comp.name);
+        const numCot = 'SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
+        const data = {
+          tipo: 'SEGURO DE LEY',
+          subtipo: state.type,
+          numero: numCot,
+          cliente: state.cliente,
+          cedula: state.cedula,
+          email: state.emailCliente,
+          telefono: '',
+          uso: state.uso,
+          capacidad: state.capacidad,
+          aseguradora: comp.name,
+          cobertura: comp.cobertura,
+          plazo: 0,
+          prima_base: comp.prima,
+          servicios_opcionales: JSON.stringify(state.optionalSelected),
+          prima_mensual: 0,
+          impuesto: 0,
+          total: comp.total,
+          usar_ncf: state.usarNCF,
+          fecha: new Date().toISOString()
+        };
+
+        api.solicitud('/cotizaciones.php?action=guardar', 'POST', data).then(res => {
+          setLoadingEmit(null);
+          if (res.exito) {
+            const finalNum = res.datos?.numero || data.numero;
+            procesarCotizacionARegistro(finalNum);
+          } else {
+            MQF.toast('Error: ' + res.mensaje, 'error');
+          }
+        }).catch(e => {
+          setLoadingEmit(null);
+          MQF.toast('Error: ' + e.message, 'error');
+        });
+      }
+
+      if (!state || !state.type || !state.uso || !state.capacidad) {
+        return (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="text-6xl mb-6 animate-bounce">🚗</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Panel Resumido Comparativo</h3>
+            <p className="max-w-md text-slate-400 text-sm leading-relaxed">
+              Por favor, ingrese los datos del cliente y del vehículo en la pestaña <strong>🚗 Seguros de Ley</strong> para ver la comparación de tarifas en tiempo real.
+            </p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="max-w-7xl mx-auto text-white">
+          {/* Header Dashboard */}
+          <div className="mb-8 p-6 rounded-2xl bg-slate-900/60 backdrop-blur border border-slate-800 shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <span className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">Cotización Rápida</span>
+              <h2 className="text-2xl font-extrabold text-white mt-1">Comparativa de Seguro de Ley</h2>
+              <p className="text-slate-400 text-sm mt-1">Cliente: <strong className="text-white">{state.cliente || 'A QUIEN CORRESPONDA'}</strong> | Ced/RNC: <strong className="text-white">{state.cedula || 'N/A'}</strong></p>
+            </div>
+            <div className="text-right bg-slate-800/40 p-3 rounded-lg border border-slate-700/60">
+              <div className="text-xs text-slate-400">Vehículo Seleccionado</div>
+              <div className="font-bold text-indigo-300">{state.type}</div>
+              <div className="text-xs text-slate-400 mt-1">{state.capacidad} | Uso: {state.uso}</div>
+            </div>
+          </div>
+
+          {/* Grid de Aseguradoras */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {comparisons.map(comp => {
+              if (!comp.available) {
+                return (
+                  <div key={comp.name} className="relative rounded-2xl bg-slate-950/45 border border-slate-900 p-6 flex flex-col justify-between opacity-50 min-h-[380px]">
+                    <div className="text-slate-500 font-semibold mb-2">{comp.name}</div>
+                    <div className="text-center py-20 text-slate-600 text-sm">
+                      <i className="fa-solid fa-triangle-exclamation text-2xl mb-2 text-amber-600/60"></i>
+                      <p>Tarifa no disponible para esta categoría</p>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={comp.name} className="relative rounded-2xl bg-slate-900/50 backdrop-blur-md border border-slate-800/80 p-6 flex flex-col justify-between hover:scale-[1.03] transition-all duration-300 min-h-[380px] shadow-lg"
+                     style={{ borderTop: `4px solid ${comp.color}` }}>
+                  
+                  {/* Top: Insurer Logo and Cover Code */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      {comp.logo ? (
+                        <img src={comp.logo} alt={comp.name} className="h-10 object-contain max-w-[120px]" />
+                      ) : (
+                        <div className="font-extrabold tracking-tight text-white text-lg">{comp.name}</div>
+                      )}
+                      <span className="text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider"
+                            style={{ backgroundColor: `${comp.color}22`, color: comp.color }}>
+                        {comp.cobertura.split(' ')[0]}
+                      </span>
+                    </div>
+
+                    {/* Mid: Price Section */}
+                    <div className="my-6">
+                      <div className="text-sm text-slate-400">Prima Total Anual</div>
+                      <div className="text-3xl font-black text-white mt-1">{currency(comp.total)}</div>
+                      
+                      {/* Price breakdown */}
+                      <div className="mt-4 space-y-1.5 border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+                        <div className="flex justify-between">
+                          <span>Prima Neta Base</span>
+                          <span className="text-slate-200">{currency(comp.primaNet)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>ISC (16%)</span>
+                          <span className="text-slate-200">{currency(comp.isc)}</span>
+                        </div>
+                        {comp.optional > 0 && (
+                          <>
+                            <div className="flex justify-between">
+                              <span>Serv. Opcionales (Neto)</span>
+                              <span className="text-slate-200">{currency(comp.optNet)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>ITBIS (18%)</span>
+                              <span className="text-slate-200">{currency(comp.optTax)}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Card Actions */}
+                  <div className="space-y-2 mt-4 pt-4 border-t border-slate-800/50">
+                    <button type="button" onClick={() => handleDownloadPDF(comp)} 
+                            className="w-full py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-file-pdf text-red-500"></i> Descargar PDF
+                    </button>
+                    <button type="button" onClick={() => handleShare(comp)} 
+                            className="w-full py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-share-nodes text-teal-400"></i> Compartir
+                    </button>
+                    <button type="button" onClick={() => handleEmitPolicy(comp)} disabled={loadingEmit !== null}
+                            className="w-full py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg"
+                            style={{ backgroundColor: comp.color, color: '#fff' }}>
+                      {loadingEmit === comp.name ? (
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                      ) : (
+                        <i className="fa-solid fa-shield-halved"></i>
+                      )}
+                      {loadingEmit === comp.name ? 'Emitiendo...' : 'Emitir Póliza'}
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root-comparativa')).render(<ComparativaApp />);
+
+</script>
 <script>
   /* ── UX-SKINS: aplicar skin al cargar + escuchar mensajes del dashboard ── */
   (function(){

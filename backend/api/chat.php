@@ -67,6 +67,10 @@ function crearBBSBotTablas($db) {
 
     $db->query("INSERT IGNORE INTO companias_registradas (id, nombre, rnc, direccion, telefono, email, tipo, estado, creado_por)
         VALUES (2, 'Midas Seguros', '130000021', 'Santo Domingo, RD', '809-555-0299', 'contacto@midasseguros.com.do', 'aseguradora', 1, 1)");
+    $db->query("INSERT IGNORE INTO companias_registradas (id, nombre, rnc, direccion, telefono, email, tipo, estado, creado_por)
+        VALUES (3, 'Seguros Patria', '130000032', 'Santo Domingo, RD', '809-555-0300', 'contacto@segurospatria.com.do', 'aseguradora', 1, 1)");
+    $db->query("INSERT IGNORE INTO companias_registradas (id, nombre, rnc, direccion, telefono, email, tipo, estado, creado_por)
+        VALUES (4, 'Seguros Pepín', '130000043', 'Santo Domingo, RD', '809-555-0400', 'contacto@segurospepin.com.do', 'aseguradora', 1, 1)");
 }
 
 /**
@@ -111,6 +115,24 @@ function renderPremiumQuoteHTML($cot) {
             $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Multiseguros">';
         } else {
             $brand_logo = '<svg style="width:36px;height:36px;fill:#2563eb;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/></svg>';
+        }
+    } elseif (strpos($aseguradora_upper, 'PATRIA') !== false) {
+        $brand_color = "#16a34a"; // green
+        $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/seguros_patria.png.txt';
+        $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
+        if ($logo_data) {
+            $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Seguros Patria">';
+        } else {
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#16a34a;" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>';
+        }
+    } elseif (strpos($aseguradora_upper, 'PEP') !== false) {
+        $brand_color = "#dc2626"; // red
+        $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/seguros_pepin.jpg.txt';
+        $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
+        if ($logo_data) {
+            $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Seguros Pepín">';
+        } else {
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#dc2626;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
         }
     } else {
         $brand_logo = '<svg style="width:36px;height:36px;fill:#4f46e5;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';

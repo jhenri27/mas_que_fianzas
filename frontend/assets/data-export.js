@@ -165,6 +165,29 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.text('COTIZACIÓN', 14, 45);
     doc.setFontSize(14); doc.setTextColor(...textColor); doc.text(c.numero || 'S/N', 14, 52);
 
+    // Insurer Logo (Aseguradora)
+    const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
+    if (esSeguroLey) {
+        let asegKey = (c.aseguradora || 'MULTISEGUROS').toUpperCase().trim();
+        let logoAseg = null;
+        if (window.LOGOS) {
+            if (window.LOGOS[asegKey]) {
+                logoAseg = window.LOGOS[asegKey];
+            } else {
+                const foundKey = Object.keys(window.LOGOS).find(k => asegKey.includes(k) || k.includes(asegKey));
+                if (foundKey) logoAseg = window.LOGOS[foundKey];
+            }
+        }
+        if (logoAseg) {
+            try {
+                const imgFmt = logoAseg.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
+                doc.addImage(logoAseg, imgFmt, 150, 42, 46, 16, undefined, 'FAST');
+            } catch (e) {
+                console.warn('Error rendering insurer logo in PDF:', e);
+            }
+        }
+    }
+
     // Saludo
     doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
     doc.text(`Estimado Sr(a). ${c.cliente || 'A QUIEN CORRESPONDA'}`, 14, 62);
@@ -178,7 +201,6 @@ function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.setFont('helvetica', 'bold'); doc.setTextColor(...primaryColor);
     doc.text(`Producto: ${c.subtipo || c.tipo || 'FIANZA'}`, 16, 85.5);
     // Para Seguro de Ley mostrar "Aseguradora" y "Prima Anual"; para Fianza mostrar "Monto a Afianzar"
-    const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
     const labelMonto = esSeguroLey ? 'Aseguradora' : 'Monto a Afianzar';
     const valorMonto = esSeguroLey ? (c.aseguradora || 'MULTISEGUROS') : fmt(c.monto_afianzado || c.suma_asegurada || 0);
     doc.text(`${labelMonto}: ${valorMonto}`, 95, 85.5);
