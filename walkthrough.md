@@ -49,3 +49,8 @@ Se implementó la personalización y redistribución de colores en las letras y 
 - **MULTISEGUROS**: Adopta un nuevo tono azul oscuro premium (`#1e3a8a`).
 - Se actualizaron los íconos vectoriales SVG correspondientes en los fallbacks dinámicos del bot en [chat.php](file:///c:/wamp64/www/PLATAFORMA_INTEGRADA/backend/api/chat.php).
 
+### 5. Sincronización Automática de Estados (Seguros de Ley ➔ Comparativa)
+Se corrigió la falta de sincronización del formulario principal con la pestaña comparativa:
+- Se implementó un `React.useEffect` reactivo en el componente principal `App` (Seguros de Ley) que publica automáticamente los valores actualizados de `cliente`, `cedula`, `emailCliente`, `type`, `uso`, `capacidad`, `optionalSelected` y `usarNCF` en la variable global compartida `window.sharedCotizadorState`.
+- Al mismo tiempo, este `useEffect` dispara el evento personalizado `'update-comparativa'`, notificando en tiempo real a `ComparativaApp` para refrescar de inmediato el Panel Resumido Comparativo sin requerir recargas ni acciones adicionales del usuario.
+

@@ -1089,6 +1089,22 @@
         fetch(PRICING_JSON_PATH).then(r=>r.json()).then(j=> setPricingRows(j || [])).catch(()=>{});
       },[]);
 
+      React.useEffect(() => {
+        window.sharedCotizadorState = {
+          type,
+          uso,
+          capacidad,
+          insurer,
+          price,
+          cliente,
+          cedula,
+          emailCliente,
+          optionalSelected,
+          usarNCF
+        };
+        window.dispatchEvent(new CustomEvent('update-comparativa'));
+      }, [type, uso, capacidad, insurer, price, cliente, cedula, emailCliente, optionalSelected, usarNCF]);
+
       const TIPO_VALUES = ['AUTOMOVILES','AUTOBUS','CAMION (CAMA O CAJA)','CAMIONES CABEZOTE, TRACTOR O PATANA','CAMIONES VOLTEO','CAMIONETAS','FURGONETAS','JEEP','MAQUINAS PESADAS CON AUTOPROPULSION','MINIVAN / VANETTES','MOTOCICLETAS','PLACA DE DEMOSTRACION','REMOLQUES'];
       const tipos = TIPO_VALUES;
       const USO_VALUES = ['PRIVADO','PUBLICO','RENT CAR'];

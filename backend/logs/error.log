@@ -78578,3 +78578,1165 @@ Stack trace:
 [13-Jun-2026 15:47:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
 [13-Jun-2026 15:47:23 America/Santo_Domingo] PHP Stack trace:
 [13-Jun-2026 15:47:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:39 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:46 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[13-Jun-2026 15:48:46 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:46 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[13-Jun-2026 15:48:46 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[13-Jun-2026 15:48:46 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[13-Jun-2026 15:48:51 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[13-Jun-2026 15:48:51 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:51 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[13-Jun-2026 15:48:51 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[13-Jun-2026 15:48:51 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:48:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:49:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:50:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:51:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:13 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:29 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:37 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:45 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:52:53 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:01 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:17 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:49 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:53:57 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 868
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 945
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Undefined variable $usr_data in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Warning:  Trying to access array offset on null in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php on line 946
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP Stack trace:
+[13-Jun-2026 15:54:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\chat.php:0
