@@ -55,4 +55,9 @@ Se implementó un sistema robusto y bidireccional de control de datos para la co
 - **Sincronización Bidireccional en Tiempo Real:** El componente principal de Seguros de Ley (`App`) y el Panel Comparativo (`ComparativaApp`) leen y actualizan el mismo estado global `window.sharedCotizadorState`. Al cambiar un campo en cualquiera de las pestañas, este cambio se refleja de inmediato en la otra pestaña gracias a efectos reactivos cruzados y el evento de actualización.
 - **Entrada Directa de Datos:** Si el usuario accede al panel de comparación con los campos vacíos, ahora puede "provisionar" los datos directamente en esta pestaña, mostrando el comparador de inmediato y manteniendo sincronizado el formulario tradicional de Seguros de Ley por si desea emitir la póliza desde allí.
 
+### 6. Resolución de Coincidencia de Nombre para Seguros Pepín
+Se detectó e implementó una solución al problema de codificación de caracteres en el nombre de la aseguradora:
+- **Problema:** Debido a que el nombre de Seguros Pepín en los tarifarios y base de datos se almacena en ocasiones con tildes no estándar o caracteres mal decodificados (ej. `Seguros Pepn`), la coincidencia exacta por el substring `'PEPIN'` fallaba, marcando la tarifa como no disponible.
+- **Solución:** Se flexibilizó el criterio de coincidencia de la aseguradora en el panel comparativo cambiando la clave de búsqueda `key` a `'PEP'` (compatible con cualquier variante de codificación de Pepín). Esto habilitó la carga correcta de tarifas y la visualización exitosa de Seguros Pepín en el dashboard comparativo.
+
 
