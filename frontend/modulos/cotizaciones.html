@@ -95,6 +95,7 @@
     <p class="mqf-module-header__subtitle">Genera cotizaciones de Seguros de Ley y Fianzas</p>
     <div class="mqf-module-tabs">
       <button class="mqf-module-tab active" onclick="showTab('seguros')" id="tab-seguros">🚗 Seguros de Ley</button>
+      <button class="mqf-module-tab" onclick="showTab('comparativa')" id="tab-comparativa">📊 Panel Resumido Comparativo</button>
       <button class="mqf-module-tab" onclick="showTab('fianzas')" id="tab-fianzas">🛡️ Fianzas</button>
       <button class="mqf-module-tab" onclick="showTab('historial')" id="tab-historial">📜 Historial</button>
     </div>
@@ -103,6 +104,11 @@
   <!-- SEGUROS DE LEY - COTIZADOR REACT -->
   <div class="cot-panel active" id="panel-seguros">
     <div id="root-seguros"></div>
+  </div>
+
+  <!-- PANEL RESUMIDO COMPARATIVO -->
+  <div class="cot-panel" id="panel-comparativa" style="background: #0f172a; padding: 24px; min-height: 100vh; font-family: 'Outfit', sans-serif;">
+    <div id="root-comparativa"></div>
   </div>
 
   <!-- FIANZAS -->
@@ -210,6 +216,9 @@
       document.getElementById('panel-' + name).classList.add('active');
       document.getElementById('tab-' + name).classList.add('active');
       if (name === 'historial') cargarHistorial();
+      if (name === 'comparativa') {
+        window.dispatchEvent(new CustomEvent('update-comparativa'));
+      }
     }
 
     // === FORMAT CURRENCY ===
@@ -1009,8 +1018,8 @@
 
   <!-- REACT COTIZADOR SEGUROS DE LEY -->
   <script type="text/babel">
-    const PRICING_JSON_PATH = 'pricing-data/pricing_multiseguros.json';
-    const OPTIONS_JSON_PATH = 'pricing-data/options.json';
+    const PRICING_JSON_PATH = 'pricing-data/pricing_multiseguros.json?v=' + Date.now();
+    const OPTIONS_JSON_PATH = 'pricing-data/options.json?v=' + Date.now();
 
     function currency(v){ return Number(v).toLocaleString('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 2 }); }
 
