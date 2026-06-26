@@ -61,6 +61,11 @@ class UsuarioManager {
                 }
             }
 
+            // Validar cedula/pasaporte único (Norma NOFTRAB)
+            if ($this->cedulaExiste($datos['cedula'])) {
+                return ['exito' => false, 'mensaje' => 'El número de documento (Cédula/RNC/Pasaporte) ya se encuentra asignado a otro usuario en la plataforma.'];
+            }
+
             // Validar email único
             if ($this->emailExiste($datos['email'])) {
                 return ['exito' => false, 'mensaje' => 'El email ya está registrado'];
@@ -268,7 +273,7 @@ class UsuarioManager {
                 'nombre', 'apellido', 'email', 'telefono', 'perfil_id', 'estado',
                 'es_comisionante', 'porcentaje_comision', 'porcentaje_comision_red', 'referente_id',
                 'comision_autos_ley', 'comision_autos_full', 'comision_fianzas', 'comision_incendio', 'comision_rc', 'comision_otros',
-                'banco', 'tipo_cuenta', 'numero_cuenta', 'ubicacion', 'fecha_cumpleanos'
+                'banco', 'tipo_cuenta', 'numero_cuenta', 'ubicacion', 'fecha_cumpleanos', 'cedula'
             ];
             $campos_actualizar = [];
             $tipos = '';
@@ -276,9 +281,16 @@ class UsuarioManager {
 
             foreach ($campos_actualizables as $campo) {
                 if (isset($datos[$campo])) {
+                    // Validar cedula única si se está actualizando (Norma NOFTRAB)
+                    if ($campo === 'cedula' && $datos['cedula'] !== $usuario_actual['cedula']) {
+                        if ($this->cedulaExiste($datos['cedula'], $usuario_id)) {
+                            return ['exito' => false, 'mensaje' => 'El número de documento (Cédula/RNC/Pasaporte) ya se encuentra asignado a otro usuario en la plataforma.'];
+                        }
+                    }
+
                     // Validar email único si se está actualizando
                     if ($campo === 'email' && $datos['email'] !== $usuario_actual['email']) {
-                        if ($this->emailExiste($datos['email'])) {
+                        if ($this->emailExiste($datos['email'], $usuario_id)) {
                             return ['exito' => false, 'mensaje' => 'El email ya está registrado'];
                         }
                     }

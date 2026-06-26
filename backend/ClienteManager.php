@@ -39,6 +39,11 @@ class ClienteManager {
     }
 
     public function crearCliente($datos) {
+        $cedula = trim($datos['rnc'] ?? '');
+        if ($this->cedulaExiste($cedula)) {
+            return ['exito' => false, 'mensaje' => 'El número de documento (Cédula/RNC/Pasaporte) ya se encuentra registrado para otro cliente comercial.'];
+        }
+
         $sql = "INSERT INTO clientes (numero_cliente, cedula, nombre, tipo_cliente, email, telefono, direccion, estado, comisionante, codigo_comisionante, nombre_comisionante, creado_por) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -109,6 +114,11 @@ class ClienteManager {
     }
 
     public function editarCliente($id, $datos) {
+        $cedula = trim($datos['rnc'] ?? '');
+        if ($this->cedulaExiste($cedula, $id)) {
+            return ['exito' => false, 'mensaje' => 'El número de documento (Cédula/RNC/Pasaporte) ya se encuentra registrado para otro cliente comercial.'];
+        }
+
         // Obtener valor anterior para auditoría
         $val_anterior = null;
         $stmt_prev = $this->db->prepare("SELECT * FROM clientes WHERE id = ?");
@@ -243,6 +253,30 @@ class ClienteManager {
         
         if (!$res) return false;
         return (int)$res['creado_por'] === (int)$usuario_id;
+    }
+
+    /**
+     * Verificar si el documento ya existe para otro cliente (Norma NOFTRAB)
+     */
+    public function cedulaExiste($cedula, $excluir_id = null) {
+        if (empty($cedula)) return false;
+        $cedula = trim($cedula);
+        $sql = "SELECT id FROM clientes WHERE cedula = ?";
+        if ($excluir_id !== null) {
+            $sql .= " AND id != ?";
+        }
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) return false;
+        if ($excluir_id !== null) {
+            $stmt->bind_param("si", $cedula, $excluir_id);
+        } else {
+            $stmt->bind_param("s", $cedula);
+        }
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+        return $existe;
     }
 }
 ?>

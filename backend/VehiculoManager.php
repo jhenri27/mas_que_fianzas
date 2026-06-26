@@ -74,6 +74,20 @@ class VehiculoManager {
      * Inserta un nuevo registro de vehículo
      */
     public function crearVehiculo($datos) {
+        $placa = !empty($datos['placa']) ? trim($datos['placa']) : null;
+        $chasis = !empty($datos['chasis']) ? trim($datos['chasis']) : null;
+        $motor = !empty($datos['motor']) ? trim($datos['motor']) : null;
+
+        if ($placa !== null && $this->placaExiste($placa)) {
+            return ['exito' => false, 'mensaje' => 'La placa/matrícula especificada ya se encuentra registrada para otro vehículo.'];
+        }
+        if ($chasis !== null && $this->chasisExiste($chasis)) {
+            return ['exito' => false, 'mensaje' => 'El número de chasis (VIN) especificado ya se encuentra registrado para otro vehículo.'];
+        }
+        if ($motor !== null && $this->motorExiste($motor)) {
+            return ['exito' => false, 'mensaje' => 'El número de motor especificado ya se encuentra registrado para otro vehículo.'];
+        }
+
         $sql = "INSERT INTO vehiculos (
                     cliente_id, placa, chasis, motor, marca, modelo, 
                     anio, color, tipo_vehiculo, uso, capacidad, 
@@ -112,6 +126,20 @@ class VehiculoManager {
      * Actualiza un vehículo existente
      */
     public function actualizarVehiculo($id, $datos) {
+        $placa = !empty($datos['placa']) ? trim($datos['placa']) : null;
+        $chasis = !empty($datos['chasis']) ? trim($datos['chasis']) : null;
+        $motor = !empty($datos['motor']) ? trim($datos['motor']) : null;
+
+        if ($placa !== null && $this->placaExiste($placa, $id)) {
+            return ['exito' => false, 'mensaje' => 'La placa/matrícula especificada ya se encuentra registrada para otro vehículo.'];
+        }
+        if ($chasis !== null && $this->chasisExiste($chasis, $id)) {
+            return ['exito' => false, 'mensaje' => 'El número de chasis (VIN) especificado ya se encuentra registrado para otro vehículo.'];
+        }
+        if ($motor !== null && $this->motorExiste($motor, $id)) {
+            return ['exito' => false, 'mensaje' => 'El número de motor especificado ya se encuentra registrado para otro vehículo.'];
+        }
+
         $sql = "UPDATE vehiculos SET 
                     placa=?, chasis=?, motor=?, marca=?, modelo=?, 
                     anio=?, color=?, tipo_vehiculo=?, uso=?, capacidad=?, 
@@ -142,6 +170,78 @@ class VehiculoManager {
             return ['exito' => true, 'id' => $id];
         }
         return ['exito' => false, 'mensaje' => $stmt->error];
+    }
+
+    /**
+     * Verificar si la placa ya existe para otro vehículo (Norma NOFTRAB)
+     */
+    public function placaExiste($placa, $excluir_id = null) {
+        if (empty($placa)) return false;
+        $placa = trim($placa);
+        $sql = "SELECT id FROM vehiculos WHERE placa = ?";
+        if ($excluir_id !== null) {
+            $sql .= " AND id != ?";
+        }
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) return false;
+        if ($excluir_id !== null) {
+            $stmt->bind_param("si", $placa, $excluir_id);
+        } else {
+            $stmt->bind_param("s", $placa);
+        }
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+        return $existe;
+    }
+
+    /**
+     * Verificar si el chasis ya existe para otro vehículo (Norma NOFTRAB)
+     */
+    public function chasisExiste($chasis, $excluir_id = null) {
+        if (empty($chasis)) return false;
+        $chasis = trim($chasis);
+        $sql = "SELECT id FROM vehiculos WHERE chasis = ?";
+        if ($excluir_id !== null) {
+            $sql .= " AND id != ?";
+        }
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) return false;
+        if ($excluir_id !== null) {
+            $stmt->bind_param("si", $chasis, $excluir_id);
+        } else {
+            $stmt->bind_param("s", $chasis);
+        }
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+        return $existe;
+    }
+
+    /**
+     * Verificar si el número de motor ya existe para otro vehículo (Norma NOFTRAB)
+     */
+    public function motorExiste($motor, $excluir_id = null) {
+        if (empty($motor)) return false;
+        $motor = trim($motor);
+        $sql = "SELECT id FROM vehiculos WHERE motor = ?";
+        if ($excluir_id !== null) {
+            $sql .= " AND id != ?";
+        }
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) return false;
+        if ($excluir_id !== null) {
+            $stmt->bind_param("si", $motor, $excluir_id);
+        } else {
+            $stmt->bind_param("s", $motor);
+        }
+        $stmt->execute();
+        $stmt->store_result();
+        $existe = $stmt->num_rows > 0;
+        $stmt->close();
+        return $existe;
     }
 }
 ?>

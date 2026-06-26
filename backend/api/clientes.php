@@ -70,8 +70,10 @@ try {
         
         // Validación técnica Dominicana (NOFTRAB)
         if (ValidadorDocumentos::isValidatorActive('clientes')) {
-            if (!ValidadorDocumentos::validarDocumento($datos['rnc'])) {
-                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+            $tipoDoc = $datos['tipo_documento'] ?? null;
+            if (!ValidadorDocumentos::validarDocumento($datos['rnc'], $tipoDoc)) {
+                $msg = ($tipoDoc === 'pasaporte') ? 'El pasaporte especificado no es válido (formato incorrecto).' : 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).';
+                respuestaJSON(false, $msg, null, 400);
                 exit;
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
@@ -104,8 +106,10 @@ try {
         
         // Validación técnica Dominicana (NOFTRAB)
         if (ValidadorDocumentos::isValidatorActive('clientes')) {
-            if (!ValidadorDocumentos::validarDocumento($datos['rnc'])) {
-                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+            $tipoDoc = $datos['tipo_documento'] ?? null;
+            if (!ValidadorDocumentos::validarDocumento($datos['rnc'], $tipoDoc)) {
+                $msg = ($tipoDoc === 'pasaporte') ? 'El pasaporte especificado no es válido (formato incorrecto).' : 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).';
+                respuestaJSON(false, $msg, null, 400);
                 exit;
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {

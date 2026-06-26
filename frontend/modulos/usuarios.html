@@ -132,7 +132,18 @@
     <form id="usuarioForm" autocomplete="off">
     <input type="hidden" id="user_id">
     <div class="modal-body">
-        <div><label class="form-label">Cedula / RNC *</label><input class="form-input" type="text" id="u_cedula" required></div>
+        <div>
+            <label class="form-label">Tipo de Documento *</label>
+            <select class="form-input" id="u_tipo_documento" required onchange="ajustarPlaceholderUser()">
+                <option value="cedula">Cédula</option>
+                <option value="rnc">RNC</option>
+                <option value="pasaporte">Pasaporte</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Número de Documento *</label>
+            <input class="form-input" type="text" id="u_cedula" placeholder="001-0000000-0" required>
+        </div>
         <div><label class="form-label">Usuario (login) *</label><input class="form-input" type="text" id="u_username" required></div>
         <div><label class="form-label">Nombre *</label><input class="form-input" type="text" id="u_nombre" required></div>
         <div><label class="form-label">Apellido *</label><input class="form-input" type="text" id="u_apellido" required></div>
@@ -412,9 +423,24 @@ function togglePerfilCampos() {
 
 document.getElementById('u_perfil').addEventListener('change', togglePerfilCampos);
 
+function ajustarPlaceholderUser() {
+    var tipo = document.getElementById('u_tipo_documento').value;
+    var input = document.getElementById('u_cedula');
+    if (tipo === 'cedula') {
+        input.placeholder = '001-0000000-0';
+    } else if (tipo === 'rnc') {
+        input.placeholder = '1-01-01234-5';
+    } else if (tipo === 'pasaporte') {
+        input.placeholder = 'RD0000000';
+    }
+}
+
 function abrirModalUsuario() {
     document.getElementById('usuarioForm').reset();
     document.getElementById('user_id').value = '';
+    if (window.ajustarPlaceholderUser) {
+        window.ajustarPlaceholderUser();
+    }
     document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-user-plus" style="margin-right:8px;"></i>Nuevo Usuario';
     document.getElementById('seccion_red_usuarios').style.display = 'none';
     document.getElementById('seccion_referente').className = 'field-full visible';
@@ -450,6 +476,26 @@ async function editarUsuario(id) {
 
     document.getElementById('user_id').value   = fullUser.id || '';
     document.getElementById('u_cedula').value  = fullUser.cedula || '';
+    
+    var doc = (fullUser.cedula || '').trim();
+    var tipo = 'cedula';
+    if (/[a-zA-Z]/.test(doc)) {
+        tipo = 'pasaporte';
+    } else {
+        var digits = doc.replace(/\D/g, '');
+        if (digits.length === 9) {
+            tipo = 'rnc';
+        } else if (digits.length === 11) {
+            tipo = 'cedula';
+        }
+    }
+    const selectTipoDoc = document.getElementById('u_tipo_documento');
+    if (selectTipoDoc) {
+        selectTipoDoc.value = tipo;
+    }
+    if (window.ajustarPlaceholderUser) {
+        window.ajustarPlaceholderUser();
+    }
     document.getElementById('u_username').value= fullUser.username || '';
     document.getElementById('u_nombre').value  = fullUser.nombre || '';
     document.getElementById('u_apellido').value= fullUser.apellido || '';
@@ -517,6 +563,7 @@ document.getElementById('usuarioForm').addEventListener('submit', async function
     var esComisionante = document.getElementById('u_es_comisionante').checked ? 1 : 0;
     var data = {
         cedula:    document.getElementById('u_cedula').value.trim(),
+        tipo_documento: document.getElementById('u_tipo_documento').value,
         username:  document.getElementById('u_username').value.trim(),
         nombre:    document.getElementById('u_nombre').value.trim(),
         apellido:  document.getElementById('u_apellido').value.trim(),

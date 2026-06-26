@@ -102,6 +102,26 @@ function editarClienteUI(id) {
             selectTipo.value = cliente.tipo_persona;
         }
         
+        var doc = (cliente.rnc || '').trim();
+        var tipo = 'cedula';
+        if (/[a-zA-Z]/.test(doc)) {
+            tipo = 'pasaporte';
+        } else {
+            var digits = doc.replace(/\D/g, '');
+            if (digits.length === 9) {
+                tipo = 'rnc';
+            } else if (digits.length === 11) {
+                tipo = 'cedula';
+            }
+        }
+        const selectTipoDoc = document.getElementById('tipo_documento');
+        if (selectTipoDoc) {
+            selectTipoDoc.value = tipo;
+        }
+        if (window.ajustarPlaceholderDocumento) {
+            window.ajustarPlaceholderDocumento();
+        }
+        
         document.getElementById('nombre_razon_social').value = cliente.nombre_razon_social || '';
         document.getElementById('rfc').value = cliente.rnc || '';
         document.getElementById('telefono').value = cliente.telefono || '';
@@ -139,6 +159,7 @@ async function guardarCliente(e) {
     const datos = {
         tipo_persona: document.getElementById('tipo_persona').value,
         nombre_razon_social: document.getElementById('nombre_razon_social').value,
+        tipo_documento: document.getElementById('tipo_documento').value,
         rnc: document.getElementById('rfc').value, // El input HTML tiene id='rfc' y name='rnc'
         telefono: document.getElementById('telefono').value,
         correo: document.getElementById('correo').value,

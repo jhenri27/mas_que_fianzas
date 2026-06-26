@@ -113,12 +113,12 @@ class ValidadorDocumentos {
     }
 
     /**
-     * Validación de Pasaporte (2 letras + 7 dígitos)
+     * Validación de Pasaporte (formato RD: 2 letras + 7 dígitos, o internacional: 5-15 caracteres alfanuméricos)
      */
     public static function validarPasaporte($pasaporte) {
         if ($pasaporte === null) return false;
         $pasaporte = trim($pasaporte);
-        return (bool)preg_match('/^[a-zA-Z]{2}\d{7}$/', $pasaporte);
+        return (bool)preg_match('/^[a-zA-Z]{2}\d{7}$/', $pasaporte) || (bool)preg_match('/^[a-zA-Z0-9]{5,15}$/', $pasaporte);
     }
 
     /**
@@ -131,15 +131,21 @@ class ValidadorDocumentos {
     }
 
     /**
-     * Auto-detectar tipo de documento (RNC o Cédula) y validar
+     * Auto-detectar o forzar tipo de documento (RNC, Cédula o Pasaporte) y validar
      */
-    public static function validarDocumento($doc) {
+    public static function validarDocumento($doc, $tipo = null) {
         if ($doc === null) return false;
-        $doc = preg_replace('/\D/', '', $doc);
-        if (strlen($doc) === 9) {
-            return self::validarRNC($doc);
-        } elseif (strlen($doc) === 11) {
-            return self::validarCedula($doc);
+        $doc = trim($doc);
+        
+        if ($tipo === 'pasaporte' || (empty($tipo) && preg_match('/[a-zA-Z]/', $doc))) {
+            return self::validarPasaporte($doc);
+        }
+        
+        $clean = preg_replace('/\D/', '', $doc);
+        if ($tipo === 'rnc' || (empty($tipo) && strlen($clean) === 9)) {
+            return self::validarRNC($clean);
+        } elseif ($tipo === 'cedula' || (empty($tipo) && strlen($clean) === 11)) {
+            return self::validarCedula($clean);
         }
         return false;
     }

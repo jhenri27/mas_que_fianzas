@@ -50,11 +50,15 @@ try {
         
         // Validación técnica Dominicana (NOFTRAB)
         if (ValidadorDocumentos::isValidatorActive('usuarios')) {
-            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
-                respuestaJSON(false, 'La cédula especificada no es válida (dígito verificador incorrecto).', null, 400);
+            $tipoDoc = $datos['tipo_documento'] ?? null;
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'], $tipoDoc)) {
+                $msg = ($tipoDoc === 'pasaporte') ? 'El pasaporte especificado no es válido (formato incorrecto).' : 'La cédula o RNC especificada no es válida (dígito verificador incorrecto).';
+                respuestaJSON(false, $msg, null, 400);
+                exit;
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
                 respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+                exit;
             }
         }
         
@@ -68,11 +72,15 @@ try {
         
         // Validación técnica Dominicana (NOFTRAB)
         if (ValidadorDocumentos::isValidatorActive('usuarios')) {
-            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
-                respuestaJSON(false, 'La cédula especificada no es válida (dígito verificador incorrecto).', null, 400);
+            $tipoDoc = $datos['tipo_documento'] ?? null;
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'], $tipoDoc)) {
+                $msg = ($tipoDoc === 'pasaporte') ? 'El pasaporte especificado no es válido (formato incorrecto).' : 'La cédula o RNC especificada no es válida (dígito verificador incorrecto).';
+                respuestaJSON(false, $msg, null, 400);
+                exit;
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
                 respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+                exit;
             }
         }
         
