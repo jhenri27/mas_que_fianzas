@@ -276,7 +276,7 @@ async function renderizarPDFWorkspace(pdfRelativeUrl, isZooming = false) {
         const pdfUrl = "/PLATAFORMA_INTEGRADA/" + pdfRelativeUrl;
         
         // Cargar documento PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+        pdfjsLib.GlobalWorkerOptions.workerSrc = "../assets/lib/pdf.worker-3.4.120.min.js";
         const loadingTask = pdfjsLib.getDocument(pdfUrl);
         currentPdf = await loadingTask.promise;
         
