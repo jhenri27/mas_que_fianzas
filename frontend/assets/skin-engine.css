@@ -559,7 +559,7 @@
 /* Modal box — fondo blanco sólido con acento lila arriba a la derecha */
 [data-skin="indigo"] .modal-box,
 [data-skin="indigo"] .mqf-modal {
-  background-color: #ffffff !important;
+  background-color: var(--bg-card, #ffffff) !important;
   background-image: radial-gradient(
     ellipse at 95% 0%,
     hsl(245, 80%, 96%) 0%,
@@ -645,7 +645,7 @@
 /* Body del modal — fondo blanco sólido (nunca transparente) */
 [data-skin="indigo"] .modal-body,
 [data-skin="indigo"] .mqf-modal-body {
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
 }
 
 /* Sub-secciones internas — blanco degradado con sombra Uiverse */
@@ -1125,7 +1125,7 @@
 [data-skin="coral"] input, [data-skin="coral"] select, [data-skin="coral"] textarea {
   color: #0f172a !important;
   font-weight: 600 !important;
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
   border: 1.5px solid rgba(0, 0, 0, 0.15) !important;
 }
 
@@ -1292,7 +1292,7 @@
 
 /* Indigo Corp Action Buttons */
 [data-skin="indigo"] .action-btn {
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
   border: 1px solid rgba(99, 102, 241, 0.18) !important;
   color: #312e81 !important;
   font-weight: 700 !important;
@@ -1313,7 +1313,7 @@
   display: inline-block !important;
 }
 [data-skin="indigo"] .action-btn:hover {
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
   border-color: rgba(99, 102, 241, 0.35) !important;
   transform: translateY(-4px) !important;
   box-shadow: 0 14px 28px rgba(79, 70, 229, 0.15), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
@@ -1326,7 +1326,7 @@
 
 /* Coral Finance Action Buttons */
 [data-skin="coral"] .action-btn {
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
   border: 1px solid rgba(244, 63, 94, 0.18) !important;
   color: #9f1239 !important;
   font-weight: 700 !important;
@@ -1347,7 +1347,7 @@
   display: inline-block !important;
 }
 [data-skin="coral"] .action-btn:hover {
-  background: #ffffff !important;
+  background: var(--bg-card, #ffffff) !important;
   border-color: rgba(244, 63, 94, 0.35) !important;
   transform: translateY(-4px) !important;
   box-shadow: 0 14px 28px rgba(244, 63, 94, 0.15), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
@@ -1796,7 +1796,7 @@
    Evita que las opciones se decoloren a blanco en fondos claros
    ============================================================ */
 select option {
-  background-color: #ffffff !important;
+  background-color: var(--bg-card, #ffffff) !important;
   color: #1f2937 !important;
 }
 [data-skin="obsidian"] select option,
@@ -1972,3 +1972,350 @@ select option {
   border-bottom: none !important;
 }
 
+/* ==========================================================================
+   MQF SKIN ENGINE: REGULARIZACIÓN OBSIDIAN DARK (ETAPA 1)
+   ========================================================================== */
+
+/* Contenedores de Módulos Generales */
+[data-skin="obsidian"] .content-area,
+[data-skin="obsidian"] body {
+  background-color: var(--mqf-bg) !important;
+  color: var(--mqf-text) !important;
+}
+
+/* Tarjetas y Paneles (Pólizas, Fianzas, Reportes, Centro Financiero, Modelador) */
+[data-skin="obsidian"] .section-card,
+[data-skin="obsidian"] .kpi-card,
+[data-skin="obsidian"] .tbl-wrap,
+[data-skin="obsidian"] .table-responsive,
+[data-skin="obsidian"] .wizard-body,
+[data-skin="obsidian"] .comision-card,
+[data-skin="obsidian"] .comision-row,
+[data-skin="obsidian"] .fz-modal,
+[data-skin="obsidian"] .decl-section,
+[data-skin="obsidian"] .result-glass,
+[data-skin="obsidian"] .finance-card,
+[data-skin="obsidian"] .ncf-card,
+[data-skin="obsidian"] .module-card,
+[data-skin="obsidian"] .variables-panel,
+[data-skin="obsidian"] .variable-item,
+[data-skin="obsidian"] .field-props-popover,
+[data-skin="obsidian"] .rep-cargando,
+[data-skin="obsidian"] .rep-tabla-container,
+[data-skin="obsidian"] .mqf-card,
+[data-skin="obsidian"] .filter-bar,
+[data-skin="obsidian"] .var-item {
+  background: var(--mqf-surface) !important;
+  border-color: var(--mqf-border) !important;
+  color: var(--mqf-text-secondary) !important;
+  box-shadow: var(--mqf-shadow-sm) !important;
+}
+
+/* Modales y Popovers */
+[data-skin="obsidian"] .modal-box,
+[data-skin="obsidian"] .fz-modal {
+  background: var(--mqf-bg) !important;
+  border: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .fz-modal-header,
+[data-skin="obsidian"] .fz-modal-footer {
+  border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .fz-modal-title {
+  color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .fz-modal-close {
+  color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .fz-modal-close:hover {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-text) !important;
+}
+
+/* Wizard Steps */
+[data-skin="obsidian"] .wizard-step {
+  background: var(--mqf-surface-2) !important;
+  border-bottom-color: var(--mqf-border) !important;
+  color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .wizard-step.active {
+  background: var(--mqf-primary-light) !important;
+  border-bottom-color: var(--mqf-primary) !important;
+  color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .wizard-step.done {
+  background: var(--mqf-success-light) !important;
+  border-bottom-color: var(--mqf-success) !important;
+  color: var(--mqf-success) !important;
+}
+[data-skin="obsidian"] .wizard-step .step-num {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .wizard-step.active .step-num {
+  background: var(--mqf-primary) !important;
+  color: var(--mqf-text-inverse) !important;
+}
+[data-skin="obsidian"] .wizard-step.done .step-num {
+  background: var(--mqf-success) !important;
+  color: var(--mqf-text-inverse) !important;
+}
+
+/* Botones específicos de tablas y filtros */
+[data-skin="obsidian"] .btn-filtrar,
+[data-skin="obsidian"] .pg-btn,
+[data-skin="obsidian"] .btn-outline {
+  background: var(--mqf-surface-2) !important;
+  border-color: var(--mqf-border) !important;
+  color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .btn-filtrar:hover,
+[data-skin="obsidian"] .pg-btn:hover,
+[data-skin="obsidian"] .btn-outline:hover {
+  background: var(--mqf-primary-hover) !important;
+  color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .btn-secondary {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-text-secondary) !important;
+  border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .btn-secondary:hover {
+  background: var(--mqf-surface) !important;
+}
+
+/* Tablas y Hover */
+[data-skin="obsidian"] table.fz-table th,
+[data-skin="obsidian"] .data-table th {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-primary) !important;
+  border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] table.fz-table tr:hover td,
+[data-skin="obsidian"] .data-table tr:hover td {
+  background: var(--mqf-surface-2) !important;
+}
+
+/* Badges y estados específicos de cotizaciones y fianzas */
+[data-skin="obsidian"] .badge-cotizacion,
+[data-skin="obsidian"] .count-badge {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-text-secondary) !important;
+}
+[data-skin="obsidian"] .kpi-icon.indigo { background: rgba(99, 102, 241, 0.15) !important; color: #818cf8 !important; }
+[data-skin="obsidian"] .kpi-icon.green  { background: rgba(16, 185, 129, 0.15) !important; color: #34d399 !important; }
+[data-skin="obsidian"] .kpi-icon.red    { background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; }
+[data-skin="obsidian"] .kpi-icon.amber  { background: rgba(251, 191, 36, 0.15) !important; color: #fbbf24 !important; }
+
+[data-skin="obsidian"] .sp-card {
+  background: var(--mqf-surface) !important;
+  border-color: var(--mqf-border) !important;
+}
+
+/* Overrides específicos para la barra de filtros (.filter-bar) en Pólizas/Fianzas */
+[data-skin="obsidian"] .filter-bar label {
+  color: var(--mqf-text-secondary) !important;
+}
+[data-skin="obsidian"] .filter-bar input,
+[data-skin="obsidian"] .filter-bar select {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border-color: var(--mqf-border) !important;
+  color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .filter-bar input::placeholder {
+  color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .filter-bar input:focus,
+[data-skin="obsidian"] .filter-bar select:focus {
+  border-color: var(--mqf-primary) !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+[data-skin="obsidian"] .filter-bar select option {
+  background: var(--mqf-bg) !important;
+  color: var(--mqf-text) !important;
+}
+
+/* Overrides específicos para el Modelador PDF en Reportes */
+[data-skin="obsidian"] .workspace {
+  background: var(--mqf-surface-2) !important;
+  border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] #opcionesCampo {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: var(--mqf-text-secondary) !important;
+}
+[data-skin="obsidian"] #opcionesCampo h4 {
+  color: var(--mqf-danger-text) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   NOFTRAB PATCH — Obsidian Dark: Overrides Complementarios
+   Cobre clases que la regla base no alcanzaba por especificidad
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Títulos de sección (.section-title) — legibilidad en Obsidian */
+[data-skin="obsidian"] h1,
+[data-skin="obsidian"] h2,
+[data-skin="obsidian"] h3,
+[data-skin="obsidian"] h4,
+[data-skin="obsidian"] h5,
+[data-skin="obsidian"] h6,
+[data-skin="obsidian"] .card-title,
+[data-skin="obsidian"] .stat-content h3,
+[data-skin="obsidian"] .page-header h2,
+[data-skin="obsidian"] .section-title {
+  color: var(--mqf-text, #f8fafc) !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* Párrafos y textos secundarios en Obsidian */
+[data-skin="obsidian"] p,
+[data-skin="obsidian"] .text-muted,
+[data-skin="obsidian"] .user-role,
+[data-skin="obsidian"] .help-block,
+[data-skin="obsidian"] span.text-muted {
+  color: var(--mqf-text-secondary, #94a3b8) !important;
+}
+
+/* ── Módulo de Configuración (dentro de dashboard.html) ── */
+[data-skin="obsidian"] .config-sidebar {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.8)) !important;
+  border-right: 1px solid var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+}
+
+[data-skin="obsidian"] .config-nav-btn {
+  color: var(--mqf-text-secondary, #94a3b8) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+[data-skin="obsidian"] .config-nav-btn:hover,
+[data-skin="obsidian"] .config-nav-btn.active {
+  background: var(--mqf-primary-hover, rgba(16, 185, 129, 0.1)) !important;
+  color: var(--mqf-primary, #10b981) !important;
+  border-left: 3px solid var(--mqf-primary, #10b981) !important;
+}
+
+[data-skin="obsidian"] .config-panel {
+  background: var(--mqf-bg, #020617) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+
+[data-skin="obsidian"] .config-layout {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.7)) !important;
+  border: 1px solid var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+  border-radius: 12px !important;
+}
+
+/* Tarjetas de configuración (module-header) */
+[data-skin="obsidian"] .module-header {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.9)) !important;
+  border-bottom: 1px solid var(--mqf-border) !important;
+  color: var(--mqf-text) !important;
+}
+
+[data-skin="obsidian"] .module-header h2 {
+  color: var(--mqf-text, #f8fafc) !important;
+}
+
+/* Fondos inline hardcoded blancos en tablas del panel notificaciones */
+[data-skin="obsidian"] .table-responsive {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.7)) !important;
+  border-color: var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+}
+
+[data-skin="obsidian"] .table-responsive table {
+  background: transparent !important;
+}
+
+[data-skin="obsidian"] .table-responsive th {
+  background: var(--mqf-surface-2, rgba(15, 23, 42, 0.9)) !important;
+  color: var(--mqf-primary, #10b981) !important;
+  border-color: var(--mqf-border) !important;
+}
+
+[data-skin="obsidian"] .table-responsive td {
+  color: var(--mqf-text-secondary, #94a3b8) !important;
+  border-color: var(--mqf-border) !important;
+}
+
+[data-skin="obsidian"] .table-responsive tr:hover td {
+  background: var(--mqf-surface-2, rgba(15, 23, 42, 0.5)) !important;
+}
+
+/* Badges de flujo de notificaciones */
+[data-skin="obsidian"] .notif-flujo-badge.activo {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+
+[data-skin="obsidian"] .notif-flujo-badge.inactivo {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+}
+
+[data-skin="obsidian"] .notif-flujo-card {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.6)) !important;
+  border-color: var(--mqf-border) !important;
+}
+
+/* ── Pestañas de módulos (.tabs-bar y .tab-btn de pólizas) ── */
+[data-skin="obsidian"] .tabs-bar {
+  border-bottom-color: var(--mqf-border, rgba(16, 185, 129, 0.3)) !important;
+  background: transparent !important;
+}
+
+[data-skin="obsidian"] .tab-btn {
+  color: var(--mqf-text-secondary, #94a3b8) !important;
+  background: transparent !important;
+}
+
+[data-skin="obsidian"] .tab-btn.active {
+  color: var(--mqf-primary, #10b981) !important;
+  border-bottom-color: var(--mqf-primary, #10b981) !important;
+}
+
+[data-skin="obsidian"] .tab-btn:hover:not(.active) {
+  color: var(--mqf-primary, #10b981) !important;
+  background: var(--mqf-primary-hover, rgba(16, 185, 129, 0.08)) !important;
+}
+
+/* ── Proyección de ventas — tabla header ── */
+[data-skin="obsidian"] #proy-contenedor table tr {
+  background: transparent !important;
+}
+
+[data-skin="obsidian"] #proy-contenedor thead tr {
+  background: var(--mqf-surface-2, rgba(15, 23, 42, 0.9)) !important;
+}
+
+[data-skin="obsidian"] #proy-contenedor th {
+  color: var(--mqf-primary, #10b981) !important;
+  background: var(--mqf-surface-2) !important;
+  border-color: var(--mqf-border) !important;
+}
+
+/* ── ETL Tarifas — steps ── */
+[data-skin="obsidian"] .etl-step-box {
+  background: var(--mqf-surface, rgba(15, 23, 42, 0.8)) !important;
+  border-color: var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+
+/* Opciones de configuración general */
+[data-skin="obsidian"] .opciones-configuracion {
+  background: transparent !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+
+
+/* ── Overrides for Tailwind classes in Obsidian Dark ── */
+[data-skin='obsidian'] .bg-white, [data-skin='obsidian'] .bg-gray-50 { background-color: var(--mqf-surface, #1e293b) !important; border-color: var(--mqf-border, #334155) !important; }
+[data-skin='obsidian'] .text-gray-900, [data-skin='obsidian'] .text-gray-800, [data-skin='obsidian'] .text-gray-700 { color: var(--mqf-text, #f8fafc) !important; }
+[data-skin='obsidian'] .text-gray-600, [data-skin='obsidian'] .text-gray-500 { color: var(--mqf-text-secondary, #94a3b8) !important; }
+[data-skin='obsidian'] .bg-indigo-50 { background-color: var(--mqf-surface-2, #334155) !important; }
+[data-skin='obsidian'] .bg-indigo-50\\/30 { background-color: rgba(51, 65, 85, 0.3) !important; }
+[data-skin='obsidian'] .border-gray-200 { border-color: var(--mqf-border, #334155) !important; }

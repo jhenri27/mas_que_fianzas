@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Helpdesk e Incidencias - Más Que Fianzas</title>
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -136,7 +137,7 @@
         }
 
         .filter-tab.active {
-            background: white;
+            background: var(--bg-card, #ffffff);
             color: var(--primary);
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
@@ -173,7 +174,7 @@
         }
 
         .ticket-item.active {
-            background: white;
+            background: var(--bg-card, #ffffff);
             border-color: var(--primary);
             box-shadow: 0 4px 15px var(--primary-glow);
         }
@@ -401,7 +402,7 @@
             padding: 10px 14px;
             border-radius: 10px;
             border: 1px solid var(--card-border);
-            background: white;
+            background: var(--bg-card, #ffffff);
             color: #1e293b;
             font-size: 13.5px;
             outline: none;
@@ -530,7 +531,7 @@
             border: 1px solid var(--card-border);
             font-size: 13px;
             outline: none;
-            background: white;
+            background: var(--bg-card, #ffffff);
             color: #1e293b;
         }
 
@@ -557,9 +558,86 @@
         .tier-1 { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
         .tier-2 { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
         .tier-3 { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        /* Estilo base para el reporte inicial */
+        .initial-report-card {
+            background: #f1f5f9;
+        }
+
+        /* ── Dynamic Skin Engine overrides (Obsidian Dark) ── */
+        body[data-skin="obsidian"] {
+            --primary: var(--mqf-primary, #10b981) !important;
+            --primary-light: var(--mqf-secondary, #34d399) !important;
+            --primary-glow: rgba(16, 185, 129, 0.15) !important;
+            --success: var(--mqf-success, #10b981) !important;
+            --danger: var(--mqf-danger, #ef4444) !important;
+            --warning: var(--mqf-warning, #f59e0b) !important;
+            --bg-body: var(--mqf-bg, #020617) !important;
+            --card-bg: var(--mqf-surface, rgba(15, 23, 42, 0.6)) !important;
+            --card-border: var(--mqf-border, rgba(16, 185, 129, 0.35)) !important;
+            --text-main: var(--mqf-text, #f8fafc) !important;
+            --text-muted: var(--mqf-text-muted, #94a3b8) !important;
+        }
+
+        /* Ticket-item base: eliminar fondo blanco semitransparente en Obsidian */
+        body[data-skin="obsidian"] .ticket-item {
+            background: rgba(15, 23, 42, 0.45) !important;
+            border-color: var(--mqf-border, rgba(16, 185, 129, 0.3)) !important;
+            color: var(--mqf-text, #f8fafc) !important;
+        }
+
+        body[data-skin="obsidian"] .ticket-item:hover {
+            background: rgba(16, 185, 129, 0.08) !important;
+            border-color: var(--mqf-primary, #10b981) !important;
+        }
+
+        body[data-skin="obsidian"] .filter-tab.active {
+            background: var(--mqf-surface-2, rgba(30, 41, 59, 0.9)) !important;
+            color: var(--mqf-primary, #10b981) !important;
+        }
+
+        body[data-skin="obsidian"] .ticket-item.active {
+            background: rgba(16, 185, 129, 0.12) !important;
+            border-color: var(--mqf-primary, #10b981) !important;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.15) !important;
+        }
+
+        body[data-skin="obsidian"] .ticket-item-title {
+            color: var(--mqf-text, #f8fafc) !important;
+        }
+
+        body[data-skin="obsidian"] .ticket-item-header,
+        body[data-skin="obsidian"] .ticket-item-footer {
+            color: var(--mqf-text-muted, #94a3b8) !important;
+        }
+
+        body[data-skin="obsidian"] .reply-input,
+        body[data-skin="obsidian"] .form-control {
+            background: rgba(15, 23, 42, 0.8) !important;
+            color: #f8fafc !important;
+            border-color: var(--card-border) !important;
+        }
+
+        body[data-skin="obsidian"] .initial-report-card {
+            background: var(--mqf-surface-2, rgba(30, 41, 59, 0.7)) !important;
+            color: var(--mqf-text) !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+      (function(){
+        var s = localStorage.getItem('mqf-skin') || 'indigo';
+        document.body.setAttribute('data-skin', s);
+        document.documentElement.setAttribute('data-skin', s);
+      })();
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'mqf-skin-set') {
+          document.body.setAttribute('data-skin', e.data.skin);
+          document.documentElement.setAttribute('data-skin', e.data.skin);
+        }
+      });
+    </script>
 
     <div class="helpdesk-layout">
         
@@ -794,7 +872,7 @@
                         <div class="detail-header">
                             <div class="detail-title">
                                 <h3>${escapeHtml(tk.titulo)}</h3>
-                                <p>Reportado por: <strong>${escapeHtml(tk.creador_nombre + ' ' + tk.creador_apellido)}</strong> en <strong>${tk.modulo_afectado.toUpperCase()}</strong></p>
+                                <p>Reportado por: <strong>${tk.creador_nombre ? escapeHtml(tk.creador_nombre + ' ' + tk.creador_apellido) : 'BOT-TESTING-DEV'}</strong> en <strong>${tk.modulo_afectado.toUpperCase()}</strong></p>
                             </div>
                             <!-- Relojes SLA -->
                             <div class="sla-clocks">
@@ -816,7 +894,7 @@
                         ${adminControlsHtml}
 
                         <div class="messages-container" id="messagesStream">
-                            <div style="background:#f1f5f9; border:1px solid var(--card-border); border-radius:10px; padding:12px; font-size:12.5px; margin-bottom:10px; color:var(--text-main);">
+                            <div class="initial-report-card" style="border:1px solid var(--card-border); border-radius:10px; padding:12px; font-size:12.5px; margin-bottom:10px; color:var(--text-main);">
                                 <strong>Reporte inicial:</strong> ${escapeHtml(tk.descripcion).replace(/\n/g, '<br>')}
                             </div>
                             ${msgHtml}

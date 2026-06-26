@@ -116,6 +116,20 @@ try {
                     break;
                 }
 
+                // Validación técnica Dominicana (NOFTRAB)
+                if (ValidadorDocumentos::isValidatorActive('polizas')) {
+                    if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
+                        http_response_code(400);
+                        echo json_encode(["exito" => false, "mensaje" => "La cédula o RNC especificado no es válido (dígito verificador incorrecto)."]);
+                        break;
+                    }
+                    if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                        http_response_code(400);
+                        echo json_encode(["exito" => false, "mensaje" => "El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849)."]);
+                        break;
+                    }
+                }
+
                 // Inyectar el usuario activo como emisor
                 $datos['emitida_por'] = $usuario_actual;
 

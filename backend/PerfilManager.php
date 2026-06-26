@@ -149,6 +149,16 @@ class PerfilManager {
                 'Cajero' => 'Registrar',
                 'Auditor' => 'Consultar',
                 'Usuario' => 'Consultar'
+            ],
+            'Integrador de Formularios-PDF' => [
+                'Administrador' => 'Total',
+                'Gerente Técnico' => 'Crear/Editar',
+                'Gerente Contador' => 'No',
+                'Gerente Comercial' => 'Crear/Editar',
+                'Socio Comercial PDV' => 'No',
+                'Cajero' => 'No',
+                'Auditor' => 'Consultar',
+                'Usuario' => 'No'
             ]
         ];
     }
@@ -388,7 +398,7 @@ class PerfilManager {
         }
 
         // Obtener permisos del perfil
-        $sql_permisos = "SELECT pp.*, fm.nombre_funcion, m.nombre_modulo 
+        $sql_permisos = "SELECT pp.*, fm.nombre_funcion, fm.codigo_funcion, m.nombre_modulo 
                         FROM permisos_perfil pp
                         INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id
                         INNER JOIN modulos m ON pp.modulo_id = m.id

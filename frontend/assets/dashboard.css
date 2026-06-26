@@ -139,7 +139,7 @@ html, body {
 
 /* Header */
 .top-header {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-bottom: 1px solid var(--border-color);
     padding: 20px 30px;
     display: flex;
@@ -197,7 +197,7 @@ html, body {
     position: absolute;
     top: 70px;
     right: 30px;
-    background: white;
+    background: var(--bg-card, #ffffff);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     box-shadow: var(--shadow-lg);
@@ -288,7 +288,7 @@ html, body {
 }
 
 .stat-card {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 8px;
     padding: 20px;
     display: flex;
@@ -330,7 +330,7 @@ html, body {
 }
 
 .quick-actions, .recent-activity {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 8px;
     padding: 20px;
     box-shadow: var(--shadow);
@@ -396,7 +396,7 @@ html, body {
 .coming-soon {
     text-align: center;
     padding: 60px 20px;
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 8px;
 }
 
@@ -461,7 +461,7 @@ html, body {
 }
 
 .table-container {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: var(--shadow);
@@ -524,7 +524,7 @@ html, body {
 }
 
 .btn-secondary:hover {
-    background: white;
+    background: var(--bg-card, #ffffff);
 }
 
 .btn-danger {
@@ -573,7 +573,7 @@ html, body {
 .pagination button {
     padding: 8px 12px;
     border: 1px solid var(--border-color);
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 4px;
     cursor: pointer;
     transition: var(--transition);
@@ -610,7 +610,7 @@ html, body {
 }
 
 .modal-content {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
@@ -803,7 +803,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: white;
+    background: var(--bg-card, #ffffff);
     padding: 15px;
     border-radius: 8px;
     box-shadow: var(--shadow);
@@ -906,7 +906,7 @@ html, body {
 }
 
 .global-modal-content {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 16px;
     width: 100%;
     max-width: 800px;
@@ -942,7 +942,7 @@ html, body {
 }
 
 .detail-sheet {
-    background: #fff;
+    background: var(--bg-card, #ffffff);
 }
 
 .detail-header {
@@ -1078,7 +1078,7 @@ html, body {
 }
 
 .global-modal-content {
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 16px;
     width: 100%;
     max-width: 800px;
@@ -1114,7 +1114,7 @@ html, body {
 }
 
 .detail-sheet {
-    background: #fff;
+    background: var(--bg-card, #ffffff);
 }
 
 .detail-header {
@@ -1213,7 +1213,7 @@ html, body {
         left: 0;
         top: 0;
         width: 100%;
-        background: white;
+        background: var(--bg-card, #ffffff);
         padding: 0;
     }
     .global-modal-content {
@@ -1267,7 +1267,7 @@ html, body {
 
 /* Glassmorphism Widget Card for Policy Emissions */
 .polizas-widget-card {
-    background: #ffffff !important;
+    background: var(--bg-card, #ffffff) !important;
     border: 1px solid rgba(0, 0, 0, 0.06) !important;
     border-radius: 16px;
     padding: 0;
@@ -1298,16 +1298,16 @@ html, body {
 .polizas-widget-card .widget-header .header-title {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .polizas-widget-card .widget-header .header-title .widget-icon {
-    font-size: 18px;
+    font-size: 26px;
 }
 
 .polizas-widget-card .widget-header .header-title h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 22px;
     font-weight: 700;
     color: #ffffff;
     letter-spacing: 0.3px;
@@ -1328,7 +1328,7 @@ html, body {
 }
 
 .polizas-widget-card .widget-header .expand-btn:hover {
-    background: #ffffff;
+    background: var(--bg-card, #ffffff);
     color: #4f46e5;
     transform: scale(1.05);
     border-color: transparent;
@@ -1354,7 +1354,7 @@ html, body {
     border-radius: 12px;
     text-align: center;
     transition: all 0.2s ease;
-    background: #ffffff;
+    background: var(--bg-card, #ffffff);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
@@ -1421,7 +1421,7 @@ html, body {
 .top-cliente-card {
     display: flex;
     align-items: center;
-    background: #ffffff;
+    background: var(--bg-card, #ffffff);
     border: 1px solid #f1f5f9;
     border-radius: 12px;
     padding: 12px 16px;
@@ -1617,5 +1617,195 @@ html, body {
     background: #e2e8f0 !important;
     border-color: #cbd5e1 !important;
     transform: scale(1.05) !important;
+}
+
+/* ==========================================================================
+   MQF DASHBOARD: REGULARIZACIÓN OBSIDIAN DARK (ETAPA 1)
+   ========================================================================== */
+
+/* Dashboard Widget Overrides */
+[data-skin="obsidian"] .recent-activity,
+[data-skin="obsidian"] .quick-actions {
+    background: var(--mqf-surface) !important;
+    border: 1px solid var(--mqf-border) !important;
+    color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .quick-actions h3,
+[data-skin="obsidian"] .recent-activity h3 {
+    color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .action-btn {
+    background: var(--mqf-surface-2) !important;
+    border: 1px solid var(--mqf-border) !important;
+    color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .action-btn:hover {
+    background: var(--mqf-primary-hover) !important;
+    border-color: var(--mqf-primary) !important;
+    color: #ffffff !important;
+}
+[data-skin="obsidian"] .activity-item {
+    background: var(--mqf-surface-2) !important;
+    color: var(--mqf-text-secondary) !important;
+    border: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .activity-item:hover {
+    background: var(--mqf-surface) !important;
+}
+[data-skin="obsidian"] .activity-time {
+    color: var(--mqf-text-muted) !important;
+}
+
+/* Configuration Panel Overrides */
+[data-skin="obsidian"] .config-sidebar {
+    background: var(--mqf-surface) !important;
+    border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .config-nav-btn {
+    color: var(--mqf-text-secondary) !important;
+}
+[data-skin="obsidian"] .config-nav-btn:hover {
+    background: var(--mqf-primary-hover) !important;
+    color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .config-nav-btn.active {
+    background: var(--mqf-primary) !important;
+    color: var(--mqf-text-inverse) !important;
+}
+[data-skin="obsidian"] .config-card {
+    background: var(--mqf-surface) !important;
+    border: 1px solid var(--mqf-border) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    color: var(--mqf-text-secondary) !important;
+}
+[data-skin="obsidian"] .config-card h3 {
+    color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .config-card p {
+    color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .config-card label {
+    color: var(--mqf-text) !important;
+}
+
+/* Obsidian Dark theme overrides for Config panels (Notificaciones, Compañías, ETL) */
+[data-skin="obsidian"] .notif-flujo-card {
+    background: var(--mqf-surface-2) !important;
+    border-color: var(--mqf-border) !important;
+    color: var(--mqf-text) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card strong {
+    color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card p {
+    color: var(--mqf-text-muted) !important;
+}
+[data-skin="obsidian"] .notif-dest-badge {
+    background: var(--mqf-surface) !important;
+    color: var(--mqf-text-secondary) !important;
+    border: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .notif-evento-pill {
+    background: var(--mqf-primary-light) !important;
+    color: var(--mqf-secondary) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card .btn {
+    border: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card .btn-edit {
+    background: var(--mqf-primary-light) !important;
+    color: var(--mqf-primary) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card .btn-toggle-act {
+    background: var(--mqf-success-light) !important;
+    color: var(--mqf-success) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card .btn-toggle-inact {
+    background: var(--mqf-warning-light) !important;
+    color: var(--mqf-warning) !important;
+}
+[data-skin="obsidian"] .notif-flujo-card .btn-del {
+    background: var(--mqf-danger-light) !important;
+    color: var(--mqf-danger) !important;
+}
+[data-skin="obsidian"] .table-responsive {
+    background: var(--mqf-surface) !important;
+    border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .premium-table th {
+    background: var(--mqf-surface-2) !important;
+    color: var(--mqf-primary) !important;
+    border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .premium-table td {
+    color: var(--mqf-text-secondary) !important;
+    border-color: var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .premium-table tr:hover td {
+    background: var(--mqf-surface-2) !important;
+}
+[data-skin="obsidian"] .etl-step-box {
+    background: var(--mqf-surface-2) !important;
+    border-color: var(--mqf-border) !important;
+    color: var(--mqf-text) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   NOFTRAB PATCH — Obsidian Dark: Modal Overrides
+   ══════════════════════════════════════════════════════ */
+[data-skin="obsidian"] .modal-content {
+  background: var(--mqf-surface, rgba(15,23,42,0.95)) !important;
+  border: 1px solid var(--mqf-border, rgba(16,185,129,0.35)) !important;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.7), 0 0 30px rgba(16,185,129,0.05) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .modal-header {
+  background: var(--mqf-surface-2, rgba(30,41,59,0.9)) !important;
+  border-bottom: 1px solid var(--mqf-border, rgba(16,185,129,0.35)) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .modal-header h3,
+[data-skin="obsidian"] .modal-header h2 {
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .modal-body {
+  background: var(--mqf-surface, rgba(15,23,42,0.95)) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .modal-footer {
+  background: var(--mqf-surface-2, rgba(30,41,59,0.9)) !important;
+  border-top: 1px solid var(--mqf-border, rgba(16,185,129,0.35)) !important;
+}
+[data-skin="obsidian"] .global-modal-content {
+  background: var(--mqf-surface, rgba(15,23,42,0.97)) !important;
+  border: 1px solid var(--mqf-border, rgba(16,185,129,0.35)) !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(16,185,129,0.06) !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .global-modal-header {
+  background: var(--mqf-surface-2, rgba(30,41,59,0.9)) !important;
+  border-bottom: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .global-modal-header h2 {
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .global-modal-body {
+  background: transparent !important;
+  color: var(--mqf-text-secondary, #cbd5e1) !important;
+}
+[data-skin="obsidian"] .global-modal-footer {
+  background: var(--mqf-surface-2, rgba(30,41,59,0.9)) !important;
+  border-top: 1px solid var(--mqf-border) !important;
+}
+[data-skin="obsidian"] .detail-sheet {
+  background: transparent !important;
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .detail-title h1 {
+  color: var(--mqf-text, #f8fafc) !important;
+}
+[data-skin="obsidian"] .form-group label {
+  color: var(--mqf-text-secondary, #cbd5e1) !important;
 }
 

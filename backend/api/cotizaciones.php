@@ -179,7 +179,38 @@ try {
             respuestaJSON(false, 'Numero y tipo son obligatorios', null, 400);
         }
         
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('cotizaciones')) {
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
+                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+        
         if (insertar_cotizacion($db, $datos, $usuario_actual)) {
+            // Auditoría (NOFTRAB)
+            $cot_db_id = null;
+            $res_id = $db->query("SELECT id FROM cotizaciones WHERE numero = '" . $db->real_escape_string($datos['numero']) . "'");
+            if ($res_id && $r_id = $res_id->fetch_assoc()) {
+                $cot_db_id = (int)$r_id['id'];
+            }
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $usuario_actual,
+                    'guardar_cotizacion',
+                    'cotizaciones',
+                    'guardar',
+                    "Cotización guardada (creada o actualizada por clave duplicada). Número: {$datos['numero']}",
+                    'exitoso',
+                    null,
+                    'cotizaciones',
+                    $cot_db_id,
+                    null,
+                    $datos
+                );
+            }
             // --- MOTOR DE NOTIFICACIONES AUTOMÁTICAS (NOFTRAB) ---
             try {
                 require_once '../NotificacionesEngine.php';
@@ -262,7 +293,27 @@ try {
             respuestaJSON(false, 'ID de cotización requerido para actualizar', null, 400);
         }
 
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('cotizaciones')) {
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
+                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+
         $id = intval($datos['id']);
+        // Obtener valor anterior para auditoría
+        $val_anterior = null;
+        $stmt_prev = $db->prepare("SELECT * FROM cotizaciones WHERE id = ?");
+        if ($stmt_prev) {
+            $stmt_prev->bind_param("i", $id);
+            $stmt_prev->execute();
+            $val_anterior = $stmt_prev->get_result()->fetch_assoc();
+            $stmt_prev->close();
+        }
+
         $sql = "UPDATE cotizaciones SET 
                 tipo = ?, subtipo = ?, cliente = ?, cedula = ?, telefono = ?, email = ?,
                 beneficiario = ?, uso = ?, 
@@ -305,6 +356,21 @@ try {
         );
 
         if ($stmt->execute()) {
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $usuario_actual,
+                    'actualizar_cotizacion',
+                    'cotizaciones',
+                    'actualizar',
+                    "Cotización ID $id actualizada",
+                    'exitoso',
+                    null,
+                    'cotizaciones',
+                    $id,
+                    $val_anterior,
+                    $datos
+                );
+            }
             respuestaJSON(true, 'Cotizacion actualizada correctamente', ['id' => $id], 200);
         } else {
             respuestaJSON(false, 'Error al actualizar cotización: ' . $db->error, null, 500);
@@ -319,7 +385,25 @@ try {
         $ok = 0;
         foreach ($datos as $c) {
             if (empty($c['numero'])) continue;
-            if (insertar_cotizacion($db, $c)) $ok++;
+            if (insertar_cotizacion($db, $c, $usuario_actual)) {
+                $ok++;
+                $cot_id = $db->insert_id;
+                if (function_exists('logAudit')) {
+                    logAudit(
+                        $usuario_actual,
+                        'guardar_cotizacion',
+                        'cotizaciones',
+                        'importar',
+                        "Cotización importada masivamente. Número: {$c['numero']}",
+                        'exitoso',
+                        null,
+                        'cotizaciones',
+                        $cot_id,
+                        null,
+                        $c
+                    );
+                }
+            }
         }
         respuestaJSON(true, "$ok cotizaciones importadas a la base de datos", ['insertadas' => $ok], 201);
 
@@ -378,9 +462,43 @@ try {
         }
         
         $id_list = implode(',', $ids);
+        
+        // Obtener datos de las cotizaciones antes de eliminar para auditoría
+        $val_anterior = [];
+        $res_prev = $db->query("SELECT id, numero, total FROM cotizaciones WHERE id IN ($id_list)");
+        if ($res_prev) {
+            while ($row = $res_prev->fetch_assoc()) {
+                $val_anterior[] = $row;
+            }
+        }
+
         $sql = "DELETE FROM cotizaciones WHERE id IN ($id_list)";
         
         if ($db->query($sql)) {
+            if (function_exists('logAudit')) {
+                foreach ($ids as $del_id) {
+                    $del_info = null;
+                    foreach ($val_anterior as $item) {
+                        if ($item['id'] == $del_id) {
+                            $del_info = $item;
+                            break;
+                        }
+                    }
+                    logAudit(
+                        $usuario_actual,
+                        'eliminar_cotizacion',
+                        'cotizaciones',
+                        'eliminar',
+                        "Cotización ID $del_id eliminada. Número: " . ($del_info['numero'] ?? 'N/D'),
+                        'exitoso',
+                        null,
+                        'cotizaciones',
+                        $del_id,
+                        $del_info,
+                        null
+                    );
+                }
+            }
             respuestaJSON(true, count($ids) . ' cotizaciones eliminadas', ['eliminadas' => count($ids)], 200);
         } else {
             respuestaJSON(false, 'Error al eliminar: ' . $db->error, null, 500);

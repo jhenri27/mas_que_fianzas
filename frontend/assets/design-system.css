@@ -241,6 +241,6 @@ strong { font-weight: 600; }
 @media print {
   .sidebar, .top-header, .mqf-no-print,
   .btn, .mqf-btn, .notification-btn { display: none !important; }
-  body { background: white; }
+  body { background: var(--bg-card, #ffffff); }
   .content, .mqf-content { padding: 0 !important; }
 }

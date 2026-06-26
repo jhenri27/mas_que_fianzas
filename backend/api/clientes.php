@@ -64,9 +64,22 @@ try {
     if (strpos($ruta, '/crear') !== false && $metodo === 'POST') {
         $datos = json_decode(file_get_contents('php://input'), true);
         if (empty($datos['nombre_razon_social']) || empty($datos['rnc'])) {
-             respuestaJSON(false, 'Nombre/Razón Social y RNC son obligatorios', null, 400);
+             respuestaJSON(false, 'Nombre/Razón Social y RNC/Cédula son obligatorios', null, 400);
              exit;
         }
+        
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('clientes')) {
+            if (!ValidadorDocumentos::validarDocumento($datos['rnc'])) {
+                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+                exit;
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+                exit;
+            }
+        }
+
         $datos['creado_por'] = $usuario_actual;
         $resultado = $manager->crearCliente($datos);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado, $resultado['exito'] ? 201 : 400);
@@ -85,9 +98,22 @@ try {
         $id = intval(end($partes));
         $datos = json_decode(file_get_contents('php://input'), true);
         if (empty($datos['nombre_razon_social']) || empty($datos['rnc'])) {
-             respuestaJSON(false, 'Nombre/Razón Social y RNC son obligatorios', null, 400);
+             respuestaJSON(false, 'Nombre/Razón Social y RNC/Cédula son obligatorios', null, 400);
              exit;
         }
+        
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('clientes')) {
+            if (!ValidadorDocumentos::validarDocumento($datos['rnc'])) {
+                respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+                exit;
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+                exit;
+            }
+        }
+
         if (restringirSoloPropios($usuario_actual, 'clientes')) {
             if (!$manager->verificarCreador($id, $usuario_actual)) {
                 respuestaJSON(false, 'No tiene permiso para editar este cliente', null, 403);

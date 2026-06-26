@@ -244,7 +244,7 @@ class Autenticacion {
      */
     public function validarSesion($token_sesion) {
         try {
-            $sql = "SELECT su.*, u.estado, u.id as usuario_id
+            $sql = "SELECT su.*, u.estado, u.id as usuario_id, u.perfil_id
                    FROM sesiones_usuario su
                    INNER JOIN usuarios u ON su.usuario_id = u.id
                    WHERE su.token_sesion = ? AND su.activa = 1 AND su.fecha_expiracion > NOW()";
@@ -274,10 +274,31 @@ class Autenticacion {
             $stmt_upd->execute();
             $stmt_upd->close();
 
+            // Obtener códigos de función permitidos para el perfil del usuario
+            $permisos = [];
+            $perfil_id = (int)$sesion['perfil_id'];
+            $sql_p = "SELECT fm.codigo_funcion 
+                      FROM permisos_perfil pp
+                      INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id
+                      WHERE pp.perfil_id = ? AND pp.puede_ejecutar = 1";
+            $stmt_p = $this->db->prepare($sql_p);
+            if ($stmt_p) {
+                $stmt_p->bind_param("i", $perfil_id);
+                $stmt_p->execute();
+                $res_p = $stmt_p->get_result();
+                while ($row_p = $res_p->fetch_assoc()) {
+                    if ($row_p['codigo_funcion']) {
+                        $permisos[] = $row_p['codigo_funcion'];
+                    }
+                }
+                $stmt_p->close();
+            }
+            $sesion['permisos'] = $permisos;
+
             return ['exito' => true, 'sesion' => $sesion];
 
         } catch (Exception $e) {
-            return ['exito' => false, 'mensaje' => 'Error validando sesión'];
+            return ['exito' => false, 'mensaje' => 'Error validando sesión: ' . $e->getMessage()];
         }
     }
 

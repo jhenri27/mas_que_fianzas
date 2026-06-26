@@ -151,7 +151,7 @@ try {
     // ════ 2. ENVÍO DE EMAIL DE RESPALDO (WALKTHROUGH) ════
     addLog($logs, "Paso 2: Iniciando despacho del Walkthrough por correo corporativo...");
     
-    $walkthrough_path = 'C:/Users/jhenr/.gemini/antigravity/brain/7d2dc99f-87d6-40c6-86e5-a4a6d74f2cea/walkthrough.md';
+    $walkthrough_path = 'C:/Users/jhenr/.gemini/antigravity/brain/313a9cc8-c0da-488f-b574-6e144096582b/walkthrough.md';
     if (!file_exists($walkthrough_path)) {
         $walkthrough_path = dirname(__FILE__) . '/walkthrough.md'; // Fallback
     }

@@ -400,7 +400,7 @@
         /* Print Layout Optimization */
         @media print {
             body {
-                background: white;
+                background: var(--bg-card, #ffffff);
                 color: black;
                 padding: 0;
             }
@@ -419,7 +419,7 @@
             }
             .timeline-content {
                 border: 1px solid #ccc;
-                background: white;
+                background: var(--bg-card, #ffffff);
                 page-break-inside: avoid;
             }
             .diff-viewer {

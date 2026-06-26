@@ -195,6 +195,24 @@ class PolizaManager {
             ]);
 
             $this->db->commit();
+            
+            // Auditoría (NOFTRAB)
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $emitida_por, 
+                    'emision_poliza', 
+                    'polizas', 
+                    'emitirPoliza', 
+                    "Póliza emitida exitosamente. Número: $num", 
+                    'exitoso', 
+                    null, 
+                    'polizas', 
+                    $polizaId, 
+                    null, 
+                    $datos
+                );
+            }
+
             return ['exito' => true, 'id' => $polizaId, 'numero' => $num];
         } catch (Exception $e) {
             $this->db->rollback();
@@ -209,17 +227,61 @@ class PolizaManager {
         $sql = "UPDATE polizas SET validada = 'Si', validada_por = ?, fecha_validacion = NOW() WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("ii", $userId, $id);
-        return $stmt->execute();
+        $res = $stmt->execute();
+        if ($res && function_exists('logAudit')) {
+            logAudit(
+                $userId,
+                'validacion_poliza',
+                'polizas',
+                'validarPoliza',
+                "Póliza ID $id aprobada/validada técnicamente",
+                'exitoso',
+                null,
+                'polizas',
+                $id,
+                ['validada' => 'No'],
+                ['validada' => 'Si', 'validada_por' => $userId]
+            );
+        }
+        return $res;
     }
 
     /**
      * Cambia el estado de una póliza
      */
     public function cambiarEstado($id, $nuevoEstado) {
+        // Obtener estado anterior
+        $prevEstado = null;
+        $stmt_prev = $this->db->prepare("SELECT estado FROM polizas WHERE id = ?");
+        if ($stmt_prev) {
+            $stmt_prev->bind_param("i", $id);
+            $stmt_prev->execute();
+            $res_prev = $stmt_prev->get_result()->fetch_assoc();
+            $prevEstado = $res_prev['estado'] ?? null;
+            $stmt_prev->close();
+        }
+
         $sql = "UPDATE polizas SET estado = ? WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("si", $nuevoEstado, $id);
-        return $stmt->execute();
+        $res = $stmt->execute();
+        if ($res && function_exists('logAudit')) {
+            $userId = $_SESSION['usuario_id'] ?? null;
+            logAudit(
+                $userId,
+                'cambio_estado_poliza',
+                'polizas',
+                'cambiarEstado',
+                "Póliza ID $id cambió de estado a $nuevoEstado",
+                'exitoso',
+                null,
+                'polizas',
+                $id,
+                ['estado' => $prevEstado],
+                ['estado' => $nuevoEstado]
+            );
+        }
+        return $res;
     }
 
     /**

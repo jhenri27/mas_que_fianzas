@@ -141,6 +141,18 @@ if ($metodo === 'POST' && $action === 'crear') {
 
     $input = json_decode(file_get_contents('php://input'), true);
 
+    // Validación técnica Dominicana (NOFTRAB)
+    if (ValidadorDocumentos::isValidatorActive('fianzas')) {
+        $cedula = $input['cliente_cedula'] ?? '';
+        $telefono = $input['cliente_telefono'] ?? '';
+        if (!empty($cedula) && !ValidadorDocumentos::validarDocumento($cedula)) {
+            respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+        }
+        if (!empty($telefono) && !ValidadorDocumentos::validarTelefono($telefono)) {
+            respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+        }
+    }
+
     // Normalizar fallbacks de parámetros del frontend
     if (!isset($input['tarifario_id']) && isset($input['tipo_id'])) {
         $input['tarifario_id'] = $input['tipo_id'];
@@ -584,6 +596,19 @@ if ($metodo === 'POST' && $action === 'actualizar') {
     }
 
     $input     = json_decode(file_get_contents('php://input'), true);
+    
+    // Validación técnica Dominicana (NOFTRAB)
+    if (ValidadorDocumentos::isValidatorActive('fianzas')) {
+        $cedula = $input['cedula'] ?? $input['cliente_cedula'] ?? '';
+        $telefono = $input['telefono'] ?? $input['cliente_telefono'] ?? '';
+        if (!empty($cedula) && !ValidadorDocumentos::validarDocumento($cedula)) {
+            respuestaJSON(false, 'El RNC o Cédula especificado no es válido (dígito verificador incorrecto).', null, 400);
+        }
+        if (!empty($telefono) && !ValidadorDocumentos::validarTelefono($telefono)) {
+            respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+        }
+    }
+
     $fianza_id = isset($input['id']) ? (int)$input['id'] : 0;
     if ($fianza_id <= 0) respuestaJSON(false, 'ID de fianza requerido para actualizar', null, 400);
 

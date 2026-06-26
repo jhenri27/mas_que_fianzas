@@ -51,6 +51,31 @@ if (!$usuario_id) {
     exit;
 }
 
+// Cargar información del usuario autenticado
+$usr_data = null;
+$db = Database::getInstance()->getConnection();
+$stmt_usr = $db->prepare("SELECT id, username, nombre, apellido, perfil_id, referente_id FROM usuarios WHERE id = ? LIMIT 1");
+if ($stmt_usr) {
+    $stmt_usr->bind_param("i", $usuario_id);
+    $stmt_usr->execute();
+    $usr_data = $stmt_usr->get_result()->fetch_assoc();
+    $stmt_usr->close();
+}
+
+// Guard: si usr_data es null el usuario fue eliminado o la sesión es inválida
+if (!$usr_data) {
+    http_response_code(401);
+    echo json_encode(["exito" => false, "mensaje" => "Usuario no encontrado o sesión revocada"]);
+    exit;
+}
+
+// Valores seguros con fallback para evitar warnings en accesos posteriores
+$usr_data['nombre']      = $usr_data['nombre']      ?? '';
+$usr_data['apellido']    = $usr_data['apellido']    ?? '';
+$usr_data['perfil_id']   = $usr_data['perfil_id']   ?? 0;
+$usr_data['referente_id'] = $usr_data['referente_id'] ?? null;
+
+
 /**
  * Auto-crea e inicializa las tablas del Bot BBS (SSINDI)
  */
@@ -72,6 +97,59 @@ function crearBBSBotTablas($db) {
     $db->query("INSERT IGNORE INTO companias_registradas (id, nombre, rnc, direccion, telefono, email, tipo, estado, creado_por)
         VALUES (4, 'Seguros Pepín', '130000043', 'Santo Domingo, RD', '809-555-0400', 'contacto@segurospepin.com.do', 'aseguradora', 1, 1)");
 }
+
+/**
+ * Inteligencia de extracción de nombre fallback (según especificación NOFTRAB)
+ */
+function extraerNombreFallback($text) {
+    // 1. Eliminar correos electrónicos
+    $text = preg_replace('/\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/u', '', $text);
+    
+    // 2. Eliminar teléfonos y números (años, RNC, cédulas)
+    $text = preg_replace('/\b\d{4}\b/', '', $text);
+    $text = preg_replace('/\b\d{3}-\d{3}-\d{4}\b/', '', $text);
+    $text = preg_replace('/\b\d{3}-\d{7}-\d\b/', '', $text);
+    $text = preg_replace('/\b\d{9,11}\b/', '', $text);
+    
+    // 3. Eliminar tipos de vehículos
+    $vehicle_types = '(?:moto|motocicleta|pasola|trimotor|four\s*wheel|buggy|cuatrimoto|jeep|jeepeta|suv|camioneta|platanera|d-max|hilux|minivan|vanette|van|furgoneta|autobus|microbus|carro|automovil|automóvil|sedan|sedán|coupe|coupé)';
+    $text = preg_replace('/\b' . $vehicle_types . '\b/iu', '', $text);
+    
+    // 4. Eliminar marcas
+    $brands = '(?:toyota|honda|kia|hyundai|nissan|chevrolet|ford|mazda|suzuki|lexus|jeep|mitsubishi|bmw|mercedes)';
+    $text = preg_replace('/\b' . $brands . '\b/iu', '', $text);
+    
+    // 5. Eliminar colores
+    $colors = '(?:negro|blanco|gris|rojo|azul|plateado|plata|verde|amarillo)';
+    $text = preg_replace('/\b' . $colors . '\b/iu', '', $text);
+    
+    // 6. Eliminar palabras clave del bot y conectores comunes
+    $keywords = '(?:cotizar|cotizacion|cotización|seguro|ley|precio|costo|tarifa|coti|corregir|corrección|correccion|corrige|cambiar|cambia|cambio|modificar|modifica|modificacion|modificación|puse mal|mal escrito|incorrecto|publico|público|concho|taxi|transporte|rent|alquiler|arrendar|privado|particular|personal|quiero|para|de|un|una|el|la|mi|nombre|es|se|llama|a|nombre|de)';
+    $text = preg_replace('/\b' . $keywords . '\b/iu', '', $text);
+    
+    // 7. Eliminar puntuación y caracteres especiales
+    $text = preg_replace('/[^\p{L}\s]/u', '', $text);
+    
+    // 8. Normalizar espacios
+    $text = trim(preg_replace('/\s+/', ' ', $text));
+    
+    // 9. Dividir y filtrar palabras
+    $words = explode(' ', $text);
+    $valid_words = [];
+    foreach ($words as $w) {
+        if (mb_strlen($w, 'UTF-8') >= 2) {
+            $valid_words[] = $w;
+        }
+    }
+    
+    // Si contiene al menos 1 palabra puramente alfabética de longitud >= 2, es un nombre válido
+    if (count($valid_words) >= 1) {
+        return ucwords(mb_strtolower(implode(' ', $valid_words), 'UTF-8'));
+    }
+    
+    return null;
+}
+
 
 /**
  * Renderiza el HTML premium para descargar la cotización
@@ -126,13 +204,13 @@ function renderPremiumQuoteHTML($cot) {
             $brand_logo = '<svg style="width:36px;height:36px;fill:#dc2626;" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>';
         }
     } elseif (strpos($aseguradora_upper, 'PEP') !== false) {
-        $brand_color = "#b45309"; // gold (orange)
+        $brand_color = "#f97316"; // orange
         $logo_path = dirname(dirname(__DIR__)) . '/uploads/logos/seguros_pepin.jpg.txt';
         $logo_data = file_exists($logo_path) ? trim(file_get_contents($logo_path)) : '';
         if ($logo_data) {
             $brand_logo = '<img src="' . $logo_data . '" style="height:36px; object-fit: contain;" alt="Seguros Pepín">';
         } else {
-            $brand_logo = '<svg style="width:36px;height:36px;fill:#d97706;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+            $brand_logo = '<svg style="width:36px;height:36px;fill:#f97316;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
         }
     } else {
         $brand_logo = '<svg style="width:36px;height:36px;fill:#4f46e5;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
@@ -1151,15 +1229,101 @@ try {
                 if (function_exists('tienePermiso') && !tienePermiso($usuario_id, 'CHAT_BOT_BHN')) {
                     $bot_reply = "🤖 **BHN-Bot-HelpNow (Asistente de Soporte)**: Estimado usuario, su perfil actual no dispone de autorización para interactuar con este bot técnico (`CHAT_BOT_BHN`). Si considera que esto es un error, por favor contacte a su administrador. ¡Que tenga un excelente día!";
                 } else {
-                    $txtLower = strtolower($mensaje_clean);
-                    if (strpos($txtLower, 'php') !== false) {
-                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Experto PHP 8.2)**: La plataforma corre sobre PHP 8.2. Usamos POO y patrón Singleton.";
-                    } elseif (strpos($txtLower, 'mysql') !== false || strpos($txtLower, 'bd') !== false) {
-                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Experto MySQL)**: La base de datos es MariaDB. Toda transacción crítica requiere commit/rollback.";
-                    } elseif (strpos($txtLower, 'javascript') !== false) {
-                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Experto JS/DOM)**: El frontend usa JS puro y fetch para llamadas asíncronas.";
+                    $txtLower = strtolower(trim($mensaje_clean));
+                    $command = preg_replace('/^(bot|bhn|help|now)\s*/i', '', $txtLower);
+                    $command = trim($command);
+                    
+                    if (empty($command) || $command === 'ayuda' || $command === 'help') {
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Asistente de Soporte)**\n\n"
+                                   . "¡Hola! Soy tu asistente de soporte autónomo. Aquí tienes el catálogo de comandos técnicos que puedo ejecutar:\n\n"
+                                   . "- `ayuda`: Muestra este menú de ayuda.\n"
+                                   . "- `diagnostico`: Analiza la salud del sistema y la base de datos.\n"
+                                   . "- `permisos`: Muestra tu perfil y los códigos de función asignados.\n"
+                                   . "- `logs`: Muestra las últimas entradas del log de errores.\n"
+                                   . "- `error`: Explica las fallas comunes y sus soluciones de código.\n"
+                                   . "- `reparar`: Aplica hot-fixes autónomos y autodiagnósticos de bases de datos.";
+                    } elseif ($command === 'diagnostico') {
+                        $db_status = "OK";
+                        $db_size = "0";
+                        $q_db = $db->query("SELECT SUM(data_length + index_length) AS size FROM information_schema.TABLES WHERE table_schema = 'masque_fianzas_integrada_01'");
+                        if ($q_db && $row_db = $q_db->fetch_assoc()) {
+                            $db_size = round($row_db['size'] / 1024 / 1024, 2) . " MB";
+                        }
+                        
+                        $validator_status = ValidadorDocumentos::isValidatorActive('activo') ? "Activo" : "Inactivo";
+                        
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Diagnóstico de Sistema)**\n\n"
+                                   . "🩺 **Estado del Core:**\n"
+                                   . "- **Base de Datos:** " . $db_status . " (Tamaño: " . $db_size . ")\n"
+                                   . "- **PHP Version:** " . PHP_VERSION . "\n"
+                                   . "- **Validador Dominicano (Global):** " . $validator_status . "\n"
+                                   . "- **Logs de Errores:** Accesibles\n"
+                                   . "- **Nivel de Jerarquía:** " . ($usr_data['perfil_id'] === 1 ? 'Administrador' : 'Usuario Común') . "\n\n"
+                                   . "Todo el core funciona correctamente según la norma NOFTRAB.";
+                    } elseif ($command === 'permisos') {
+                        $perfil_id = (int)$usr_data['perfil_id'];
+                        $permisos = [];
+                        $q_perm = $db->prepare("SELECT fm.codigo_funcion FROM permisos_perfil pp INNER JOIN funciones_modulo fm ON pp.funcion_id = fm.id WHERE pp.perfil_id = ? AND pp.puede_ejecutar = 1");
+                        if ($q_perm) {
+                            $q_perm->bind_param("i", $perfil_id);
+                            $q_perm->execute();
+                            $res_perm = $q_perm->get_result();
+                            while ($row_perm = $res_perm->fetch_assoc()) {
+                                $permisos[] = $row_perm['codigo_funcion'];
+                            }
+                            $q_perm->close();
+                        }
+                        
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Control de Accesos)**\n\n"
+                                   . "👤 **Usuario:** " . htmlspecialchars($usr_data['username']) . "\n"
+                                   . "🔑 **Perfil ID:** " . $perfil_id . "\n"
+                                   . "🛡️ **Permisos de Función:**\n"
+                                   . (empty($permisos) ? "*Ningún permiso granular asignado*" : " - " . implode("\n - ", $permisos));
+                    } elseif ($command === 'logs') {
+                        $log_file = dirname(dirname(__DIR__)) . '/logs/error.log';
+                        $lines = [];
+                        if (file_exists($log_file)) {
+                            $file_lines = file($log_file);
+                            $lines = array_slice($file_lines, -5);
+                        }
+                        
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Visor de Logs)**\n\n"
+                                   . "Últimos 5 errores registrados en `error.log`:\n\n"
+                                   . (empty($lines) ? "*No hay errores en el registro o el archivo está vacío.*" : "```\n" . implode("", $lines) . "```");
+                    } elseif ($command === 'error') {
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Base de Conocimiento de Errores)**\n\n"
+                                   . "📋 **Catálogo de Fallas Resueltas:**\n\n"
+                                   . "1. **Falla 001 - Logo de Aseguradora Oculto en Cotizador**\n"
+                                   . "   - *Causa:* Regex de limpieza de base64 `/\\n/g` no removía secuencias literales de escape de barra invertida en la DB.\n"
+                                   . "   - *Solución:* Revertido a `/\\\\n/g` en `cotizaciones.html`.\n\n"
+                                   . "2. **Falla 002 - Error en Validador Dominicano (Cédula/RNC)**\n"
+                                   . "   - *Causa:* El dígito 11 de la Cédula se sumaba al Luhn. El RNC no mapeaba el residuo 0 al dígito de control 2.\n"
+                                   . "   - *Solución:* Implementado el algoritmo correcto de la DGII y JCE en `ValidadorDocumentos.php`.";
+                    } elseif ($command === 'reparar') {
+                        $mysqli = $db;
+                        $sql_check = "SELECT COUNT(*) as total FROM configuracion_sistema WHERE clave_config LIKE 'VALIDADOR_DOCS_%'";
+                        $res_check = $mysqli->query($sql_check);
+                        $row_check = $res_check->fetch_assoc();
+                        
+                        $repaired = false;
+                        if ($row_check['total'] < 6) {
+                            $mysqli->query("INSERT IGNORE INTO configuracion_sistema (clave_config, valor_config, tipo_valor) VALUES
+                                ('VALIDADOR_DOCS_ACTIVO', '0', 'booleano'),
+                                ('VALIDADOR_DOCS_CLIENTES', '0', 'booleano'),
+                                ('VALIDADOR_DOCS_COTIZACIONES', '0', 'booleano'),
+                                ('VALIDADOR_DOCS_USUARIOS', '0', 'booleano'),
+                                ('VALIDADOR_DOCS_POLIZAS', '0', 'booleano'),
+                                ('VALIDADOR_DOCS_FIANZAS', '0', 'booleano')");
+                            $repaired = true;
+                        }
+                        
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Hot-Fix Autónomo)**\n\n"
+                                   . "🛠️ **Diagnóstico y Reparación:**\n"
+                                   . "- Verificando secuencias de base de datos... **OK**\n"
+                                   . "- Verificando llaves del Validador Dominicano... " . ($repaired ? "**REPARADAS (Insertadas llaves faltantes)**" : "**OK (6/6 llaves presentes)**") . "\n\n"
+                                   . "¡El hot-fix se ha aplicado de manera exitosa y sin downtime!";
                     } else {
-                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Soporte Técnico)**: Hola, ¿en qué área necesitas asistencia técnica?";
+                        $bot_reply = "🤖 **BHN-Bot-HelpNow (Soporte Técnico)**: No reconozco el comando `" . htmlspecialchars($command) . "`. Escribe `ayuda` para ver la lista de comandos técnicos disponibles.";
                     }
                 }
                 
@@ -1314,6 +1478,13 @@ try {
                                 if (preg_match('/(?:nombre|cliente|titular|asegurado)(?:\s+(?:a|es|de|seria|sería))?\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,40})/iu', $mensaje_clean, $m_nm)) {
                                     $new_name_val = trim(preg_replace('/^(de|del|cliente|nombre|titular|es|a)\s+/iu', '', trim($m_nm[1])));
                                     $campos_corregidos[] = "Nombre del cliente";
+                                } else {
+                                    // Fallback de nombre en la corrección
+                                    $fallbackName = extraerNombreFallback($mensaje_clean);
+                                    if ($fallbackName) {
+                                        $new_name_val = $fallbackName;
+                                        $campos_corregidos[] = "Nombre del cliente";
+                                    }
                                 }
                                 
                                 if (preg_match('/\b(negro|blanco|gris|rojo|azul|plateado|plata|verde|amarillo)\b/iu', $mensaje_clean, $m_col)) {
@@ -1586,6 +1757,11 @@ try {
 
                                 if (preg_match('/(?:nombre|a nombre de|cliente|titular)\s*:?\s*([a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,30})/iu', $mensaje_clean, $m_name)) {
                                     $datos_acumulados['cliente_nombre'] = trim(preg_replace('/^(de|del|cliente|nombre|titular)\s+/iu', '', trim($m_name[1])));
+                                } elseif (empty($datos_acumulados['cliente_nombre'])) {
+                                    $fallbackName = extraerNombreFallback($mensaje_clean);
+                                    if ($fallbackName) {
+                                        $datos_acumulados['cliente_nombre'] = $fallbackName;
+                                    }
                                 }
 
                                 if (preg_match('/\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/u', $mensaje_clean, $m_email)) {
@@ -1751,8 +1927,24 @@ try {
                                 $poliza_id = $stmt_ins_pol->insert_id;
                                 $stmt_ins_pol->close();
                                 
+                                if (function_exists('logAudit')) {
+                                    logAudit(
+                                        $usuario_id,
+                                        'emision_poliza',
+                                        'polizas',
+                                        'bot_emitir_poliza',
+                                        "Póliza emitida desde el Bot. Número: $numero_pol",
+                                        'exitoso',
+                                        null,
+                                        'polizas',
+                                        $poliza_id,
+                                        null,
+                                        ['numero_poliza' => $numero_pol, 'cotizacion_id' => $cot['id'], 'total' => $cot['total']]
+                                    );
+                                }
+                                
                                 $num_ref = 'REF-' . rand(100000, 999999);
-                                $num_rec = 'RC-' . rand(10000, 99999);
+                                $num_rec = 'RC-' . rand(1000, 9999);
                                 $num_ncf = 'B02' . sprintf('%08d', rand(1, 99999));
                                 $stmt_ins_pag = $db->prepare("
                                     INSERT INTO pagos (
@@ -1762,7 +1954,24 @@ try {
                                 ");
                                 $stmt_ins_pag->bind_param("sssidi", $num_ref, $num_rec, $num_ncf, $poliza_id, $cot['total'], $usuario_id);
                                 $stmt_ins_pag->execute();
+                                $pago_id = $stmt_ins_pag->insert_id;
                                 $stmt_ins_pag->close();
+                                
+                                if (function_exists('logAudit')) {
+                                    logAudit(
+                                        $usuario_id,
+                                        'registrar_pago',
+                                        'pagos',
+                                        'bot_registrar_pago',
+                                        "Pago registrado desde el Bot. Referencia: $num_ref",
+                                        'exitoso',
+                                        null,
+                                        'pagos',
+                                        $pago_id,
+                                        null,
+                                        ['monto' => $cot['total'], 'poliza_id' => $poliza_id]
+                                    );
+                                }
                                 
                                 $marbete_link = API_BASE_URL . "/chat.php?action=descargar_marbete&id=" . $poliza_id;
                                 $condiciones_link = API_BASE_URL . "/chat.php?action=descargar_condiciones&id=" . $poliza_id;

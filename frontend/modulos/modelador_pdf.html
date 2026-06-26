@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modelador PDF - MÁS QUE FIANZAS</title>
+    <title>Integrador de Formularios-PDF - MÁS QUE FIANZAS</title>
     <!-- Skin Engine y Design System -->
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -105,7 +105,7 @@
         }
 
         .variable-item {
-            background: #ffffff;
+            background: var(--bg-card, #ffffff);
             border: 1.5px solid var(--mqf-border, #e2e8f0);
             border-radius: 8px;
             padding: 10px 12px;
@@ -145,7 +145,7 @@
         /* PDF Render Canvas */
         .pdf-page-container {
             position: relative;
-            background: #ffffff;
+            background: var(--bg-card, #ffffff);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             margin-bottom: 25px;
             display: inline-block;
@@ -237,7 +237,7 @@
         /* Formulario flotante de propiedades del campo */
         .field-props-popover {
             position: absolute;
-            background: #ffffff;
+            background: var(--bg-card, #ffffff);
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 16px;
@@ -279,11 +279,24 @@
         }
     </style>
 </head>
-<body data-skin="indigo">
+<body>
+    <script>
+      (function(){
+        const s = localStorage.getItem('mqf-skin') || 'indigo';
+        document.body.setAttribute('data-skin', s);
+        document.documentElement.setAttribute('data-skin', s);
+      })();
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'mqf-skin-set') {
+          document.body.setAttribute('data-skin', e.data.skin);
+          document.documentElement.setAttribute('data-skin', e.data.skin);
+        }
+      });
+    </script>
 
     <div class="mqf-module-header">
-        <h1 class="mqf-module-header__title">📋 Modelador de Formularios Inteligentes y PDFs</h1>
-        <p class="mqf-module-header__subtitle">Automatiza el llenado oficial de documentos de Multiseguros, Seguros Reservas, Midas y APS.</p>
+        <h1 class="mqf-module-header__title">📋 INTEGRADOR DE FORMULARIOS-PDF</h1>
+        <p class="mqf-module-header__subtitle">Modela y automatiza el llenado de documentos oficiales y marbetes de aseguradoras. Sube plantillas en PDF, PNG, JPG o PPT, posiciona variables del sistema con precisión milimétrica y genera documentos listos para imprimir.</p>
     </div>
 
     <!-- Gestión Superior / Ingesta de Plantillas -->
@@ -303,8 +316,8 @@
             </div>
             
             <div class="form-group" style="margin: 0;">
-                <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Archivo PDF Oficial *</label>
-                <input type="file" id="plantillaArchivo" class="form-input" accept=".pdf" required style="padding: 5px 10px;">
+                <label style="font-size: 11px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Archivo Oficial (PDF/PNG/JPG/PPTX) *</label>
+                <input type="file" id="plantillaArchivo" class="form-input" accept=".pdf,.png,.jpg,.jpeg,.ppt,.pptx" required style="padding: 5px 10px;">
             </div>
             
             <button type="submit" class="mqf-btn mqf-btn--primary" style="height: 38px;"><i class="fa-solid fa-upload"></i> Subir y Analizar</button>
@@ -314,8 +327,22 @@
     <!-- Navegación por Pestañas -->
     <div class="tabs-header">
         <button class="tab-btn active" onclick="cambiarPestaña('plantillas')" id="tabBtnPlantillas"><i class="fa-solid fa-list"></i> Plantillas Cargadas</button>
+        <button class="tab-btn" onclick="cambiarPestaña('marbetes')" id="tabBtnMarbetes"><i class="fa-solid fa-tags"></i> Marbetes Oficiales</button>
         <button class="tab-btn" onclick="cambiarPestaña('mapeador')" id="tabBtnMapeador" disabled><i class="fa-solid fa-pencil"></i> Mapeador Split-View</button>
         <button class="tab-btn" onclick="cambiarPestaña('pruebas')" id="tabBtnPruebas" disabled><i class="fa-solid fa-circle-check"></i> Pruebas de Autocompletado</button>
+    </div>
+
+    <!-- PESTAÑA: MARBETES OFICIALES -->
+    <div id="tab-marbetes" class="tab-content">
+        <div class="module-card">
+            <h3 style="margin-top: 0; font-size: 15px;"><i class="fa-solid fa-tags"></i> Listado de Marbetes Oficiales</h3>
+            <p style="font-size: 13px; color: var(--mqf-text-muted); margin-bottom: 20px;">
+                Los siguientes marbetes están integrados en el sistema de emisión de pólizas. Puedes editar sus coordenadas visualmente para que se adapten a las plantillas físicas oficiales de cada aseguradora.
+            </p>
+            <div id="gridMarbetesOficiales" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+                <!-- Las cards de marbetes se cargarán dinámicamente -->
+            </div>
+        </div>
     </div>
 
     <!-- PESTAÑA 1: PLANTILLAS CARGADAS -->
@@ -390,12 +417,26 @@
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.fecha_fin')"><i class="fa-solid fa-calendar-xmark"></i> Fin Cobertura</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.beneficiario')"><i class="fa-solid fa-building-shield"></i> Beneficiario</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.objeto_fianza')"><i class="fa-solid fa-quote-left"></i> Objeto de la Fianza</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.fianza')"><i class="fa-solid fa-shield-halved"></i> Fianza de Ley</div>
 
                     <div class="variables-group-title" style="margin-top: 14px;">Datos Primas y Costos</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.prima_neta')"><i class="fa-solid fa-money-bill-wave"></i> Prima Neta</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.itbis')"><i class="fa-solid fa-percent"></i> ITBIS (18%)</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.total_pagar')"><i class="fa-solid fa-vault"></i> Total a Pagar</div>
                     
+                    <div class="variables-group-title" style="margin-top: 14px;">Datos del Vehículo (Marbetes)</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.placa')"><i class="fa-solid fa-car-rear"></i> Placa</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.chasis')"><i class="fa-solid fa-barcode"></i> Chasis</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.marca')"><i class="fa-solid fa-tags"></i> Marca</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.modelo')"><i class="fa-solid fa-car"></i> Modelo</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.anio')"><i class="fa-solid fa-calendar"></i> Año</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.uso')"><i class="fa-solid fa-truck-ramp-box"></i> Uso / Servicio</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'vehiculo.tipo_vehiculo')"><i class="fa-solid fa-truck"></i> Tipo Vehículo</div>
+                    
+                    <div class="variables-group-title" style="margin-top: 14px;">Códigos QR y Sistema</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'sistema.qr_msqf')"><i class="fa-solid fa-qrcode"></i> QR MSQF (Código QR)</div>
+                    <div class="variable-item" draggable="true" ondragstart="drag(event, 'poliza.aseguradora_nombre')"><i class="fa-solid fa-building"></i> Aseguradora</div>
+
                     <div class="variables-group-title" style="margin-top: 14px;">Crear Campo de Entrada Manual</div>
                     <div class="variable-item" draggable="true" ondragstart="drag(event, '')" style="border-style: dashed; border-color: var(--mqf-primary); color: var(--mqf-primary); background: transparent;"><i class="fa-solid fa-plus"></i> Entrada Personalizada</div>
                 </div>
@@ -406,6 +447,9 @@
                 <!-- Workspace con PDF y Drop Zones -->
                 <div class="editor-workspace" id="editorWorkspace" style="margin: 0; height: 100%; position: relative; width: 100%;">
                     <div class="zoom-controls" style="position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px;">
+                        <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" id="btnSnapToGrid" onclick="toggleSnapToGrid()" style="height: 32px; padding: 0 10px;" title="Ajustar a cuadrícula"><i class="fa-solid fa-grip"></i> Grid: OFF</button>
+                        <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" id="btnUndo" onclick="deshacer()" style="height: 32px; padding: 0 10px;" title="Deshacer (Ctrl+Z)" disabled><i class="fa-solid fa-arrow-rotate-left"></i></button>
+                        <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" id="btnRedo" onclick="rehacer()" style="height: 32px; padding: 0 10px;" title="Rehacer (Ctrl+Y)" disabled><i class="fa-solid fa-arrow-rotate-right"></i></button>
                         <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="zoomIn()" style="height: 32px; padding: 0 10px;" title="Acercar (Zoom +)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
                         <button class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="zoomOut()" style="height: 32px; padding: 0 10px;" title="Alejar (Zoom -)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                         <span id="zoomPercentLabel" style="background: rgba(15, 23, 42, 0.85); color: white; padding: 0 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: flex; align-items: center; height: 32px; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px);">125%</span>
@@ -431,7 +475,7 @@
     <div id="tab-pruebas" class="tab-content">
         <div class="split-view-container" style="grid-template-columns: 350px 1fr;">
             <!-- Izquierda: Entrada de Datos -->
-            <div class="variables-panel" style="background: #ffffff;">
+            <div class="variables-panel" style="background: var(--bg-card, #ffffff);">
                 <h4 style="margin: 0; font-size: 14px;"><i class="fa-solid fa-sliders"></i> Simulador de Solicitudes</h4>
                 <p style="font-size: 11px; color: var(--mqf-text-muted); margin: 0; line-height: 1.4;">
                     Elige una póliza del sistema o una cotización de prueba para alimentar automáticamente los campos del formulario.
@@ -513,6 +557,17 @@
             <div class="form-group" style="margin: 0;">
                 <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Color Texto</label>
                 <input type="color" id="popoverColor" class="form-input" style="height: 34px; padding: 2px;">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Posición X (mm)</label>
+                <input type="number" id="popoverPosX" class="form-input" min="0" max="300" step="0.1">
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Posición Y (mm)</label>
+                <input type="number" id="popoverPosY" class="form-input" min="0" max="400" step="0.1">
             </div>
         </div>
 

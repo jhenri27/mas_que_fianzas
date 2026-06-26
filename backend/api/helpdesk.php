@@ -86,7 +86,7 @@ try {
             $sql_t = "
                 SELECT t.*, u.username as creador_username, u.nombre as creador_nombre, u.apellido as creador_apellido
                 FROM tickets_soporte t
-                JOIN usuarios u ON t.usuario_id = u.id
+                LEFT JOIN usuarios u ON t.usuario_id = u.id
                 WHERE t.id = ?
             ";
             $stmt_t = $db->prepare($sql_t);
@@ -147,7 +147,7 @@ try {
             $sql_list = "
                 SELECT t.*, u.username as creador_username, u.nombre as creador_nombre, u.apellido as creador_apellido
                 FROM tickets_soporte t
-                JOIN usuarios u ON t.usuario_id = u.id
+                LEFT JOIN usuarios u ON t.usuario_id = u.id
                 ORDER BY t.fecha_creacion DESC
             ";
             $stmt_list = $db->prepare($sql_list);
@@ -155,7 +155,7 @@ try {
             $sql_list = "
                 SELECT t.*, u.username as creador_username, u.nombre as creador_nombre, u.apellido as creador_apellido
                 FROM tickets_soporte t
-                JOIN usuarios u ON t.usuario_id = u.id
+                LEFT JOIN usuarios u ON t.usuario_id = u.id
                 WHERE t.usuario_id = ?
                 ORDER BY t.fecha_creacion DESC
             ";

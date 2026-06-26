@@ -64,26 +64,46 @@ try {
         $whereFiltro = "emitida_por = " . intval($usuario_actual);
     }
     
-    // 1. Pólizas Emitidas hoy (Diario)
-    $sql_diario = "SELECT COUNT(*) as total FROM polizas WHERE DATE(fecha_emision) = CURDATE() AND $whereFiltro";
-    $res_diario = $db->query($sql_diario);
-    $total_diario = $res_diario ? (int)$res_diario->fetch_assoc()['total'] : 0;
+    // Obtener mes y año del filtro
+    $mes = $_GET['mes'] ?? date('Y-m');
+    if (!preg_match('/^\d{4}-\d{2}$/', $mes)) {
+        $mes = date('Y-m');
+    }
+    list($year, $month) = explode('-', $mes);
+    $year = (int)$year;
+    $month = (int)$month;
+    $isCurrentMonth = ($mes === date('Y-m'));
     
-    // 2. Pólizas Emitidas en los últimos 7 días (Semanal)
-    $sql_semanal = "SELECT COUNT(*) as total FROM polizas WHERE fecha_emision >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND $whereFiltro";
-    $res_semanal = $db->query($sql_semanal);
-    $total_semanal = $res_semanal ? (int)$res_semanal->fetch_assoc()['total'] : 0;
-    
-    // 3. Pólizas Emitidas en los últimos 30 días (Mensual)
-    $sql_mensual = "SELECT COUNT(*) as total FROM polizas WHERE fecha_emision >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND $whereFiltro";
+    // 1. Pólizas Emitidas en el mes seleccionado (Mensual)
+    $sql_mensual = "SELECT COUNT(*) as total FROM polizas WHERE YEAR(fecha_emision) = $year AND MONTH(fecha_emision) = $month AND $whereFiltro";
     $res_mensual = $db->query($sql_mensual);
     $total_mensual = $res_mensual ? (int)$res_mensual->fetch_assoc()['total'] : 0;
     
-    // 4. Top 5 clientes con más pólizas y sus conteos
+    $total_diario = 0;
+    $total_semanal = 0;
+    
+    if ($isCurrentMonth) {
+        // Pólizas hoy
+        $sql_diario = "SELECT COUNT(*) as total FROM polizas WHERE DATE(fecha_emision) = CURDATE() AND $whereFiltro";
+        $res_diario = $db->query($sql_diario);
+        $total_diario = $res_diario ? (int)$res_diario->fetch_assoc()['total'] : 0;
+        
+        // Pólizas últimos 7 días
+        $sql_semanal = "SELECT COUNT(*) as total FROM polizas WHERE fecha_emision >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND $whereFiltro";
+        $res_semanal = $db->query($sql_semanal);
+        $total_semanal = $res_semanal ? (int)$res_semanal->fetch_assoc()['total'] : 0;
+    } else {
+        // Promedios para meses anteriores
+        $days_in_month = (int)date('t', strtotime("$year-$month-01"));
+        $total_diario = $days_in_month > 0 ? round($total_mensual / $days_in_month, 1) : 0;
+        $total_semanal = $days_in_month > 0 ? round($total_mensual / ($days_in_month / 7), 1) : 0;
+    }
+    
+    // 4. Top 5 clientes del mes seleccionado
     $sql_top5 = "SELECT c.nombre as cliente_nombre, c.cedula as cliente_cedula, COUNT(p.id) as cantidad_polizas 
                  FROM polizas p 
                  JOIN clientes c ON p.cliente_id = c.id 
-                 WHERE $whereFiltro
+                 WHERE YEAR(p.fecha_emision) = $year AND MONTH(p.fecha_emision) = $month AND $whereFiltro
                  GROUP BY c.id, c.nombre, c.cedula
                  ORDER BY cantidad_polizas DESC 
                  LIMIT 5";
@@ -100,7 +120,6 @@ try {
         }
     }
     
-    // Retornar la respuesta JSON premium
     echo json_encode([
         "exito" => true,
         "mensaje" => "Estadísticas obtenidas correctamente",
@@ -109,7 +128,8 @@ try {
             "diario" => $total_diario,
             "semanal" => $total_semanal,
             "mensual" => $total_mensual,
-            "top_clientes" => $top5
+            "top_clientes" => $top5,
+            "es_mes_actual" => $isCurrentMonth
         ]
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 

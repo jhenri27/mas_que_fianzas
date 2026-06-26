@@ -54,6 +54,11 @@ ini_set('log_errors', 1);
 ini_set('error_log', dirname(__FILE__) . '/logs/error.log');
 date_default_timezone_set(APP_TIMEZONE);
 
+// Inicializar el Motor de Generación de Experiencia de BOTS (MOTGE-BOTS)
+require_once __DIR__ . '/lib/MOTGE.php';
+require_once __DIR__ . '/lib/ValidadorDocumentos.php';
+MOTGE::init();
+
 // ==================== CONEXIÓN A BASE DE DATOS ====================
 class Database {
     private $conn;

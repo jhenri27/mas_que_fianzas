@@ -8,9 +8,9 @@
     <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
-    <link rel="stylesheet" href="../assets/dashboard.css?v=9.0">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
     <style>
         /* ── Módulo embebido en iframe ── */
         .sidebar { display:none!important; }
@@ -35,16 +35,16 @@
 
         .tabs-bar {
             display:flex; gap:4px; margin-bottom:0;
-            border-bottom:2px solid #e0e7ff;
+            border-bottom:2px solid var(--mqf-border, #e0e7ff);
         }
         .tab-btn {
             padding:10px 20px; border:none; background:transparent;
             cursor:pointer; font-size:13px; font-weight:600;
-            color:#64748b; border-bottom:3px solid transparent;
+            color:var(--mqf-text-muted, #64748b); border-bottom:3px solid transparent;
             margin-bottom:-2px; transition:all .2s;
         }
-        .tab-btn.active { color:#4f46e5; border-bottom-color:#4f46e5; }
-        .tab-btn:hover:not(.active) { color:#4f46e5; background:#f0f0ff; border-radius:6px 6px 0 0; }
+        .tab-btn.active { color:var(--mqf-primary, #4f46e5); border-bottom-color:var(--mqf-primary, #4f46e5); }
+        .tab-btn:hover:not(.active) { color:var(--mqf-primary, #4f46e5); background:var(--mqf-primary-hover, #f0f0ff); border-radius:6px 6px 0 0; }
         .tab-panel { display:none; animation:fadeIn .25s ease; }
         .tab-panel.active { display:block; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
@@ -67,7 +67,7 @@
         .filter-bar input:focus, .filter-bar select:focus { background:rgba(255,255,255,.28); border-color:#fff; }
         .filter-bar select option { background:#4f46e5; color:#fff; }
         .btn-filtrar {
-            padding:9px 22px; background:#fff; color:#4f46e5; border:none;
+            padding:9px 22px; background: var(--bg-card, #ffffff); color:#4f46e5; border:none;
             border-radius:7px; font-weight:700; cursor:pointer;
             display:flex; align-items:center; gap:6px; font-size:13px;
             box-shadow:0 2px 4px rgba(0,0,0,.1); transition:all .2s;
@@ -75,7 +75,7 @@
         .btn-filtrar:hover { transform:translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,.15); }
 
         /* ── Tabla ── */
-        .tbl-wrap { background:#fff; border-radius:0 0 10px 10px; overflow-x:auto; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+        .tbl-wrap { background: var(--bg-card, #ffffff); border-radius:0 0 10px 10px; overflow-x:auto; box-shadow:0 1px 3px rgba(0,0,0,.08); }
         .data-table { width:100%; border-collapse:collapse; min-width:1100px; }
         .data-table th { padding:12px 10px; background:var(--mqf-primary-light); color:var(--mqf-primary-dark); font-weight:700; font-size:var(--mqf-text-xs); text-transform:uppercase; letter-spacing:.04em; text-align:left; border-bottom:2px solid var(--mqf-border); white-space:nowrap; }
         .data-table td { padding:12px 10px; border-bottom:1px solid var(--mqf-border); color:var(--mqf-text-secondary); font-size:var(--mqf-text-sm); }
@@ -99,7 +99,7 @@
 
         /* ── Pagination ── */
         .pagination-bar { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#64748b; border-top:1px solid #f1f5f9; }
-        .pg-btn { border:1px solid #e0e7ff; background:#fff; color:#4f46e5; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px; }
+        .pg-btn { border:1px solid #e0e7ff; background: var(--bg-card, #ffffff); color:#4f46e5; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:12px; }
         .pg-btn:hover { background:#f0f0ff; }
 
         /* ── Wizard Nueva Póliza ── */
@@ -121,7 +121,7 @@
         .wizard-step.active .step-num { background:#4f46e5; color:#fff; }
         .wizard-step.done .step-num { background:#16a34a; color:#fff; }
 
-        .wizard-body { background:#fff; border:1px solid #e0e7ff; border-radius:12px; padding:28px; }
+        .wizard-body { background: var(--bg-card, #ffffff); border:1px solid #e0e7ff; border-radius:12px; padding:28px; }
         .wizard-nav { display:flex; justify-content:space-between; margin-top:28px; padding-top:18px; border-top:1px solid #f1f5f9; }
 
         /* Formulario */
@@ -134,7 +134,7 @@
         .form-group input, .form-group select, .form-group textarea {
             padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px;
             font-size:13px; color:#1e293b; outline:none; transition:border-color .2s;
-            background:#fff;
+            background: var(--bg-card, #ffffff);
         }
         .form-group input:focus, .form-group select:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,.08); }
         .form-group .hint { font-size:11px; color:#94a3b8; }
@@ -156,7 +156,7 @@
         }
         .modal-overlay.open { display:flex; animation:fadeIn .25s ease; }
         .modal-box {
-            background:#fff; border-radius:16px; width:92%; max-width:760px;
+            background: var(--bg-card, #ffffff); border-radius:16px; width:92%; max-width:760px;
             max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25);
         }
         .modal-header {
@@ -181,7 +181,7 @@
         .btn-primary:hover { background:#4338ca; transform:translateY(-1px); }
         .btn-success { background:#16a34a; color:#fff; }
         .btn-success:hover { background:#15803d; }
-        .btn-outline { background:#fff; color:#4f46e5; border:1.5px solid #4f46e5; }
+        .btn-outline { background: var(--bg-card, #ffffff); color:#4f46e5; border:1.5px solid #4f46e5; }
         .btn-outline:hover { background:#f0f0ff; }
         .btn-danger { background:#dc2626; color:#fff; }
         .btn-danger:hover { background:#b91c1c; }
@@ -190,7 +190,7 @@
         .btn-sm { padding:6px 12px; font-size:12px; }
 
         /* Comisiones Tab */
-        .comision-row { background:#fff; border:1px solid #e0e7ff; border-radius:8px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .comision-row { background: var(--bg-card, #ffffff); border:1px solid #e0e7ff; border-radius:8px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
         .comision-row .cr-meta { font-size:12px; color:#64748b; }
         .comision-row .cr-monto { font-size:18px; font-weight:700; color:#4f46e5; }
         .comision-row.pendiente .cr-monto { color:#d97706; }
@@ -375,7 +375,7 @@
                             </button>
                         </div>
                         <input type="hidden" id="w-cliente-id">
-                        <div id="cliente-sugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e0e7ff;border-radius:8px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;"></div>
+                        <div id="cliente-sugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background: var(--bg-card, #ffffff);border:1px solid #e0e7ff;border-radius:8px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;"></div>
                         <span class="hint" id="cliente-seleccionado-info" style="color:#16a34a;display:none;"><i class="fa-solid fa-circle-check"></i> Cliente seleccionado</span>
                     </div>
                     <div class="form-group">
@@ -586,10 +586,10 @@
          TAB 4: PROYECCIÓN DE VENTAS (Plan Proyectado)
     ════════════════════════════════════ -->
     <div id="tab-proyeccion-ventas" class="tab-panel">
-        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 15px;">
+        <div style="background: var(--mqf-surface, white); border-radius: 12px; padding: 24px; box-shadow: var(--mqf-shadow-sm, 0 4px 6px rgba(0,0,0,0.05)); border: 1px solid var(--mqf-border, var(--border));">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 1px solid var(--mqf-border, #e5e7eb); padding-bottom: 15px;">
                 <div>
-                    <h3 style="margin:0; font-size:16px; font-weight:600; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
+                    <h3 style="margin:0; font-size:16px; font-weight:600; color: var(--mqf-text, var(--text-dark)); display:flex; align-items:center; gap:8px;">
                         <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Proyección y Metas Mensuales de Ventas
                     </h3>
                     <p style="margin:5px 0 0 0; font-size:12px; color:var(--text-muted);">
@@ -598,8 +598,8 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="display:flex; align-items:center; gap:5px;">
-                        <label style="font-size:12px; font-weight:500; color:var(--text-dark);">Período:</label>
-                        <select id="proy-filtro-mes" class="form-control" style="width:110px; padding:6px 10px; border-radius:6px; border:1px solid #d1d5db; font-size:12px; height: 34px;" onchange="cargarProyeccionesVentas()">
+                        <label style="font-size:12px; font-weight:500; color: var(--mqf-text, var(--text-dark));">Período:</label>
+                        <select id="proy-filtro-mes" class="form-control" style="width:110px; padding:6px 10px; border-radius:6px; border:1px solid var(--mqf-border, #d1d5db); font-size:12px; height: 34px; background: var(--mqf-surface-2, white); color: var(--mqf-text, inherit);" onchange="cargarProyeccionesVentas()">
                             <option value="1">Enero</option>
                             <option value="2">Febrero</option>
                             <option value="3">Marzo</option>
@@ -613,7 +613,7 @@
                             <option value="11">Noviembre</option>
                             <option value="12">Diciembre</option>
                         </select>
-                        <input type="number" id="proy-filtro-anio" class="form-control" style="width:80px; padding:6px 10px; border-radius:6px; border:1px solid #d1d5db; font-size:12px; height: 34px;" value="2026" min="2020" max="2100" onchange="cargarProyeccionesVentas()">
+                        <input type="number" id="proy-filtro-anio" class="form-control" style="width:80px; padding:6px 10px; border-radius:6px; border:1px solid var(--mqf-border, #d1d5db); font-size:12px; height: 34px; background: var(--mqf-surface-2, white); color: var(--mqf-text, inherit);" value="2026" min="2020" max="2100" onchange="cargarProyeccionesVentas()">
                     </div>
                     <button class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="guardarProyeccionesVentas()" style="border-radius:6px; height: 34px; padding: 0 12px; display:inline-flex; align-items:center; gap:6px;">
                         <i class="fa-solid fa-floppy-disk"></i> Guardar
@@ -627,11 +627,11 @@
             </div>
 
             <div id="proy-contenedor" style="display:none;">
-                <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left; border: 1px solid var(--mqf-border, #e5e7eb); border-radius: 8px; overflow: hidden;">
                     <thead>
-                        <tr style="background:#f8fafc; border-bottom:1px solid #e5e7eb;">
-                            <th style="padding:12px; font-weight:600; font-size:12px; color:#475569;">Producto</th>
-                            <th style="padding:12px; font-weight:600; font-size:12px; color:#475569; width:220px; text-align:center;">Meta (Cantidad de Pólizas)</th>
+                        <tr style="background: var(--mqf-surface-2, #f8fafc); border-bottom: 1px solid var(--mqf-border, #e5e7eb);">
+                            <th style="padding:12px; font-weight:600; font-size:12px; color: var(--mqf-text-secondary, #475569);">Producto</th>
+                            <th style="padding:12px; font-weight:600; font-size:12px; color: var(--mqf-text-secondary, #475569); width:220px; text-align:center;">Meta (Cantidad de Pólizas)</th>
                         </tr>
                     </thead>
                     <tbody id="proy-tabla-body">
@@ -893,7 +893,7 @@
 if (typeof window.LOGOS === 'undefined') window.LOGOS = {};
 console.log('Logos Cargados:', Object.keys(window.LOGOS));
 </script>
-<script src="../assets/polizas-pdf.js?v=10"></script>
+<script src="../assets/polizas-pdf.js?v=12"></script>
 <script>
 'use strict';
 
@@ -955,6 +955,19 @@ function abrirTab(tab) {
     document.getElementById(tab).classList.add('active');
     const btn = document.getElementById('tab-btn-' + tab.replace('tab-', ''));
     if (btn) btn.classList.add('active');
+    
+    // Sync skin with nested comisiones-iframe
+    if (tab === 'tab-comisiones') {
+        const comIframe = document.getElementById('comisiones-iframe');
+        if (comIframe && comIframe.contentWindow) {
+            const currentSkin = document.body.getAttribute('data-skin') || localStorage.getItem('mqf-skin') || 'indigo';
+            try {
+                comIframe.contentWindow.postMessage({ type: 'mqf-skin-set', skin: currentSkin }, '*');
+            } catch(e) {
+                console.warn('[Pólizas] No se pudo enviar skin a comisiones-iframe:', e);
+            }
+        }
+    }
 }
 
 // ═══════════════════════════════════════
@@ -1231,7 +1244,7 @@ function imprimirFichaAuditoriaDet() {
                     color: #1e293b;
                     margin: 0;
                     padding: 40px;
-                    background: white;
+                    background: var(--bg-card, #ffffff);
                 }
                 .print-container {
                     max-width: 700px;
@@ -2183,7 +2196,7 @@ async function buscarCotizacion() {
                 <div style="flex:1;">
                     <i class="fa-solid fa-circle-check"></i> Cotización cargada: <strong>${cot.tipo || ''} ${cot.cobertura || ''}</strong> — Prima: <strong>${fmtMoneda(prima)}</strong>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="actualizarCotizacionWizard()" style="padding:4px 10px; font-size:11px; white-space:nowrap; background:#fff; border-color:#86efac; color:#166534;">
+                <button class="btn btn-secondary btn-sm" onclick="actualizarCotizacionWizard()" style="padding:4px 10px; font-size:11px; white-space:nowrap; background: var(--bg-card, #ffffff); border-color:#86efac; color:#166534;">
                     <i class="fa-solid fa-rotate"></i> Guardar Cambios en Cotización
                 </button>
             </div>`;
@@ -2439,10 +2452,10 @@ async function cargarProyeccionesVentas() {
             } else {
                 res.datos.forEach(p => {
                     tbody.innerHTML += `
-                        <tr style="border-bottom:1px solid #f1f5f9;">
-                            <td style="padding:14px; font-size:13px; font-weight:500; color:var(--text-dark);">${p.producto_nombre}</td>
+                        <tr style="border-bottom:1px solid var(--mqf-border, #f1f5f9);">
+                            <td style="padding:14px; font-size:13px; font-weight:500; color: var(--mqf-text, var(--text-dark));">${p.producto_nombre}</td>
                             <td style="padding:14px; text-align:center; width:220px;">
-                                <input type="number" class="form-control proy-input-meta" data-producto="${p.producto_nombre}" value="${p.cantidad_proyectada}" min="0" style="width:120px; padding:6px 12px; border-radius:6px; border:1px solid #d1d5db; text-align:center; margin:0 auto; display:block; font-size:13px; font-weight:600; height:34px;">
+                                <input type="number" class="form-control proy-input-meta" data-producto="${p.producto_nombre}" value="${p.cantidad_proyectada}" min="0" style="width:120px; padding:6px 12px; border-radius:6px; border:1px solid var(--mqf-border, #d1d5db); text-align:center; margin:0 auto; display:block; font-size:13px; font-weight:600; height:34px; background: var(--mqf-surface-2, white); color: var(--mqf-text, inherit);">
                             </td>
                         </tr>
                     `;
@@ -2502,8 +2515,22 @@ async function guardarProyeccionesVentas() {
     document.body.setAttribute('data-skin', s);
     document.documentElement.setAttribute('data-skin', s);
   })();
+
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'mqf-skin-set') {
+      document.body.setAttribute('data-skin', e.data.skin);
+      document.documentElement.setAttribute('data-skin', e.data.skin);
+      const comIframe = document.getElementById('comisiones-iframe');
+      if (comIframe && comIframe.contentWindow) {
+        try {
+          comIframe.contentWindow.postMessage({ type: 'mqf-skin-set', skin: e.data.skin }, '*');
+        } catch(err) {
+          console.warn('[Pólizas] No se pudo reenviar skin a comisiones-iframe:', err);
+        }
+      }
+    }
+  });
 </script>
-<script>window.addEventListener('message',function(e){if(e.data&&e.data.type==='mqf-skin-set'){document.body.setAttribute('data-skin',e.data.skin);document.documentElement.setAttribute('data-skin',e.data.skin);}});</script>
 
 <script>
 // ═══════════════════════════════════════════════════

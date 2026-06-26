@@ -44,8 +44,20 @@ if (!$usuario_id) {
     exit;
 }
 
+// ── CONTROL DE ACCESO GRANULADO (NOFTRAB) ────────────────────────────────────
 $action = $_GET['action'] ?? '';
 $db = Database::getInstance()->getConnection();
+
+// Modificaciones requieren permisos de modelador; lecturas y autollenado solo requieren sesión activa
+$write_actions = ['subir_plantilla', 'guardar_mapeo'];
+if (in_array($action, $write_actions)) {
+    if ($usuario_id !== 1 && !tienePermiso($usuario_id, 'TAB_PDF_MODELADOR') && !tienePermiso($usuario_id, 'CONF_TOTAL')) {
+        http_response_code(403);
+        echo json_encode(["exito" => false, "mensaje" => "Acceso denegado: Se requiere permiso de Integrador de Formularios-PDF."]);
+        exit;
+    }
+}
+
 
 // Helper para resolver variables de Póliza Emitida
 function resolverVariablesPoliza($db, $poliza_id) {
@@ -69,6 +81,17 @@ function resolverVariablesPoliza($db, $poliza_id) {
     
     if (!$cliente) $cliente = [];
     
+    // Obtener datos del vehículo
+    $vehiculo = [];
+    if (!empty($poliza['vehiculo_id'])) {
+        $stmt_v = $db->prepare("SELECT * FROM vehiculos WHERE id = ?");
+        $stmt_v->bind_param("i", $poliza['vehiculo_id']);
+        $stmt_v->execute();
+        $vehiculo = $stmt_v->get_result()->fetch_assoc();
+        $stmt_v->close();
+    }
+    if (!$vehiculo) $vehiculo = [];
+    
     return [
         'cliente.nombre' => $cliente['nombre'] ?? '',
         'cliente.cedula' => $cliente['cedula'] ?? '',
@@ -83,7 +106,15 @@ function resolverVariablesPoliza($db, $poliza_id) {
         'poliza.total_pagar' => $poliza['monto_total'] ?? '',
         'poliza.beneficiario' => $poliza['beneficiario'] ?? '',
         'poliza.objeto_fianza' => $poliza['objeto_referencia'] ?? $poliza['observaciones'] ?? '',
-        'poliza.aseguradora_nombre' => $poliza['aseguradora_nombre'] ?? ''
+        'poliza.aseguradora_nombre' => $poliza['aseguradora_nombre'] ?? '',
+        'vehiculo.placa' => $vehiculo['placa'] ?? '',
+        'vehiculo.chasis' => $vehiculo['chasis'] ?? '',
+        'vehiculo.marca' => $vehiculo['marca'] ?? '',
+        'vehiculo.modelo' => $vehiculo['modelo'] ?? '',
+        'vehiculo.anio' => $vehiculo['anio'] ?? '',
+        'vehiculo.uso' => $vehiculo['uso'] ?? '',
+        'vehiculo.tipo_vehiculo' => $vehiculo['tipo_vehiculo'] ?? '',
+        'sistema.qr_msqf' => 'MSQF-' . ($poliza['numero_poliza'] ?? $poliza_id)
     ];
 }
 
@@ -112,7 +143,15 @@ function resolverVariablesCotizacion($db, $cotizacion_id) {
         'poliza.total_pagar' => $cot['total'] ?? '',
         'poliza.beneficiario' => $cot['beneficiario'] ?? '',
         'poliza.objeto_fianza' => $cot['subtipo'] ?? $cot['cobertura'] ?? '',
-        'poliza.aseguradora_nombre' => $cot['aseguradora'] ?? ''
+        'poliza.aseguradora_nombre' => $cot['aseguradora'] ?? '',
+        'vehiculo.placa' => '',
+        'vehiculo.chasis' => '',
+        'vehiculo.marca' => '',
+        'vehiculo.modelo' => '',
+        'vehiculo.anio' => '',
+        'vehiculo.uso' => $cot['uso_vehiculo'] ?? $cot['uso'] ?? '',
+        'vehiculo.tipo_vehiculo' => $cot['tipo_vehiculo'] ?? '',
+        'sistema.qr_msqf' => 'MSQF-' . ($cot['numero'] ?? $cotizacion_id)
     ];
 }
 
@@ -120,9 +159,15 @@ try {
     switch ($action) {
         case 'listar_plantillas':
             // Retornar las plantillas asociadas a aseguradoras
+            $tipo = $_GET['tipo'] ?? '';
+            $where = "";
+            if ($tipo === 'marbete' || $tipo === 'documento') {
+                $where = "WHERE p.tipo_plantilla = '$tipo'";
+            }
             $sql = "SELECT p.*, a.nombre as aseguradora_nombre 
                     FROM pdf_plantillas p 
                     LEFT JOIN fianza_aseguradoras a ON p.aseguradora_id = a.id 
+                    $where
                     ORDER BY p.id DESC";
             $res = $db->query($sql);
             $plantillas = [];
@@ -148,6 +193,10 @@ try {
             $nombre = trim($_POST['nombre'] ?? '');
             $ancho_mm = floatval($_POST['ancho_mm'] ?? 215.9); // Letter por defecto
             $alto_mm = floatval($_POST['alto_mm'] ?? 279.4);
+            $tipo_plantilla = trim($_POST['tipo_plantilla'] ?? 'documento');
+            if (!in_array($tipo_plantilla, ['documento', 'marbete'])) {
+                $tipo_plantilla = 'documento';
+            }
 
             if (empty($nombre)) {
                 throw new Exception("El nombre de la plantilla es obligatorio.");
@@ -165,16 +214,57 @@ try {
             }
 
             // Generar ruta de destino
-            $file_ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            if (strtolower($file_ext) !== 'pdf') {
-                throw new Exception("Solo se permiten archivos en formato PDF.");
+            $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowed_exts = ['pdf', 'png', 'jpg', 'jpeg', 'ppt', 'pptx'];
+            if (!in_array($file_ext, $allowed_exts)) {
+                throw new Exception("Formato no soportado. Formatos válidos: PDF, PNG, JPG, JPEG, PPT, PPTX.");
+            }
+
+            $temp_upload_path = $dir_templates . '/temp_' . time() . '_' . rand(1000, 9999) . '.' . $file_ext;
+            if (!move_uploaded_file($file['tmp_name'], $temp_upload_path)) {
+                throw new Exception("Error al mover el archivo subido.");
             }
 
             $safe_name = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $nombre) . '_' . time() . '.pdf';
             $dest_path = $dir_templates . '/' . $safe_name;
 
-            if (!move_uploaded_file($file['tmp_name'], $dest_path)) {
-                throw new Exception("Error al mover el archivo subido.");
+            // Convertir si no es PDF
+            if ($file_ext === 'pdf') {
+                rename($temp_upload_path, $dest_path);
+            } elseif (in_array($file_ext, ['png', 'jpg', 'jpeg'])) {
+                // Convertir imagen a PDF usando Python y fitz
+                $python_exe = 'python';
+                $script_path = dirname(__FILE__) . '/../python/pdf_extractor.py';
+                $cmd = "$python_exe " . escapeshellarg($script_path) . " img2pdf " . escapeshellarg($temp_upload_path) . " " . escapeshellarg($dest_path);
+                $output = shell_exec($cmd);
+                if (file_exists($temp_upload_path)) {
+                    unlink($temp_upload_path);
+                }
+                
+                // Verificar si se creó el PDF
+                if (!file_exists($dest_path)) {
+                    throw new Exception("Error al convertir la imagen a PDF: " . $output);
+                }
+            } elseif (in_array($file_ext, ['ppt', 'pptx'])) {
+                // Convertir PPT/PPTX a PDF usando PowerShell y PowerPoint COM
+                $abs_temp = realpath($temp_upload_path);
+                $abs_dest = $dir_templates . '/' . $safe_name;
+                
+                $ps_cmd = "\$ppt = New-Object -ComObject PowerPoint.Application; ";
+                $ps_cmd .= "\$pres = \$ppt.Presentations.Open('" . $abs_temp . "', 1, 1, 0); ";
+                $ps_cmd .= "\$pres.SaveAs('" . str_replace('/', '\\', $abs_dest) . "', 32); ";
+                $ps_cmd .= "\$pres.Close(); \$ppt.Quit();";
+                
+                $cmd = "powershell -Command " . escapeshellarg($ps_cmd);
+                $output = shell_exec($cmd);
+                if (file_exists($temp_upload_path)) {
+                    unlink($temp_upload_path);
+                }
+                
+                // Verificar si se creó el PDF
+                if (!file_exists($dest_path)) {
+                    throw new Exception("Error al convertir PPT/PPTX a PDF: " . $output);
+                }
             }
 
             // Invocar script de Python para escanear y detectar AcroForm fields
@@ -193,9 +283,9 @@ try {
             }
 
             // Insertar plantilla
-            $stmt = $db->prepare("INSERT INTO pdf_plantillas (aseguradora_id, aseguradora_nombre, nombre, archivo_base, tipo_archivo, ancho_mm, alto_mm, estado) VALUES (?, ?, ?, ?, 'pdf', ?, ?, 1)");
+            $stmt = $db->prepare("INSERT INTO pdf_plantillas (aseguradora_id, aseguradora_nombre, nombre, archivo_base, tipo_archivo, ancho_mm, alto_mm, estado, tipo_plantilla) VALUES (?, ?, ?, ?, 'pdf', ?, ?, 1, ?)");
             $archivo_rel = 'uploads/pdf_templates/' . $safe_name;
-            $stmt->bind_param("isssdd", $aseguradora_id, $aseg_nombre, $nombre, $archivo_rel, $ancho_mm, $alto_mm);
+            $stmt->bind_param("isssdds", $aseguradora_id, $aseg_nombre, $nombre, $archivo_rel, $ancho_mm, $alto_mm, $tipo_plantilla);
             $stmt->execute();
             $plantilla_id = $db->insert_id;
             $stmt->close();
@@ -460,6 +550,40 @@ try {
             } else {
                 throw new Exception("Error en el procesador Python: " . ($res_python['mensaje'] ?? $output));
             }
+            break;
+
+        case 'obtener_marbete_activo':
+            $aseg = trim($_GET['aseguradora'] ?? '');
+            if (empty($aseg)) {
+                throw new Exception("Nombre de aseguradora no provisto.");
+            }
+            
+            // Buscar la plantilla tipo 'marbete' asociada a esta aseguradora (búsqueda parcial)
+            $aseg_esc = $db->real_escape_string($aseg);
+            $q = "SELECT * FROM pdf_plantillas 
+                  WHERE tipo_plantilla = 'marbete' 
+                    AND (aseguradora_nombre LIKE '%$aseg_esc%' OR nombre LIKE '%$aseg_esc%')
+                  LIMIT 1";
+            $res = $db->query($q);
+            if ($res->num_rows === 0) {
+                echo json_encode(["exito" => false, "mensaje" => "No se encontró plantilla de marbete para la aseguradora."]);
+                break;
+            }
+            $plantilla = $res->fetch_assoc();
+            $plantilla_id = $plantilla['id'];
+            
+            // Obtener los campos
+            $stmt = $db->prepare("SELECT * FROM pdf_campos WHERE plantilla_id = ? ORDER BY id ASC");
+            $stmt->bind_param("i", $plantilla_id);
+            $stmt->execute();
+            $campos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+            
+            echo json_encode([
+                "exito" => true,
+                "plantilla" => $plantilla,
+                "campos" => $campos
+            ]);
             break;
 
         default:

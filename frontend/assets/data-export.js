@@ -83,7 +83,7 @@ function exportarListado(formato, modulo = 'clientes') {
     if (exportMenu) exportMenu.style.display = 'none';
 }
 
-function imprimirItem(id, modulo = 'clientes') {
+async function imprimirItem(id, modulo = 'clientes') {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -128,214 +128,464 @@ function imprimirItem(id, modulo = 'clientes') {
         const c = window.cotizacionesData.find(x => x.numero == id);
         if (!c) { MQF.toast('Cotización no encontrada', 'error'); return; }
         
-        dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
+        await dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
     }
 }
 
-function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
+async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     const cfg = getInstitutionalData();
-    const formatter = new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' });
-    const fmt = (n) => formatter.format(n || 0);
-
-    const primaryColor = [25, 99, 163];   
-    const lightColor = [220, 235, 248];  
-    const textColor = [50, 50, 50];
-
-    // Logo
-    if (logoImg) {
-        try {
-            doc.addImage(logoImg, 'PNG', 14, 10, 50, 22);
-        } catch (e) {
-            console.warn('Error rendering logoImg in PDF, continuing without logo:', e);
-        }
-    } else {
-        doc.setFontSize(22); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
-        doc.text(cfg.empresa_nombre, 14, 25);
-    }
-    
-    // Header Right
-    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
-    doc.text('Usuario:', 150, 25, {align: 'right'}); doc.text('Generado Sistema', 196, 25, {align: 'right'});
-    doc.text('Fecha:', 150, 29, {align: 'right'}); doc.text(new Date().toLocaleString('es-DO'), 196, 29, {align: 'right'});
-    doc.text('Vigencia:', 150, 33, {align: 'right'}); doc.text('30 días', 196, 33, {align: 'right'});
-    doc.text('Moneda:', 150, 37, {align: 'right'}); doc.text('RD$ Peso Dominicano', 196, 37, {align: 'right'});
-    
-    // Titulo COTIZACION
-    doc.setFontSize(18); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
-    doc.text('COTIZACIÓN', 14, 45);
-    doc.setFontSize(14); doc.setTextColor(...textColor); doc.text(c.numero || 'S/N', 14, 52);
-
-    // Insurer Logo (Aseguradora)
+    const formatter = new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => 'RD$ ' + formatter.format(n || 0);
     const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
-    if (esSeguroLey) {
-        let asegKey = (c.aseguradora || 'MULTISEGUROS').toUpperCase().trim();
-        let logoAseg = null;
-        if (window.LOGOS) {
-            if (window.LOGOS[asegKey]) {
-                logoAseg = window.LOGOS[asegKey];
-            } else {
-                const foundKey = Object.keys(window.LOGOS).find(k => asegKey.includes(k) || k.includes(asegKey));
-                if (foundKey) logoAseg = window.LOGOS[foundKey];
-            }
-        }
-        if (logoAseg) {
-            try {
-                const imgFmt = logoAseg.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-                doc.addImage(logoAseg, imgFmt, 150, 42, 46, 16, undefined, 'FAST');
-            } catch (e) {
-                console.warn('Error rendering insurer logo in PDF:', e);
-            }
-        }
+
+    // ── Colores por aseguradora (color primario + rgb array) ────────────────────
+    const asegName = (c.aseguradora || '').toUpperCase().trim();
+    let primaryRGB = [230, 80, 0];      // Naranja por defecto (Pepín)
+    let primaryHex = '#E65000';
+
+    if (asegName.includes('MIDAS')) {
+        primaryRGB = [22, 163, 74];     primaryHex = '#16A34A'; // Verde Midas
+    } else if (asegName.includes('PATRIA')) {
+        primaryRGB = [180, 30, 30];     primaryHex = '#B41E1E'; // Rojo Patria
+    } else if (asegName.includes('MULTI')) {
+        primaryRGB = [37, 99, 235];     primaryHex = '#2563EB'; // Azul MultiSeguros
+    } else if (asegName.includes('PEP')) {
+        primaryRGB = [230, 80, 0];      primaryHex = '#E65000'; // Naranja Pepín
     }
 
-    // Saludo
-    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
-    doc.text(`Estimado Sr(a). ${c.cliente || 'A QUIEN CORRESPONDA'}`, 14, 62);
-    doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
-    doc.text('Le agradecemos que haya contado con nosotros para su necesidad de fianza/seguro, y nos satisface', 14, 68);
-    doc.text('presentarle estas propuestas para la cobertura de su solicitud basado en los siguientes detalles.', 14, 73);
+    const PAGE_W = 210;
+    const PAGE_H = 297;
+    const ML = 14;       // margen izquierdo
+    const MR = 196;      // margen derecho
+    const CW = MR - ML;  // ancho contenido
 
-    // Producto Line
-    doc.setFillColor(...lightColor);
-    doc.rect(14, 80, 182, 8, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(...primaryColor);
-    doc.text(`Producto: ${c.subtipo || c.tipo || 'FIANZA'}`, 16, 85.5);
-    // Para Seguro de Ley mostrar "Aseguradora" y "Prima Anual"; para Fianza mostrar "Monto a Afianzar"
-    const labelMonto = esSeguroLey ? 'Aseguradora' : 'Monto a Afianzar';
-    const valorMonto = esSeguroLey ? (c.aseguradora || 'MULTISEGUROS') : fmt(c.monto_afianzado || c.suma_asegurada || 0);
-    doc.text(`${labelMonto}: ${valorMonto}`, 95, 85.5);
-    doc.text(`Prima: ${fmt(c.total || c.prima_total || 0)}`, 196, 85.5, {align: 'right'});
+    // ══════════════════════════════════════════════════════════════════
+    // CABECERA: Logo MQF (izq) + Tarjeta aseguradora (der)
+    // ══════════════════════════════════════════════════════════════════
+    let yHead = 14;
 
-    // Coberturas Header
-    doc.setFontSize(10); doc.text('Coberturas', 14, 98);
-    doc.line(14, 100, 196, 100); 
-    doc.line(14, 106, 196, 106); 
-
-    doc.setFontSize(9); doc.setTextColor(...textColor);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Riesgos a Terceros / Detalles', 14, 104); 
-    doc.text('Límite RD$', 160, 104, {align: 'right'});
-    doc.text('Deducible', 196, 104, {align: 'right'});
-
-    const COVERAGE_PROFILES = {
-        'MOTOCICLETA BASICO': [{label:'Daños a la Propiedad Ajena',amount:50000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:50000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:100000},{label:'Fianza Judicial',amount:50000}],
-        'LIVIANO BASICO': [{label:'Daños a la Propiedad Ajena',amount:100000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:100000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:200000},{label:'Lesiones Corporales o Muerte a 1 Pasajero',amount:100000},{label:'Lesiones Corporales o Muerte a Más de 1 Pasajero',amount:200000},{label:'Fianza Judicial',amount:200000},{label:'Riesgo Conductor',amount:50000}],
-        'PESADO PLUS': [{label:'Daños a la Propiedad Ajena',amount:300000},{label:'Lesiones Corporales o Muerte a 1 Persona',amount:300000},{label:'Lesiones Corporales o Muerte a Más de 1 Persona',amount:600000},{label:'Lesiones Corporales o Muerte a 1 Pasajero',amount:300000},{label:'Lesiones Corporales o Muerte a Más de 1 Pasajero',amount:600000},{label:'Fianza Judicial',amount:500000},{label:'Riesgo Conductor',amount:50000}]
-    };
-    const OPTIONAL_LABELS = {
-        'ASIST_VIAL_LIV': 'ASISTENCIA VIAL (LIVIANO)', 'ASIST_VIAL_PES': 'ASISTENCIA VIAL (PESADO)', 'CASA_CONDUCTOR': 'CASA DEL CONDUCTOR', 'CENTRO_AUTOMOVILISTA': 'CENTRO DE AUTOMOVILISTA'
-    };
-
-    // Filas Cobertura
-    doc.setFont('helvetica', 'normal');
-    let yRow = 112;
-
-    if (c.tipo === 'SEGURO DE LEY' && c.cobertura && COVERAGE_PROFILES[c.cobertura]) {
-        COVERAGE_PROFILES[c.cobertura].forEach(p => {
-            doc.text(`- ${p.label}`, 14, yRow);
-            doc.text(`${fmt(p.amount)}`, 160, yRow, {align: 'right'});
-            doc.text('0.00', 196, yRow, {align: 'right'});
-            yRow += 6;
-        });
-        // ==== FIX: Parsear servicios_opcionales si es string (evita bug de +0, +1, +2) ====
-        let serviciosOpc = c.servicios_opcionales;
-        if (typeof serviciosOpc === 'string') {
-            try { serviciosOpc = JSON.parse(serviciosOpc); } catch(e) { serviciosOpc = {}; }
-        }
-        // Si no es un objeto plano válido, ignorar
-        if (!serviciosOpc || typeof serviciosOpc !== 'object' || Array.isArray(serviciosOpc)) {
-            serviciosOpc = {};
-        }
-        if (Object.keys(serviciosOpc).length > 0) {
-            Object.keys(serviciosOpc).forEach(k => {
-                if (serviciosOpc[k]) {
-                    doc.text(`+ ${OPTIONAL_LABELS[k] || k}`, 14, yRow);
-                    doc.text('Incluido', 160, yRow, {align: 'right'});
-                    doc.text('0.00', 196, yRow, {align: 'right'});
-                    yRow += 6;
-                }
-            });
-        }
-    } else {
-        doc.text(`Aval solidario / Póliza (${c.subtipo || c.tipo || 'General'})`, 14, yRow);
-        doc.text(`${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 160, yRow, {align: 'right'});
-        doc.text('0.00', 196, yRow, {align: 'right'});
-        yRow += 6;
-        
-        if (c.beneficiario) {
+    // Logo principal MQF
+    if (logoImg) {
+        try { doc.addImage(logoImg, 'PNG', ML, yHead, 48, 18); }
+        catch (e) {
             doc.setFont('helvetica', 'bold');
-            doc.text(`Beneficiario: ${c.beneficiario}`, 14, yRow);
-            doc.setFont('helvetica', 'normal');
-            yRow += 6;
+            doc.setFontSize(18); doc.setTextColor(...primaryRGB);
+            doc.text('MÁS QUE FIANZAS', ML, yHead + 13);
+        }
+    } else {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18); doc.setTextColor(...primaryRGB);
+        doc.text('MÁS QUE FIANZAS', ML, yHead + 13);
+    }
+
+    // Subtítulo bajo el logo
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8); doc.setTextColor(120, 120, 120);
+    doc.text('CORE ASEGURADOR V3.0 \u2022 COTIZACIÓN DIGITAL', ML, yHead + 22);
+
+    // Tarjeta aseguradora (esquina superior derecha)
+    const cardX = 140; const cardY = yHead; const cardW = 56; const cardH = 22;
+    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.4);
+    doc.roundedRect(cardX, cardY, cardW, cardH, 3, 3, 'S');
+
+    // Logo de la aseguradora dentro de la tarjeta (normalizado contra acentos y mayúsculas)
+    let logoAseg = null;
+    if (window.LOGOS) {
+        const cleanStr = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        const normKey = cleanStr(asegName);
+        if (window.LOGOS[asegName]) {
+            logoAseg = window.LOGOS[asegName];
+        } else {
+            const fk = Object.keys(window.LOGOS).find(k => {
+                const normK = cleanStr(k);
+                return normKey.includes(normK) || normK.includes(normKey);
+            });
+            if (fk) logoAseg = window.LOGOS[fk];
         }
     }
-    
-    doc.setTextColor(200); doc.line(14, yRow - 2, 196, yRow - 2); doc.setTextColor(...textColor);
-    
-    // Totales Box
-    yRow += 5;
-    let yTotales = yRow > 135 ? yRow : 135;
-    doc.setFillColor(...lightColor);
-    if (esSeguroLey) {
-        doc.rect(110, yTotales, 86, 35, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
-        doc.text('Cobertura', 115, yTotales + 5); doc.text(c.cobertura || 'N/A', 192, yTotales + 5, {align: 'right'});
-        doc.setFont('helvetica', 'normal');
-        
-        const primaBaseVal = parseFloat(c.prima_base || 0);
-        const primaBaseNet = Math.round((primaBaseVal / 1.16) * 100) / 100;
-        const iscVal = Math.round((primaBaseVal - primaBaseNet) * 100) / 100;
-        
-        const OPTIONAL_PRICES = { ASIST_VIAL_LIV: 2600, ASIST_VIAL_PES: 4600, CASA_CONDUCTOR: 1020, CENTRO_AUTOMOVILISTA: 1020 };
-        let serviciosOpc2 = c.servicios_opcionales;
-        if (typeof serviciosOpc2 === 'string') { try { serviciosOpc2 = JSON.parse(serviciosOpc2); } catch(e) { serviciosOpc2 = {}; } }
-        if (!serviciosOpc2 || typeof serviciosOpc2 !== 'object' || Array.isArray(serviciosOpc2)) serviciosOpc2 = {};
-        const sumOpcVal = Object.keys(serviciosOpc2).reduce((acc, k) => acc + (serviciosOpc2[k] ? (OPTIONAL_PRICES[k] || 0) : 0), 0);
-        const sumOpcNet = Math.round((sumOpcVal / 1.18) * 100) / 100;
-        const itbisVal = Math.round((sumOpcVal - sumOpcNet) * 100) / 100;
 
-        doc.text('Prima Neta Base', 115, yTotales + 10); doc.text(`${fmt(primaBaseNet)}`, 192, yTotales + 10, {align: 'right'});
-        doc.text('ISC (16%)', 115, yTotales + 15); doc.text(`${fmt(iscVal)}`, 192, yTotales + 15, {align: 'right'});
-        doc.text('Servicios Opc. (Neto)', 115, yTotales + 20); doc.text(`${fmt(sumOpcNet)}`, 192, yTotales + 20, {align: 'right'});
-        doc.text('ITBIS (18%)', 115, yTotales + 25); doc.text(`${fmt(itbisVal)}`, 192, yTotales + 25, {align: 'right'});
-        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
-        doc.text('Prima Total Anual', 115, yTotales + 31); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 31, {align: 'right'});
+    const ASEG_DISPLAY_NAMES = {
+        MIDAS: 'Midas Seguros', PATRIA: 'Seguros Patria',
+        MULTI: 'MultiSeguros', MULTISEGUROS: 'MultiSeguros',
+        'SEGUROS PEPÍN': 'Seguros Pepín', PEP: 'Seguros Pepín', PEPIN: 'Seguros Pepín'
+    };
+    const asegDisplayName = Object.keys(ASEG_DISPLAY_NAMES).find(k => asegName.includes(k))
+        ? ASEG_DISPLAY_NAMES[Object.keys(ASEG_DISPLAY_NAMES).find(k => asegName.includes(k))]
+        : (c.aseguradora || 'Aseguradora');
+
+    let drawnLogo = false;
+    if (logoAseg) {
+        try {
+            const imgFmt = logoAseg.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
+            
+            // Cargar dimensiones del logo de manera asíncrona para evitar distorsiones
+            const dims = await new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
+                img.onerror = () => resolve({ w: 0, h: 0 });
+                img.src = logoAseg;
+            });
+            
+            if (dims.w > 0 && dims.h > 0) {
+                const maxW = 24; 
+                const maxH = 14;
+                const r = dims.w / dims.h;
+                let lw = maxW;
+                let lh = maxH;
+                if (r > (maxW / maxH)) {
+                    lw = maxW;
+                    lh = maxW / r;
+                } else {
+                    lh = maxH;
+                    lw = maxH * r;
+                }
+                const lx = cardX + 3 + (maxW - lw) / 2;
+                const ly = cardY + 4 + (maxH - lh) / 2;
+                doc.addImage(logoAseg, imgFmt, lx, ly, lw, lh, undefined, 'FAST');
+                drawnLogo = true;
+            }
+        } catch (e) {
+            console.warn('Error al procesar logo de la aseguradora:', e);
+        }
+    }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(40, 40, 40);
+    if (drawnLogo) {
+        doc.text(asegDisplayName, cardX + 29, cardY + 13);
     } else {
-        doc.rect(110, yTotales, 86, 25, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
-        doc.text('Monto a Afianzar', 115, yTotales + 6); doc.text(`${fmt(c.monto_afianzado || c.suma_asegurada || 0)}`, 192, yTotales + 6, {align: 'right'});
+        doc.text(asegDisplayName, cardX + 6, cardY + 13);
+    }
+
+    // Línea divisoria naranja/color marca
+    const yDivider = yHead + 28;
+    doc.setDrawColor(...primaryRGB); doc.setLineWidth(1.2);
+    doc.line(ML, yDivider, MR, yDivider);
+
+    // ══════════════════════════════════════════════════════════════════
+    // SECCIÓN 2 COLUMNAS: Información del Asegurado | Datos del Vehículo
+    // ══════════════════════════════════════════════════════════════════
+    const yInfoStart = yDivider + 8;
+    const colMid = ML + CW / 2 + 5;   // separación entre columnas
+
+    // Títulos sección
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9); doc.setTextColor(...primaryRGB);
+    doc.text('INFORMACIÓN DEL ASEGURADO', ML, yInfoStart);
+    doc.text('DATOS DEL VEHÍCULO', colMid, yInfoStart);
+
+    // Línea bajo títulos sección (gris sutil)
+    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+    doc.line(ML, yInfoStart + 2, MR, yInfoStart + 2);
+
+    // Filas de datos del asegurado (columna izquierda)
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    const renderRow = (label, value, x, y) => {
+        doc.setTextColor(100, 100, 100); doc.text(label + ':', x, y);
+        doc.setTextColor(40, 40, 40); doc.setFont('helvetica', 'bold');
+        doc.text(value || 'N/A', x + 24, y);
         doc.setFont('helvetica', 'normal');
-        doc.text('Prima Neta', 115, yTotales + 12); doc.text(`${fmt(c.prima_base || c.total || c.prima_total || 0)}`, 192, yTotales + 12, {align: 'right'});
-        doc.text('Impuestos (ISC)', 115, yTotales + 17); doc.text(`${fmt(c.impuesto || 0)}`, 192, yTotales + 17, {align: 'right'});
-        doc.setFont('helvetica', 'bold'); doc.setTextColor(0,0,0);
-        doc.text('Prima Bruta', 115, yTotales + 23); doc.text(`${fmt(c.total || c.prima_total || 0)}`, 192, yTotales + 23, {align: 'right'});
+    };
+
+    let yInfo = yInfoStart + 8;
+    renderRow('Nombre', c.cliente || 'A QUIEN CORRESPONDA', ML, yInfo);
+    yInfo += 6;
+    renderRow('Correo', c.email || '-', ML, yInfo);
+    if (c.cedula) { yInfo += 6; renderRow('Cédula', c.cedula, ML, yInfo); }
+
+    // Datos del Vehículo (columna derecha)
+    const vDescripcion = [c.subtipo, c.marca, c.modelo, c.anio].filter(Boolean).join(' ') || (c.subtipo || c.tipo || 'VEHÍCULO');
+    let yVeh = yInfoStart + 8;
+    renderRow('Descripción', vDescripcion, colMid, yVeh);          yVeh += 6;
+    renderRow('Tipo', c.subtipo || c.tipo || '-', colMid, yVeh);   yVeh += 6;
+    renderRow('Uso', c.uso || '-', colMid, yVeh);                  yVeh += 6;
+    renderRow('Capacidad', c.capacidad || '-', colMid, yVeh);
+
+    // ══════════════════════════════════════════════════════════════════
+    // TABLA DE PRODUCTOS
+    // ══════════════════════════════════════════════════════════════════
+    const yTableStart = Math.max(yInfo, yVeh) + 10;
+
+    // Encabezado tabla (fondo gris suave)
+    doc.setFillColor(240, 240, 240);
+    doc.rect(ML, yTableStart, CW, 7, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(80, 80, 80);
+    doc.text('DESCRIPCIÓN DEL PRODUCTO', ML + 2, yTableStart + 4.8);
+    doc.text('TIPO COBERTURA', ML + 95, yTableStart + 4.8, { align: 'center' });
+    doc.text('PRECIO (RD$)', MR - 2, yTableStart + 4.8, { align: 'right' });
+
+    // Cálculos de prima
+    const primaBase = parseFloat(c.prima_base || c.total || 0);
+    const primaNet  = Math.round((primaBase / 1.16) * 100) / 100;
+    const iscVal    = Math.round((primaBase - primaNet) * 100) / 100;
+    const totalVal  = parseFloat(c.total || c.prima_total || primaBase);
+    const costoOpcionales = Math.round((totalVal - primaBase) * 100) / 100;
+    const cobertura = c.cobertura || 'BÁSICO';
+
+    // Fila 1: Seguro de Ley
+    let yRow = yTableStart + 7;
+    doc.setFillColor(255, 255, 255); doc.rect(ML, yRow, CW, 12, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 30, 30);
+    doc.text('SEGURO DE LEY OBLIGATORIO', ML + 2, yRow + 5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 120, 120);
+    doc.text('Seguro de daños a terceros según ley 146-02.', ML + 2, yRow + 10);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+    doc.text(cobertura, ML + 95, yRow + 7, { align: 'center' });
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text(fmt(primaNet), MR - 2, yRow + 7, { align: 'right' });
+
+    // Separador sutil
+    yRow += 12;
+    doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.2); doc.line(ML, yRow, MR, yRow);
+
+    // Fila 2: Impuesto
+    doc.setFillColor(252, 252, 252); doc.rect(ML, yRow, CW, 12, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 30, 30);
+    doc.text('IMPUESTO (ITBIs/Otros)', ML + 2, yRow + 5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 120, 120);
+    doc.text('Tasas impositivas de seguros aplicadas.', ML + 2, yRow + 10);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+    doc.text('Incluido', ML + 95, yRow + 7, { align: 'center' });
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text(fmt(iscVal), MR - 2, yRow + 7, { align: 'right' });
+
+    // Fila 3: Servicios Opcionales (si aplica)
+    if (costoOpcionales > 0) {
+        yRow += 12;
+        doc.setDrawColor(220, 220, 220); doc.setLineWidth(0.2); doc.line(ML, yRow, MR, yRow);
+        doc.setFillColor(255, 255, 255); doc.rect(ML, yRow, CW, 12, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 30, 30);
+        doc.text('SERVICIOS OPCIONALES ADICIONALES', ML + 2, yRow + 5);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 120, 120);
+        doc.text('Servicios de asistencia opcionales contratados.', ML + 2, yRow + 10);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
+        doc.text('Opcional', ML + 95, yRow + 7, { align: 'center' });
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+        doc.text(fmt(costoOpcionales), MR - 2, yRow + 7, { align: 'right' });
     }
 
-    // Observaciones
-    doc.setFontSize(10); doc.setTextColor(...primaryColor); doc.setFont('helvetica', 'bold');
-    doc.text('Observaciones', 14, yTotales + 4);
-    doc.setFontSize(9); doc.setTextColor(...textColor); doc.setFont('helvetica', 'normal');
-    doc.text('La aceptación de esta cotización para la Emisión', 14, yTotales + 9);
-    doc.text('de la Póliza, dependerá de la inspección de', 14, yTotales + 14);
-    doc.text('dicho riesgo, válida por 30 días.', 14, yTotales + 19);
+    // Separador
+    yRow += 12;
+    doc.setDrawColor(...primaryRGB); doc.setLineWidth(0.6); doc.line(ML, yRow, MR, yRow);
 
-    // Firma
-    doc.text('Atentamente,', 14, yTotales + 35);
-    doc.setLineWidth(0.5); doc.line(90, yTotales + 65, 140, yTotales + 65);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.text('Firma autorizada', 115, yTotales + 70, {align: 'center'});
+    // TOTAL ANUAL ESTIMADO
+    yRow += 1;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...primaryRGB);
+    doc.text('TOTAL ANUAL ESTIMADO', ML + 2, yRow + 6);
+    doc.text(fmt(totalVal), MR - 2, yRow + 6, { align: 'right' });
 
-    // Footer Address dinámico
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
-    doc.text(cfg.empresa_direccion + ' | RNC: ' + cfg.empresa_rnc, 105, 280, {align: 'center'});
-    doc.text('Tel: ' + cfg.empresa_telefono + ' | Email: ' + cfg.empresa_correo + ' | Web: ' + cfg.empresa_web, 105, 284, {align: 'center'});
+    // ── SECCIÓN: LÍMITES Y COBERTURAS ──────────────────────────────────
+    yRow += 14;
 
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...primaryRGB);
+    doc.text('LÍMITES Y COBERTURAS SEGURO DE LEY (RD$)', ML, yRow);
+    yRow += 4;
+
+    // Coberturas simplificadas para evitar solapes y cumplir con el diseño exacto
+    const COVERAGE_GRID = {
+        'MOTOCICLETA BASICO': [
+            { label: 'Daños Propiedad Ajena', val: 50000 },
+            { label: 'Lesiones Personales (1 pers)', val: 50000 },
+            { label: 'Lesiones Personales (2+ pers)', val: 100000 },
+            { label: 'Fianza Judicial', val: 50000 }
+        ],
+        'LIVIANO BASICO': [
+            { label: 'Daños Propiedad Ajena', val: 100000 },
+            { label: 'Lesiones Personales (1 pers)', val: 100000 },
+            { label: 'Lesiones Personales (2+ pers)', val: 200000 },
+            { label: 'Fianza Judicial', val: 20000 },
+            { label: 'Daños al Conductor', val: 20000 },
+            { label: 'Daños a Pasajeros', val: 20000 }
+        ],
+        'PESADO PLUS': [
+            { label: 'Daños Propiedad Ajena', val: 300000 },
+            { label: 'Lesiones Personales (1 pers)', val: 300000 },
+            { label: 'Lesiones Personales (2+ pers)', val: 600000 },
+            { label: 'Fianza Judicial', val: 500000 },
+            { label: 'Daños al Conductor', val: 50000 },
+            { label: 'Daños a Pasajeros', val: 50000 }
+        ]
+    };
+
+    const gridItems = COVERAGE_GRID[cobertura] || COVERAGE_GRID['LIVIANO BASICO'];
+    const gridRows  = Math.ceil(gridItems.length / 2);
+    const gridH_inner = gridRows * 7;
+
+    // Texto de Servicios Gratuitos Incluidos (mixto)
+    const srvTitle = 'Servicios Gratuitos Incluidos: ';
+    const srvDesc = 'Asistencia Vial 24/7 (Servicio de grúa, cambio de neumático, combustible y carga de batería) y acceso al Centro del Automovilista en caso de siniestro.';
+    
+    // Calcular altura para Servicios Gratuitos Incluidos
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    const w1 = doc.getTextWidth(srvTitle);
+    
+    const words = srvDesc.split(' ');
+    let firstLineNormal = '';
+    let wordIndex = 0;
+    const firstLineMaxW = MR - 4; // Límite derecho del bloque de texto
+    const textStartVal = ML + 9.5;
+    
+    doc.setFont('helvetica', 'normal');
+    while (wordIndex < words.length) {
+        const testStr = firstLineNormal ? firstLineNormal + ' ' + words[wordIndex] : words[wordIndex];
+        if (textStartVal + w1 + doc.getTextWidth(' ' + testStr) < firstLineMaxW) {
+            firstLineNormal = testStr;
+            wordIndex++;
+        } else {
+            break;
+        }
+    }
+    const remainingNormal = words.slice(wordIndex).join(' ');
+    const srvLines = remainingNormal ? doc.splitTextToSize(remainingNormal, CW - 13.5) : [];
+    
+    // Altura total del bloque de servicios gratuitos
+    const freeSrvH = 4.5 + srvLines.length * 3.5;
+    
+    // Altura total de la tarjeta contenedor
+    const cardTotalH = 4 + gridH_inner + 4 + freeSrvH + 4;
+
+    // Dibujar tarjeta con bordes redondeados y fondo azul-gris sutil
+    doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.35);
+    doc.roundedRect(ML, yRow, CW, cardTotalH, 4, 4, 'FD');
+
+    // Renderizar cuadrícula en 2 columnas con líneas punteadas
+    const colLeft  = ML + 4;
+    const colLeftVal = ML + 86;
+    const colRightStart = ML + 96;
+    const colRightVal = MR - 4;
+    const formatter2 = new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtLim = (n) => n > 0 ? 'RD$ ' + formatter2.format(n) : 'N/A';
+
+    let gY = yRow + 4.5 + 4; // Ajuste de Y inicial
+    const getW = (txt) => doc.getTextWidth(txt);
+
+    for (let i = 0; i < gridItems.length; i += 2) {
+        const left  = gridItems[i];
+        const right = gridItems[i + 1];
+
+        // Fila izquierda: Etiqueta y Valor
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(71, 85, 105);
+        doc.text(left.label, colLeft, gY);
+        
+        doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+        const leftValStr = fmtLim(left.val);
+        doc.text(leftValStr, colLeftVal, gY, { align: 'right' });
+
+        // Línea punteada de conector para columna izquierda
+        doc.setLineWidth(0.2); doc.setDrawColor(203, 213, 225); doc.setLineDash([0.6, 0.8], 0);
+        const lLineStart = colLeft + getW(left.label) + 1.5;
+        const lLineEnd = colLeftVal - getW(leftValStr) - 1.5;
+        if (lLineEnd > lLineStart) {
+            doc.line(lLineStart, gY - 0.8, lLineEnd, gY - 0.8);
+        }
+        doc.setLineDash([], 0); // Restablecer estilo
+
+        if (right) {
+            // Fila derecha: Etiqueta y Valor
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(71, 85, 105);
+            doc.text(right.label, colRightStart, gY);
+            
+            doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+            const rightValStr = fmtLim(right.val);
+            doc.text(rightValStr, colRightVal, gY, { align: 'right' });
+
+            // Línea punteada de conector para columna derecha
+            doc.setLineWidth(0.2); doc.setDrawColor(203, 213, 225); doc.setLineDash([0.6, 0.8], 0);
+            const rLineStart = colRightStart + getW(right.label) + 1.5;
+            const rLineEnd = colRightVal - getW(rightValStr) - 1.5;
+            if (rLineEnd > rLineStart) {
+                doc.line(rLineStart, gY - 0.8, rLineEnd, gY - 0.8);
+            }
+            doc.setLineDash([], 0); // Restablecer estilo
+        }
+        gY += 7;
+    }
+
+    // Dibujar el Escudo Dorado y Nota de Servicios Gratuitos dentro de la tarjeta
+    const ySrv = yRow + 4 + gridH_inner + 4;
+    
+    // Función para dibujar el escudo dorado con checkmark blanco (usando líneas rectas para 100% de compatibilidad)
     try {
-        doc.save(c.numero ? `${c.numero}.pdf` : 'cotizacion.pdf');
-    } catch (e) {
-        console.error('Error al descargar PDF:', e);
+        const sx = ML + 4;
+        const sy = ySrv + 0.5;
+        doc.setFillColor(234, 179, 8); // Oro #EAB308
+        doc.setDrawColor(202, 138, 4);  // Borde oro #CA8A04
+        doc.setLineWidth(0.2);
+        
+        doc.beginPath();
+        doc.moveTo(sx, sy);
+        doc.lineTo(sx + 3.2, sy);
+        doc.lineTo(sx + 3.2, sy + 2.2);
+        doc.lineTo(sx + 1.6, sy + 4.2);
+        doc.lineTo(sx, sy + 2.2);
+        doc.closePath();
+        doc.fillStroke();
+        
+        // Dibujar el checkmark en blanco
+        doc.setStrokeColor(255, 255, 255);
+        doc.setLineWidth(0.35);
+        doc.line(sx + 0.9, sy + 2.0, sx + 1.4, sy + 2.7);
+        doc.line(sx + 1.4, sy + 2.7, sx + 2.3, sy + 1.3);
+    } catch(e) {
+        console.warn('Error al dibujar escudo:', e);
     }
+
+    // Escribir el texto de Servicios Gratuitos de forma mixta (bold / normal)
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(30, 41, 59);
+    doc.text(srvTitle, ML + 9.5, ySrv + 3.5);
+    
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
+    doc.text(firstLineNormal, ML + 9.5 + w1, ySrv + 3.5);
+    
+    if (srvLines.length > 0) {
+        doc.text(srvLines, ML + 9.5, ySrv + 7);
+    }
+
+    // Avanzar la Y para la siguiente sección
+    yRow += cardTotalH + 8;
+
+    // ══════════════════════════════════════════════════════════════════
+    // FOOTER: Nº Cotización + Fecha + Nota NOFTRAB + QR
+    // ══════════════════════════════════════════════════════════════════
+    const yFooter = PAGE_H - 38;
+    doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+    doc.line(ML, yFooter, MR, yFooter);
+
+    // Número de cotización y fecha (utilizando caracteres estándar)
+    const fechaGen = new Date();
+    const fechaFmt = fechaGen.toLocaleDateString('es-DO') + ' ' + fechaGen.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(40, 40, 40);
+    doc.text(`Nº Cotización: ${c.numero || 'COT-TEMP'} | Fecha Generación: ${fechaFmt}`, ML, yFooter + 6);
+
+    // Texto NOFTRAB (libre de emojis Unicode para evitar errores de codificación en jsPDF)
+    const notaText = 'Validez: Esta cotización es válida por 30 días desde su fecha de emisión y está sujeta a los términos y condiciones de la póliza de la aseguradora. No constituye un contrato de seguro ni póliza emitida hasta tanto no sea formalizada y pagada. Cumple con la norma de auditoría inmutable NOFTRAB v4.0.';
+    const notaLines = doc.splitTextToSize(notaText, CW - 42);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
+    doc.text(notaLines, ML, yFooter + 12);
+
+    // QR de validación en esquina inferior derecha
+    const qrUrl = `${cfg.empresa_web || 'https://www.masquefianzas.com.do'}/validar?cot=${encodeURIComponent(c.numero || 'TEMP')}`;
+    try {
+        let qrImg = null;
+        if (typeof window.generarQRDataURL === 'function') {
+            qrImg = await window.generarQRDataURL(qrUrl);
+        } else if (typeof generarQRDataURL === 'function') {
+            qrImg = await generarQRDataURL(qrUrl);
+        }
+        if (qrImg) {
+            doc.addImage(qrImg, 'PNG', MR - 28, yFooter + 4, 28, 28);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(80, 80, 80);
+            doc.text('VALIDACIÓN OFICIAL', MR - 14, yFooter + 35, { align: 'center' });
+        }
+    } catch (e) {
+        console.warn('QR no disponible:', e);
+    }
+
+    // Guardar PDF con nombre basado en número de cotización
+    const fileName = c.numero ? `${c.numero}.pdf` : 'cotizacion_mqf.pdf';
+    try { doc.save(fileName); }
+    catch (e) { console.error('Error al descargar PDF:', e); }
 }
+
 
 // Helpers
 function exportarAExcel(datos, filename, isCsv = false) {
@@ -415,7 +665,7 @@ function inyectarEstilosAsistente() {
         }
         .import-wizard-overlay.show { opacity: 1; }
         .import-wizard-container {
-            background: #ffffff; width: 95%; max-width: 750px; border-radius: 16px;
+            background: var(--bg-card, #ffffff); width: 95%; max-width: 750px; border-radius: 16px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;
             transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; flex-direction: column; max-height: 90vh;
@@ -1128,3 +1378,23 @@ window.imprimirItem = imprimirItem;
 window.importarDatos = importarDatos;
 window.importarCotizaciones = importarCotizaciones;
 window.abrirAsistenteImportacion = abrirAsistenteImportacion;
+
+// Genera QR como dataURL usando api.qrserver.com (no requiere librería)
+async function generarQRDataURL(texto) {
+    try {
+        const url = 'https://api.qrserver.com/v1/create-qr-code/?size=130x130&format=png&data=' + encodeURIComponent(texto);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('QR API error: ' + res.status);
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch(e) {
+        console.warn('QR fetch error:', e.message);
+        return null;
+    }
+}
+window.generarQRDataURL = generarQRDataURL;

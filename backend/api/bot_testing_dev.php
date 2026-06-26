@@ -69,6 +69,23 @@ if (!$usuario_id) {
     exit;
 }
 
+if ($usuario_id && empty($bearer_token) && $db_conn_ok && $db) {
+    try {
+        $stmt_tk = $db->prepare("SELECT token_sesion FROM sesiones_usuario WHERE usuario_id = ? AND activa = 1 AND fecha_expiracion > NOW() ORDER BY id DESC LIMIT 1");
+        if ($stmt_tk) {
+            $stmt_tk->bind_param("i", $usuario_id);
+            $stmt_tk->execute();
+            $res_tk = $stmt_tk->get_result();
+            if ($row_tk = $res_tk->fetch_assoc()) {
+                $bearer_token = $row_tk['token_sesion'];
+            }
+            $stmt_tk->close();
+        }
+    } catch (Exception $ex) {
+        // Ignorar
+    }
+}
+
 try {
     $action = $_GET['action'] ?? '';
     
@@ -91,11 +108,15 @@ try {
             $fallos[] = "database";
             $logs[] = ["modulo" => "DATABASE", "tipo" => "error", "mensaje" => "Fallo crítico: No se pudo conectar a la base de datos."];
         } else {
-            // Verificar tablas críticas
+            // Verificar tablas críticas (incluyendo nuevos módulos y opciones)
             $critical_tables = [
                 'usuarios', 'perfiles', 'permisos_perfil', 'funciones_modulo', 'modulos', 
                 'historial_ajustes', 'auditoria_accesos', 'mensajes_chat', 
-                'tickets_soporte', 'mensajes_ticket', 'sistema_migraciones_log'
+                'tickets_soporte', 'mensajes_ticket', 'sistema_migraciones_log',
+                'comisiones_poliza', 'cf_asientos', 'cf_asiento_lineas', 'cf_catalogo_cuentas',
+                'fianzas', 'fianza_tarifarios', 'productos', 'siniestros',
+                'flujos_notificacion', 'pdf_plantillas', 'etl_mapeos', 'integraciones_aseguradoras',
+                'motge_experiencia'
             ];
             $missing_tables = [];
             foreach ($critical_tables as $tbl) {
@@ -147,6 +168,11 @@ try {
                 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
                 $chat_url = "$protocol://$host/PLATAFORMA_INTEGRADA/backend/api/chat.php";
                 
+                // CERRAR SESIÓN PHP temporalmente para evitar deadlock de bloqueo de sesión en el loopback cURL
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_write_close();
+                }
+
                 // Realizar llamada CURL simulando el envío real con la sesión activa
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $chat_url);
@@ -157,17 +183,27 @@ try {
                 ]));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                
+                $headers = [
                     'Authorization: Bearer ' . $bearer_token,
                     'Content-Type: application/json'
-                ]);
+                ];
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                
+                if (isset($_COOKIE[session_name()])) {
+                    curl_setopt($ch, CURLOPT_COOKIE, session_name() . '=' . $_COOKIE[session_name()]);
+                }
+                
                 $resp = curl_exec($ch);
                 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $curl_err = curl_error($ch);
                 curl_close($ch);
                 
                 if ($http_code !== 200) {
                     $res_err = json_decode($resp, true);
-                    $msg_err = $res_err['mensaje'] ?? 'Error desconocido';
+                    $msg_err = $res_err['mensaje'] ?? ($curl_err ? $curl_err : 'Error de red o loopback');
                     throw new Exception("La API de chat retornó código HTTP $http_code. Detalle: $msg_err");
                 }
                 
@@ -581,6 +617,107 @@ try {
             "mensaje" => "Proceso de auto-corrección finalizado.",
             "logs" => $logs,
             "correcciones" => $correcciones
+        ]);
+        exit;
+    } elseif ($action === 'aplicar_plan_motge') {
+        // Ejecutar corrección atómica asistida aprobada por el Administrador
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true) ?: [];
+        $firma_error = $data['firma_error'] ?? '';
+        $ticket_id = isset($data['ticket_id']) ? (int)$data['ticket_id'] : 0;
+
+        if (empty($firma_error)) {
+            http_response_code(400);
+            echo json_encode(["exito" => false, "mensaje" => "Firma de error requerida."]);
+            exit;
+        }
+
+        // Obtener el comando de autocuración de la base de datos de experiencia
+        $stmt_exp = $db->prepare("SELECT id, comando_autocuracion, solucion_propuesta FROM motge_experiencia WHERE firma_error = ? LIMIT 1");
+        if (!$stmt_exp) {
+            http_response_code(500);
+            echo json_encode(["exito" => false, "mensaje" => "Error al consultar base de experiencia."]);
+            exit;
+        }
+
+        $stmt_exp->bind_param("s", $firma_error);
+        $stmt_exp->execute();
+        $res_exp = $stmt_exp->get_result();
+        $experiencia = $res_exp->fetch_assoc();
+        $stmt_exp->close();
+
+        if (!$experiencia) {
+            http_response_code(404);
+            echo json_encode(["exito" => false, "mensaje" => "No se encontró solución registrada para esta firma de error."]);
+            exit;
+        }
+
+        $cmd = $experiencia['comando_autocuracion'];
+        $solucion = $experiencia['solucion_propuesta'];
+        $exito = false;
+        $mensaje_correccion = "";
+
+        // Ejecutar acción atómica segura sin backups (NOFTRAB)
+        if ($cmd === 'RESET_PERMISSIONS') {
+            $db->query("DELETE FROM permisos_perfil WHERE perfil_id = 1"); // Admin
+            $db->query("INSERT IGNORE INTO permisos_perfil (perfil_id, funcion_modulo_id, permiso) 
+                        SELECT 1, id, 1 FROM funciones_modulo");
+            $exito = true;
+            $mensaje_correccion = "Malla de permisos del administrador principal restablecida correctamente.";
+        } elseif (strpos($cmd, 'REBUILD_TABLE:') === 0) {
+            $table = str_replace('REBUILD_TABLE:', '', $cmd);
+            $table = preg_replace('/[^a-zA-Z0-9_-]/', '', $table);
+            
+            if ($table === 'usuarios') {
+                $db->query("CREATE TABLE IF NOT EXISTS `usuarios` (
+                    `id` int(11) NOT NULL AUTO_INCREMENT,
+                    `username` varchar(50) NOT NULL UNIQUE,
+                    `nombre` varchar(100) NOT NULL,
+                    `password` varchar(255) NOT NULL,
+                    `referente_id` int(11) DEFAULT NULL,
+                    PRIMARY KEY (`id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                $exito = true;
+                $mensaje_correccion = "Tabla `usuarios` verificada / recreada.";
+            } else {
+                $exito = false;
+                $mensaje_correccion = "Reconstrucción de la tabla `$table` no soportada automáticamente.";
+            }
+        } elseif ($cmd === 'RECALIBRATE_NCF') {
+            $db->query("UPDATE secuencia_ncf SET secuencia_actual = secuencia_actual + 1");
+            $exito = true;
+            $mensaje_correccion = "Secuencias contables de NCF incrementadas para prevenir duplicidades.";
+        } else {
+            $exito = false;
+            $mensaje_correccion = "Comando de autocuración desconocido o requiere intervención manual.";
+        }
+
+        if ($exito) {
+            // 1. Confirmar éxito en la base de experiencia
+            $stmt_upd = $db->prepare("UPDATE motge_experiencia SET exito_confirmado = 1 WHERE id = ?");
+            if ($stmt_upd) {
+                $stmt_upd->bind_param("i", $experiencia['id']);
+                $stmt_upd->execute();
+                $stmt_upd->close();
+            }
+
+            // 2. Cerrar el ticket de soporte si existe
+            if ($ticket_id > 0) {
+                $msg_resolve = "💡 **AUTOCURACIÓN ASISTIDA MOTGE-BOTS**:\nCorrección autorizada y aplicada con éxito. Detalles: " . $mensaje_correccion;
+                $stmt_msg = $db->prepare("INSERT INTO mensajes_ticket (ticket_id, usuario_id, mensaje, origen, fecha_envio) VALUES (?, NULL, ?, 'bot', NOW())");
+                if ($stmt_msg) {
+                    $stmt_msg->bind_param("is", $ticket_id, $msg_resolve);
+                    $stmt_msg->execute();
+                    $stmt_msg->close();
+                }
+
+                $db->query("UPDATE tickets_soporte SET estado = 'cerrado', fecha_cierre = NOW() WHERE id = $ticket_id");
+            }
+        }
+
+        echo json_encode([
+            "exito" => $exito,
+            "mensaje" => $mensaje_correccion
         ]);
         exit;
     } else {

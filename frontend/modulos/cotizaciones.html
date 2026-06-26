@@ -7,8 +7,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
-  <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+  <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
   <link rel="stylesheet" href="../assets/components.css?v=9.0">
+  <script>
+    // Heredar skin de la ventana principal
+    (function(){
+      try {
+        const parentSkin = (window.parent && window.parent.document && window.parent.document.documentElement.getAttribute('data-skin')) || localStorage.getItem('mqf-skin') || 'indigo';
+        document.documentElement.setAttribute('data-skin', parentSkin);
+      } catch(e) {}
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- jsPDF + AutoTable -->
   <script src="../assets/lib/jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';document.head.appendChild(s);"></script>
@@ -31,7 +40,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--mqf-bg) !important; color: var(--mqf-text) !important; }
 
     /* =====================================================
        NOFTRAB HEADER CONTRAST FIX — inline para garantía
@@ -50,7 +59,7 @@
 
     .cot-panel { display: none; padding: 20px; }
     .cot-panel.active { display: block; }
-    .section-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .section-card { background: var(--bg-card, #ffffff); border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
     .section-title { font-size: 15px; font-weight: 700; color: #1e1b4b; margin: 0 0 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px; }
     .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; }
@@ -63,9 +72,9 @@
     .result-row .label { color: #6b7280; }
     .result-row .value { font-weight: 600; color: #1e1b4b; }
     .result-row .amount { font-size: 20px; font-weight: 700; color: #4f46e5; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #f5f3ff; padding: 10px; text-align: left; color: #4338ca; font-weight: 600; }
-    td { padding: 10px; border-bottom: 1px solid #eee; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; color: var(--mqf-text-secondary); }
+    th { background: var(--mqf-primary-light); padding: 10px; text-align: left; color: var(--mqf-primary); font-weight: 600; border-bottom: 2px solid var(--mqf-border); }
+    td { padding: 10px; border-bottom: 1px solid var(--mqf-border); }
     /* Historial toolbar */
     .hist-toolbar { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
     .btn-export-main { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; background:#4f46e5; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
@@ -73,9 +82,9 @@
     .btn-import-main { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; background:#0d9488; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
     .btn-import-main:hover { background:#0f766e; }
     .dropdown-export { position:relative; display:inline-block; }
-    .export-menu { display:none; position:absolute; top:100%; left:0; background:#fff; border:1.5px solid #e5e7eb; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:100; min-width:180px; padding:6px 0; }
-    .export-menu button { display:block; width:100%; text-align:left; padding:9px 16px; border:none; background:none; cursor:pointer; font-size:13px; color:#374151; }
-    .export-menu button:hover { background:#f5f3ff; color:#4f46e5; }
+    .export-menu { display:none; position:absolute; top:100%; left:0; background: var(--mqf-surface); border:1.5px solid var(--mqf-border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:100; min-width:180px; padding:6px 0; }
+    .export-menu button { display:block; width:100%; text-align:left; padding:9px 16px; border:none; background:none; cursor:pointer; font-size:13px; color: var(--mqf-text-secondary); }
+    .export-menu button:hover { background: var(--mqf-primary-light); color: var(--mqf-primary); }
     .btn-print-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#1e40af; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; }
     .btn-print-row:hover { background:#1d4ed8; }
     .btn-edit-row { display:inline-flex; align-items:center; gap:5px; padding:5px 12px; background:#f59e0b; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; margin-right:5px; }
@@ -156,6 +165,156 @@
       background: var(--mqf-primary-light) !important;
       border: 1.5px solid var(--mqf-border) !important;
       color: var(--mqf-primary) !important;
+    }
+    
+    /* Responsive Design - NOFTRAB Compliant */
+    @media (max-width: 768px) {
+        /* Formulario de cliente - apilar verticalmente */
+        .form-row, [class*="form-row"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
+        
+        .form-group, [class*="form-group"] {
+            width: 100% !important;
+        }
+        
+        /* Tarjetas de aseguradoras - una debajo de otra */
+        .comparativa-cards, [class*="comparativa"], [class*="cards-container"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+        }
+        
+        .insurance-card, [class*="card"], [class*="propuesta"] {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        
+        /* Servicios adicionales - grid a columna */
+        .servicios-adicionales, [class*="servicios"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        
+        .servicio-item, [class*="servicio"] {
+            width: 100% !important;
+        }
+        
+        /* Tablas - scroll horizontal */
+        table {
+            font-size: 12px !important;
+            display: block !important;
+            overflow-x: auto !important;
+            max-width: 100% !important;
+        }
+        
+        /* Botones - full width en móvil */
+        button, .btn, [class*="btn"] {
+            width: 100% !important;
+            margin: 5px 0 !important;
+        }
+    }
+
+    /* Skin Obsidian Dark - NOFTRAB Compliant & Tailwind Overrides */
+    [data-skin="obsidian"] {
+        --mqf-bg-dark: #020617;
+        --mqf-bg-card: rgba(15, 23, 42, 0.6);
+        --bg-card: rgba(15, 23, 42, 0.65);
+        --mqf-text: #f8fafc;
+        --mqf-primary: #10b981;
+        --mqf-secondary: #34d399;
+    }
+
+    [data-skin="obsidian"] .bg-green-50\/50,
+    [data-skin="obsidian"] .bg-green-50 {
+        background-color: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+    }
+
+    [data-skin="obsidian"] .bg-indigo-50\/35,
+    [data-skin="obsidian"] .bg-indigo-50\/30 {
+        background-color: rgba(99, 102, 241, 0.2) !important;
+        border-color: rgba(99, 102, 241, 0.5) !important;
+    }
+
+    [data-skin="obsidian"] .hover\:bg-gray-50:hover {
+        background-color: rgba(30, 41, 59, 0.4) !important;
+    }
+
+    [data-skin="obsidian"] body {
+        background-color: #020617 !important;
+        background-attachment: fixed;
+        background-image: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.2) 0, transparent 50%),
+                          radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.15) 0, transparent 50%) !important;
+        color: #f8fafc !important;
+    }
+
+    [data-skin="obsidian"] .text-gray-700,
+    [data-skin="obsidian"] .text-gray-800,
+    [data-skin="obsidian"] .text-gray-900,
+    [data-skin="obsidian"] .text-slate-800,
+    [data-skin="obsidian"] .text-slate-700,
+    [data-skin="obsidian"] h4.text-gray-700 {
+        color: #cbd5e1 !important;
+    }
+
+    [data-skin="obsidian"] .text-gray-500,
+    [data-skin="obsidian"] .text-gray-600 {
+        color: #94a3b8 !important;
+    }
+
+    [data-skin="obsidian"] .text-gray-400 {
+        color: #64748b !important;
+    }
+
+    [data-skin="obsidian"] .border-gray-200,
+    [data-skin="obsidian"] .border-gray-100 {
+        border-color: rgba(16, 185, 129, 0.25) !important;
+    }
+
+    [data-skin="obsidian"] .bg-white {
+        background-color: rgba(15, 23, 42, 0.65) !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+        backdrop-filter: blur(8px);
+    }
+
+    [data-skin="obsidian"] .bg-gray-50,
+    [data-skin="obsidian"] .bg-gray-100,
+    [data-skin="obsidian"] .bg-gray-50\/50 {
+        background-color: rgba(30, 41, 59, 0.6) !important;
+        border-color: rgba(16, 185, 129, 0.25) !important;
+    }
+
+    [data-skin="obsidian"] .mqf-card {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,.7) !important;
+    }
+
+    [data-skin="obsidian"] .mqf-card-header {
+        border-bottom-color: rgba(16, 185, 129, 0.35) !important;
+    }
+
+    [data-skin="obsidian"] .mqf-input,
+    [data-skin="obsidian"] .mqf-select {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+        color: #f8fafc !important;
+    }
+
+    [data-skin="obsidian"] .mqf-input:focus,
+    [data-skin="obsidian"] .mqf-select:focus {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    [data-skin="obsidian"] .mqf-btn--secondary {
+        background: rgba(30, 41, 59, 0.8) !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(16, 185, 129, 0.25) !important;
     }
   </style>
 </head>
@@ -659,7 +818,7 @@
       MQF.toast(msg, isSuccess ? 'success' : 'error');
     }
 
-    function generarPDFFianzaProfesional(data) {
+    async function generarPDFFianzaProfesional(data) {
       try {
         const { jsPDF } = window.jspdf;
         if (!jsPDF) { MQF.toast('Motor PDF no disponible', 'error'); return; }
@@ -692,7 +851,7 @@
           dataNorm.coberturas = dataNorm.coberturas.map(c => typeof c === 'object' ? (c.nombre || c.tipo || c.label || '') : c);
         }
         if (typeof dibujarCotizacionPDF === 'function') {
-          dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || null, null);
+          await dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || null, null);
           MQF.toast('✅ PDF generado correctamente', 'success');
         } else {
           MQF.toast('Motor PDF no cargado (data-export.js)', 'error');
@@ -972,7 +1131,7 @@
 
     // Imprimir una cotización individual del historial
     // origen: 'cotizaciones' (por defecto) | 'fianzas' (wizard)
-    function imprimirCotizacion(id, origen) {
+    async function imprimirCotizacion(id, origen) {
       if (!window.cotizacionesData) return;
       const c = window.cotizacionesData.find(item => String(item.id) === String(id));
       if (!c) {
@@ -986,7 +1145,7 @@
       if (typeof dibujarCotizacionPDF === 'function') {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
+        await dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
       } else {
         MQF.toast('Motor PDF no disponible. Recarga la página.', 'error');
       }
@@ -1087,7 +1246,13 @@
   </script>
 
   <!-- REACT COTIZADOR SEGUROS DE LEY -->
-  <script type="text/babel">
+  <script>
+    // Configurar Babel Standalone para usar runtime clásico en React (evita import {jsx} from 'react/jsx-runtime' que rompe el navegador)
+    if (window.Babel && Babel.availablePresets && Babel.availablePresets.react) {
+      Babel.registerPreset('classic-react', [Babel.availablePresets.react, { runtime: 'classic' }]);
+    }
+  </script>
+  <script type="text/babel" data-presets="classic-react">
     const PRICING_JSON_PATH = 'pricing-data/pricing_multiseguros.json?v=' + Date.now();
     const OPTIONS_JSON_PATH = 'pricing-data/options.json?v=' + Date.now();
 
@@ -1582,7 +1747,7 @@
         generarPDFSeguroProfesional(data);
       }
 
-      function generarPDFSeguroProfesional(data) {
+      async function generarPDFSeguroProfesional(data) {
         try {
           const { jsPDF } = window.jspdf;
           if (!jsPDF) { MQF.toast('Motor PDF no disponible', 'error'); return; }
@@ -1593,7 +1758,7 @@
             try { dataNorm.servicios_opcionales = JSON.parse(dataNorm.servicios_opcionales); } catch(e) { dataNorm.servicios_opcionales = {}; }
           }
           if (typeof dibujarCotizacionPDF === 'function') {
-            dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || null, null);
+            await dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || null, null);
             MQF.toast('✅ PDF generado correctamente', 'success');
           } else {
             MQF.toast('Motor PDF no cargado (data-export.js)', 'error');
@@ -1699,7 +1864,7 @@
                 {/* Columna izquierda: Coberturas y Opcionales */}
                 <div className="space-y-4">
                   {selectedCoverage && (
-                    <div className="p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                    <div className="p-4 border border-gray-100 rounded-lg bg-[var(--bg-card,#ffffff)] shadow-sm">
                       <div className="flex items-center justify-between">
                         <div className="font-semibold text-gray-800">Cobertura: {selectedCoverage}</div>
                         <div className="flex items-center gap-3">
@@ -1729,7 +1894,7 @@
                           if(selectedCoverage && selectedCoverage.includes('PESADO') && s.id === 'ASIST_VIAL_LIV') return null;
                           const disabled = (s.id === 'CENTRO_AUTOMOVILISTA' && optionalSelected.CASA_CONDUCTOR) || (s.id === 'CASA_CONDUCTOR' && optionalSelected.CENTRO_AUTOMOVILISTA);
                           return (
-                            <label key={s.id} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${optionalSelected[s.id]?'bg-indigo-50/35 border-indigo-200':'bg-white hover:bg-gray-50'}`}>
+                            <label key={s.id} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${optionalSelected[s.id]?'bg-indigo-50/35 border-indigo-200':'bg-[var(--bg-card,#ffffff)] hover:bg-gray-50'}`}>
                               <div className="flex items-center">
                                 <input type="checkbox" disabled={disabled} checked={!!optionalSelected[s.id]} onChange={e=> setOptionalSelected(prev=>({ ...prev, [s.id]: e.target.checked }))} className="mr-3 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
                                 <div className="text-sm font-medium text-gray-700">{s.label}</div>
@@ -1746,7 +1911,7 @@
                 {/* Columna derecha: Aseguradoras y Total */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 border border-gray-100 rounded-lg bg-white shadow-sm">
+                    <div className="p-4 border border-gray-100 rounded-lg bg-[var(--bg-card,#ffffff)] shadow-sm">
                       <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Aseguradora</div>
                       <div className="text-lg font-bold text-gray-800 mt-1">{insurer || '—'}</div>
                     </div>
@@ -1760,7 +1925,7 @@
                     <div className="text-sm font-semibold text-gray-700 mb-2">Otras aseguradoras disponibles</div>
                     <div className="space-y-2">
                       {insurersList.length ? insurersList.map(i=> (
-                        <label key={i.aseguradora} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${insurer===i.aseguradora?'border-indigo-500 bg-indigo-50/30 ring-2 ring-indigo-500/20':'bg-white hover:bg-gray-50'}`}>
+                        <label key={i.aseguradora} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${insurer===i.aseguradora?'border-indigo-500 bg-indigo-50/30 ring-2 ring-indigo-500/20':'bg-[var(--bg-card,#ffffff)] hover:bg-gray-50'}`}>
                           <div className="flex items-center">
                             <input type="radio" name="insurer" value={i.aseguradora} checked={insurer===i.aseguradora} onChange={()=>{ setInsurer(i.aseguradora); setPrice(i.prima); setErrors(prev=>{ const n={...prev}; delete n.insurer; delete n.price; return n; }); }} className="mr-3 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500" />
                             <div className="text-sm font-medium text-gray-700">{i.aseguradora}</div>
@@ -1846,9 +2011,7 @@
       return str.replace(/[\r\n\s]+/g, '').replace(/\\n/g, '').replace(/"+/g, '');
     }
 
-    function currency(val) {
-      return 'RD$ ' + Number(val || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+
 
     function InsurerCard({ comp, onDownload, onShare, onEmit, loadingEmit }) {
       const [emitResult, setEmitResult] = React.useState(null);
@@ -1930,22 +2093,22 @@
           <div>
             {/* Top: Insurer Logo and Cover Code */}
             <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center justify-center min-h-[40px] max-w-[130px]">
+              <div className="flex items-center gap-3">
                 {cleanLogo ? (
-                  <img 
-                    src={cleanLogo} 
-                    alt={comp.name} 
-                    className="max-h-[40px] w-auto object-contain filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
-                    onError={(e) => {
-                      // Fallback por si acaso falla el renderizado de la imagen
-                      e.target.style.display = 'none';
-                      const fallback = e.target.nextElementSibling;
-                      if (fallback) fallback.classList.remove('hidden');
-                    }}
-                  />
+                  <div className="bg-[var(--bg-card,#ffffff)]/95 p-1.5 rounded-lg flex items-center justify-center min-h-[38px] max-w-[90px] shadow-sm">
+                    <img 
+                      src={cleanLogo} 
+                      alt={comp.name} 
+                      className="max-h-[28px] w-auto object-contain"
+                      onError={(e) => {
+                        // Ocultar el contenedor de logo si falla
+                        e.target.parentNode.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 ) : null}
                 <div 
-                  className={`font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 text-lg uppercase ${cleanLogo ? 'hidden' : ''}`}
+                  className="font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 text-sm md:text-base uppercase"
                   style={{ color: 'var(--mqf-text)' }}
                 >
                   {comp.name}
@@ -2068,6 +2231,7 @@
       const [state, setState] = React.useState(null);
       const [pricingRows, setPricingRows] = React.useState([]);
       const [loadingEmit, setLoadingEmit] = React.useState(null);
+      const [shareModalData, setShareModalData] = React.useState(null);
 
       React.useEffect(() => {
         fetch(PRICING_JSON_PATH)
@@ -2142,7 +2306,7 @@
         });
       }, [state, pricingRows, activeInsurers]);
 
-      function handleDownloadPDF(comp) {
+      async function handleDownloadPDF(comp) {
         const numCot = 'SL-TEMP-' + Math.floor(Math.random() * 9000 + 1000);
         const data = {
           tipo: 'SEGURO DE LEY',
@@ -2168,7 +2332,7 @@
         if (typeof dibujarCotizacionPDF === 'function') {
           const { jsPDF } = window.jspdf;
           const doc = new jsPDF();
-          dibujarCotizacionPDF(doc, data, window.LOGO_MQF_B64 || null, null);
+          await dibujarCotizacionPDF(doc, data, window.LOGO_MQF_B64 || null, null);
           MQF.toast('✅ PDF generado para ' + comp.name, 'success');
         } else {
           MQF.toast('Motor PDF no disponible', 'error');
@@ -2183,11 +2347,52 @@
                      `Cobertura: ${comp.cobertura}\n` +
                      `Prima Total Anual: RD$ ${comp.total.toLocaleString('es-DO')}\n` +
                      `Válido por 30 días.`;
-        navigator.clipboard.writeText(text).then(() => {
-          MQF.toast('📋 Detalles copiados al portapapeles', 'success');
-        }).catch(e => {
-          MQF.toast('Error al copiar', 'error');
+        
+        setShareModalData({
+          compName: comp.name,
+          text: text,
+          total: comp.total
         });
+      }
+
+      function _copyFallback(text) {
+        try {
+          // Intento 2: textarea temporal + execCommand (funciona en la mayoría de iframes)
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+          document.body.appendChild(ta);
+
+          // En iOS necesitamos un truco adicional
+          const isIOS = navigator.userAgent.match(/ipad|iphone/i);
+          if (isIOS) {
+            const range = document.createRange();
+            range.selectNodeContents(ta);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            ta.setSelectionRange(0, 999999);
+          } else {
+            ta.select();
+          }
+
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+
+          if (ok) {
+            MQF.toast('📋 Detalles copiados al portapapeles', 'success');
+          } else {
+            throw new Error('execCommand falló');
+          }
+        } catch (err) {
+          // Intento 3: último recurso → prompt para que el usuario copie manualmente
+          try {
+            window.prompt('Copia el texto manualmente (Ctrl+C):', text);
+          } catch (_) {
+            MQF.toast('No se pudo copiar. Revisa los permisos del navegador.', 'warning');
+          }
+        }
       }
 
       function handleEmitPolicy(comp) {
@@ -2269,7 +2474,7 @@
       const selectCapacidades = state?.type ? (CAPACIDAD_MAP[state.type] || []) : [];
 
       return (
-        <div className="max-w-7xl mx-auto comp-container">
+        <div className="w-full comp-container">
           {/* Glassmorphic Selector Bar - Con Inputs Oscuros y Letras Luminosas */}
           <div className="mb-8 p-6 rounded-2xl comp-bar relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-[3px] comp-bar-accent"></div>
@@ -2498,6 +2703,95 @@
               </div>
             </div>
           )}
+
+          {/* Modal de Compartir */}
+          {shareModalData && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300" onClick={() => setShareModalData(null)}>
+              <div className="w-full max-w-md p-6 rounded-2xl border comp-bar relative overflow-hidden shadow-2xl mx-4" style={{ backgroundColor: 'var(--mqf-surface-2)', borderColor: 'var(--mqf-border)' }} onClick={e => e.stopPropagation()}>
+                <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: 'linear-gradient(to right, var(--mqf-primary), var(--mqf-primary-light, #6366f1))' }}></div>
+                
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-md font-bold flex items-center gap-2" style={{ color: 'var(--mqf-text)' }}>
+                    <i className="fa-solid fa-share-nodes" style={{ color: 'var(--mqf-primary)' }}></i>
+                    Compartir Cotización ({shareModalData.compName})
+                  </h3>
+                  <button 
+                    type="button" 
+                    onClick={() => setShareModalData(null)}
+                    className="p-1 rounded-lg text-gray-400 hover:text-white transition-all"
+                  >
+                    <i className="fa-solid fa-xmark text-lg"></i>
+                  </button>
+                </div>
+
+                {/* Previsualización del texto */}
+                <div className="mb-5 p-3 rounded-xl text-[11px] leading-relaxed border" style={{ backgroundColor: 'var(--mqf-surface)', borderColor: 'var(--mqf-border)', color: 'var(--mqf-text-secondary)' }}>
+                  <pre className="whitespace-pre-wrap font-sans" style={{ margin: 0 }}>{shareModalData.text}</pre>
+                </div>
+
+                {/* Redes y Opciones */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareModalData.text)}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300 comp-card-addon hover:scale-105"
+                  >
+                    <i className="fa-brands fa-whatsapp text-2xl text-emerald-400 mb-1.5"></i>
+                    <span className="text-[11px] font-bold" style={{ color: 'var(--mqf-text)' }}>WhatsApp</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const subject = `Cotización Seguro de Ley - ${shareModalData.compName}`;
+                      const url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(shareModalData.text)}`;
+                      window.open(url, '_self');
+                    }}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300 comp-card-addon hover:scale-105"
+                  >
+                    <i className="fa-solid fa-envelope text-2xl text-blue-400 mb-1.5"></i>
+                    <span className="text-[11px] font-bold" style={{ color: 'var(--mqf-text)' }}>Email</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = `https://t.me/share/url?url=&text=${encodeURIComponent(shareModalData.text)}`;
+                      window.open(url, '_blank');
+                    }}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300 comp-card-addon hover:scale-105"
+                  >
+                    <i className="fa-brands fa-telegram text-2xl text-sky-400 mb-1.5"></i>
+                    <span className="text-[11px] font-bold" style={{ color: 'var(--mqf-text)' }}>Telegram</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(shareModalData.text).then(() => {
+                          MQF.toast('📋 Copiado al portapapeles', 'success');
+                        }).catch(() => {
+                          _copyFallback(shareModalData.text);
+                        });
+                      } else {
+                        _copyFallback(shareModalData.text);
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-300 comp-card-addon hover:scale-105"
+                  >
+                    <i className="fa-solid fa-copy text-2xl text-gray-400 mb-1.5"></i>
+                    <span className="text-[11px] font-bold" style={{ color: 'var(--mqf-text)' }}>Copiar Texto</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -2508,7 +2802,12 @@
 <script>
   /* ── UX-SKINS: aplicar skin al cargar + escuchar mensajes del dashboard ── */
   (function(){
-    var s = localStorage.getItem('mqf-skin') || 'indigo';
+    var s = 'indigo';
+    try {
+      s = (window.parent && window.parent.document && window.parent.document.documentElement.getAttribute('data-skin')) || localStorage.getItem('mqf-skin') || 'indigo';
+    } catch(e) {
+      s = localStorage.getItem('mqf-skin') || 'indigo';
+    }
     document.body.setAttribute('data-skin', s);
     document.documentElement.setAttribute('data-skin', s);
   })();
@@ -2614,7 +2913,7 @@ document.addEventListener('DOMContentLoaded', () => {
   align-items:center; justify-content:center;
 " onclick="if(event.target===this) cerrarModalNotifNOFTRAB()">
   <div style="
-    background:#fff; border-radius:20px; max-width:520px; width:calc(100%-32px);
+    background: var(--bg-card, #ffffff); border-radius:20px; max-width:520px; width:calc(100%-32px);
     box-shadow:0 32px 80px rgba(99,102,241,0.25), 0 0 0 1px rgba(99,102,241,0.1);
     overflow:hidden; animation:mqfModalIn .28s cubic-bezier(.34,1.56,.64,1);
   ">

@@ -85,6 +85,21 @@ class ClienteManager {
         
         if ($exito) {
             $insert_id = $this->db->insert_id;
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $creado_por,
+                    'crear_cliente',
+                    'clientes',
+                    'crearCliente',
+                    "Cliente creado exitosamente. Nombre: $nombre, RNC/Cédula: $cedula",
+                    'exitoso',
+                    null,
+                    'clientes',
+                    $insert_id,
+                    null,
+                    $datos
+                );
+            }
             $stmt->close();
             return ['exito' => true, 'mensaje' => 'Cliente guardado exitosamente', 'id' => $insert_id];
         }
@@ -94,6 +109,16 @@ class ClienteManager {
     }
 
     public function editarCliente($id, $datos) {
+        // Obtener valor anterior para auditoría
+        $val_anterior = null;
+        $stmt_prev = $this->db->prepare("SELECT * FROM clientes WHERE id = ?");
+        if ($stmt_prev) {
+            $stmt_prev->bind_param("i", $id);
+            $stmt_prev->execute();
+            $val_anterior = $stmt_prev->get_result()->fetch_assoc();
+            $stmt_prev->close();
+        }
+
         $sql = "UPDATE clientes SET tipo_cliente=?, nombre=?, cedula=?, telefono=?, email=?, direccion=?, estado=?, comisionante=?, codigo_comisionante=?, nombre_comisionante=? WHERE id=?";
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
@@ -121,6 +146,22 @@ class ClienteManager {
         }
         
         if ($exito) {
+            if (function_exists('logAudit')) {
+                $userId = $_SESSION['usuario_id'] ?? null;
+                logAudit(
+                    $userId,
+                    'editar_cliente',
+                    'clientes',
+                    'editarCliente',
+                    "Cliente ID $id actualizado. Nombre: $nombre",
+                    'exitoso',
+                    null,
+                    'clientes',
+                    $id,
+                    $val_anterior,
+                    $datos
+                );
+            }
             $stmt->close();
             return ['exito' => true, 'mensaje' => 'Cliente actualizado exitosamente'];
         }
@@ -160,6 +201,22 @@ class ClienteManager {
             
             try {
                 if ($stmt->execute()) {
+                    $new_id = $this->db->insert_id;
+                    if (function_exists('logAudit')) {
+                        logAudit(
+                            $creado_por,
+                            'importar_cliente',
+                            'clientes',
+                            'importarClientesMasivo',
+                            "Cliente importado masivamente. Nombre: $nombre, RNC/Cédula: $cedula",
+                            'exitoso',
+                            null,
+                            'clientes',
+                            $new_id,
+                            null,
+                            $datos
+                        );
+                    }
                     $exitos++;
                 } else {
                     $errores++;

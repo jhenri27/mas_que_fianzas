@@ -41,7 +41,7 @@ body {
     display: flex;
     width: 100%;
     max-width: 1000px;
-    background: white;
+    background: var(--bg-card, #ffffff);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: var(--shadow-lg);
@@ -121,7 +121,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: var(--primary-color);
-    background: white;
+    background: var(--bg-card, #ffffff);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 

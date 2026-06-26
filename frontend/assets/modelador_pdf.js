@@ -12,6 +12,12 @@ let dragVariable = null; // Variable que se está arrastrando
 let mapeadorSimuladoDatos = null;
 let mapeadorPreviewActivo = false;
 
+// Estado Premium (Snap-to-Grid, Deshacer/Rehacer)
+let snapToGrid = false;
+const GRID_STEP_MM = 1.0;
+let undoStack = [];
+let redoStack = [];
+
 // Manejo global de errores para diagnóstico
 window.onerror = function (message, source, lineno, colno, error) {
     const errorMsg = `JS Error: ${message} en línea ${lineno}:${colno}`;
@@ -38,6 +44,7 @@ window.onunhandledrejection = function(event) {
 document.addEventListener("DOMContentLoaded", () => {
     cargarAseguradoras();
     cargarPlantillas();
+    cargarMarbetesOficiales();
     cargarCotizacionesPrueba();
 });
 
@@ -49,6 +56,7 @@ function cambiarPestaña(tabName) {
     // Activar botón correspondiente por ID
     let btnId = "";
     if (tabName === 'plantillas') btnId = "tabBtnPlantillas";
+    else if (tabName === 'marbetes') btnId = "tabBtnMarbetes";
     else if (tabName === 'mapeador') btnId = "tabBtnMapeador";
     else if (tabName === 'pruebas') btnId = "tabBtnPruebas";
     
@@ -62,6 +70,10 @@ function cambiarPestaña(tabName) {
     const targetContent = document.getElementById("tab-" + tabName);
     if (targetContent) {
         targetContent.classList.add("active");
+    }
+
+    if (tabName === 'marbetes') {
+        cargarMarbetesOficiales();
     }
 
     // Si el usuario cambia al mapeador, hay una plantilla activa pero no se ha renderizado el visor PDF
@@ -97,7 +109,7 @@ async function cargarAseguradoras() {
 // 2. Cargar listado de plantillas
 async function cargarPlantillas() {
     try {
-        const respuesta = await api.solicitud("/pdf_modeler.php?action=listar_plantillas");
+        const respuesta = await api.solicitud("/pdf_modeler.php?action=listar_plantillas&tipo=documento");
         const tbody = document.getElementById("listaPlantillasCargadas");
         
         if (respuesta.exito && Array.isArray(respuesta.plantillas)) {
@@ -133,7 +145,49 @@ async function cargarPlantillas() {
     }
 }
 
-// 3. Subir Nueva Plantilla PDF
+// Cargar listado de marbetes oficiales
+async function cargarMarbetesOficiales() {
+    try {
+        const respuesta = await api.solicitud("/pdf_modeler.php?action=listar_plantillas&tipo=marbete");
+        const grid = document.getElementById("gridMarbetesOficiales");
+        if (respuesta.exito && Array.isArray(respuesta.plantillas)) {
+            if (respuesta.plantillas.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--mqf-text-muted); padding: 40px;">No hay marbetes oficiales registrados en la base de datos.</div>';
+                return;
+            }
+            grid.innerHTML = respuesta.plantillas.map(p => {
+                let visualPreview = '';
+                if (p.archivo_base.endsWith('.png') || p.archivo_base.endsWith('.jpg') || p.archivo_base.endsWith('.jpeg')) {
+                    visualPreview = `<img src="/PLATAFORMA_INTEGRADA/${p.archivo_base}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+                } else {
+                    visualPreview = `<i class="fa-solid fa-file-pdf fa-3x" style="color: var(--mqf-primary); opacity: 0.7;"></i>`;
+                }
+
+                return `
+                    <div class="mqf-card" style="display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--mqf-border); border-radius: 12px; padding: 16px; background: var(--mqf-surface);">
+                        <div style="height: 120px; border-radius: 8px; overflow: hidden; background: #eef2f6; display: flex; align-items: center; justify-content: center; border: 1px solid var(--mqf-border); padding: 8px;">
+                            ${visualPreview}
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--mqf-text);">${p.nombre}</h4>
+                            <p style="margin: 4px 0 0 0; font-size: 11px; color: var(--mqf-text-muted); font-weight: 500;">
+                                <i class="fa-solid fa-building"></i> ${p.aseguradora_nombre || 'Aseguradora Oficial'}
+                            </p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--mqf-border); padding-top: 12px; margin-top: 8px;">
+                            <button class="mqf-btn mqf-btn--sm mqf-btn--secondary" onclick="generarPrevisualizacionMarbete(${p.id})"><i class="fa-solid fa-eye"></i> Previsualizar</button>
+                            <button class="mqf-btn mqf-btn--sm mqf-btn--primary" onclick="abrirMapeador(${p.id})"><i class="fa-solid fa-pencil"></i> Ajustar Coords</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch(err) {
+        console.error("Error cargando marbetes oficiales:", err);
+    }
+}
+
+// 3. Subir Nueva Plantilla Oficial
 async function subirNuevaPlantilla(e) {
     e.preventDefault();
     const nombre = document.getElementById("plantillaNombre").value.trim();
@@ -141,7 +195,7 @@ async function subirNuevaPlantilla(e) {
     const fileInput = document.getElementById("plantillaArchivo");
     
     if (!fileInput.files || fileInput.files.length === 0) {
-        MQF.toast("Debe seleccionar un archivo PDF.", "error");
+        MQF.toast("Debe seleccionar un archivo válido (PDF/PNG/JPG/PPTX).", "error");
         return;
     }
     
@@ -330,8 +384,13 @@ function configurarOverlayEventos(overlay) {
         
         const mmWidth = parseFloat(currentPlantilla.ancho_mm) || 215.9;
         const mmHeight = parseFloat(currentPlantilla.alto_mm) || 279.4;
-        const mmX = pctX * mmWidth;
-        const mmY = pctY * mmHeight;
+        let mmX = pctX * mmWidth;
+        let mmY = pctY * mmHeight;
+        
+        if (snapToGrid) {
+            mmX = Math.round(mmX / GRID_STEP_MM) * GRID_STEP_MM;
+            mmY = Math.round(mmY / GRID_STEP_MM) * GRID_STEP_MM;
+        }
         
         // Crear nuevo campo de mapeo en memoria
         const id_temp = "c_" + Date.now();
@@ -351,6 +410,7 @@ function configurarOverlayEventos(overlay) {
             ancho: 50.0
         };
         
+        registrarEstado();
         mappedFields.push(nuevoCampo);
         dibujarCamposMapeados();
         abrirPopoverPropiedades(nuevoCampo, e.clientX + window.scrollX, e.clientY + window.scrollY);
@@ -376,8 +436,13 @@ function configurarOverlayEventos(overlay) {
         
         const mmWidth = parseFloat(currentPlantilla.ancho_mm) || 215.9;
         const mmHeight = parseFloat(currentPlantilla.alto_mm) || 279.4;
-        const mmX = pctX * mmWidth;
-        const mmY = pctY * mmHeight;
+        let mmX = pctX * mmWidth;
+        let mmY = pctY * mmHeight;
+        
+        if (snapToGrid) {
+            mmX = Math.round(mmX / GRID_STEP_MM) * GRID_STEP_MM;
+            mmY = Math.round(mmY / GRID_STEP_MM) * GRID_STEP_MM;
+        }
         
         const id_temp = "c_" + Date.now();
         const nuevoCampo = {
@@ -396,6 +461,7 @@ function configurarOverlayEventos(overlay) {
             ancho: 50.0
         };
         
+        registrarEstado();
         mappedFields.push(nuevoCampo);
         dibujarCamposMapeados();
         abrirPopoverPropiedades(nuevoCampo, e.clientX + window.scrollX, e.clientY + window.scrollY);
@@ -511,13 +577,19 @@ function dibujarCamposMapeados() {
                 
                 // Convertir a milímetros
                 const overlayRect = overlay.getBoundingClientRect();
-                const newWidthMm = (newWidthPx / overlayRect.width) * mmWidth;
+                let newWidthMm = (newWidthPx / overlayRect.width) * mmWidth;
+                
+                if (snapToGrid) {
+                    newWidthMm = Math.round(newWidthMm / GRID_STEP_MM) * GRID_STEP_MM;
+                    newWidthPx = (newWidthMm / mmWidth) * overlayRect.width;
+                }
                 
                 c.ancho = parseFloat(newWidthMm.toFixed(2));
                 box.style.width = newWidthPx + "px";
             };
             
             const onMouseUp = () => {
+                registrarEstado();
                 document.removeEventListener("mousemove", onMouseMove);
                 document.removeEventListener("mouseup", onMouseUp);
                 dibujarCamposMapeados();
@@ -556,6 +628,11 @@ function dibujarCamposMapeados() {
                 let newPosX = startPosX + offsetXmm;
                 let newPosY = startPosY + offsetYmm;
                 
+                if (snapToGrid) {
+                    newPosX = Math.round(newPosX / GRID_STEP_MM) * GRID_STEP_MM;
+                    newPosY = Math.round(newPosY / GRID_STEP_MM) * GRID_STEP_MM;
+                }
+                
                 // Limitar a los bordes de la página
                 const fieldWidth = !isNaN(customWidth) && customWidth > 0 ? customWidth : 20;
                 newPosX = Math.max(0, Math.min(mmWidth - fieldWidth, newPosX));
@@ -577,6 +654,7 @@ function dibujarCamposMapeados() {
                 document.removeEventListener("mouseup", onMouseUp);
                 
                 if (hasMoved) {
+                    registrarEstado();
                     box.dataset.hasMoved = "true";
                     setTimeout(() => {
                         delete box.dataset.hasMoved;
@@ -626,6 +704,10 @@ function abrirPopoverPropiedades(campo, clientX, clientY) {
     document.getElementById("popoverFontSize").value = campo.font_size || 10;
     document.getElementById("popoverFontWeight").value = campo.font_weight || "normal";
     
+    // Posiciones numéricas X, Y
+    document.getElementById("popoverPosX").value = parseFloat(campo.pos_x.toFixed(1));
+    document.getElementById("popoverPosY").value = parseFloat(campo.pos_y.toFixed(1));
+    
     try {
         const colorInput = document.getElementById("popoverColor");
         let hexColor = campo.color || "#000000";
@@ -664,6 +746,7 @@ function aplicarPropiedadesCampo() {
     
     const idx = mappedFields.findIndex(c => c.id === activeFieldId);
     if (idx !== -1) {
+        registrarEstado();
         mappedFields[idx].nombre_campo_pdf = document.getElementById("popoverCampoPDF").value.trim();
         mappedFields[idx].font_family = document.getElementById("popoverFontFamily").value;
         mappedFields[idx].font_size = parseInt(document.getElementById("popoverFontSize").value);
@@ -673,6 +756,9 @@ function aplicarPropiedadesCampo() {
         mappedFields[idx].ancho = parseFloat(document.getElementById("popoverAncho").value) || 50.0;
         mappedFields[idx].fondo_opaco = document.getElementById("popoverFondoOpaco").checked ? 1 : 0;
         
+        mappedFields[idx].pos_x = parseFloat(document.getElementById("popoverPosX").value) || 0.0;
+        mappedFields[idx].pos_y = parseFloat(document.getElementById("popoverPosY").value) || 0.0;
+        
         MQF.toast("Propiedades de campo actualizadas en la vista.", "info");
         dibujarCamposMapeados();
     }
@@ -681,6 +767,7 @@ function aplicarPropiedadesCampo() {
 
 // Eliminar campo de la memoria
 function eliminarCampo(id) {
+    registrarEstado();
     mappedFields = mappedFields.filter(c => c.id !== id);
     dibujarCamposMapeados();
     cerrarPopoverPropiedades();
@@ -694,6 +781,7 @@ function eliminarCampoSeleccionado() {
 }
 
 function cancelarEdicion() {
+    const wasMarbete = currentPlantilla && currentPlantilla.tipo_plantilla === 'marbete';
     mappedFields = [];
     currentPlantilla = null;
     document.getElementById("tabBtnMapeador").disabled = true;
@@ -702,7 +790,11 @@ function cancelarEdicion() {
     // Reset layout y previsualizaciones del mapeador
     resetLayoutMapeador();
     
-    cambiarPestaña("plantillas");
+    if (wasMarbete) {
+        cambiarPestaña("marbetes");
+    } else {
+        cambiarPestaña("plantillas");
+    }
 }
 
 // 6. Guardar Configuración en Base de Datos (API)
@@ -724,7 +816,11 @@ async function guardarMapeoConfig() {
             // Reset layout y previsualizaciones del mapeador
             resetLayoutMapeador();
             
-            cambiarPestaña("plantillas");
+            if (currentPlantilla.tipo_plantilla === 'marbete') {
+                cambiarPestaña("marbetes");
+            } else {
+                cambiarPestaña("plantillas");
+            }
         } else {
             MQF.toast("Error al guardar: " + res.mensaje, "error");
         }
@@ -888,7 +984,15 @@ async function seleccionarSimulacionMapeador(cotId) {
                 'poliza.total_pagar': res.dato.total || '',
                 'poliza.beneficiario': res.dato.beneficiario || '',
                 'poliza.objeto_fianza': res.dato.subtipo || res.dato.cobertura || '',
-                'poliza.aseguradora_nombre': res.dato.aseguradora || ''
+                'poliza.aseguradora_nombre': res.dato.aseguradora || '',
+                'vehiculo.placa': res.dato.placa || 'A123456',
+                'vehiculo.chasis': res.dato.chasis || '1HGCR2F8XHA000000',
+                'vehiculo.marca': res.dato.marca || 'HONDA',
+                'vehiculo.modelo': res.dato.modelo || 'CIVIC',
+                'vehiculo.anio': res.dato.anio || '2017',
+                'vehiculo.uso': res.dato.uso || res.dato.uso_vehiculo || 'PRIVADO',
+                'vehiculo.tipo_vehiculo': res.dato.tipo_vehiculo || 'AUTOMOVIL',
+                'sistema.qr_msqf': `QR-MSQF-${cotId}`
             };
             
             // Activar checkbox visual y estado
@@ -905,11 +1009,22 @@ async function seleccionarSimulacionMapeador(cotId) {
 
 function toggleMapeadorPreview(activo) {
     mapeadorPreviewActivo = activo;
+    // Si no hay cotización seleccionada, generar placeholders con los nombres de las variables
     if (activo && !mapeadorSimuladoDatos) {
-        MQF.toast("Por favor, seleccione primero una cotización de prueba.", "warning");
-        document.getElementById("chkMapeadorPreview").checked = false;
-        mapeadorPreviewActivo = false;
-        return;
+        // Construir datos placeholder usando los nombres de variable
+        const placeholderDatos = {};
+        mappedFields.forEach(c => {
+            if (c.variable) {
+                placeholderDatos[c.variable] = `{{${c.variable}}}`;
+            }
+        });
+        mapeadorSimuladoDatos = placeholderDatos;
+        mapeadorSimuladoDatos.__placeholder = true;
+        MQF.toast("Mostrando nombres de variables como referencia. Seleccione una cotización para ver valores reales.", "info");
+    }
+    // Si se desactiva, limpiar placeholders si los había
+    if (!activo && mapeadorSimuladoDatos && mapeadorSimuladoDatos.__placeholder) {
+        mapeadorSimuladoDatos = null;
     }
     dibujarCamposMapeados();
 }
@@ -1040,4 +1155,136 @@ function resetLayoutMapeador() {
     
     mapeadorSimuladoDatos = null;
     mapeadorPreviewActivo = false;
+}
+
+// Historial para Deshacer/Rehacer y Grid
+function registrarEstado() {
+    const copia = JSON.parse(JSON.stringify(mappedFields));
+    undoStack.push(copia);
+    redoStack = []; // Al hacer un nuevo cambio, limpiamos la pila de rehacer
+    actualizarBotonesUndoRedo();
+}
+
+function deshacer() {
+    if (undoStack.length === 0) return;
+    
+    const actual = JSON.parse(JSON.stringify(mappedFields));
+    redoStack.push(actual);
+    
+    const previo = undoStack.pop();
+    mappedFields = previo;
+    
+    dibujarCamposMapeados();
+    actualizarBotonesUndoRedo();
+    MQF.toast("Deshacer completado", "info");
+}
+
+function rehacer() {
+    if (redoStack.length === 0) return;
+    
+    const actual = JSON.parse(JSON.stringify(mappedFields));
+    undoStack.push(actual);
+    
+    const siguiente = redoStack.pop();
+    mappedFields = siguiente;
+    
+    dibujarCamposMapeados();
+    actualizarBotonesUndoRedo();
+    MQF.toast("Rehacer completado", "info");
+}
+
+function actualizarBotonesUndoRedo() {
+    const btnUndo = document.getElementById("btnUndo");
+    const btnRedo = document.getElementById("btnRedo");
+    if (btnUndo) btnUndo.disabled = (undoStack.length === 0);
+    if (btnRedo) btnRedo.disabled = (redoStack.length === 0);
+}
+
+function toggleSnapToGrid() {
+    snapToGrid = !snapToGrid;
+    const btn = document.getElementById("btnSnapToGrid");
+    if (btn) {
+        if (snapToGrid) {
+            btn.innerHTML = '<i class="fa-solid fa-grip"></i> Grid: ON';
+            btn.classList.add("mqf-btn--success");
+            btn.classList.remove("mqf-btn--secondary");
+            MQF.toast("Ajuste a cuadrícula (Snap-to-Grid) activado.", "success");
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-grip"></i> Grid: OFF';
+            btn.classList.remove("mqf-btn--success");
+            btn.classList.add("mqf-btn--secondary");
+            MQF.toast("Ajuste a cuadrícula (Snap-to-Grid) desactivado.", "warning");
+        }
+    }
+}
+
+// Atajos de teclado y movimiento fino por teclado (flechas)
+document.addEventListener("keydown", (e) => {
+    // Tecla Z con Ctrl/Cmd para deshacer
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        deshacer();
+    }
+    // Tecla Y con Ctrl/Cmd para rehacer
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        rehacer();
+    }
+    
+    // Alineación fina por teclado (Arrow Keys)
+    if (activeFieldId) {
+        const idx = mappedFields.findIndex(c => c.id === activeFieldId);
+        if (idx === -1) return;
+        
+        let step = e.shiftKey ? 2.5 : 0.5; // mm — Shift: movimiento grueso 2.5mm, normal: 0.5mm
+        let moved = false;
+        
+        if (e.key === "ArrowUp") {
+            e.preventDefault();
+            mappedFields[idx].pos_y = Math.max(0, parseFloat((mappedFields[idx].pos_y - step).toFixed(2)));
+            moved = true;
+        } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            const mmHeight = parseFloat(currentPlantilla?.alto_mm) || 279.4;
+            mappedFields[idx].pos_y = Math.min(mmHeight - 5, parseFloat((mappedFields[idx].pos_y + step).toFixed(2)));
+            moved = true;
+        } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            mappedFields[idx].pos_x = Math.max(0, parseFloat((mappedFields[idx].pos_x - step).toFixed(2)));
+            moved = true;
+        } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            const mmWidth = parseFloat(currentPlantilla?.ancho_mm) || 215.9;
+            const customWidth = parseFloat(mappedFields[idx].ancho) || 50;
+            mappedFields[idx].pos_x = Math.min(mmWidth - customWidth, parseFloat((mappedFields[idx].pos_x + step).toFixed(2)));
+            moved = true;
+        }
+        
+        if (moved) {
+            // Actualizar inputs en el popover
+            const popX = document.getElementById("popoverPosX");
+            const popY = document.getElementById("popoverPosY");
+            if (popX) popX.value = mappedFields[idx].pos_x;
+            if (popY) popY.value = mappedFields[idx].pos_y;
+            
+            // Redibujar
+            dibujarCamposMapeados();
+            
+            // Reposicionar el popover
+            const box = document.querySelector(`.mapped-field-box[data-id="${activeFieldId}"]`);
+            if (box) {
+                const clientRect = box.getBoundingClientRect();
+                const popover = document.getElementById("popoverPropiedadesCampo");
+                if (popover) {
+                    popover.style.left = (clientRect.left + window.scrollX) + "px";
+                    popover.style.top = (clientRect.bottom + window.scrollY + 5) + "px";
+                }
+            }
+        }
+    }
+});
+
+// Función de previsualización que abre la pestaña de simulador
+function generarPrevisualizacionMarbete(plantillaId) {
+    abrirPruebas(plantillaId);
 }

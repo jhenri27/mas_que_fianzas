@@ -55,10 +55,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
-        // Obtener configuraciones institucionales
+        // Obtener configuraciones institucionales y del validador
         $keys = [
             'EMPRESA_NOMBRE', 'EMPRESA_RNC', 'EMPRESA_CORREO', 
-            'EMPRESA_DIRECCION', 'EMPRESA_TELEFONO', 'EMPRESA_WEB', 'EMPRESA_REDES'
+            'EMPRESA_DIRECCION', 'EMPRESA_TELEFONO', 'EMPRESA_WEB', 'EMPRESA_REDES',
+            'VALIDADOR_DOCS_ACTIVO', 'VALIDADOR_DOCS_CLIENTES', 'VALIDADOR_DOCS_COTIZACIONES',
+            'VALIDADOR_DOCS_USUARIOS', 'VALIDADOR_DOCS_POLIZAS', 'VALIDADOR_DOCS_FIANZAS'
         ];
         
         $inClause = implode(',', array_fill(0, count($keys), '?'));
@@ -78,6 +80,12 @@ try {
         $configs['empresa_telefono'] = '809-555-0123';
         $configs['empresa_web'] = 'https://www.masquefianzas.com.do';
         $configs['empresa_redes'] = ['instagram' => '', 'facebook' => '', 'twitter' => '', 'linkedin' => ''];
+        $configs['validador_docs_activo'] = '0';
+        $configs['validador_docs_clientes'] = '0';
+        $configs['validador_docs_cotizaciones'] = '0';
+        $configs['validador_docs_usuarios'] = '0';
+        $configs['validador_docs_polizas'] = '0';
+        $configs['validador_docs_fianzas'] = '0';
         
         while ($row = $res->fetch_assoc()) {
             $keyLower = strtolower($row['clave_config']);
@@ -107,47 +115,71 @@ try {
             exit;
         }
         
-        // Validar campos obligatorios
-        $required = ['empresa_nombre', 'empresa_rnc', 'empresa_correo', 'empresa_direccion', 'empresa_telefono'];
-        foreach ($required as $req) {
-            if (empty($datos[$req])) {
+        $is_validador_only = isset($datos['validador_only']) && $datos['validador_only'];
+        $updates = [];
+        
+        if (!$is_validador_only) {
+            // Validar campos obligatorios
+            $required = ['empresa_nombre', 'empresa_rnc', 'empresa_correo', 'empresa_direccion', 'empresa_telefono'];
+            foreach ($required as $req) {
+                if (empty($datos[$req])) {
+                    http_response_code(400);
+                    echo json_encode(["exito" => false, "mensaje" => "El campo " . str_replace('empresa_', '', $req) . " es obligatorio."]);
+                    exit;
+                }
+            }
+            
+            // Validar formato de email
+            if (!filter_var($datos['empresa_correo'], FILTER_VALIDATE_EMAIL)) {
                 http_response_code(400);
-                echo json_encode(["exito" => false, "mensaje" => "El campo " . str_replace('empresa_', '', $req) . " es obligatorio."]);
+                echo json_encode(["exito" => false, "mensaje" => "El correo institucional especificado no tiene un formato válido."]);
                 exit;
+            }
+            
+            // Preparar redes sociales
+            $redes = [
+                'instagram' => trim($datos['empresa_redes']['instagram'] ?? ''),
+                'facebook' => trim($datos['empresa_redes']['facebook'] ?? ''),
+                'twitter' => trim($datos['empresa_redes']['twitter'] ?? ''),
+                'linkedin' => trim($datos['empresa_redes']['linkedin'] ?? '')
+            ];
+            
+            // Mapeo de campos a actualizar
+            $updates = [
+                'EMPRESA_NOMBRE' => trim($datos['empresa_nombre']),
+                'EMPRESA_RNC' => trim($datos['empresa_rnc']),
+                'EMPRESA_CORREO' => trim($datos['empresa_correo']),
+                'EMPRESA_DIRECCION' => trim($datos['empresa_direccion']),
+                'EMPRESA_TELEFONO' => trim($datos['empresa_telefono']),
+                'EMPRESA_WEB' => trim($datos['empresa_web'] ?? ''),
+                'EMPRESA_REDES' => json_encode($redes)
+            ];
+        }
+        
+        // Agregar llaves del validador si están presentes en la petición
+        $validador_keys = [
+            'VALIDADOR_DOCS_ACTIVO', 'VALIDADOR_DOCS_CLIENTES', 'VALIDADOR_DOCS_COTIZACIONES',
+            'VALIDADOR_DOCS_USUARIOS', 'VALIDADOR_DOCS_POLIZAS', 'VALIDADOR_DOCS_FIANZAS'
+        ];
+        foreach ($validador_keys as $vk) {
+            $keyLower = strtolower($vk);
+            if (isset($datos[$keyLower])) {
+                $updates[$vk] = ($datos[$keyLower] === '1' || $datos[$keyLower] === 1 || $datos[$keyLower] === true) ? '1' : '0';
             }
         }
         
-        // Validar formato de email
-        if (!filter_var($datos['empresa_correo'], FILTER_VALIDATE_EMAIL)) {
-            http_response_code(400);
-            echo json_encode(["exito" => false, "mensaje" => "El correo institucional especificado no tiene un formato válido."]);
-            exit;
-        }
-        
-        // Preparar redes sociales
-        $redes = [
-            'instagram' => trim($datos['empresa_redes']['instagram'] ?? ''),
-            'facebook' => trim($datos['empresa_redes']['facebook'] ?? ''),
-            'twitter' => trim($datos['empresa_redes']['twitter'] ?? ''),
-            'linkedin' => trim($datos['empresa_redes']['linkedin'] ?? '')
-        ];
-        
-        // Mapeo de campos a actualizar
-        $updates = [
-            'EMPRESA_NOMBRE' => trim($datos['empresa_nombre']),
-            'EMPRESA_RNC' => trim($datos['empresa_rnc']),
-            'EMPRESA_CORREO' => trim($datos['empresa_correo']),
-            'EMPRESA_DIRECCION' => trim($datos['empresa_direccion']),
-            'EMPRESA_TELEFONO' => trim($datos['empresa_telefono']),
-            'EMPRESA_WEB' => trim($datos['empresa_web'] ?? ''),
-            'EMPRESA_REDES' => json_encode($redes)
-        ];
-        
         // 1. Obtener valores anteriores para auditoría (NOFTRAB)
         $valor_anterior = [];
-        $stmt_before = $db->query("SELECT clave_config, valor_config FROM configuracion_sistema WHERE clave_config LIKE 'EMPRESA_%'");
-        while ($row = $stmt_before->fetch_assoc()) {
-            $valor_anterior[$row['clave_config']] = $row['valor_config'];
+        if (!empty($updates)) {
+            $inClause = implode(',', array_fill(0, count($updates), '?'));
+            $stmt_before = $db->prepare("SELECT clave_config, valor_config FROM configuracion_sistema WHERE clave_config IN ($inClause)");
+            $stmt_before->bind_param(str_repeat('s', count($updates)), ...array_keys($updates));
+            $stmt_before->execute();
+            $res_before = $stmt_before->get_result();
+            while ($row = $res_before->fetch_assoc()) {
+                $valor_anterior[$row['clave_config']] = $row['valor_config'];
+            }
+            $stmt_before->close();
         }
         
         // Iniciar transacción

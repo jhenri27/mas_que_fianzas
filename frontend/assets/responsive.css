@@ -1,0 +1,101 @@
+/* Responsive Design - MAS QUE FIANZAS */
+/* Autor: Maestro de Corrección - 2026-06-17 */
+
+@media (max-width: 768px) {
+    /* Sidebar colapsable */
+    .sidebar {
+        position: fixed;
+        left: -250px;
+        transition: left 0.3s;
+        z-index: 1000;
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+    
+    /* Botón hamburguesa */
+    .menu-toggle {
+        display: block !important;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    /* Contenido principal */
+    .main-content {
+        margin-left: 0 !important;
+        padding: 60px 10px 10px !important;
+    }
+    
+    /* Dashboard grid */
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .stat-card {
+        margin-bottom: 10px;
+    }
+    
+    /* Tablas responsive */
+    table {
+        font-size: 12px;
+    }
+    
+    table thead {
+        display: none;
+    }
+    
+    table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+    
+    table td {
+        display: block;
+        text-align: right;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    table td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+    }
+    
+    /* Formularios */
+    input, select, textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Header */
+    .header {
+        padding: 10px !important;
+    }
+    
+    .header h1 {
+        font-size: 18px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+}

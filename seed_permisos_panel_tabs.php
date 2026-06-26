@@ -93,7 +93,7 @@ $funciones_def = [
         ['CONF_SEGURIDAD_POLITICAS_EDITAR', 'Configurar Políticas de Seguridad',   'editar'   ],
     ],
     'reportes' => [
-        ['TAB_REP_MODELADOR',  'Pestaña Modelador PDF-DOCS',        'consultar'],
+        ['TAB_REP_MODELADOR',  'Pestaña Integrador de Formularios-PDF', 'consultar'],
         ['TAB_REP_GENERALES',  'Pestaña Reportes Generales',        'reportes' ],
         ['REP_VENTAS_GENERALES', 'Ver Reporte de Ventas Generales',  'reportes' ],
         ['REP_VENTAS_LOGRADAS',  'Ver Reporte de Ventas Logradas',   'reportes' ],
@@ -115,7 +115,7 @@ $funciones_def = [
         ['TAB_LABS_VER',       'Ver Labs de Tecnología',                   'consultar'],
     ],
     'modelador_pdf' => [
-        ['TAB_PDF_MODELADOR',  'Ver Modelador PDF',                         'consultar'],
+        ['TAB_PDF_MODELADOR',  'Ver Integrador de Formularios-PDF',         'consultar'],
     ],
     'auditoria_lineal' => [
         ['AUDITORIA_LINEAL_VER', 'Ver Auditoría Lineal', 'consultar'],

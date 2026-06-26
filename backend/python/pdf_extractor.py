@@ -196,5 +196,22 @@ if __name__ == "__main__":
         
         res = fill_pdf(template, output, data_json, ancho, alto)
         print(json.dumps(res, ensure_ascii=False))
+        
+    elif cmd == "img2pdf":
+        if len(sys.argv) < 4:
+            print(json.dumps({"exito": False, "mensaje": "Faltan parámetros para 'img2pdf'. Uso: python pdf_extractor.py img2pdf <img_path> <pdf_path>"}))
+            sys.exit(1)
+        img_path = sys.argv[2]
+        pdf_path = sys.argv[3]
+        try:
+            imgdoc = fitz.open(img_path)
+            pdfbytes = imgdoc.convert_to_pdf()
+            imgdoc.close()
+            outdoc = fitz.open("pdf", pdfbytes)
+            outdoc.save(pdf_path)
+            outdoc.close()
+            print(json.dumps({"exito": True}))
+        except Exception as e:
+            print(json.dumps({"exito": False, "mensaje": str(e)}))
     else:
         print(json.dumps({"exito": False, "mensaje": f"Comando no reconocido: {cmd}"}))

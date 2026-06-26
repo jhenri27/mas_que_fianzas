@@ -47,6 +47,17 @@ try {
     if (strpos($ruta, '/crear') !== false && $metodo === 'POST') {
         // CREAR USUARIO
         $datos = json_decode(file_get_contents('php://input'), true);
+        
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('usuarios')) {
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
+                respuestaJSON(false, 'La cédula especificada no es válida (dígito verificador incorrecto).', null, 400);
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+        
         $resultado = $manager->crearUsuario($datos, $usuario_actual);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], $resultado, $resultado['exito'] ? 201 : 400);
 
@@ -54,6 +65,17 @@ try {
         // EDITAR USUARIO
         $usuario_id = intval(end($partes));
         $datos = json_decode(file_get_contents('php://input'), true);
+        
+        // Validación técnica Dominicana (NOFTRAB)
+        if (ValidadorDocumentos::isValidatorActive('usuarios')) {
+            if (!empty($datos['cedula']) && !ValidadorDocumentos::validarDocumento($datos['cedula'])) {
+                respuestaJSON(false, 'La cédula especificada no es válida (dígito verificador incorrecto).', null, 400);
+            }
+            if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
+                respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+        
         $resultado = $manager->editarUsuario($usuario_id, $datos, $usuario_actual);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 

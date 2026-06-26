@@ -726,7 +726,7 @@ const MQF = (() => {
     
     let html = '';
     const filtered = conversationsList.filter(c => {
-      const name = `${c.nombre} ${c.apellido}`.toLowerCase();
+      const name = `${c.nombre || ''} ${c.apellido || ''}`.toLowerCase();
       const username = (c.username || '').toLowerCase();
       return name.includes(query) || username.includes(query);
     });
@@ -735,7 +735,10 @@ const MQF = (() => {
       const isActive = (c.id == activeChatRecipientId) ? 'active' : '';
       const isBot = parseInt(c.es_bot || 0) === 1;
       const avatarClass = isBot ? (c.bot_code === 'BHN' ? 'bhn' : 'bbs') : 'human';
-      const avatarContent = isBot ? (c.bot_code === 'BHN' ? '🛠️' : '📈') : `${c.nombre.charAt(0)}${c.apellido.charAt(0)}`.toUpperCase();
+      // Guard contra nombre/apellido nulos o vacíos
+      const ini1 = (c.nombre  || '?').charAt(0).toUpperCase();
+      const ini2 = (c.apellido || '').charAt(0).toUpperCase();
+      const avatarContent = isBot ? (c.bot_code === 'BHN' ? '🛠️' : '📈') : `${ini1}${ini2}`;
       const statusDotClass = isBot ? 'bot' : 'online';
       
       let previewText = c.ultimo_mensaje || '';
@@ -747,6 +750,7 @@ const MQF = (() => {
       }
       
       const unreadBadge = parseInt(c.no_leidos || 0) > 0 ? `<span class="chat-csr-contact-badge">${c.no_leidos}</span>` : '';
+      const displayName = `${c.nombre || ''} ${c.apellido || ''}`.trim() || c.username || 'Usuario';
       
       html += `
         <div class="chat-csr-contact-item ${isActive}" onclick="MQF.selectContact(${c.id})">
@@ -756,7 +760,7 @@ const MQF = (() => {
           </div>
           <div class="chat-csr-contact-info">
             <div class="chat-csr-contact-header">
-              <span class="chat-csr-contact-name">${c.nombre} ${c.apellido}</span>
+              <span class="chat-csr-contact-name">${displayName}</span>
               <span class="chat-csr-contact-time">${c.ultima_fecha ? c.ultima_fecha.substring(11, 16) : ''}</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -783,7 +787,8 @@ const MQF = (() => {
     // Find selected conversation and update header
     const recipient = conversationsList.find(c => c.id == id);
     if (recipient) {
-      document.getElementById('chat-csr-recipient-name').textContent = `${recipient.nombre} ${recipient.apellido}`;
+      const recipientName = `${recipient.nombre || ''} ${recipient.apellido || ''}`.trim() || recipient.username || 'Contacto';
+      document.getElementById('chat-csr-recipient-name').textContent = recipientName;
       document.getElementById('chat-csr-recipient-role').textContent = parseInt(recipient.es_bot || 0) === 1 
         ? (recipient.bot_code === 'BHN' ? '🤖 Bot de Soporte Técnico' : '🤖 Asistente de Seguros (SSINDI)') 
         : `🟢 ${recipient.nombre_perfil || 'Supervisor'}`;
@@ -804,7 +809,7 @@ const MQF = (() => {
 
   async function checkUnreadMessagesCount() {
     try {
-      const token = localStorage.getItem('token_sesion') || '';
+      const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || sessionStorage.getItem('token_sesion') || '';
       if (!token) return;
       const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/chat.php', {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -838,18 +843,20 @@ const MQF = (() => {
     win.style.display = 'flex';
     
     try {
-      const token = localStorage.getItem('token_sesion') || '';
+      const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || sessionStorage.getItem('token_sesion') || '';
       const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/chat.php', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       const res = await response.json();
       
       if (res.exito) {
-        conversationsList = res.conversaciones || [];
+        // Filtrar al usuario actual para que no se muestre a sí mismo en la lista
+        const currentUserId = res.usuario_actual ? res.usuario_actual.id : null;
+        conversationsList = (res.conversaciones || []).filter(c => c.id != currentUserId);
         renderContactList();
         
         if (conversationsList.length > 0) {
-          // Default to select first bot or contact
+          // Priorizar bots o el primer contacto disponible
           selectContact(conversationsList[0].id);
         }
       }
@@ -870,7 +877,7 @@ const MQF = (() => {
   async function cargarMensajesChatCSR() {
     if (!activeChatRecipientId) return;
     try {
-      const token = localStorage.getItem('token_sesion') || '';
+      const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || sessionStorage.getItem('token_sesion') || '';
       const response = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/chat.php?chat_con_id=${activeChatRecipientId}`, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -1020,7 +1027,7 @@ const MQF = (() => {
     if (previewArea) previewArea.style.display = 'none';
 
     try {
-      const token = localStorage.getItem('token_sesion') || '';
+      const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || sessionStorage.getItem('token_sesion') || '';
       const response = await fetch('/PLATAFORMA_INTEGRADA/backend/api/chat.php', {
         method: 'POST',
         headers: {
@@ -1066,7 +1073,7 @@ const MQF = (() => {
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
     
     try {
-      const token = localStorage.getItem('token_sesion') || '';
+      const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('mqf_token') || sessionStorage.getItem('token_sesion') || '';
       const response = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/chat.php?action=enviar_email_cotizacion&id=${cotId}`, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -1134,3 +1141,5 @@ const MQF = (() => {
 
 })();
 
+// Exponer MQF globalmente para que funcione desde iframes y onclick HTML inline
+window.MQF = MQF;

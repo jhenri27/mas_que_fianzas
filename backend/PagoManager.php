@@ -220,6 +220,23 @@ class PagoManager {
             registrarAjuste($regPor, 'pagos', 'pagos_plan', $polizaId, ['plan' => 'sin_fraccionar'], ['plan' => 'fraccionado_3_cuotas', 'inicial' => $montoInicial], $justificacion);
 
             $this->db->commit();
+
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $regPor,
+                    'registrar_fraccionamiento',
+                    'pagos',
+                    'registrarFraccionamiento',
+                    "Registro de plan de fraccionamiento multicanal para Póliza ID: $polizaId. Inicial de RD$ " . number_format($montoInicial, 2),
+                    'exitoso',
+                    null,
+                    'pagos',
+                    $pagoId,
+                    null,
+                    $datos
+                );
+            }
+
             return [
                 'exito' => true,
                 'id' => $pagoId,
@@ -446,6 +463,23 @@ class PagoManager {
             }
 
             $this->db->commit();
+
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $reg_por,
+                    'registrar_pago',
+                    'pagos',
+                    'registrarPago',
+                    "Pago registrado para Póliza ID: $polizaId. Monto: RD$ " . number_format($monto, 2) . ". Estado: $estado_pago",
+                    'exitoso',
+                    null,
+                    'pagos',
+                    $pagoId,
+                    null,
+                    $datos
+                );
+            }
+
             return [
                 'exito' => true,
                 'id' => $pagoId,
@@ -526,6 +560,23 @@ class PagoManager {
             }
 
             $this->db->commit();
+
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $validadorId,
+                    'aprobar_pago',
+                    'pagos',
+                    'aprobarPago',
+                    "Pago ID $pagoId aprobado y conciliado",
+                    'exitoso',
+                    null,
+                    'pagos',
+                    $pagoId,
+                    $pago,
+                    ['estado_pago' => 'procesado', 'validado_por' => $validadorId]
+                );
+            }
+
             return ['exito' => true, 'mensaje' => 'Pago aprobado y contabilizado con éxito.', 'asiento_id' => $asientoId];
 
         } catch (Exception $e) {
@@ -587,6 +638,23 @@ class PagoManager {
             }
 
             $this->db->commit();
+
+            if (function_exists('logAudit')) {
+                logAudit(
+                    $validadorId,
+                    'rechazar_pago',
+                    'pagos',
+                    'rechazarPago',
+                    "Pago ID $pagoId rechazado",
+                    'exitoso',
+                    null,
+                    'pagos',
+                    $pagoId,
+                    $pago,
+                    ['estado_pago' => 'rechazado', 'validado_por' => $validadorId]
+                );
+            }
+
             return ['exito' => true, 'mensaje' => 'Pago rechazado con éxito.'];
 
         } catch (Exception $e) {

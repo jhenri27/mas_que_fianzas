@@ -6,14 +6,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css">
-    <link rel="stylesheet" href="../assets/skin-engine.css?v=11.0">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css">
     <script src="../assets/components.js"></script>
     <style>
         body { padding: 40px; }
         .lab-container { max-width: 1000px; margin: 0 auto; }
         .lab-card { 
-            background: white; border-radius: 16px; border: 1px solid var(--mqf-border); 
+            background: var(--bg-card, #ffffff); border-radius: 16px; border: 1px solid var(--mqf-border); 
             box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; overflow: hidden;
         }
         .lab-header { padding: 30px; background: var(--mqf-primary); color: white !important; }
@@ -160,7 +160,7 @@
 
                     resBox.innerHTML = `
                         <div style="color:${color}; font-weight:bold; margin-bottom:10px;">${label}</div>
-                        <div style="font-size:24px; text-align:center; padding:10px; background:white; border:1px solid #e2e8f0; border-radius:8px; color:${color}">
+                        <div style="font-size:24px; text-align:center; padding:10px; background: var(--bg-card, #ffffff); border:1px solid #e2e8f0; border-radius:8px; color:${color}">
                             ${ncfDisplay}
                         </div>
                         <div class="mt-4 text-xs">

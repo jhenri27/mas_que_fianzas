@@ -95,7 +95,6 @@ class Dashboard {
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.style.display = 'flex';
                 });
-                return;
             }
             
             // Carga dinámica de permisos en BD
@@ -108,6 +107,7 @@ class Dashboard {
                 if (result.exito && result.datos && Array.isArray(result.datos.permisos)) {
                     const permisos = result.datos.permisos;
                     window.MQF_PERMISOS = permisos; // Guardado global para iframes (Norma NOFTRAB)
+                    window.MQF_PERMISOS_NOFTRAB = permisos.map(p => typeof p === 'string' ? p : (p.codigo_funcion || p.codigo || p.permiso || ''));
                     const modulosPermitidos = {'dashboard': true, 'mi-perfil': true};
                     
                     // Mapear los módulos que sí tienen al menos una función ejecutable de forma dinámica
@@ -838,7 +838,7 @@ class Dashboard {
             'usuarios': 'USUARIOS',
             'centro_financiero': 'CENTRO FINANCIERO',
             'labs_masqf': 'LABS-MASQF (TECNOLOGÍA)',
-            'modelador_pdf': 'MODELADOR PDF',
+            'modelador_pdf': 'INTEGRADOR DE FORMULARIOS-PDF',
             'configuracion': 'CONFIGURACIÓN',
             'perfil_data': 'PERFIL DATA (MIS ACCESOS)',
             'auditoria_lineal': 'AUDITORÍA LINEAL',
@@ -1827,31 +1827,69 @@ async function abrirDetallePolizas() {
         modal.classList.add('active');
     }
     
-    const pHoy = document.getElementById('polizasHoy')?.textContent || '0';
-    const pSemana = document.getElementById('polizasSemana')?.textContent || '0';
-    const pMes = document.getElementById('polizasMes')?.textContent || '0';
+    // Inicializar el selector de mes si está vacío
+    const selector = document.getElementById('modalPolizasMesSelector');
+    if (selector && selector.options.length === 0) {
+        const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const now = new Date();
+        for (let i = 0; i < 12; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const value = `${y}-${m}`;
+            const label = `${nombresMeses[d.getMonth()]} ${y}`;
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = label;
+            selector.appendChild(opt);
+        }
+        // Seleccionar el mes actual por defecto
+        selector.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
     
+    // Cargar los datos para el mes seleccionado
+    const mesSeleccionado = selector ? selector.value : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+    cargarDetallePolizasPorMes(mesSeleccionado);
+}
+
+async function cargarDetallePolizasPorMes(mes) {
     const mHoy = document.getElementById('modalPolizasHoy');
     const mSemana = document.getElementById('modalPolizasSemana');
     const mMes = document.getElementById('modalPolizasMes');
+    const lblHoy = document.getElementById('lblModalPolizasHoy');
+    const lblSemana = document.getElementById('lblModalPolizasSemana');
+    const lblMes = document.getElementById('lblModalPolizasMes');
+    const modalTopClientesList = document.getElementById('modalTopClientesList');
     
-    if (mHoy) mHoy.textContent = pHoy;
-    if (mSemana) mSemana.textContent = pSemana;
-    if (mMes) mMes.textContent = pMes;
+    if (mHoy) mHoy.textContent = '...';
+    if (mSemana) mSemana.textContent = '...';
+    if (mMes) mMes.textContent = '...';
+    if (modalTopClientesList) {
+        modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando estadísticas...</div>';
+    }
     
     try {
-        const respuesta = await api.solicitud('/polizas_stats.php');
-        const modalTopClientesList = document.getElementById('modalTopClientesList');
-        
+        const respuesta = await api.solicitud('/polizas_stats.php?mes=' + encodeURIComponent(mes));
         if (respuesta.exito && respuesta.data) {
             const stats = respuesta.data;
             if (mHoy) mHoy.textContent = stats.diario;
             if (mSemana) mSemana.textContent = stats.semanal;
             if (mMes) mMes.textContent = stats.mensual;
             
+            // Actualizar etiquetas dependiendo de si es el mes actual
+            if (stats.es_mes_actual) {
+                if (lblHoy) lblHoy.textContent = "Hoy";
+                if (lblSemana) lblSemana.textContent = "Esta Semana";
+                if (lblMes) lblMes.textContent = "Este Mes";
+            } else {
+                if (lblHoy) lblHoy.textContent = "Promedio Diario";
+                if (lblSemana) lblSemana.textContent = "Promedio Semanal";
+                if (lblMes) lblMes.textContent = "Total del Mes";
+            }
+            
             if (modalTopClientesList) {
                 if (!stats.top_clientes || stats.top_clientes.length === 0) {
-                    modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;">No hay pólizas emitidas</div>';
+                    modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#64748b; font-style:italic;">No hay pólizas emitidas en este mes</div>';
                 } else {
                     const maxPol = stats.top_clientes.reduce((max, c) => Math.max(max, c.cantidad_polizas), 1);
                     
@@ -1889,13 +1927,15 @@ async function abrirDetallePolizas() {
             }
         }
     } catch (error) {
-        console.error('Error cargando detalles en abrirDetallePolizas:', error);
-        const modalTopClientesList = document.getElementById('modalTopClientesList');
+        console.error('Error cargando detalles en cargarDetallePolizasPorMes:', error);
         if (modalTopClientesList) {
             modalTopClientesList.innerHTML = '<div style="text-align:center; padding: 20px; color:#ef4444; font-style:italic;">Error al cargar las pólizas</div>';
         }
     }
 }
+
+window.cargarDetallePolizasPorMes = cargarDetallePolizasPorMes;
+window.abrirDetallePolizas = abrirDetallePolizas;
 
 // =====================================================
 // AJUSTES Y AUDITORÍA EXPEDIENTES (Norma NOFTRAB v4.0)

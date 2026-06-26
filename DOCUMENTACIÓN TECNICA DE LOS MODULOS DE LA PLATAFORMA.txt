@@ -1,0 +1,16 @@
+Documentación del Cotizador de MASQUEFIANSAS
+http://localhost/PLATAFORMA_INTEGRADA/documentacion_cotizador.php
+
+Documentación general- -Parte 1 de la PLATAFORMA de MASQUEFIANSAS
+http://localhost/PLATAFORMA_INTEGRADA/documentacion_general_plataforma.php
+
+Documentación general- - Parte 2 de la PLATAFORMA de MASQUEFIANSAS
+http://localhost/PLATAFORMA_INTEGRADA/documentacion_general_plataforma_parte2.php
+
+
+Documentación general- - Parte 3 de la PLATAFORMA de MASQUEFIANSAS
+http://localhost/PLATAFORMA_INTEGRADA/documentacion_general_plataforma_parte3.php
+
+
+Documentación general- - Parte 4 de la PLATAFORMA de MASQUEFIANSAS
+http://localhost/PLATAFORMA_INTEGRADA/documentacion_general_plataforma_parte4.php
