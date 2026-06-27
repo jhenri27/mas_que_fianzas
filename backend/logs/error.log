@@ -165182,3 +165182,165 @@ Stack trace:
 [26-Jun-2026 16:27:40 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
 [26-Jun-2026 16:27:40 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
 [26-Jun-2026 16:27:40 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 16:38:09 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 16:38:09 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 16:38:09 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 16:38:09 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 16:38:09 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 16:38:19 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 16:38:19 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 16:38:19 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 16:38:19 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 16:38:19 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 16:38:35 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 16:38:35 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 16:38:35 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 16:38:35 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 16:38:35 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 17:16:23 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 17:16:23 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 17:16:23 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 17:16:23 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 17:16:23 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 17:22:16 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 17:22:16 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 17:22:16 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 17:22:16 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 17:22:16 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:33:27 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:33:48 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:33:48 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:33:48 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:33:48 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:33:48 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:34:11 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:34:11 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:34:11 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:34:11 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:34:11 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:34:21 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:34:21 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:34:21 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:34:21 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:34:21 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:34:35 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:34:35 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:34:35 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:34:35 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:34:35 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:34:41 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:34:41 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:34:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:34:41 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:34:41 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:35:31 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:35:31 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:35:31 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:35:31 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:35:31 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:35:32 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:35:32 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:35:32 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:35:32 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:35:32 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:35:33 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:35:33 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:35:33 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:35:33 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:35:33 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:35:36 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:35:36 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:35:36 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:35:36 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:35:36 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:35:40 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:35:40 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:35:40 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:35:40 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:35:40 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:36:25 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:36:25 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:36:25 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:36:25 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:36:25 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:37:41 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:37:41 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:37:41 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:37:41 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:37:41 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:40:10 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:40:10 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:40:10 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:40:10 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:40:10 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:40:36 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:40:36 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:40:36 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:40:36 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:40:36 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:40:43 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:40:43 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:40:43 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:40:43 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:40:43 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:41:30 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:41:30 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:41:30 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:41:30 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:41:30 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:42:43 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:42:43 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:42:43 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:42:43 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:42:43 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:43:05 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:43:05 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:43:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:43:05 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:43:05 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:45:34 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:45:34 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:45:34 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:45:34 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:45:34 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:45:40 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:45:40 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:45:40 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:45:40 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:45:40 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 20:46:05 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 20:46:05 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 20:46:05 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 20:46:05 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 20:46:05 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 21:10:18 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 21:10:18 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 21:10:18 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 21:10:18 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 21:10:18 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 21:10:38 America/Santo_Domingo] PHP Notice:  session_start(): Ignoring session_start() because a session is already active (started from C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php on line 19) in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php on line 14
+[26-Jun-2026 21:10:38 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 21:10:38 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:0
+[26-Jun-2026 21:10:38 America/Santo_Domingo] PHP   2. Autenticacion->__construct() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\actividad.php:21
+[26-Jun-2026 21:10:38 America/Santo_Domingo] PHP   3. session_start() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\Autenticacion.php:14
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Deprecated:  json_decode(): Passing null to parameter #1 ($json) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php on line 236
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:0
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   2. json_decode($json = NULL, $associative = TRUE) C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:236
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Deprecated:  json_decode(): Passing null to parameter #1 ($json) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php on line 236
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:0
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   2. json_decode($json = NULL, $associative = TRUE) C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:236
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Deprecated:  json_decode(): Passing null to parameter #1 ($json) of type string is deprecated in C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php on line 236
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP Stack trace:
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   1. {main}() C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:0
+[26-Jun-2026 21:10:46 America/Santo_Domingo] PHP   2. json_decode($json = NULL, $associative = TRUE) C:\wamp64\www\PLATAFORMA_INTEGRADA\backend\api\auditoria_lineal.php:236

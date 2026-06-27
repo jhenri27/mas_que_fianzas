@@ -111,8 +111,15 @@ try {
 
     if ($method === 'GET') {
         if ($action === 'listar_companias') {
-            // Retorna compañías de tipo "aseguradora" activas
-            $sql = "SELECT id, nombre, rnc FROM companias_registradas WHERE tipo = 'aseguradora' AND estado = 1 ORDER BY nombre ASC";
+            $sql = "SELECT id, nombre, rnc FROM companias_registradas WHERE tipo = 'aseguradora' AND estado = 1 
+                    ORDER BY 
+                      CASE 
+                        WHEN LOWER(nombre) LIKE '%multiseguros%' THEN 1
+                        WHEN LOWER(nombre) LIKE '%midas%' THEN 2
+                        WHEN LOWER(nombre) LIKE '%patria%' THEN 3
+                        WHEN LOWER(nombre) LIKE '%pepin%' OR LOWER(nombre) LIKE '%pep%n%' THEN 4
+                        ELSE 999
+                      END ASC, nombre ASC";
             $res = $db->query($sql);
             $companias = [];
             while ($row = $res->fetch_assoc()) {

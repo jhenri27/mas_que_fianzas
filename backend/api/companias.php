@@ -71,7 +71,14 @@ try {
             // LISTADO DE COMPAÑÍAS
             $sql = "SELECT id, nombre, rnc, direccion, telefono, email, tipo, estado, fecha_creacion 
                     FROM companias_registradas 
-                    ORDER BY nombre ASC";
+                    ORDER BY 
+                      CASE 
+                        WHEN LOWER(nombre) LIKE '%multiseguros%' THEN 1
+                        WHEN LOWER(nombre) LIKE '%midas%' THEN 2
+                        WHEN LOWER(nombre) LIKE '%patria%' THEN 3
+                        WHEN LOWER(nombre) LIKE '%pepin%' OR LOWER(nombre) LIKE '%pep%n%' THEN 4
+                        ELSE 999
+                      END ASC, nombre ASC";
             
             $res = $db->query($sql);
             $companias = [];

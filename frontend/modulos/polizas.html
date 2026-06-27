@@ -1930,6 +1930,58 @@ async function cargarComisiones() {
 }
 
 // ═══════════════════════════════════════
+// CARGAR ASEGURADORAS DINÁMICAS (ISO & NOFTRAB VAF)
+// ═══════════════════════════════════════
+async function cargarAseguradorasDropdown() {
+    try {
+        const select = document.getElementById('w-aseguradora');
+        if (!select) return;
+        
+        const response = await fetch(`${BASE_API}/companias.php?action=listar`);
+        const json = await response.json();
+        if (json && json.exito && Array.isArray(json.data)) {
+            const insurers = json.data.filter(c => c.tipo === 'aseguradora' && c.estado === 1);
+            select.innerHTML = '';
+            
+            insurers.forEach(ins => {
+                const opt = document.createElement('option');
+                opt.value = ins.nombre;
+                opt.textContent = ins.nombre;
+                select.appendChild(opt);
+            });
+            
+            const otraOpt = document.createElement('option');
+            otraOpt.value = "Otra";
+            otraOpt.textContent = "Otra";
+            select.appendChild(otraOpt);
+        }
+    } catch (err) {
+        console.error('Error al cargar aseguradoras dinámicas:', err);
+    }
+}
+
+function setAseguradoraValue(val) {
+    const select = document.getElementById('w-aseguradora');
+    if (!select) return;
+    if (!val) {
+        select.value = "";
+        return;
+    }
+    const lowerVal = val.toLowerCase().trim();
+    for (let option of select.options) {
+        if (option.value.toLowerCase().trim() === lowerVal) {
+            select.value = option.value;
+            return;
+        }
+    }
+    const newOpt = document.createElement('option');
+    newOpt.value = val;
+    newOpt.textContent = val;
+    select.appendChild(newOpt);
+    select.value = val;
+}
+
+// ═══════════════════════════════════════
 // WIZARD NUEVA PÓLIZA
 // ═══════════════════════════════════════
 function iniciarWizard() {
@@ -2166,7 +2218,7 @@ async function buscarCotizacion() {
 
         // Cobertura
         if (cot.cobertura) document.getElementById('w-cobertura').value = cot.cobertura;
-        if (cot.aseguradora) document.getElementById('w-aseguradora').value = cot.aseguradora;
+        if (cot.aseguradora) setAseguradoraValue(cot.aseguradora);
 
         // Prima total
         const prima = parseFloat(cot.total || cot.prima_total || 0);
@@ -2396,7 +2448,8 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await cargarAseguradorasDropdown();
     cargarPolizas();
     // Poner fecha de hoy por defecto en el formulario de pago
     document.getElementById('p-fecha').value = new Date().toISOString().split('T')[0];

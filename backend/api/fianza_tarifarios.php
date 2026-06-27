@@ -47,7 +47,15 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 // GET: listar_aseguradoras — Público para autenticados (sin tasas)
 // =====================================================================
 if ($metodo === 'GET' && $action === 'listar_aseguradoras') {
-    $sql = "SELECT id, codigo, nombre, logo_url FROM fianza_aseguradoras WHERE estado='activo' ORDER BY nombre";
+    $sql = "SELECT id, codigo, nombre, logo_url FROM fianza_aseguradoras WHERE estado='activo' 
+            ORDER BY 
+              CASE 
+                WHEN LOWER(nombre) LIKE '%multiseguros%' THEN 1
+                WHEN LOWER(nombre) LIKE '%midas%' THEN 2
+                WHEN LOWER(nombre) LIKE '%patria%' THEN 3
+                WHEN LOWER(nombre) LIKE '%pepin%' OR LOWER(nombre) LIKE '%pep%n%' THEN 4
+                ELSE 999
+              END ASC, nombre ASC";
     $res = $db->query($sql);
     $data = [];
     while ($row = $res->fetch_assoc()) $data[] = $row;
