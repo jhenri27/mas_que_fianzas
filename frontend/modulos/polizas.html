@@ -11,7 +11,11 @@
     <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* Fix SweetAlert z-index inside modal */
+        .swal2-container { z-index: 999999 !important; }
+        
         /* ── Módulo embebido en iframe ── */
         .sidebar { display:none!important; }
         .top-navbar { display:none!important; }
@@ -87,6 +91,7 @@
         .badge-activa    { color:var(--mqf-success-text); background:var(--mqf-success-light); }
         .badge-cancelada, .badge-vencida { color:var(--mqf-danger-text); background:var(--mqf-danger-light); }
         .badge-suspendida { color:var(--mqf-warning-text); background:var(--mqf-warning-light); }
+        .badge-pendiente_pago { color:#d97706; background:#fef3c7; }
         .badge-si { color:var(--mqf-primary-dark); background:var(--mqf-primary-light); }
         .badge-no { color:var(--mqf-text-muted); background:var(--mqf-bg); }
 
@@ -233,6 +238,9 @@
                 <button id="btn-pol-nueva" class="mqf-btn mqf-btn--primary mqf-btn--sm" onclick="abrirTab('tab-nueva'); iniciarWizard()">
                     <i class="fa-solid fa-plus"></i> Nueva Póliza
                 </button>
+                <button id="btn-pol-masiva" class="mqf-btn mqf-btn--secondary mqf-btn--sm" onclick="abrirModalCancelacionMasiva()" style="border-color:#ef4444; color:#ef4444; background:transparent; font-weight:700;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Cancelación Masiva
+                </button>
             </div>
         </div>
         <div class="mqf-module-tabs">
@@ -289,11 +297,26 @@
             </button>
         </div>
 
+        <!-- Panel de Acciones Masivas -->
+        <div id="panel-acciones-masivas" style="display:none; align-items:center; justify-content:space-between; background:linear-gradient(135deg, #1e293b, #0f172a); border:1px solid rgba(99,102,241,0.2); border-radius:12px; padding:12px 20px; margin-bottom:16px; box-shadow:0 4px 15px rgba(0,0,0,0.15); animation:slideDown 0.3s ease;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="background:rgba(99,102,241,0.2); color:#a5b4fc; padding:4px 10px; border-radius:30px; font-size:12px; font-weight:700;">
+                    <i class="fa-solid fa-check-double"></i> <span id="num-seleccionadas">0</span> seleccionadas
+                </span>
+                <span style="font-size:13px; color:#94a3b8;">Acciones grupales para el Centro Técnico</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-danger btn-sm" onclick="abrirCancelacionGrup()"><i class="fa-solid fa-ban"></i> Cancelar en Bloque</button>
+                <button class="btn btn-secondary btn-sm" onclick="deseleccionarTodo()" style="background:rgba(255,255,255,0.08); color:#f1f5f9; border:none;"><i class="fa-solid fa-xmark"></i> Deseleccionar</button>
+            </div>
+        </div>
+
         <!-- Tabla -->
         <div class="tbl-wrap">
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width: 30px; text-align: center;"><input type="checkbox" id="check-all-polizas" onclick="toggleAllPolizas(this)"></th>
                         <th>N° Póliza</th>
                         <th>Tipo</th>
                         <th>Asegurado</th>
@@ -689,6 +712,57 @@
                             <tr style="border-bottom:1px solid #f1f5f9;"><td style="padding:6px 0; color:#94a3b8; font-weight:600; text-transform:uppercase; font-size:10px;">Prima Total Anual</td><td style="padding:6px 0; font-weight:700; color:#4f46e5;" id="det-dct-prima-total">—</td></tr>
                             <tr><td style="padding:6px 0; color:#94a3b8; font-weight:600; text-transform:uppercase; font-size:10px;">Fecha de Auditoría</td><td style="padding:6px 0; color:#64748b; font-style:italic;" id="det-dct-fecha-auditoria">—</td></tr>
                         </table>
+
+                        <!-- Sección de Cancelación Técnica a Prorrata -->
+                        <div id="det-tech-cancellation-box" style="margin-top:20px; border-top:1.5px dashed rgba(99,102,241,0.2); padding-top:16px;">
+                            <h4 style="font-size:12px; font-weight:700; color:#dc2626; text-transform:uppercase; margin:0 0 12px 0; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-ban"></i> Operaciones Técnicas de Cancelación (A Prorrata)
+                            </h4>
+                            
+                            <!-- Si la póliza ya está cancelada -->
+                            <div id="cancellation-status-active" style="display:none;">
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                                    <div>
+                                        <label style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase;">Fecha Efectiva de Cancelación</label>
+                                        <input type="date" id="cancel-fecha-efectiva" class="form-control" style="padding:6px; font-size:12px; width:100%; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b;" onchange="calcularProrrataLive()">
+                                    </div>
+                                    <div style="display:flex; align-items:flex-end;">
+                                        <button class="btn btn-outline btn-xs" type="button" onclick="calcularProrrataLive()" style="height:32px; font-size:11px; width:100%;">
+                                            <i class="fa-solid fa-calculator"></i> Recalcular Prorrata
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="prorrata-live-results" style="background:rgba(15,23,42,0.02); border:1px solid rgba(226,232,240,0.8); border-radius:8px; padding:12px; margin-bottom:12px; font-size:11.5px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <span style="color:#64748b;">Días Transcurridos / Restantes:</span>
+                                        <strong style="color:#1e293b;"><span id="live-dias-transcurridos">0</span> / <span id="live-dias-restantes">0</span> días</strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <span style="color:#64748b;">Prima Devengada Proporcional:</span>
+                                        <strong style="color:#dc2626;"><span id="live-prima-devengada">RD$ 0.00</span></strong>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; border-top:1px solid rgba(226,232,240,0.8); padding-top:6px; margin-top:6px;">
+                                        <span style="color:#64748b; font-weight:700;" id="live-label-devolucion">Saldo de Devolución:</span>
+                                        <strong id="live-saldo-devolucion" style="font-weight:800; color:#16a34a;">RD$ 0.00</strong>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom:12px;">
+                                    <label style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; display:block; margin-bottom:4px;">Justificación de la Cancelación</label>
+                                    <textarea id="cancel-justificacion" placeholder="Escriba el motivo detallado de la cancelación..." style="width:100%; height:60px; font-size:12px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; resize:none; box-sizing:border-box; color:#1e293b; background:#fff;"></textarea>
+                                </div>
+
+                                <button class="btn btn-danger btn-sm" type="button" onclick="ejecutarCancelacionIndividualLive()" style="width:100%; font-weight:700;">
+                                    <i class="fa-solid fa-trash-can"></i> Anular Póliza y Ajustar Cobros
+                                </button>
+                            </div>
+
+                            <div id="cancellation-status-canceled" style="display:none; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.15); border-radius:8px; padding:12px; color:#b91c1c; font-size:12.5px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> <strong>Esta póliza ya ha sido cancelada.</strong><br>
+                                Las coberturas y cobros asociados se encuentran suspendidos.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -877,6 +951,94 @@
     </div>
 </div>
 
+<!-- ════ MODAL CANCELAR PÓLIZAS POR SELECCIÓN ════ -->
+<div class="modal-overlay" id="modal-cancelar-seleccion">
+    <div class="modal-box" style="max-width:480px;">
+        <div class="modal-header" style="background:#dc2626; color:#fff;">
+            <h3><i class="fa-solid fa-ban"></i> Cancelación Grupal de Pólizas</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-cancelar-seleccion')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px; color:#475569; margin-bottom:15px;">
+                Está a punto de cancelar en bloque <strong id="cant-cancelar-bloque" style="color:#dc2626;">0</strong> pólizas seleccionadas.
+            </p>
+            <div style="background:rgba(220,38,38,0.06); border:1px solid rgba(220,38,38,0.15); border-radius:8px; padding:12px; font-size:12px; color:#b91c1c; margin-bottom:15px; line-height:1.4;">
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>IMPORTANTE:</strong> Este proceso anulará inmediatamente el estado activo y detendrá los cobros automáticos de todas las pólizas del grupo. Se enviará una notificación a cada cliente afectado de manera individual.
+            </div>
+            <div class="form-group">
+                <label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; display:block; margin-bottom:4px;">Justificación de Cancelación Grupal <span style="color:#dc2626;">*</span></label>
+                <textarea id="cancel-bloque-justificacion" placeholder="Indique la causa común de cancelación (Ej: Falta de pago recurrente, solicitud del lote por parte del corredor)..." style="width:100%; height:85px; font-size:12.5px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; resize:none; box-sizing:border-box; color:#1e293b; background:#fff;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-cancelar-seleccion')">Cancelar</button>
+            <button class="btn btn-danger" onclick="ejecutarCancelacionGrupalConfirmada()">
+                <i class="fa-solid fa-ban"></i> Confirmar Cancelación en Bloque
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ MODAL CANCELACIÓN MASIVA AVANZADA ════ -->
+<div class="modal-overlay" id="modal-cancelar-masiva">
+    <div class="modal-box" style="max-width:540px;">
+        <div class="modal-header" style="background:linear-gradient(135deg, #7f1d1d, #b91c1c); color:#fff;">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Cancelación Masiva del Centro Técnico</h3>
+            <button class="close-btn" onclick="cerrarModal('modal-cancelar-masiva')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px; color:#475569; margin-bottom:18px;">
+                Permite anular un conjunto de pólizas filtradas que cumplan condiciones específicas (ej. impagos masivos de un corredor o ramo).
+            </p>
+            
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+                <div style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">
+                    1. Filtros de Selección Masiva
+                </div>
+                <div class="form-grid form-grid-2" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div class="form-group">
+                        <label style="font-size:10.5px; font-weight:700; color:#64748b;">Vendedor / Corredor</label>
+                        <select id="cancel-masiva-vendedor" style="width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b;">
+                            <option value="">-- Todos los Agentes --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:10.5px; font-weight:700; color:#64748b;">Ramo de Seguro</label>
+                        <select id="cancel-masiva-ramo" style="width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b;">
+                            <option value="">-- Todos los Ramos --</option>
+                            <option value="Vehículos de Motor">Vehículos de Motor</option>
+                            <option value="Fianzas">Fianzas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:10.5px; font-weight:700; color:#64748b;">Compañía Aseguradora</label>
+                    <select id="cancel-masiva-aseguradora" style="width:100%; padding:6px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#1e293b;">
+                        <option value="">-- Todas las Aseguradoras --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px;">
+                <label style="font-size:11px; font-weight:700; color:#dc2626; text-transform:uppercase; display:block; margin-bottom:4px;">
+                    2. Justificación de Cancelación Masiva <span style="color:#dc2626;">*</span>
+                </label>
+                <textarea id="cancel-masiva-justificacion" placeholder="Escriba detalladamente la justificación legal/técnica (Ej: Incumplimiento de pago según artículo 94 de la ley de seguros)..." style="width:100%; height:75px; font-size:12px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; resize:none; box-sizing:border-box; color:#1e293b; background:#fff;"></textarea>
+            </div>
+
+            <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.15); border-radius:8px; padding:12px; font-size:11.5px; color:#d97706; line-height:1.4;">
+                <i class="fa-solid fa-bell"></i> <strong>Reglas de Notificación de Plataforma:</strong> Se despacharán automáticamente alertas vía Correo Electrónico (y logs de auditoría interna) a: <strong>Cliente, Corredor de Venta, y Aseguradora Oficial</strong> del seguro.
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="cerrarModal('modal-cancelar-masiva')">Cancelar</button>
+            <button class="btn btn-danger" onclick="ejecutarCancelacionMasivaConfirmada()" style="background:#dc2626;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Ejecutar Cancelación Masiva
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div id="toast"></div>
 
@@ -893,7 +1055,7 @@
 if (typeof window.LOGOS === 'undefined') window.LOGOS = {};
 console.log('Logos Cargados:', Object.keys(window.LOGOS));
 </script>
-<script src="../assets/polizas-pdf.js?v=12"></script>
+<script src="../assets/polizas-pdf.js?v=13"></script>
 <script>
 'use strict';
 
@@ -1009,7 +1171,7 @@ function renderizarTabla(data) {
     infoEl.textContent = `${data.length} registros`;
 
     if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:50px;color:#94a3b8;"><i class="fa-solid fa-file-slash" style="font-size:32px;display:block;margin-bottom:12px;"></i>No se encontraron pólizas</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:50px;color:#94a3b8;"><i class="fa-solid fa-file-slash" style="font-size:32px;display:block;margin-bottom:12px;"></i>No se encontraron pólizas</td></tr>';
         return;
     }
 
@@ -1024,7 +1186,13 @@ function renderizarTabla(data) {
         const balance = fmtMoneda(p.balance);
         const balanceColor = parseFloat(p.balance) <= 0 ? '#16a34a' : '#dc2626';
 
+        // Solo permitir cancelar si tiene permiso POLIZAS_CANCELAR_GRUPO y la póliza está activa/pendiente
+        const hasGroupPerm = (window.permisosUsuario && window.permisosUsuario.includes('POLIZAS_CANCELAR_GRUPO'));
+        const canCancel = hasGroupPerm && (p.estado === 'activa' || p.estado === 'pendiente_pago');
+        const checkboxAttr = canCancel ? `class="poliza-checkbox" value="${p.id}" onclick="actualizarSeleccionPolizas()"` : `disabled style="opacity:0.2; display:none;"`;
+
         return `<tr>
+            <td style="text-align: center;"><input type="checkbox" ${checkboxAttr}></td>
             <td><span style="font-weight:700;color:#4f46e5;">${p.numero_poliza}</span></td>
             <td style="font-size:12px;">${p.tipo_poliza || 'Individual'}</td>
             <td><strong>${p.cliente_nombre || '—'}</strong></td>
@@ -1032,7 +1200,7 @@ function renderizarTabla(data) {
             <td>${vigenciaStr}</td>
             <td style="font-weight:600;color:#1e293b;">${prima}</td>
             <td style="font-weight:700;color:${balanceColor};">${balance}</td>
-            <td><span class="badge ${estadoClase}">${(p.estado || '').toUpperCase()}</span></td>
+            <td><span class="badge ${estadoClase}">${(p.estado === 'pendiente_pago' ? 'PENDIENTE DE PAGO' : (p.estado || '').toUpperCase())}</span></td>
             <td><span class="badge ${validadaClase}">${p.validada === 'Si' ? '✓ SÍ' : '✗ NO'}</span></td>
             <td style="text-align:center;white-space:nowrap;">
                 <i class="fa-solid fa-eye accion" title="Ver Detalle" onclick="verDetalle('${p.id}')"></i>
@@ -1040,6 +1208,8 @@ function renderizarTabla(data) {
                 <i class="fa-solid fa-sack-dollar accion accion-verde" title="Registrar Pago" onclick="abrirPagoDirecto('${p.id}')"></i>
                 <i class="fa-solid fa-paper-plane accion accion-naranja" title="Enviar por Email/WhatsApp" onclick="enviarDocumentos('${p.id}')"></i>
                 ${p.validada !== 'Si' ? `<i class="fa-solid fa-circle-check accion accion-verde" title="Validar Póliza" onclick="validarPoliza('${p.id}')"></i>` : ''}
+                ${p.estado === 'pendiente_pago' && p.comprobante_url ? `<i class="fa-solid fa-receipt accion accion-naranja" title="Ver Comprobante de Pago" onclick="window.open('${p.comprobante_url}', '_blank')"></i>` : ''}
+                ${p.estado === 'pendiente_pago' ? `<i class="fa-solid fa-check-double accion accion-verde" title="Aprobar Pago (Activar Póliza)" onclick="aprobarPagoTransferencia('${p.id}')"></i>` : ''}
             </td>
         </tr>`;
     }).join('');
@@ -1055,6 +1225,44 @@ function cambiarPagina(dir) {
     paginaActual = Math.max(1, paginaActual + dir);
     document.getElementById('pg-num').textContent = paginaActual;
     cargarPolizas();
+}
+
+// ── CONTROL DE SELECCIÓN MÚLTIPLE DE PÓLIZAS ────────────────────────────
+function toggleAllPolizas(master) {
+    const checkBoxes = document.querySelectorAll('.poliza-checkbox');
+    checkBoxes.forEach(cb => {
+        if (!cb.disabled) {
+            cb.checked = master.checked;
+        }
+    });
+    actualizarSeleccionPolizas();
+}
+
+function deseleccionarTodo() {
+    const master = document.getElementById('check-all-polizas');
+    if (master) master.checked = false;
+    
+    const checkBoxes = document.querySelectorAll('.poliza-checkbox');
+    checkBoxes.forEach(cb => cb.checked = false);
+    
+    actualizarSeleccionPolizas();
+}
+
+function actualizarSeleccionPolizas() {
+    const checkedBoxes = document.querySelectorAll('.poliza-checkbox:checked');
+    const panel = document.getElementById('panel-acciones-masivas');
+    const counter = document.getElementById('num-seleccionadas');
+    
+    if (checkedBoxes.length > 0) {
+        if (counter) counter.textContent = checkedBoxes.length;
+        if (panel) {
+            panel.style.display = 'flex';
+        }
+    } else {
+        if (panel) {
+            panel.style.display = 'none';
+        }
+    }
 }
 
 // ═══════════════════════════════════════
@@ -1084,6 +1292,32 @@ async function verDetalle(id) {
         if (d.exito && d.data) {
             polizaActual = d.data;
             content.innerHTML = renderizarDetalle(d.data);
+
+            // Inicializar el panel de Cancelación Técnica
+            const dateInput = document.getElementById('cancel-fecha-efectiva');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            const activeBox = document.getElementById('cancellation-status-active');
+            const canceledBox = document.getElementById('cancellation-status-canceled');
+            const justifInput = document.getElementById('cancel-justificacion');
+
+            if (polizaActual.estado === 'cancelada') {
+                if (activeBox) activeBox.style.display = 'none';
+                if (canceledBox) canceledBox.style.display = 'block';
+            } else if (polizaActual.estado === 'activa' || polizaActual.estado === 'pendiente_pago') {
+                if (activeBox) activeBox.style.display = 'block';
+                if (canceledBox) canceledBox.style.display = 'none';
+                if (justifInput) justifInput.value = '';
+                calcularProrrataLive();
+            } else {
+                // Otros estados como suspendida o vencida no permiten cancelarse por prorrata
+                if (activeBox) activeBox.style.display = 'none';
+                if (canceledBox) {
+                    canceledBox.style.display = 'block';
+                    canceledBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <strong>Cancelación no permitida:</strong> Esta póliza se encuentra en estado <strong>${polizaActual.estado.toUpperCase()}</strong>.`;
+                }
+            }
         } else {
             content.innerHTML = '<p style="color:#dc2626;">No se pudo cargar el detalle de la póliza.</p>';
         }
@@ -1768,6 +2002,27 @@ async function validarPoliza(id) {
         if (d.exito) cargarPolizas();
     } catch (e) {
         mostrarToast('Error al validar la póliza', 'error');
+    }
+}
+
+// ═══════════════════════════════════════
+// APROBAR PAGO DE TRANSFERENCIA (ACTIVAR PÓLIZA)
+// ═══════════════════════════════════════
+async function aprobarPagoTransferencia(id) {
+    if (!(await MQF.confirm('¿Confirma que ha verificado el depósito bancario de esta póliza y desea activarla?', {type: 'success'}))) return;
+
+    try {
+        const bodyData = { id: id, estado: 'activa' };
+        const r = await fetch(`${BASE_API}/polizas.php?action=cambiar_estado`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData)
+        });
+        const d = await r.json();
+        mostrarToast(d.exito ? '✅ Póliza activada correctamente.' : d.mensaje, d.exito ? 'success' : 'error');
+        if (d.exito) cargarPolizas();
+    } catch (e) {
+        mostrarToast('Error al intentar activar la póliza.', 'error');
     }
 }
 
@@ -2596,6 +2851,10 @@ const TAB_POLIZAS_GUARDS = [
     { elementId: 'tab-btn-proyeccion-ventas', permiso: 'TAB_POL_PROYECCION_VENTAS' },
     { elementId: 'btn-pol-exportar',   permiso: 'POLIZAS_EXPORTAR' },
     { elementId: 'btn-pol-nueva',      permiso: 'TAB_POL_NUEVA' },
+    // Nuevos guards de cancelación
+    { elementId: 'btn-pol-masiva',     permiso: 'POLIZAS_CANCELAR_MASIVO' },
+    { elementId: 'check-all-polizas',  permiso: 'POLIZAS_CANCELAR_GRUPO' },
+    { elementId: 'det-tech-cancellation-box', permiso: 'POLIZAS_CANCELAR_INDIVIDUAL' },
 ];
 
 async function initTabGuardsPolizas() {
@@ -2632,6 +2891,9 @@ async function initTabGuardsPolizas() {
             }
         }
 
+        // Registrar permisos en window para que otras funciones de renderizado los lean
+        window.permisosUsuario = codigosPermisos;
+
         // 4. Si la lista de permisos está vacía (sin granularidad configurada), mostrar todo
         if (codigosPermisos.length === 0) return;
 
@@ -2655,6 +2917,247 @@ async function initTabGuardsPolizas() {
 
     } catch(e) {
         console.warn('TabGuard Pólizas:', e.message);
+    }
+}
+
+
+// ── SISTEMA TÉCNICO DE CANCELACIONES A PRORATA (VAF/NOFTRAB) ────────────────
+async function calcularProrrataLive() {
+    if (!polizaActual || !polizaActual.id) return;
+    
+    const fecha = document.getElementById('cancel-fecha-efectiva').value;
+    const diasTrans = document.getElementById('live-dias-transcurridos');
+    const diasRest = document.getElementById('live-dias-restantes');
+    const primaDev = document.getElementById('live-prima-devengada');
+    const labelDev = document.getElementById('live-label-devolucion');
+    const saldoDev = document.getElementById('live-saldo-devolucion');
+    
+    if (!fecha || !diasTrans) return;
+
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=preview_cancelar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: polizaActual.id, fecha_cancelacion: fecha })
+        });
+        const res = await r.json();
+        
+        if (res.exito && res.data) {
+            const data = res.data;
+            diasTrans.textContent = data.dias_transcurridos;
+            diasRest.textContent = data.dias_restantes;
+            primaDev.textContent = fmtMoneda(data.prima_devengada);
+            
+            const saldoVal = parseFloat(data.saldo_devolucion);
+            saldoDev.textContent = fmtMoneda(saldoVal);
+            
+            if (saldoVal >= 0) {
+                labelDev.textContent = "Saldo de Devolución (Cliente):";
+                labelDev.style.color = '#16a34a';
+                saldoDev.style.color = '#16a34a';
+            } else {
+                labelDev.textContent = "Saldo Deudor Pendiente:";
+                labelDev.style.color = '#dc2626';
+                saldoDev.style.color = '#dc2626';
+            }
+        }
+    } catch(err) {
+        console.error('Error al calcular prorrata live:', err);
+    }
+}
+
+async function ejecutarCancelacionIndividualLive() {
+    if (!polizaActual || !polizaActual.id) return;
+    
+    const fecha = document.getElementById('cancel-fecha-efectiva').value;
+    const just = document.getElementById('cancel-justificacion').value.trim();
+    
+    if (!just || just.length < 10) {
+        mostrarToast('Debe ingresar una justificación detallada (mín. 10 caracteres).', 'error');
+        return;
+    }
+    
+    const confirmacion = await Swal.fire({
+        title: '¿Confirmar Cancelación?',
+        text: `¿Está seguro de que desea CANCELAR la póliza N° ${polizaActual.numero_poliza} con efectividad al ${fecha}? Las coberturas serán anuladas de inmediato.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, cancelar póliza',
+        cancelButtonText: 'No, mantenerla'
+    });
+    
+    if (!confirmacion.isConfirmed) return;
+    
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=cancelar_individual`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: polizaActual.id, justificacion: just, fecha_cancelacion: fecha })
+        });
+        const res = await r.json();
+        
+        if (res.exito) {
+            mostrarToast('Póliza cancelada exitosamente.', 'success');
+            cerrarModal('modal-detalle');
+            cargarPolizas();
+        } else {
+            mostrarToast(res.mensaje || 'Error al procesar la cancelación.', 'error');
+        }
+    } catch(err) {
+        mostrarToast('Error de comunicación con el servidor.', 'error');
+    }
+}
+
+function abrirCancelacionGrup() {
+    const checkedBoxes = document.querySelectorAll('.poliza-checkbox:checked');
+    if (checkedBoxes.length === 0) return;
+    
+    document.getElementById('cant-cancelar-bloque').textContent = checkedBoxes.length;
+    document.getElementById('cancel-bloque-justificacion').value = '';
+    
+    abrirModal('modal-cancelar-seleccion');
+}
+
+async function ejecutarCancelacionGrupalConfirmada() {
+    const just = document.getElementById('cancel-bloque-justificacion').value.trim();
+    if (!just || just.length < 10) {
+        mostrarToast('Debe ingresar una justificación común detallada (mín. 10 caracteres).', 'error');
+        return;
+    }
+    
+    const checkedBoxes = document.querySelectorAll('.poliza-checkbox:checked');
+    const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+    
+    const confirmacion = await Swal.fire({
+        title: 'Cancelación Múltiple',
+        text: `¿Confirma la cancelación inmediata de las ${ids.length} pólizas seleccionadas?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, cancelar seleccionadas',
+        cancelButtonText: 'No'
+    });
+    
+    if (!confirmacion.isConfirmed) return;
+    
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=cancelar_seleccion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: ids, justificacion: just })
+        });
+        const res = await r.json();
+        
+        if (res.exito) {
+            mostrarToast(res.mensaje || 'Cancelación en bloque completada.', 'success');
+            cerrarModal('modal-cancelar-seleccion');
+            deseleccionarTodo();
+            cargarPolizas();
+        } else {
+            mostrarToast(res.mensaje || 'Error al procesar la cancelación en lote.', 'error');
+        }
+    } catch(err) {
+        mostrarToast('Error de comunicación con el servidor.', 'error');
+    }
+}
+
+async function abrirModalCancelacionMasiva() {
+    // 1. Cargar vendedores dinámicamente
+    const sellerSelect = document.getElementById('cancel-masiva-vendedor');
+    if (sellerSelect) {
+        sellerSelect.innerHTML = '<option value="">-- Todos los Agentes --</option>';
+        try {
+            const r = await fetch(`${BASE_API}/usuarios.php/listar?por_pagina=100`);
+            const d = await r.json();
+            if (d.exito && d.datos && Array.isArray(d.datos.usuarios)) {
+                d.datos.usuarios.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = `${u.nombre} ${u.apellido || ''} (${u.email})`;
+                    sellerSelect.appendChild(opt);
+                });
+            }
+        } catch(e) {
+            console.error('Error al cargar agentes para cancelación masiva:', e);
+        }
+    }
+
+    // 2. Cargar aseguradoras dinámicamente
+    const insSelect = document.getElementById('cancel-masiva-aseguradora');
+    if (insSelect) {
+        insSelect.innerHTML = '<option value="">-- Todas las Aseguradoras --</option>';
+        try {
+            const response = await fetch(`${BASE_API}/companias.php?action=listar`);
+            const json = await response.json();
+            if (json && json.exito && Array.isArray(json.data)) {
+                json.data.filter(c => c.tipo === 'aseguradora' && c.estado === 1).forEach(ins => {
+                    const opt = document.createElement('option');
+                    opt.value = ins.nombre;
+                    opt.textContent = ins.nombre;
+                    insSelect.appendChild(opt);
+                });
+            }
+        } catch(e) {
+            console.error('Error al cargar aseguradoras para cancelación masiva:', e);
+        }
+    }
+
+    document.getElementById('cancel-masiva-justificacion').value = '';
+    abrirModal('modal-cancelar-masiva');
+}
+
+async function ejecutarCancelacionMasivaConfirmada() {
+    const just = document.getElementById('cancel-masiva-justificacion').value.trim();
+    if (!just || just.length < 15) {
+        mostrarToast('Debe ingresar una justificación masiva detallada de respaldo (mín. 15 caracteres).', 'error');
+        return;
+    }
+
+    const filtros = {
+        agente: document.getElementById('cancel-masiva-vendedor').value,
+        ramo: document.getElementById('cancel-masiva-ramo').value,
+        aseguradora: document.getElementById('cancel-masiva-aseguradora').value
+    };
+
+    if (!filtros.agente && !filtros.ramo && !filtros.aseguradora) {
+        mostrarToast('Para su seguridad técnica, debe seleccionar al menos un filtro (Vendedor, Ramo o Aseguradora).', 'error');
+        return;
+    }
+
+    const confirmacion = await Swal.fire({
+        title: '¡ADVERTENCIA DE COBERTURA PÚBLICA!',
+        text: '¿Está seguro de que desea cancelar MASIVAMENTE todas las pólizas activas que coincidan con los filtros seleccionados? Esta operación es definitiva y notificará a todos los implicados de inmediato.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Confirmar Cancelación Masiva',
+        cancelButtonText: 'Abortar'
+    });
+    
+    if (!confirmacion.isConfirmed) return;
+
+    try {
+        const r = await fetch(`${BASE_API}/polizas.php?action=cancelar_masiva`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filtros: filtros, justificacion: just })
+        });
+        const res = await r.json();
+
+        if (res.exito) {
+            mostrarToast(res.mensaje || 'Cancelación masiva completada con éxito.', 'success');
+            cerrarModal('modal-cancelar-masiva');
+            deseleccionarTodo();
+            cargarPolizas();
+        } else {
+            mostrarToast(res.mensaje || 'Error en la cancelación masiva.', 'error');
+        }
+    } catch(err) {
+        mostrarToast('Error de comunicación con el servidor.', 'error');
     }
 }
 

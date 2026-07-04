@@ -1,0 +1,58 @@
+--- OCR TYPE: matricula ---
+1. Datos del Vehiculo
+No. de Registro y Placa Chasis
+REPUBLICA DOMINICANA
+MINISTERIO DE HACIENDA
+DIRECCION GENERAL DE IMPUESTOS INTERNOS
+CERTIFICADO DE PROPIEDAD DE VEHICULOS DE MOTOR
+A757123
+KGC300074008
+Tipo de Vehiculo
+Marca
+AUTOMOVIL PRIVADO
+TOYOTA
+Calor
+Motor o No. de Serie
+GRIS
+4008
+Status del Vehiculo
+VEHICULO TIENE OPOSICION
+KENERAL DE PUESTOS
+VER
+Les DE
+Modelo
+PASSO
+No.
+8482514
+Fecha de Espedicion
+03
+12
+2018
+TRANS.
+CONDICIONAL
+VENTA
+Ado de Fabricación
+2012
+Pasajeros Fuerza Motriz (HP/cc) Cap. Carga (Ton) Cilindros No. Puertas
+ANTER
+5
+MOTOR
+SINTERNOS
+Nombre Bazón SociIVA CORDERO JIMENEZ
+CLAUDIA
+Dirección
+RECCION
+21 01 LOS MAESTROS, BARRIO SAN
+6156 4915 F021 5200 6400-0990 30
+IMC176502271992
+RO DECO
+Domingo
+Funcionario Autorizado
+S
+1000
+0
+4
+Cédula Pasaporte RNC
+023-0134119-0
+No. de Registro y Placa Anterior
+Ciudad-

@@ -104,16 +104,22 @@ $modulo_metadata = [
         'cumplimiento' => 94,
         'iso' => 'ISO 9001'
     ],
-    'labs-masqf.html' => [
-        'nombre' => 'Labs MQF',
+    'labs-qa.html' => [
+        'nombre' => 'LABS-QA (MELCA-Fixuper)',
         'doc_url' => '../../documentacion_general_plataforma_parte4.php?doc=2',
-        'cumplimiento' => 91,
-        'iso' => 'ISO 9001'
+        'cumplimiento' => 100,
+        'iso' => 'NOFTRAB v4.0'
     ],
     'cotizaciones.html' => [
         'nombre' => 'Cotizaciones',
         'doc_url' => '../../documentacion_cotizador.php?doc=2',
         'cumplimiento' => 99,
+        'iso' => 'NOFTRAB v4.0'
+    ],
+    'centro_negocios.html' => [
+        'nombre' => 'Centro de Negocios',
+        'doc_url' => '../../documentacion_general_plataforma_parte3.php?doc=6',
+        'cumplimiento' => 100,
         'iso' => 'NOFTRAB v4.0'
     ]
 ];

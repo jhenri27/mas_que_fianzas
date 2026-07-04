@@ -29,9 +29,12 @@ try {
             // Listar todas — solo las que tienen archivo físico presente
             $result = $db->query("SELECT * FROM pdf_plantillas ORDER BY id DESC");
             $all = $result->fetch_all(MYSQLI_ASSOC);
-            $uploadBase = dirname(__FILE__) . '/../../uploads/plantillas_pdf/';
-            $active = array_filter($all, function($row) use ($uploadBase) {
-                return !empty($row['archivo_base']) && file_exists($uploadBase . $row['archivo_base']);
+            $active = array_filter($all, function($row) {
+                if (empty($row['archivo_base'])) return false;
+                $path = dirname(__FILE__) . '/../../' . $row['archivo_base'];
+                if (file_exists($path)) return true;
+                $legacyPath = dirname(__FILE__) . '/../../uploads/plantillas_pdf/' . $row['archivo_base'];
+                return file_exists($legacyPath);
             });
             echo json_encode(["exito" => true, "data" => array_values($active)]);
         }

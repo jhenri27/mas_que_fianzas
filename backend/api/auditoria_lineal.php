@@ -287,24 +287,34 @@ try {
             'fianzas' => 'fianzas',
             'pagos' => 'pagos',
             'clientes' => 'clientes',
-            'usuarios' => 'usuarios'
+            'usuarios' => 'usuarios',
+            'perfiles' => 'perfiles'
         ];
 
         if (!isset($tabla_map[$tipo_documento])) {
-            respuestaJSON(false, 'Tipo de documento no válido. Soportados: cotizaciones, polizas, fianzas, pagos, clientes, usuarios', null, 400);
+            respuestaJSON(false, 'Tipo de documento no válido. Soportados: cotizaciones, polizas, fianzas, pagos, clientes, usuarios, perfiles', null, 400);
         }
 
         $tabla = $tabla_map[$tipo_documento];
 
         // 1. auditoria_accesos
-        $sql_audit = "SELECT a.*, u.username, u.nombre, u.apellido
-                      FROM auditoria_accesos a
-                      LEFT JOIN usuarios u ON a.usuario_id = u.id
-                      WHERE a.tabla_afectada = ? AND a.registro_afectado_id = ?
-                      ORDER BY a.fecha_evento ASC";
-                      
-        $stmt_audit = $db->prepare($sql_audit);
-        $stmt_audit->bind_param('si', $tabla, $documento_id);
+        if ($tabla === 'perfiles') {
+            $sql_audit = "SELECT a.*, u.username, u.nombre, u.apellido
+                          FROM auditoria_accesos a
+                          LEFT JOIN usuarios u ON a.usuario_id = u.id
+                          WHERE (a.tabla_afectada = 'perfiles' OR a.tabla_afectada = 'permisos_perfil') AND a.registro_afectado_id = ?
+                          ORDER BY a.fecha_evento ASC";
+            $stmt_audit = $db->prepare($sql_audit);
+            $stmt_audit->bind_param('i', $documento_id);
+        } else {
+            $sql_audit = "SELECT a.*, u.username, u.nombre, u.apellido
+                          FROM auditoria_accesos a
+                          LEFT JOIN usuarios u ON a.usuario_id = u.id
+                          WHERE a.tabla_afectada = ? AND a.registro_afectado_id = ?
+                          ORDER BY a.fecha_evento ASC";
+            $stmt_audit = $db->prepare($sql_audit);
+            $stmt_audit->bind_param('si', $tabla, $documento_id);
+        }
         $stmt_audit->execute();
         $res_audit = $stmt_audit->get_result();
         

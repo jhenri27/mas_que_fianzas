@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="assets/modulos.css?v=9.0.0">
     <link rel="stylesheet" href="assets/skin-engine.css?v=12.0">
     <script src="assets/components.js?v=9.0.0" defer></script>
-    <link rel="stylesheet" href="assets/lib/fontawesome/css/all.min.css"><script>
+    <link rel="stylesheet" href="assets/lib/fontawesome/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
       /* ── Aplicar skin ANTES del primer render (evita flash) ── */
       (function(){
         const s = localStorage.getItem('mqf-skin') || 'indigo';
@@ -76,17 +78,21 @@
                     <span class="icon">🏛️</span>
                     <span class="label">CENTRO FINANCIERO</span>
                 </a>
-                <a href="#" class="nav-item" data-module="labs_masqf" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; background: rgba(0,0,0,0.2);">
+                <a href="#" class="nav-item" data-module="centro_tecnico">
+                    <span class="icon">🛠️</span>
+                    <span class="label">CENTRO TÉCNICO</span>
+                </a>
+                <a href="#" class="nav-item" data-module="centro_negocios">
+                    <span class="icon">💼</span>
+                    <span class="label">CENTRO DE NEGOCIOS</span>
+                </a>
+                <a href="#" class="nav-item" data-module="labs_qa" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; background: rgba(0,0,0,0.2);">
                     <span class="icon">🧪</span>
-                    <span class="label">LABS-MASQF</span>
+                    <span class="label">LABS-QA</span>
                 </a>
                 <a href="#" class="nav-item" data-module="modelador_pdf">
                     <span class="icon">📄</span>
                     <span class="label">INTEGRADOR DE FORMULARIOS-PDF</span>
-                </a>
-                <a href="#" class="nav-item" data-module="configuracion">
-                    <span class="icon">⚙️</span>
-                    <span class="label">CONFIGURACIÓN</span>
                 </a>
                 <a href="#" class="nav-item" data-module="perfil_data">
                     <span class="icon">👤</span>
@@ -99,6 +105,10 @@
                 <a href="#" class="nav-item" data-module="helpdesk" id="nav-item-helpdesk" style="display:none;">
                     <span class="icon">🛎️</span>
                     <span class="label">HELPDESK</span>
+                </a>
+                <a href="#" class="nav-item" data-module="configuracion">
+                    <span class="icon">⚙️</span>
+                    <span class="label">CONFIGURACIÓN</span>
                 </a>
             </nav>
 
@@ -119,7 +129,13 @@
                 </div>
                 <div class="header-right">
                     <div class="user-info" onclick="abrirMiPerfil()" style="cursor:pointer;" title="Ver Mi Perfil">
-                        <span class="user-name" id="userName">Usuario</span>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 10px;">
+                            <span class="user-name" id="userName" style="margin-right: 0;">Usuario</span>
+                            <div id="admin-sys-info" style="display:none; font-size: 10px; color: rgba(255,255,255,0.8); text-align: right; line-height: 1.3; margin-top: 2px;">
+                                <span id="sys-version"></span> | DB: <span id="sys-db"></span><br>
+                                <span id="sys-patch" style="color: #a78bfa;"></span>
+                            </div>
+                        </div>
                         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ccircle cx='50' cy='35' r='15' fill='white'/%3E%3Cpath d='M30,70 Q30,55 50,55 Q70,55 70,70' fill='white'/%3E%3C/svg%3E" alt="User Avatar" class="user-avatar">
                     </div>
                     <button class="notification-btn" id="notificationBtn" title="Notificaciones">🔔</button>
@@ -286,7 +302,7 @@
                 <section id="modulo-polizas" class="module" style="padding:0; overflow:hidden;">
                     <iframe
                         id="polizas-iframe"
-                        src="/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html"
+                        src="/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html?v=3"
                         style="width:100%; height:calc(100vh - 70px); border:none; display:block;"
                         title="Módulo de Pólizas">
                     </iframe>
@@ -363,6 +379,9 @@
                             <button id="btn-conf-companias" class="config-nav-btn" data-target="config-companias" onclick="cargarConfigCompanias()">
                                 <span>🏢</span> Compañías
                             </button>
+                            <button id="btn-conf-aseg-oficiales" class="config-nav-btn" data-target="config-aseg-oficiales" onclick="cargarAsegOfilciales()">
+                                <span>🛡️</span> Aseguradoras Oficiales
+                            </button>
                             <button id="btn-conf-integraciones" class="config-nav-btn" data-target="config-integraciones" onclick="cargarConfigIntegraciones()">
                                 <span>🔌</span> Integraciones API
                             </button>
@@ -380,54 +399,101 @@
                             <!-- Panel Perfiles y Permisos (NOFTRAB Python) -->
                             <div id="config-perfiles" class="config-panel">
                                 <div class="config-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
-                                    <h3 style="margin-top:0; color:var(--text-main, #2c3e50); font-size:16px;">Administración de Perfiles y Accesos Granulares</h3>
-                                    <p style="font-size:13px; color:#718096; margin-bottom:15px;">Selecciona un perfil para configurar de forma dinámica su malla de accesos y permisos en la base de datos de forma atómica a través del motor transaccional de Python.</p>
-                                    
-                                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:20px; flex-wrap: wrap;">
-                                        <label style="font-weight:600; font-size:13px; color:var(--text-main, #334155);">Perfil a Editar:</label>
-                                        <select id="selectPerfilPermisos" class="form-control select-perfil-permisos" onchange="dashboard.cargarPermisosPerfilSeleccionado(this.value)">
-                                            <option value="">Seleccione perfil...</option>
-                                        </select>
+                                    <div class="notif-tabs-header" style="margin-bottom: 20px; display:flex; gap:10px; border-bottom: 1px solid var(--border, #e2e8f0); padding-bottom:10px;">
+                                        <button type="button" class="notif-tab active" id="tab-perfiles-malla" onclick="dashboard.cambiarSubTabPerfiles('malla')" style="padding: 8px 16px; border-radius: 8px; font-weight:600; font-size:13px; cursor:pointer; background:transparent; border:none; color:var(--text-secondary, #64748b);">🛡️ Malla de Permisos</button>
+                                        <button type="button" class="notif-tab" id="tab-perfiles-mantenimiento" onclick="dashboard.cambiarSubTabPerfiles('mantenimiento')" style="padding: 8px 16px; border-radius: 8px; font-weight:600; font-size:13px; cursor:pointer; background:transparent; border:none; color:var(--text-secondary, #64748b);">⚙️ Mantenimiento de Perfiles</button>
                                     </div>
 
-                                    <!-- Ficha de Perfil Data (Resumen Superior) -->
-                                    <div id="perfilResumenInfoContainer" style="display:none; align-items:center; gap:15px; padding:15px; background:rgba(0,0,0,0.05); border:1px solid #e2e8f0; border-radius:10px; margin-bottom:20px;">
-                                        <div id="perfilResumenAvatar" style="width:40px; height:40px; border-radius:50%; background:var(--primary-color, #4f46e5); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;"></div>
-                                        <div style="flex:1;">
-                                            <div id="perfilResumenNombre" style="font-weight:700; font-size:14px; color:var(--text-main, #1e293b);"></div>
-                                            <div style="font-size:12px; color:#718096;">Nivel Jerárquico: <span id="perfilResumenNivel" style="font-weight:600;"></span></div>
+                                    <!-- Panel Subtab: Malla de Permisos -->
+                                    <div id="panel-subtab-perfiles-malla" style="display:block;">
+                                        <h3 style="margin-top:0; color:var(--text-main, #2c3e50); font-size:16px;">Administración de Perfiles y Accesos Granulares</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:15px;">Selecciona un perfil para configurar de forma dinámica su malla de accesos y permisos en la base de datos de forma atómica a través del motor transaccional de Python.</p>
+                                        
+                                        <div style="display:flex; gap:15px; align-items:center; margin-bottom:20px; flex-wrap: wrap;">
+                                            <label style="font-weight:600; font-size:13px; color:var(--text-main, #334155);">Perfil a Editar:</label>
+                                            <select id="selectPerfilPermisos" class="form-control select-perfil-permisos" onchange="dashboard.cargarPermisosPerfilSeleccionado(this.value)">
+                                                <option value="">Seleccione perfil...</option>
+                                            </select>
                                         </div>
-                                        <div>
-                                            <span id="perfilResumenEstado" style="padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700;"></span>
+
+                                        <!-- Ficha de Perfil Data (Resumen Superior) -->
+                                        <div id="perfilResumenInfoContainer" style="display:none; align-items:center; gap:15px; padding:15px; background:rgba(0,0,0,0.05); border:1px solid #e2e8f0; border-radius:10px; margin-bottom:20px;">
+                                            <div id="perfilResumenAvatar" style="width:40px; height:40px; border-radius:50%; background:var(--primary-color, #4f46e5); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px;"></div>
+                                            <div style="flex:1;">
+                                                <div id="perfilResumenNombre" style="font-weight:700; font-size:14px; color:var(--text-main, #1e293b);"></div>
+                                                <div style="font-size:12px; color:#718096;">Nivel Jerárquico: <span id="perfilResumenNivel" style="font-weight:600;"></span></div>
+                                            </div>
+                                            <div>
+                                                <span id="perfilResumenEstado" style="padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700;"></span>
+                                            </div>
+                                        </div>
+
+                                        <div id="wrapperMallaPermisos" style="display:none;">
+                                            <div class="permisos-malla-wrapper">
+                                                <table class="premium-table" style="width:100%; border-collapse:collapse; text-align:left; min-width:800px;">
+                                                    <thead>
+                                                        <tr class="permisos-thead-row">
+                                                            <th style="padding:12px 10px;">Módulo / Función</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Ejecutar</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Ver Datos</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Crear</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Editar</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Eliminar</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Reportes</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Exportar</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Importar</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Imprimir</th>
+                                                            <th style="padding:12px 10px; text-align:center;">Solo Propios</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="mallaPermisosBody">
+                                                        <!-- Filas dinámicas -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div style="display:flex; align-items:center; gap: 15px; margin-top:20px;">
+                                                <button type="button" class="btn btn-primary" onclick="dashboard.guardarPermisosPerfil()">💾 Guardar Permisos de Perfil</button>
+                                                <button type="button" class="btn btn-secondary" onclick="dashboard.abrirModalCopiarPermisos()" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; padding: 10px 16px;">📋 Copiar de otro perfil</button>
+                                                <span id="perfilPermisosStatus" style="font-size:13px; font-weight:bold;"></span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div id="wrapperMallaPermisos" style="display:none;">
+                                    <!-- Panel Subtab: Mantenimiento de Perfiles -->
+                                    <div id="panel-subtab-perfiles-mantenimiento" style="display:none;">
+                                        <h3 style="margin-top:0; color:var(--text-main, #2c3e50); font-size:16px; margin-bottom: 8px;">Mantenimiento y Administración de Perfiles</h3>
+                                        <p style="font-size:13px; color:#718096; margin-bottom:20px;">Permite crear, modificar, activar y desactivar perfiles del sistema, copiar configuraciones completas de permisos, exportar y consultar auditorías inmutables.</p>
+
+                                        <!-- Buscador, filtros y acción rápida -->
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+                                            <div style="display:flex; gap:10px; align-items:center; flex:1; min-width:300px;">
+                                                <input type="text" id="perfilesSearchInput" class="form-control" placeholder="🔍 Buscar perfil por nombre..." style="max-width:350px; border-radius:8px;" oninput="dashboard.filtrarPerfilesGrid()">
+                                                <select id="perfilesFiltroEstado" class="form-control" style="max-width:150px; border-radius:8px;" onchange="dashboard.filtrarPerfilesGrid()">
+                                                    <option value="">Todos los estados</option>
+                                                    <option value="activo">Activos</option>
+                                                    <option value="inactivo">Inactivos</option>
+                                                </select>
+                                            </div>
+                                            <button type="button" class="btn btn-primary" onclick="dashboard.abrirModalNuevoPerfil()" style="border-radius:8px; display: flex; align-items: center; gap: 6px;">➕ Crear Perfil</button>
+                                        </div>
+
+                                        <!-- Tabla de Perfiles -->
                                         <div class="permisos-malla-wrapper">
                                             <table class="premium-table" style="width:100%; border-collapse:collapse; text-align:left; min-width:800px;">
                                                 <thead>
                                                     <tr class="permisos-thead-row">
-                                                        <th style="padding:12px 10px;">Módulo / Función</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Ejecutar</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Ver Datos</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Crear</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Editar</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Eliminar</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Reportes</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Exportar</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Importar</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Imprimir</th>
-                                                        <th style="padding:12px 10px; text-align:center;">Solo Propios</th>
+                                                        <th style="padding:12px 10px; width:5%; text-align:center;">ID</th>
+                                                        <th style="padding:12px 10px; width:20%;">Nombre de Perfil</th>
+                                                        <th style="padding:12px 10px; width:30%;">Descripción</th>
+                                                        <th style="padding:12px 10px; width:15%; text-align:center;">Nivel Jerárquico</th>
+                                                        <th style="padding:12px 10px; width:10%; text-align:center;">Estado</th>
+                                                        <th style="padding:12px 10px; width:20%; text-align:center;">Acciones</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody id="mallaPermisosBody">
+                                                <tbody id="perfilesMantenimientoGridBody">
                                                     <!-- Filas dinámicas -->
                                                 </tbody>
                                             </table>
-                                        </div>
-                                        <div style="display:flex; align-items:center; gap: 15px;">
-                                            <button type="button" class="btn btn-primary" onclick="dashboard.guardarPermisosPerfil()">💾 Guardar Permisos de Perfil</button>
-                                            <span id="perfilPermisosStatus" style="font-size:13px; font-weight:bold;"></span>
                                         </div>
                                     </div>
                                 </div>
@@ -921,6 +987,61 @@
                                                 </tr>
                                             </tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel Aseguradoras Oficiales -->
+                            <div id="config-aseg-oficiales" class="config-panel">
+                                <div class="config-card" style="grid-column: 1 / -1; margin-bottom: 20px;">
+
+                                    <!-- Header -->
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:10px;">
+                                        <div>
+                                            <h3 style="margin:0; color: var(--mqf-text, #2c3e50); font-size:16px; font-weight:700;">Aseguradoras Oficiales del Sistema</h3>
+                                            <p style="font-size:13px; color: var(--mqf-text-secondary, #64748b); margin:4px 0 0 0;">Gestiona los logos, nombres y códigos de las 4 aseguradoras integradas. El logo aparece en los PDFs de pólizas emitidas.</p>
+                                        </div>
+                                        <button class="btn btn-primary" onclick="abrirModalNuevaAseg()" style="font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                                            <span>➕</span> Nueva Aseguradora
+                                        </button>
+                                    </div>
+
+                                    <!-- Cards grid -->
+                                    <div id="asegOficialesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap:20px;">
+                                        <div style="grid-column:1/-1; text-align:center; padding:40px; color:#94a3b8;">Cargando aseguradoras...</div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Modal Nueva/Editar Aseguradora Oficial -->
+                            <div id="modalAsegOficial" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:3000; align-items:center; justify-content:center;">
+                                <div style="background:var(--mqf-surface,#fff); border:1px solid var(--mqf-border,#e2e8f0); border-radius:18px; width:100%; max-width:480px; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,.35); animation:mqf-slide-up .25s;">
+                                    <h3 id="asegModalTitle" style="margin:0 0 24px; font-size:1.1rem; font-weight:700; color:var(--mqf-text,#1e293b); display:flex; align-items:center; gap:10px;">🏢 Nueva Aseguradora</h3>
+
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                                        <div>
+                                            <label style="display:block; font-size:.8rem; font-weight:600; color:var(--mqf-text-secondary,#64748b); margin-bottom:5px;">Código <span style="color:#ef4444">*</span></label>
+                                            <input id="asegFCodigo" type="text" maxlength="20" placeholder="MULTI"
+                                                style="width:100%; padding:10px 13px; background:var(--mqf-surface-2,#f8fafc); border:1px solid var(--mqf-border,#e2e8f0); border-radius:9px; color:var(--mqf-text,#1e293b); font-size:.875rem; text-transform:uppercase; outline:none;">
+                                        </div>
+                                        <div>
+                                            <label style="display:block; font-size:.8rem; font-weight:600; color:var(--mqf-text-secondary,#64748b); margin-bottom:5px;">Nombre <span style="color:#ef4444">*</span></label>
+                                            <input id="asegFNombre" type="text" placeholder="Multiseguros"
+                                                style="width:100%; padding:10px 13px; background:var(--mqf-surface-2,#f8fafc); border:1px solid var(--mqf-border,#e2e8f0); border-radius:9px; color:var(--mqf-text,#1e293b); font-size:.875rem; outline:none;">
+                                        </div>
+                                    </div>
+                                    <div style="margin-bottom:16px;">
+                                        <label style="display:block; font-size:.8rem; font-weight:600; color:var(--mqf-text-secondary,#64748b); margin-bottom:5px;">RNC</label>
+                                        <input id="asegFRnc" type="text" placeholder="1-30-00001-4"
+                                            style="width:100%; padding:10px 13px; background:var(--mqf-surface-2,#f8fafc); border:1px solid var(--mqf-border,#e2e8f0); border-radius:9px; color:var(--mqf-text,#1e293b); font-size:.875rem; outline:none;">
+                                    </div>
+
+                                    <input type="hidden" id="asegFId">
+
+                                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+                                        <button onclick="cerrarModalAseg()" style="padding:10px 20px; border-radius:9px; border:1px solid var(--mqf-border,#e2e8f0); background:transparent; color:var(--mqf-text-secondary,#64748b); font-size:.875rem; cursor:pointer;">Cancelar</button>
+                                        <button onclick="guardarAsegOficial()" style="padding:10px 20px; border-radius:9px; border:none; background:linear-gradient(135deg,#7c6af7,#a78bfa); color:#fff; font-size:.875rem; font-weight:600; cursor:pointer;">💾 Guardar</button>
                                     </div>
                                 </div>
                             </div>
@@ -1536,9 +1657,19 @@
                     <iframe id="finance-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="Centro Financiero"></iframe>
                 </section>
 
+                <!-- Centro Técnico Module -->
+                <section id="modulo-centro_tecnico" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="centro-tecnico-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="Centro Técnico"></iframe>
+                </section>
+
+                <!-- Centro de Negocios Module -->
+                <section id="modulo-centro_negocios" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="centro-negocios-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="Centro de Negocios"></iframe>
+                </section>
+
                 <!-- LABS-MASQF Module -->
-                <section id="modulo-labs_masqf" class="module" style="padding:0; overflow:hidden;">
-                    <iframe id="labs-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="LABS-MASQF"></iframe>
+                <section id="modulo-labs_qa" class="module" style="padding:0; overflow:hidden;">
+                    <iframe id="labs-iframe" src="" style="width:100%; height:calc(100vh - 100px); border:none;" title="LABS-QA"></iframe>
                 </section>
 
                 <!-- Modelador PDF Module -->
@@ -1640,7 +1771,7 @@
                 <h3 id="perfilModalTitle">Crear Perfil</h3>
                 <button class="modal-close" onclick="cerrarModal('perfilModal')">&times;</button>
             </div>
-            <form id="perfilForm" class="modal-body">
+            <form id="perfilForm" class="modal-body" onsubmit="dashboard.guardarPerfil(event)">
                 <input type="hidden" id="perfilId">
                 <div class="form-group">
                     <label for="perfilNombre">Nombre del Perfil</label>
@@ -1654,6 +1785,12 @@
                     <label for="perfilDescripcion">Descripción</label>
                     <textarea id="perfilDescripcion" class="form-control" rows="3"></textarea>
                 </div>
+                <div class="form-group" style="margin-top:15px;" id="grupoHeredarDe">
+                    <label for="perfilHeredaDe">Copiar permisos de (Opcional)</label>
+                    <select id="perfilHeredaDe" class="form-control">
+                        <option value="">No copiar (Iniciar vacío)</option>
+                    </select>
+                </div>
                 <div class="modal-footer" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
                     <button type="button" class="btn btn-secondary" onclick="cerrarModal('perfilModal')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar Perfil</button>
@@ -1661,6 +1798,64 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Copiar Permisos entre Perfiles -->
+    <div id="modalCopiarPermisos" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 480px; border-radius: 12px; overflow: hidden; padding: 0;">
+            <div class="modal-header" style="background: #1e293b; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="color:#fff; margin:0; font-size:16px;">👥 Copiar Permisos entre Perfiles</h3>
+                <button class="modal-close" onclick="cerrarModal('modalCopiarPermisos')" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <form id="copiarPermisosForm" class="modal-body" style="padding:20px;" onsubmit="dashboard.ejecutarCopiarPermisos(event)">
+                <p style="font-size:13px; color:#64748b; margin-top:0; margin-bottom:15px;">Esta acción sobrescribirá todos los permisos actuales del perfil destino con los del perfil origen de forma transaccional.</p>
+                <div class="form-group">
+                    <label style="font-weight:600; font-size:13px;">Perfil Origen (Copiar desde):</label>
+                    <select id="copiarOrigenPerfil" class="form-control" required style="width:100%; border-radius:6px; margin-top:5px;"></select>
+                </div>
+                <div class="form-group" style="margin-top:15px;">
+                    <label style="font-weight:600; font-size:13px;">Perfil Destino (Sobrescribir):</label>
+                    <select id="copiarDestinoPerfil" class="form-control" required style="width:100%; border-radius:6px; margin-top:5px;"></select>
+                </div>
+                <div class="modal-footer" style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalCopiarPermisos')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Copiar Permisos</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Historial de Auditoría de Perfil -->
+    <div id="modalAuditoriaPerfil" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 850px; border-radius: 12px; overflow: hidden; padding: 0;">
+            <div class="modal-header" style="background: #1e293b; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="color:#fff; margin:0; font-size:16px;">📑 Auditoría de Perfil: <span id="lblAuditoriaPerfilNombre"></span></h3>
+                <button class="modal-close" onclick="cerrarModal('modalAuditoriaPerfil')" style="background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:20px; max-height:480px; overflow-y:auto;">
+                <div id="auditoriaPerfilVacio" style="display:none; text-align:center; padding:30px; color:#64748b; font-style:italic;">No hay eventos de auditoría registrados para este perfil.</div>
+                <div id="auditoriaPerfilTableWrapper">
+                    <table class="premium-table" style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+                        <thead>
+                            <tr class="permisos-thead-row">
+                                <th style="padding:10px 8px; width:20%;">Fecha</th>
+                                <th style="padding:10px 8px; width:20%;">Usuario</th>
+                                <th style="padding:10px 8px; width:15%;">Evento</th>
+                                <th style="padding:10px 8px; width:35%;">Acción/Detalle</th>
+                                <th style="padding:10px 8px; width:10%; text-align:center;">IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditoriaPerfilBody">
+                            <!-- Filas de auditoría -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:15px 20px; display:flex; justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalAuditoriaPerfil')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- ===== MODAL: MI PERFIL ===== -->
     <div id="modalMiPerfil" class="modal" style="z-index:2000;">
@@ -1982,6 +2177,111 @@
         </div>
     </div>
 
+    <!-- Modal: Crear/Editar Perfil (Mantenimiento) -->
+    <div id="modalPerfilMantenimiento" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 520px; border-radius: 16px; overflow: hidden; box-shadow: var(--mqf-shadow-xl, 0 25px 50px -12px rgba(0,0,0,0.25)); padding: 0;">
+            <div class="modal-header" style="background: #1e1b4b; padding: 16px 24px; border-bottom: 1px solid #312e81; display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">🛡️</span> <span id="titleModalPerfilMantenimiento">Registrar Perfil</span>
+                </h2>
+                <button type="button" class="modal-close" onclick="cerrarModal('modalPerfilMantenimiento')" style="background: transparent; border: none; color: #a5b4fc; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <form id="formPerfilMantenimiento" onsubmit="dashboard.guardarPerfilMantenimiento(event)">
+                <div class="modal-body" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                    <input type="hidden" id="perfilMantenimientoId">
+                    
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Nombre del Perfil *</label>
+                        <input type="text" id="perfilMantenimientoNombre" class="form-control" required placeholder="Ej: Gerente Técnico de Línea" style="width: 100%; border-radius: 8px;">
+                    </div>
+                    
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Descripción / Roles Asociados</label>
+                        <textarea id="perfilMantenimientoDescripcion" class="form-control" placeholder="Describa el alcance y los roles de negocio de este perfil..." style="width: 100%; border-radius: 8px; height: 70px; resize: none;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Nivel Jerárquico *</label>
+                            <input type="number" id="perfilMantenimientoNivel" class="form-control" required placeholder="Ej: 10" style="width: 100%; border-radius: 8px;" min="1" max="999">
+                        </div>
+                        <div class="form-group" style="margin: 0;" id="containerHeredaPermisos">
+                            <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Copiar Permisos de:</label>
+                            <select id="perfilMantenimientoHereda" class="form-control" style="width: 100%; border-radius: 8px;">
+                                <option value="">No copiar (Vacío)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="perfilMantenimientoEstado" checked style="width:16px; height:16px; cursor:pointer;">
+                        <label for="perfilMantenimientoEstado" style="font-size: 13px; font-weight: 600; color: var(--mqf-text, #334155); cursor:pointer; margin: 0;">Habilitar perfil para asignación de usuarios</label>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: var(--mqf-surface-2, #f8fafc); border-top: 1px solid var(--mqf-border, #e2e8f0); padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalPerfilMantenimiento')" style="border-radius: 8px; font-size:13px; font-weight:600;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 8px; font-size:13px; font-weight:600;">💾 Guardar Perfil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Historial de Auditoría de Perfil (Inmutable) -->
+    <div id="modalPerfilAuditoria" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 800px; border-radius: 16px; overflow: hidden; box-shadow: var(--mqf-shadow-xl, 0 25px 50px -12px rgba(0,0,0,0.25)); padding: 0;">
+            <div class="modal-header" style="background: #1e1b4b; padding: 16px 24px; border-bottom: 1px solid #312e81; display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>📜</span> <span id="titleModalPerfilAuditoria">Bitácora de Auditoría del Perfil</span>
+                </h2>
+                <button type="button" class="modal-close" onclick="cerrarModal('modalPerfilAuditoria')" style="background: transparent; border: none; color: #a5b4fc; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 24px; max-height: 450px; overflow-y: auto; background: var(--mqf-bg-body, #f8fafc);">
+                <div id="perfilAuditoriaTimeline" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Timelines dinámicos -->
+                </div>
+            </div>
+            <div class="modal-footer" style="background: var(--mqf-surface-2, #f8fafc); border-top: 1px solid var(--mqf-border, #e2e8f0); padding: 16px 24px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalPerfilAuditoria')" style="border-radius: 8px; font-size:13px; font-weight:600;">Cerrar Bitácora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Copiar Permisos entre Perfiles -->
+    <div id="modalCopiarPermisos" class="modal" style="z-index: 2200;">
+        <div class="modal-content" style="max-width: 450px; border-radius: 16px; overflow: hidden; box-shadow: var(--mqf-shadow-xl, 0 25px 50px -12px rgba(0,0,0,0.25)); padding: 0;">
+            <div class="modal-header" style="background: #1e1b4b; padding: 16px 24px; border-bottom: 1px solid #312e81; display: flex; align-items: center; justify-content: space-between;">
+                <h2 style="font-size: 16px; font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>📋</span> <span>Copiar Permisos de Perfil</span>
+                </h2>
+                <button type="button" class="modal-close" onclick="cerrarModal('modalCopiarPermisos')" style="background: transparent; border: none; color: #a5b4fc; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            <form id="formCopiarPermisos" onsubmit="dashboard.ejecutarCopiarPermisos(event)">
+                <div class="modal-body" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                    <p style="font-size: 13px; color: #64748b; margin: 0;">
+                        Esta acción sobrescribirá todos los permisos actuales del perfil seleccionado con los permisos del perfil origen. Esta operación es irreversible y quedará auditada.
+                    </p>
+                    
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Perfil Destino (Actual)</label>
+                        <input type="text" id="copiarPermisosDestinoNombre" class="form-control" readonly style="width: 100%; border-radius: 8px; background: #f1f5f9; font-weight: 600;">
+                        <input type="hidden" id="copiarPermisosDestinoId">
+                    </div>
+                    
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--mqf-text-secondary, #475569); margin-bottom: 6px; display: block;">Copiar Permisos Desde (Origen) *</label>
+                        <select id="copiarPermisosOrigenSelect" class="form-control" required style="width: 100%; border-radius: 8px;">
+                            <option value="">Seleccione perfil de origen...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background: var(--mqf-surface-2, #f8fafc); border-top: 1px solid var(--mqf-border, #e2e8f0); padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalCopiarPermisos')" style="border-radius: 8px; font-size:13px; font-weight:600;">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 8px; font-size:13px; font-weight:600; background: #0284c7; border-color: #0284c7;">Confirmar Copia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="assets/api-client.js?v=9.0.0"></script>
     <script src="assets/dashboard.js?v=9.0.0"></script>
     <script>
@@ -2171,12 +2471,221 @@
         }
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    //  ASEGURADORAS OFICIALES — Gestión con Logo
+    // ══════════════════════════════════════════════════════════════════════════
+    let _asegOficialesCache = [];
+    let _asegEditId = null;
+    let _asegLogoFile = null;
+
+    async function cargarAsegOfilciales() {
+        const grid = document.getElementById('asegOficialesGrid');
+        const token = localStorage.getItem('token_sesion');
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;">⏳ Cargando aseguradoras oficiales...</div>';
+        try {
+            const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/companias.php?action=listar_aseguradoras', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.exito) throw new Error(data.mensaje);
+            _asegOficialesCache = data.data || [];
+            renderAsegOficialesGrid();
+        } catch(e) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#ef4444;">❌ Error: ${e.message}</div>`;
+        }
+    }
+
+    function _asegColorBanner(nombre) {
+        if (/patria/i.test(nombre))          return 'linear-gradient(90deg,#b40000,#ef4444)';
+        if (/pepin|pep\u00edn/i.test(nombre)) return 'linear-gradient(90deg,#b8860b,#daa520)';
+        if (/midas/i.test(nombre))           return 'linear-gradient(90deg,#00783c,#22c55e)';
+        return 'linear-gradient(90deg,#004488,#7c6af7)';
+    }
+
+    function renderAsegOficialesGrid() {
+        const grid = document.getElementById('asegOficialesGrid');
+        if (!_asegOficialesCache.length) {
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#94a3b8;font-size:15px;">🏢 No hay aseguradoras registradas.<br>Usa el botón <strong>Nueva Aseguradora</strong> para comenzar.</div>';
+            return;
+        }
+        grid.innerHTML = _asegOficialesCache.map(a => {
+            const logoHtml = a.logo_url
+                ? `<img src="${a.logo_url}?t=${Date.now()}" alt="${a.nombre}" style="width:100%;height:100%;object-fit:contain;padding:6px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : '';
+            const placeholderDisplay = a.logo_url ? 'display:none' : 'display:flex';
+            const estadoBadge = a.estado === 'activo'
+                ? `<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;">✅ Activo</span>`
+                : `<span style="background:rgba(239,68,68,.12);color:#ef4444;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;">⛔ Inactivo</span>`;
+            return `
+            <div style="background:var(--mqf-surface,#fff);border:1px solid var(--mqf-border,#e2e8f0);border-radius:14px;overflow:hidden;transition:transform .2s,box-shadow .2s;position:relative;"
+                 onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,.18)'"
+                 onmouseleave="this.style.transform='';this.style.boxShadow=''">
+                <div style="height:6px;background:${_asegColorBanner(a.nombre)};"></div>
+                <div style="padding:20px;">
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <!-- Logo clickeable para subir -->
+                        <div title="Clic para cambiar logo" onclick="abrirUploadLogoAseg(${a.id})"
+                             style="width:70px;height:70px;border:2px dashed var(--mqf-border,#e2e8f0);border-radius:12px;overflow:hidden;cursor:pointer;flex-shrink:0;position:relative;transition:border-color .2s;display:flex;align-items:center;justify-content:center;"
+                             onmouseenter="this.querySelector('.lo').style.opacity='1'"
+                             onmouseleave="this.querySelector('.lo').style.opacity='0'">
+                            ${logoHtml}
+                            <div style="${placeholderDisplay};align-items:center;justify-content:center;font-size:24px;">🏢</div>
+                            <div class="lo" style="position:absolute;inset:0;background:rgba(124,106,247,.75);display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0;transition:opacity .2s;color:#fff;">📤</div>
+                        </div>
+                        <!-- Datos -->
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:1rem;font-weight:700;color:var(--mqf-text,#1e293b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.nombre}</div>
+                            <div style="font-size:.75rem;color:#94a3b8;font-family:monospace;margin-top:2px;">${a.codigo}</div>
+                            <div style="font-size:.78rem;color:#94a3b8;margin-top:2px;">${a.rnc ? 'RNC: '+a.rnc : '<em>Sin RNC</em>'}</div>
+                            <div style="margin-top:8px;">${estadoBadge}</div>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--mqf-border,#e2e8f0);">
+                        <span style="font-size:.75rem;color:#94a3b8;">📊 ${a.total_tarifarios||0} tarifarios</span>
+                        <div style="display:flex;gap:6px;">
+                            <button onclick="abrirModalEditarAseg(${a.id})"
+                                style="padding:5px 12px;border-radius:8px;border:1px solid var(--mqf-border,#e2e8f0);background:transparent;color:var(--mqf-text-secondary,#64748b);font-size:.78rem;cursor:pointer;">✏️ Editar</button>
+                            <button onclick="toggleAsegOficial(${a.id})"
+                                style="padding:5px 12px;border-radius:8px;border:1px solid var(--mqf-border,#e2e8f0);background:transparent;color:var(--mqf-text-secondary,#64748b);font-size:.78rem;cursor:pointer;">${a.estado==='activo'?'⛔':'✅'}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Modal crear ──────────────────────────────────────────────────────────
+    function abrirModalNuevaAseg() {
+        _asegEditId = null;
+        _asegLogoFile = null;
+        document.getElementById('asegFId').value = '';
+        document.getElementById('asegFCodigo').value = '';
+        document.getElementById('asegFNombre').value = '';
+        document.getElementById('asegFRnc').value = '';
+        document.getElementById('asegModalTitle').textContent = '🏢 Nueva Aseguradora';
+        const m = document.getElementById('modalAsegOficial');
+        m.style.display = 'flex';
+    }
+
+    // ── Modal editar ─────────────────────────────────────────────────────────
+    function abrirModalEditarAseg(id) {
+        const a = _asegOficialesCache.find(x => x.id == id);
+        if (!a) return;
+        _asegEditId = id;
+        _asegLogoFile = null;
+        document.getElementById('asegFId').value = id;
+        document.getElementById('asegFCodigo').value = a.codigo;
+        document.getElementById('asegFNombre').value = a.nombre;
+        document.getElementById('asegFRnc').value = a.rnc || '';
+        document.getElementById('asegModalTitle').textContent = `✏️ Editar: ${a.nombre}`;
+        document.getElementById('modalAsegOficial').style.display = 'flex';
+    }
+
+    function cerrarModalAseg() {
+        document.getElementById('modalAsegOficial').style.display = 'none';
+        _asegEditId = null;
+        _asegLogoFile = null;
+    }
+
+    // ── Guardar (crear/editar) ───────────────────────────────────────────────
+    async function guardarAsegOficial() {
+        const token  = localStorage.getItem('token_sesion');
+        const codigo = document.getElementById('asegFCodigo').value.trim().toUpperCase();
+        const nombre = document.getElementById('asegFNombre').value.trim();
+        const rnc    = document.getElementById('asegFRnc').value.trim();
+        const id     = document.getElementById('asegFId').value;
+
+        if (!codigo || !nombre) { MQF.toast('Código y nombre son obligatorios', 'warning'); return; }
+
+        const payload = { codigo, nombre, rnc };
+        if (id) payload.id = parseInt(id);
+
+        try {
+            const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/companias.php?action=guardar_aseguradora', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!data.exito) throw new Error(data.mensaje);
+            MQF.toast(data.mensaje, 'success');
+            cerrarModalAseg();
+            await cargarAsegOfilciales();
+        } catch(e) {
+            MQF.toast('Error: ' + e.message, 'error');
+        }
+    }
+
+    // ── Toggle estado ────────────────────────────────────────────────────────
+    async function toggleAsegOficial(id) {
+        const a = _asegOficialesCache.find(x => x.id == id);
+        if (!a) return;
+        if (!confirm(`¿${a.estado==='activo'?'Inactivar':'Activar'} la aseguradora "${a.nombre}"?`)) return;
+        const token = localStorage.getItem('token_sesion');
+        try {
+            const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/companias.php?action=toggle_aseguradora', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            if (!data.exito) throw new Error(data.mensaje);
+            MQF.toast(data.mensaje, 'success');
+            await cargarAsegOfilciales();
+        } catch(e) {
+            MQF.toast('Error: ' + e.message, 'error');
+        }
+    }
+
+    // ── Upload logo desde clic en card ────────────────────────────────────────
+    function abrirUploadLogoAseg(id) {
+        // Crear input file temporal
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png,image/jpeg,image/webp,image/svg+xml';
+        input.onchange = () => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) { MQF.toast('El archivo supera 2 MB', 'error'); return; }
+            subirLogoAseg(id, file);
+        };
+        input.click();
+    }
+
+    async function subirLogoAseg(id, file) {
+        const token = localStorage.getItem('token_sesion');
+        MQF.toast('⏳ Subiendo logo...', 'info');
+
+        const fd = new FormData();
+        fd.append('logo', file);
+        fd.append('id', id);
+
+        try {
+            const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/companias.php?action=subir_logo_aseguradora', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: fd
+            });
+            const data = await res.json();
+            if (!data.exito) throw new Error(data.mensaje);
+            MQF.toast('✅ Logo actualizado exitosamente', 'success');
+            // Actualizar cache y re-renderizar
+            const a = _asegOficialesCache.find(x => x.id == id);
+            if (a) a.logo_url = data.logo_url;
+            renderAsegOficialesGrid();
+        } catch(e) {
+            MQF.toast('Error al subir logo: ' + e.message, 'error');
+        }
+    }
+
 
     /**
      * CENTRO DE INTEGRACIÓN DE APIS
      */
     let _integracionesCache = [];
     
+
     async function cargarConfigIntegraciones() {
         const grid = document.getElementById('listaIntegracionesGrid');
         const token = localStorage.getItem('token_sesion');

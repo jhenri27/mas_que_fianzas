@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LABS-MASQF: Centro de Tecnología - MQF</title>
+    <title>LABS-QA: Centro de Tecnología - MQF</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../assets/lib/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../assets/design-system.css">
@@ -232,7 +232,7 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <h1 class="mqf-module-header__title">
-                    <i class="fa-solid fa-flask-vial"></i> LABS-MASQF
+                    <i class="fa-solid fa-flask-vial"></i> LABS-QA
                 </h1>
                 <p class="mqf-module-header__subtitle">Centro de Tecnología, Diagnóstico y Soporte Avanzado</p>
             </div>
@@ -336,7 +336,7 @@
                                 <p>Borrar registros temporales</p>
                             </div>
                         </div>
-                        <div class="action-card" onclick="MQF.toast('Funcionalidad de Release Manager próximamente', 'info')">
+                        <div class="action-card" onclick="lanzarMelcaPush()">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <div>
                                 <h4>Push Update</h4>
@@ -350,12 +350,12 @@
             <!-- TERMINAL DE OUTPUT -->
             <div class="lab-card">
                 <div class="lab-card-header">
-                    <h3><i class="fa-solid fa-terminal"></i> Terminal de Eventos LABS-MASQF</h3>
+                    <h3><i class="fa-solid fa-terminal"></i> Terminal de Eventos LABS-QA</h3>
                     <button onclick="clearTerminal()" style="background:none; border:none; color:var(--lab-accent); cursor:pointer; font-size:12px;">Limpiar</button>
                 </div>
                 <div class="lab-card-body">
                     <div id="lab-terminal" class="lab-terminal">
-                        <div class="res">[SYSTEM] LABS-MASQF Inicializado...</div>
+                        <div class="res">[SYSTEM] LABS-QA Inicializado...</div>
                         <div class="cmd">> Ready for commands.</div>
                     </div>
                 </div>
@@ -1360,6 +1360,31 @@
             const btn = document.getElementById('btn-skin-' + s);
             if (btn) btn.className = 'mqf-btn mqf-btn--primary';
         })();
+        
+        async function lanzarMelcaPush() {
+            log("Iniciando motor MELCA-Fixuper (Push Update)...", "sys");
+            log("Validando firmas criptográficas e integridad VAF...", "cmd");
+            
+            try {
+                // Verificar si tenemos sesión
+                const token = sessionStorage.getItem('mqf_token_sesion') || '';
+                
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/melca_push.php?action=generar_update&token_sesion=' + token);
+                const res = await r.json();
+                
+                if (res.exito) {
+                    log("ÉXITO: " + res.mensaje, "res");
+                    log("Patch ID: " + res.data.patch_id, "sys");
+                    log("Descarga disponible para contingencia: <a href='" + res.data.descargar_url + "' style='color:#60a5fa;' download>Descargar Parche ZIP</a>", "cmd");
+                    MQF.toast("Parche generado y firmado exitosamente.", "success");
+                } else {
+                    log("ERROR VAF: " + res.mensaje, "err");
+                    MQF.toast("Fallo al generar el parche: " + res.mensaje, "error");
+                }
+            } catch (e) {
+                log("EXCEPCIÓN DE RED: " + e.message, "err");
+            }
+        }
     </script>
 
 </body>

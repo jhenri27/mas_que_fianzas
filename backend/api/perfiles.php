@@ -85,6 +85,19 @@ try {
         $resultado = $manager->asignarPermisosAPerfil($perfil_id, $permisos, $usuario_actual);
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
+    } elseif ($endpoint === 'copiar-permisos' && $metodo === 'POST') {
+        // COPIAR PERMISOS ENTRE PERFILES EXISTENTES
+        $datos = json_decode(file_get_contents('php://input'), true);
+        $origen = intval($datos['perfil_origen'] ?? 0);
+        $destino = intval($datos['perfil_destino'] ?? 0);
+        
+        if ($origen <= 0 || $destino <= 0) {
+            respuestaJSON(false, 'Perfiles de origen y destino requeridos', null, 400);
+        }
+        
+        $resultado = $manager->copiarPermisos($origen, $destino, $usuario_actual);
+        respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
+
     } elseif ($endpoint === 'obtener' && $metodo === 'GET') {
         // OBTENER PERFIL COMPLETO CON PERMISOS
         $perfil_id = intval($partes[1] ?? 0);

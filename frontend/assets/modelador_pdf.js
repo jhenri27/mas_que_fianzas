@@ -135,6 +135,7 @@ async function cargarPlantillas() {
                         <td style="display: flex; gap: 8px;">
                             <button class="mqf-btn mqf-btn--sm mqf-btn--primary" onclick="abrirMapeador(${p.id})"><i class="fa-solid fa-pencil"></i> Mapear</button>
                             <button class="mqf-btn mqf-btn--sm mqf-btn--success" onclick="abrirPruebas(${p.id})"><i class="fa-solid fa-circle-check"></i> Probar</button>
+                            <button class="mqf-btn mqf-btn--sm mqf-btn--danger" onclick="eliminarPlantilla(${p.id})" style="background: #ef4444; color: white; padding: 0 8px;"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -177,6 +178,7 @@ async function cargarMarbetesOficiales() {
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--mqf-border); padding-top: 12px; margin-top: 8px;">
                             <button class="mqf-btn mqf-btn--sm mqf-btn--secondary" onclick="generarPrevisualizacionMarbete(${p.id})"><i class="fa-solid fa-eye"></i> Previsualizar</button>
                             <button class="mqf-btn mqf-btn--sm mqf-btn--primary" onclick="abrirMapeador(${p.id})"><i class="fa-solid fa-pencil"></i> Ajustar Coords</button>
+                            <button class="mqf-btn mqf-btn--sm mqf-btn--danger" onclick="eliminarPlantilla(${p.id})" style="grid-column: 1 / -1; background: #ef4444; color: white;"><i class="fa-solid fa-trash"></i> Eliminar Plantilla</button>
                         </div>
                     </div>
                 `;
@@ -187,12 +189,41 @@ async function cargarMarbetesOficiales() {
     }
 }
 
+// Eliminar Plantilla
+async function eliminarPlantilla(id) {
+    if (!confirm("¿Está seguro que desea eliminar esta plantilla? Esta acción no se puede deshacer y borrará todo su mapeo.")) return;
+    try {
+        const formData = new FormData();
+        formData.append("id", id);
+        const resp = await fetch("/PLATAFORMA_INTEGRADA/backend/api/pdf_modeler.php?action=eliminar_plantilla", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + (localStorage.getItem("token_sesion") || "")
+            },
+            body: formData
+        });
+        const data = await resp.json();
+        if (data.exito) {
+            MQF.toast("Plantilla eliminada", "success");
+            cargarPlantillas();
+            cargarMarbetesOficiales();
+        } else {
+            MQF.toast(data.mensaje || "Error al eliminar plantilla", "error");
+        }
+    } catch(err) {
+        console.error("Error al eliminar plantilla:", err);
+        MQF.toast("Error de conexión al eliminar", "error");
+    }
+}
+
 // 3. Subir Nueva Plantilla Oficial
 async function subirNuevaPlantilla(e) {
     e.preventDefault();
     const nombre = document.getElementById("plantillaNombre").value.trim();
     const asegId = document.getElementById("plantillaAseguradora").value;
     const fileInput = document.getElementById("plantillaArchivo");
+    
+    const tipoPlantilla = document.getElementById("tipoPlantilla").value;
     
     if (!fileInput.files || fileInput.files.length === 0) {
         MQF.toast("Debe seleccionar un archivo válido (PDF/PNG/JPG/PPTX).", "error");
@@ -204,6 +235,7 @@ async function subirNuevaPlantilla(e) {
     formData.append("file", file);
     formData.append("aseguradora_id", asegId);
     formData.append("nombre", nombre);
+    formData.append("tipo_plantilla", tipoPlantilla);
     formData.append("ancho_mm", 215.9); // Carta por defecto
     formData.append("alto_mm", 279.4);
     
@@ -853,6 +885,7 @@ async function cargarCotizacionesPrueba() {
 }
 
 // Cargar variables y construir el formulario dinámico en base a la plantilla
+// Cargar variables y construir el formulario dinámico en base a la plantilla
 async function abrirPruebas(plantillaId) {
     try {
         MQF.toast("Abriendo simulador de autollenado...", "info");
@@ -869,8 +902,12 @@ async function abrirPruebas(plantillaId) {
             // Construir el formulario dinámico de campos adicionales (manuales)
             construirFormularioCamposAdicionales();
             
-            // Reset preview iframe
-            document.getElementById("iframePreviewPDFGenerado").src = "about:blank";
+            // Cargar la plantilla original de fondo inmediatamente para evitar pantalla oscura
+            if (currentPlantilla.archivo_base) {
+                document.getElementById("iframePreviewPDFGenerado").src = "/PLATAFORMA_INTEGRADA/" + currentPlantilla.archivo_base;
+            } else {
+                document.getElementById("iframePreviewPDFGenerado").src = "about:blank";
+            }
         }
     } catch(err) {
         console.error("Error abriendo simulador de pruebas:", err);
@@ -907,7 +944,6 @@ async function cargarDatosSimulacionCotizacion(cotId) {
     
     try {
         MQF.toast("Precargando datos de la cotización...", "info");
-        // Simulamos la API para ver las variables
         const res = await api.solicitud(`/cotizaciones.php?action=obtener&id=${cotId}`);
         if (res.exito && res.dato) {
             MQF.toast("Variables de cotización listas. Pulse 'Llenar y Generar PDF' para testear.", "success");
@@ -917,7 +953,7 @@ async function cargarDatosSimulacionCotizacion(cotId) {
     }
 }
 
-// Ejecutar llenador Python e inyectar en iframe
+// Ejecutar llenador interactivo en el cliente (PDFLib) e inyectar en iframe
 async function ejecutarAutollenadoSimulado() {
     if (!currentPlantilla) return;
     
@@ -925,33 +961,143 @@ async function ejecutarAutollenadoSimulado() {
     
     // Obtener campos manuales del formulario
     const datosManuales = {};
-    const formData = new FormData(document.getElementById("formCamposManualesPrueba"));
-    formData.forEach((val, key) => {
-        datosManuales[key] = val;
-    });
+    const formPruebas = document.getElementById("formCamposManualesPrueba");
+    if (formPruebas) {
+        const formData = new FormData(formPruebas);
+        formData.forEach((val, key) => {
+            datosManuales[key] = val;
+        });
+    }
     
-    const body = {
-        plantilla_id: currentPlantilla.id,
-        cotizacion_id: cotId ? parseInt(cotId) : null,
-        datos_manuales: datosManuales,
-        campos: mappedFields
-    };
-    
-    MQF.toast("Procesando formulario y autollenando PDF oficial...", "info");
+    MQF.toast("Compilando y autollenando PDF en el navegador...", "info");
     
     try {
-        const res = await api.solicitud("/pdf_modeler.php?action=llenar_pdf", "POST", body);
-        if (res.exito && res.pdf_url) {
-            MQF.toast("¡PDF generado y validado con éxito!", "success");
-            
-            // Inyectar el PDF generado en el iframe para visualización
-            document.getElementById("iframePreviewPDFGenerado").src = "/PLATAFORMA_INTEGRADA/" + res.pdf_url;
-        } else {
-            MQF.toast("Error al generar PDF: " + res.mensaje, "error");
+        // Cargar pdf-lib si no está cargada
+        if (typeof PDFLib === 'undefined') {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = '../assets/lib/pdf-lib.min.js';
+                script.onload = resolve;
+                script.onerror = () => {
+                    const cdnScript = document.createElement('script');
+                    cdnScript.src = 'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+                    cdnScript.onload = resolve;
+                    cdnScript.onerror = () => reject(new Error('No se pudo cargar pdf-lib'));
+                    document.head.appendChild(cdnScript);
+                };
+                document.head.appendChild(script);
+            });
         }
+        
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+        
+        // Fetch de la plantilla base original
+        const templateUrl = '/PLATAFORMA_INTEGRADA/' + currentPlantilla.archivo_base;
+        const fileRes = await fetch(templateUrl);
+        if (!fileRes.ok) throw new Error('No se pudo cargar el archivo base del PDF');
+        const fileBuffer = await fileRes.arrayBuffer();
+        
+        const pdfDoc = await PDFDocument.load(fileBuffer);
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+        const pageW = firstPage.getWidth();
+        const pageH = firstPage.getHeight();
+        
+        const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        
+        // Resolver variables
+        let variables = {};
+        if (cotId) {
+            const res = await api.solicitud(`/cotizaciones.php?action=obtener&id=${cotId}`);
+            if (res.exito && res.dato) {
+                variables = {
+                    'cliente.nombre': (res.dato.cliente || '').toUpperCase(),
+                    'cliente.cedula': res.dato.cedula || 'N/A',
+                    'cliente.telefono': res.dato.telefono || 'N/A',
+                    'cliente.email': res.dato.email || 'N/A',
+                    'poliza.numero_poliza': res.dato.numero || res.dato.id || 'N/A',
+                    'poliza.monto_asegurado': res.dato.monto_afianzado || res.dato.total || '0.00',
+                    'poliza.fecha_inicio': res.dato.fecha ? new Date(res.dato.fecha).toLocaleDateString('es-ES') : new Date().toLocaleDateString('es-ES'),
+                    'poliza.fecha_fin': res.dato.fecha && res.dato.plazo ? new Date(new Date(res.dato.fecha).setMonth(new Date(res.dato.fecha).getMonth() + parseInt(res.dato.plazo))).toLocaleDateString('es-ES') : '',
+                    'poliza.prima_neta': res.dato.prima_base || res.dato.total || '0.00',
+                    'poliza.itbis': res.dato.impuesto || '0.00',
+                    'poliza.total_pagar': res.dato.total || '0.00',
+                    'poliza.beneficiario': res.dato.beneficiario || 'N/A',
+                    'poliza.objeto_fianza': res.dato.subtipo || res.dato.cobertura || 'FIANZA DE LEY',
+                    'poliza.aseguradora_nombre': res.dato.aseguradora || '',
+                    'vehiculo.placa': res.dato.placa || '',
+                    'vehiculo.chasis': res.dato.chasis || '',
+                    'vehiculo.marca': res.dato.marca || '',
+                    'vehiculo.modelo': res.dato.modelo || '',
+                    'vehiculo.anio': res.dato.anio || '',
+                    'vehiculo.uso': res.dato.uso || res.dato.uso_vehiculo || 'PRIVADO',
+                    'vehiculo.tipo_vehiculo': res.dato.tipo_vehiculo || 'MOTOCICLETA'
+                };
+            }
+        }
+        
+        const plantW_mm = parseFloat(currentPlantilla.ancho_mm) || 210.0;
+        const plantH_mm = parseFloat(currentPlantilla.alto_mm) || 297.0;
+        
+        // Dibujar campos mapeados en la primera página
+        mappedFields.forEach(campo => {
+            let val = '';
+            if (campo.variable) {
+                val = variables[campo.variable] ?? '';
+            } else {
+                val = datosManuales[campo.nombre_campo_pdf] ?? '';
+            }
+            
+            if (val === undefined || val === null || val === '') return;
+            
+            const assumed_page_width_pts = plantW_mm * 2.83464;
+            const scaleRatio = pageW / assumed_page_width_pts;
+            const size = (parseFloat(campo.font_size) || 9.0) * scaleRatio;
+            
+            const x_pt = (parseFloat(campo.pos_x) / plantW_mm) * pageW;
+            const y_pt = (pageH - (parseFloat(campo.pos_y) / plantH_mm) * pageH) - size;
+            
+            const font = campo.font_weight === 'bold' ? fontBold : fontRegular;
+            
+            const hex = (campo.color || '#000000').replace('#', '');
+            let r_val = 0.0, g_val = 0.0, b_val = 0.0;
+            if (hex.length === 6) {
+                r_val = parseInt(hex.substring(0, 2), 16) / 255;
+                g_val = parseInt(hex.substring(2, 4), 16) / 255;
+                b_val = parseInt(hex.substring(4, 6), 16) / 255;
+            }
+            
+            const opacar = campo.fondo_opaco == 1 || campo.fondo_opaco === '1' || campo.fondo_opaco === true || campo.fondo_opaco === 'true';
+            if (opacar && String(val).trim() !== '') {
+                const textWidth = font.widthOfTextAtSize(String(val), size);
+                firstPage.drawRectangle({
+                    x: x_pt - 1,
+                    y: y_pt - (size * 0.2),
+                    width: textWidth + 2,
+                    height: size * 1.2,
+                    color: rgb(1, 1, 1)
+                });
+            }
+
+            firstPage.drawText(String(val), {
+                x: x_pt,
+                y: y_pt,
+                size: size,
+                font: font,
+                color: rgb(r_val, g_val, b_val)
+            });
+        });
+        
+        const pdfBytes = await pdfDoc.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        document.getElementById("iframePreviewPDFGenerado").src = blobUrl;
+        
+        MQF.toast("¡PDF de simulación generado y renderizado con éxito!", "success");
     } catch(err) {
-        console.error("Error generando PDF simulado:", err);
-        MQF.toast("Error en el procesador contable/llenador.", "error");
+        console.error("Error generando PDF de pruebas localmente:", err);
+        MQF.toast("Error local de autollenado: " + err.message, "error");
     }
 }
 

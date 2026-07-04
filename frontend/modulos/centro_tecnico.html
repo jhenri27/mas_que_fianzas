@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Centro Técnico de Seguros - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="../assets/lib/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
+    <link rel="stylesheet" href="../assets/components.css">
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
+    <style>
+        .sidebar { display: none !important; }
+        .top-navbar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
+        .content-area { padding: 20px !important; margin-top: 0 !important; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+        
+        /* Custom styles matching MQF aesthetic */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid var(--mqf-border, #e2e8f0);
+            padding-bottom: 0px;
+            margin-bottom: 25px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--mqf-text-secondary, #64748b);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tab-btn:hover {
+            color: var(--mqf-primary, #4f46e5);
+        }
+        .tab-btn.active {
+            color: var(--mqf-primary, #4f46e5);
+            border-bottom-color: var(--mqf-primary, #4f46e5);
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Simulator display styles */
+        .simulation-container {
+            background: var(--mqf-surface-2, #f8fafc);
+            border: 1.5px solid var(--mqf-border, #e2e8f0);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .sim-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .sim-table th {
+            text-align: left;
+            padding: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--mqf-primary-dark, #1e1b4b);
+            background: var(--mqf-primary-light, #e0e7ff);
+            border-bottom: 2px solid var(--mqf-border, #e2e8f0);
+        }
+        .sim-table td {
+            padding: 12px 10px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--mqf-border, #e2e8f0);
+            color: var(--mqf-text-main, #1e293b);
+        }
+        .badge-type {
+            font-weight: 800;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-debito {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-credito {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .text-impact-positive {
+            color: #059669;
+            font-weight: 700;
+        }
+        .text-impact-negative {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        /* Auto-suggest dropdown */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--mqf-border, #e2e8f0);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            z-index: 50;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 4px;
+        }
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid var(--mqf-border, #e2e8f0);
+        }
+        .autocomplete-item:hover {
+            background: var(--mqf-primary-light, #e0e7ff);
+            color: var(--mqf-primary-dark, #1e1b4b);
+        }
+
+        .badge-status {
+            padding: 3px 10px;
+            border-radius: var(--mqf-radius-full, 9999px);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-approved { background: #d1fae5; color: #059669; }
+        .badge-rejected { background: #fee2e2; color: #dc2626; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-box {
+            background: var(--bg-card, #ffffff);
+            width: 95%;
+            max-width: 550px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+<main class="main-content">
+<div class="content-area" style="padding:0!important;">
+
+    <!-- Header estándar MQF -->
+    <div class="mqf-module-header">
+        <h1 class="mqf-module-header__title">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Centro Técnico de Seguros
+        </h1>
+        <p class="mqf-module-header__subtitle">Ajustes excepcionales de pólizas emitidas, simulación de asientos contables y catálogo de reglas de negocio</p>
+        
+        <div style="display:flex; gap:8px; padding-bottom:16px;">
+            <button class="btn btn-secondary" onclick="window.parent.document.querySelector('.nav-item[data-module=\'dashboard\']').click();">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
+            </button>
+        </div>
+    </div>
+
+    <!-- Navegación de pestañas -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="cambiarTab('solicitud')"><i class="fa-solid fa-pen-to-square"></i> Solicitud de Ajuste</button>
+        <button class="tab-btn" onclick="cambiarTab('bandeja')"><i class="fa-solid fa-list-check"></i> Bandeja de Aprobaciones</button>
+        <button class="tab-btn" onclick="cambiarTab('reglas')"><i class="fa-solid fa-gavel"></i> Reglas de Negocio</button>
+    </div>
+
+    <!-- ================== TABS CONTENIDO ================== -->
+
+    <!-- TAB 1: SOLICITUD DE AJUSTE -->
+    <div id="tab-solicitud" class="tab-panel active">
+        <div class="card" style="padding: 25px;">
+            <h3 class="card-title" style="margin-bottom: 20px; font-weight: 700; font-size: 16px;"><i class="fa-solid fa-magnifying-glass"></i> 1. Buscar Póliza para Ajustar</h3>
+            
+            <div class="autocomplete-container">
+                <input type="text" id="buscar_poliza_input" class="form-input" placeholder="Escriba número de póliza, cliente o placa..." autocomplete="off" oninput="buscarPolizas(this.value)">
+                <div id="autocomplete_list" class="autocomplete-list"></div>
+            </div>
+
+            <!-- Datos actuales de la póliza seleccionada -->
+            <div id="datos_poliza_contenedor" style="display:none; margin-top: 25px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                    <!-- Detalle actual -->
+                    <div style="background: var(--mqf-surface-1, #ffffff); border: 1px solid var(--mqf-border, #e2e8f0); border-radius: 8px; padding: 20px;">
+                        <h4 style="margin-top:0; font-weight:700; color:var(--mqf-primary, #4f46e5); font-size:14px;"><i class="fa-solid fa-file-contract"></i> Información de la Póliza</h4>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; margin-top:15px;">
+                            <div><span style="font-weight:700; color:var(--mqf-text-secondary, #64748b);">Póliza N°:</span> <span id="lbl_poliza_num" style="font-weight:600;"></span></div>
+                            <div><span style="font-weight:700; color:var(--mqf-text-secondary, #64748b);">Aseguradora:</span> <span id="lbl_poliza_aseg" style="font-weight:600;"></span></div>
+                            <div><span style="font-weight:700; color:var(--mqf-text-secondary, #64748b);">Prima Total:</span> <span id="lbl_poliza_prima" style="font-weight:600; color:var(--mqf-primary-dark, #1e1b4b);"></span></div>
+                            <div><span style="font-weight:700; color:var(--mqf-text-secondary, #64748b);">Cliente:</span> <span id="lbl_poliza_cliente" style="font-weight:600;"></span></div>
+                            <div style="grid-column: 1 / -1;"><span style="font-weight:700; color:var(--mqf-text-secondary, #64748b);">Vehículo Placa:</span> <span id="lbl_poliza_placa" style="font-weight:600;"></span></div>
+                        </div>
+                    </div>
+
+                    <!-- Campos a Ajustar -->
+                    <div style="background: var(--mqf-surface-1, #ffffff); border: 1px solid var(--mqf-border, #e2e8f0); border-radius: 8px; padding: 20px;">
+                        <h4 style="margin-top:0; font-weight:700; color:var(--mqf-primary, #4f46e5); font-size:14px;"><i class="fa-solid fa-sliders"></i> Nuevos Valores Solicitados</h4>
+                        <form id="form_ajuste_poliza" onsubmit="enviarSolicitudAjuste(event)" style="margin-top:15px;">
+                            <input type="hidden" id="ajuste_poliza_id">
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label class="form-label" for="tipo_cambio">Tipo de Ajuste a Solicitar</label>
+                                <select id="tipo_cambio" class="form-input" style="padding:8px 12px; font-weight:700; color:#1e1b4b;" onchange="cambiarTipoAjuste()">
+                                    <option value="financiero">Ajuste Financiero (Prima / Aseguradora)</option>
+                                    <option value="vehiculo">Modificación de Datos del Vehículo</option>
+                                    <option value="cliente">Modificación de Datos del Cliente</option>
+                                    <option value="intermediario">Modificación de Intermediario / Peril</option>
+                                </select>
+                            </div>
+
+                            <!-- Contenedores dinámicos de campos -->
+                            <div id="campos_financieros" class="campos-dinamicos" style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                                <div>
+                                    <label class="form-label" for="ajuste_aseguradora">Aseguradora</label>
+                                    <select id="ajuste_aseguradora" class="form-input" style="padding:8px 12px;">
+                                        <option value="Multiseguros">Multiseguros</option>
+                                        <option value="Midas Seguros">Midas Seguros</option>
+                                        <option value="Seguros Patria">Seguros Patria</option>
+                                        <option value="Seguros Pepín">Seguros Pepín</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="ajuste_prima">Nueva Prima Total (RD$)</label>
+                                    <input type="number" step="0.01" id="ajuste_prima" class="form-input" style="padding:8px 12px;" oninput="calcularSimulacionLive()">
+                                </div>
+                            </div>
+
+                            <div id="campos_vehiculo" class="campos-dinamicos" style="display:none; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                                <div>
+                                    <label class="form-label" for="ajuste_veh_placa">Nueva Placa</label>
+                                    <input type="text" id="ajuste_veh_placa" class="form-input" style="padding:8px 12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="ajuste_veh_marca">Nueva Marca/Modelo</label>
+                                    <input type="text" id="ajuste_veh_marca" class="form-input" style="padding:8px 12px;">
+                                </div>
+                                <div style="grid-column: 1 / -1;">
+                                    <label class="form-label" for="ajuste_veh_chasis">Nuevo Chasis</label>
+                                    <input type="text" id="ajuste_veh_chasis" class="form-input" style="padding:8px 12px;">
+                                </div>
+                            </div>
+
+                            <div id="campos_cliente" class="campos-dinamicos" style="display:none; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                                <div>
+                                    <label class="form-label" for="ajuste_cli_nombre">Nuevo Nombre del Cliente</label>
+                                    <input type="text" id="ajuste_cli_nombre" class="form-input" style="padding:8px 12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="ajuste_cli_doc">Nueva Cédula/RNC</label>
+                                    <input type="text" id="ajuste_cli_doc" class="form-input" style="padding:8px 12px;">
+                                </div>
+                            </div>
+
+                            <div id="campos_intermediario" class="campos-dinamicos" style="display:none; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                                <div>
+                                    <label class="form-label" for="ajuste_int_nombre">Nuevo Intermediario</label>
+                                    <input type="text" id="ajuste_int_nombre" class="form-input" style="padding:8px 12px;">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="ajuste_int_cod">Código Intermediario</label>
+                                    <input type="text" id="ajuste_int_cod" class="form-input" style="padding:8px 12px;">
+                                </div>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                                <div style="grid-column: 1 / -1;">
+                                    <label class="form-label" id="lbl_justificacion" for="ajuste_justificacion">Justificación de Ajuste Financiero (VAF)</label>
+                                    <textarea id="ajuste_justificacion" class="form-input" style="padding:8px 12px; height: 50px; resize:none;" required placeholder="Indique la justificación comercial o técnica del cambio..."></textarea>
+                                </div>
+                                <div style="grid-column: 1 / -1;">
+                                    <label class="form-label" for="ajuste_soporte">Soporte Documental (PDF/Imagen)</label>
+                                    <input type="file" id="ajuste_soporte" class="form-input" style="padding:6px 12px;" accept=".pdf,.png,.jpg,.jpeg">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Simulación contable -->
+                <div id="contenedor_simulacion" class="simulation-container">
+                    <h4 style="margin:0; font-weight:800; color:var(--mqf-primary-dark, #1e1b4b); font-size:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <span><i class="fa-solid fa-calculator"></i> Impacto Contable Proyectado (Partida Doble) - VAFF</span>
+                        <span id="lbl_diferencia_total" style="font-size: 13px;">Diferencia Neta: RD$ 0.00</span>
+                    </h4>
+                    <table class="sim-table">
+                        <thead>
+                            <tr>
+                                <th>Código Cuenta</th>
+                                <th>Nombre Cuenta</th>
+                                <th>Movimiento</th>
+                                <th>Valor Anterior</th>
+                                <th>Valor Nuevo</th>
+                                <th>Impacto Ajuste</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim_asiento_rows">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button class="btn btn-secondary" onclick="cancelarAjuste()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="triggerSubmitForm()"><i class="fa-solid fa-paper-plane"></i> Enviar a Aprobación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: BANDEJA DE SOLICITUDES -->
+    <div id="tab-bandeja" class="tab-panel">
+        <div class="card" style="padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 id="lbl_titulo_bandeja" class="card-title" style="margin:0; font-weight:700;"><i class="fa-solid fa-list"></i> Bandeja de Solicitudes de Ajustes</h3>
+            </div>
+
+            <!-- Sub-pestañas internas de la bandeja -->
+            <div class="tab-nav" style="margin-bottom: 20px; border-bottom: 2px solid var(--mqf-border, #e2e8f0); gap: 5px;">
+                <button class="tab-btn active" id="btn_subtab_polizas" onclick="cambiarSubtabBandeja('polizas')" style="padding: 8px 16px; font-size: 13px; font-weight:700;"><i class="fa-solid fa-file-invoice"></i> Pólizas</button>
+                <button class="tab-btn" id="btn_subtab_reglas" onclick="cambiarSubtabBandeja('reglas')" style="padding: 8px 16px; font-size: 13px; font-weight:700;"><i class="fa-solid fa-gavel"></i> Reglas de Negocio</button>
+            </div>
+
+            <!-- Subtab CONTENEDOR 1: AJUSTES DE PÓLIZAS -->
+            <div id="bandeja_polizas_container">
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px;">
+                    <div>
+                        <label class="form-label" style="display:inline-block; margin-right:4px; font-weight:700;">Categoría:</label>
+                        <select id="filtro_categoria_bandeja" class="form-input" style="width:180px; display:inline-block; padding:6px 12px;" onchange="cargarSolicitudes(document.getElementById('filtro_estado_solicitud').value)">
+                            <option value="">Todas</option>
+                            <option value="financiero">Ajustes Financieros</option>
+                            <option value="vehiculo">Datos del Vehículo</option>
+                            <option value="cliente">Datos del Cliente</option>
+                            <option value="intermediario">Intermediario</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" style="display:inline-block; margin-right:4px; font-weight:700;">Estado:</label>
+                        <select id="filtro_estado_solicitud" class="form-input" style="width:130px; display:inline-block; padding:6px 12px;" onchange="cargarSolicitudes(this.value)">
+                            <option value="">Todas</option>
+                            <option value="pendiente" selected>Pendiente</option>
+                            <option value="aprobada">Aprobada</option>
+                            <option value="rechazada">Rechazada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Póliza</th>
+                                <th>Solicita</th>
+                                <th>Fecha</th>
+                                <th>Justificación</th>
+                                <th>Valores (Orig &rarr; Nuevo)</th>
+                                <th>Soporte</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bandeja_solicitudes_rows">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subtab CONTENEDOR 2: SOLICITUDES DE REGLAS DE NEGOCIO -->
+            <div id="bandeja_reglas_container" style="display:none;">
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px;">
+                    <div>
+                        <label class="form-label" style="display:inline-block; margin-right:4px; font-weight:700;">Estado:</label>
+                        <select id="filtro_estado_solicitud_regla" class="form-input" style="width:130px; display:inline-block; padding:6px 12px;" onchange="cargarSolicitudesReglas()">
+                            <option value="">Todas</option>
+                            <option value="pendiente" selected>Pendiente</option>
+                            <option value="aprobada">Aprobada</option>
+                            <option value="rechazada">Rechazada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="data-table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Código/Nombre</th>
+                                <th>Categoría</th>
+                                <th>Tipo Validación</th>
+                                <th>Solicita</th>
+                                <th>Fecha</th>
+                                <th>Justificación</th>
+                                <th>Valor & Relaciones</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bandeja_solicitudes_reglas_rows">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: CATÁLOGO DE REGLAS DE NEGOCIO -->
+    <div id="tab-reglas" class="tab-panel">
+        <div class="card" style="padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 class="card-title" style="margin:0; font-weight:700;"><i class="fa-solid fa-gavel"></i> Catálogo de Reglas de Negocio Configurable</h3>
+                <button class="btn btn-primary" onclick="abrirModalRegla()"><i class="fa-solid fa-plus"></i> Nueva Regla</button>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:200px;">
+                    <input type="text" id="buscar_regla_input" class="form-input" placeholder="Buscar regla por código o nombre..." oninput="filtrarReglas()">
+                </div>
+                <div>
+                    <select id="filtro_categoria_regla" class="form-input" style="width:180px;" onchange="filtrarReglas()">
+                        <option value="">Todas las Categorías</option>
+                        <option value="plataforma">Plataforma (VAF)</option>
+                        <option value="aseguradoras">Aseguradoras (VAF)</option>
+                        <option value="perfiles">Perfiles (VAF)</option>
+                        <option value="productos">Productos (VAF)</option>
+                        <option value="cobros">Cobros (VAFF)</option>
+                        <option value="ventas">Ventas (VAFF)</option>
+                        <option value="comisiones">Comisiones (VAFF)</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="filtro_estado_regla" class="form-input" style="width:130px;" onchange="filtrarReglas()">
+                        <option value="">Todos los Estados</option>
+                        <option value="activo">Activa</option>
+                        <option value="inactivo">Inactiva</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="overflow-x:auto;">
+                <table class="data-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre de la Regla</th>
+                            <th>Categoría</th>
+                            <th>Descripción</th>
+                            <th>Valor Configurado</th>
+                            <th>Relaciones</th>
+                            <th>Mejores Prácticas</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reglas_rows">
+                        <!-- Injected dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</main>
+
+<!-- MODAL NUEVA/EDITAR REGLA DE NEGOCIO -->
+<div id="modal_regla" class="modal-overlay">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 id="modal_regla_title">Nueva Regla de Negocio</h3>
+            <button class="modal-close" onclick="cerrarModalRegla()">&times;</button>
+        </div>
+        <form id="form_regla" onsubmit="enviarSolicitudRegla(event)">
+            <div class="modal-body" style="grid-template-columns:1fr; gap:12px; padding:20px; max-height:450px; overflow-y:auto;">
+                <input type="hidden" id="regla_id">
+                <input type="hidden" id="regla_tipo_solicitud" value="creacion">
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div>
+                        <label class="form-label" for="regla_codigo">Código de la Regla</label>
+                        <input type="text" id="regla_codigo" class="form-input" required placeholder="Ej: LIM_COBRO_ACH">
+                    </div>
+                    <div>
+                        <label class="form-label" for="regla_nombre">Nombre</label>
+                        <input type="text" id="regla_nombre" class="form-input" required placeholder="Ej: Límite cobros por ACH">
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <div>
+                        <label class="form-label" for="regla_categoria">Categoría</label>
+                        <select id="regla_categoria" class="form-input" required>
+                            <option value="plataforma">Plataforma (VAF)</option>
+                            <option value="aseguradoras">Aseguradoras (VAF)</option>
+                            <option value="perfiles">Perfiles (VAF)</option>
+                            <option value="productos">Productos (VAF)</option>
+                            <option value="cobros">Cobros (VAFF)</option>
+                            <option value="ventas">Ventas (VAFF)</option>
+                            <option value="comisiones">Comisiones (VAFF)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="regla_valor">Valor Configurado</label>
+                        <input type="text" id="regla_valor" class="form-input" required placeholder="Ej: 50000.00">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Relación del Ajuste (Multiselección)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="aseguradoras"> Aseguradoras</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="plataforma"> Plataforma</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="productos"> Productos</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="ventas"> Ventas</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="cobros"> Cobros</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="comisiones"> Comisiones</label>
+                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="perfiles"> Perfiles</label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="regla_descripcion">Descripción</label>
+                    <textarea id="regla_descripcion" class="form-input" style="height:60px; resize:none;" placeholder="Describa el objetivo de esta regla contable u operativa..."></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label" for="regla_mejores_practicas">Novedades y Mejores Prácticas del Mercado</label>
+                    <textarea id="regla_mejores_practicas" class="form-input" style="height:60px; resize:none;" placeholder="Indique la justificación basada en novedades y mejores prácticas del mercado..."></textarea>
+                </div>
+
+                <div style="background:#fff7ed; padding:10px; border-radius:6px; border:1px solid #ffedd5;">
+                    <label class="form-label" for="regla_justificacion" style="color:#c2410c;"><i class="fa-solid fa-triangle-exclamation"></i> Justificación de Cambio (Exigido VAF/VAFF - Mín. 15 caracteres)</label>
+                    <textarea id="regla_justificacion" class="form-input" style="height:60px; resize:none;" required placeholder="Escriba la justificación formal del cambio de regla..." oninput="actualizarContadorRegla(this.value)"></textarea>
+                    <div style="text-align:right; font-size:10px; color:#c2410c; margin-top:2px;" id="char_count_regla">0 caracteres</div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding:16px 20px; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+                <button type="button" class="btn-cancel" onclick="cerrarModalRegla()">Cancelar</button>
+                <button type="submit" class="btn-save" style="background:#4f46e5;"><i class="fa-solid fa-paper-plane"></i> Enviar a Validación</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL RESOLUCIÓN (APROBAR/RECHAZAR) -->
+<div id="modal_resolucion" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal_resolucion_title">Resolver Solicitud</h3>
+            <button class="modal-close" onclick="cerrarModalResolucion()">&times;</button>
+        </div>
+        <div class="modal-body" style="grid-template-columns:1fr; gap:16px; padding:20px;">
+            <input type="hidden" id="resolver_solicitud_id">
+            <input type="hidden" id="resolver_estado">
+            
+            <div>
+                <label class="form-label" for="resolver_motivo" id="lbl_resolver_motivo">Comentarios o Motivo de la Resolución</label>
+                <textarea id="resolver_motivo" class="form-input" style="height: 100px; resize:none;" required placeholder="Indique un comentario descriptivo sobre la decisión..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding:16px 20px; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+            <button class="btn-cancel" onclick="cerrarModalResolucion()">Cancelar</button>
+            <button class="btn-save" id="btn_confirmar_resolucion" onclick="confirmarResolucion()" style="background:#4f46e5;">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL BITÁCORA AUDITORIAL -->
+<div id="modal_bitacora" class="modal-overlay">
+    <div class="modal-box" style="max-width: 650px;">
+        <div class="modal-header" style="background: var(--mqf-primary-dark, #1e1b4b); color: white;">
+            <h3 style="margin:0; font-size:16px;"><i class="fa-solid fa-shield-halved"></i> Bitácora Auditorial de Ajuste</h3>
+            <button class="modal-close" style="color: white;" onclick="cerrarModalBitacora()">&times;</button>
+        </div>
+        <div class="modal-body" id="bitacora_contenido" style="padding:20px; max-height: 400px; overflow-y: auto;">
+            <!-- Contenido dinámico de la bitácora -->
+        </div>
+        <div class="modal-footer" style="padding:16px 20px; display:flex; justify-content:space-between; background:#f8fafc; border-top:1px solid #e2e8f0;">
+            <div>
+                <button class="btn btn-secondary" id="btn_imprimir_pdf" onclick="imprimirBitacoraPDF()"><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Exportar PDF</button>
+                <button class="btn btn-secondary" id="btn_enviar_correo" onclick="enviarBitacoraCorreo()"><i class="fa-solid fa-envelope" style="color: #3b82f6;"></i> Enviar Correo</button>
+            </div>
+            <button class="btn-cancel" onclick="cerrarModalBitacora()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    const token = localStorage.getItem('token_sesion') || '';
+    const esAdmin = true; // El sistema inyectará la validez o responderá 403 desde el backend
+    let polizasCache = [];
+    let polizaSeleccionada = null;
+
+    // Adaptar Tema HSL dinámico
+    function aplicarTema() {
+        const skin = window.parent.document.body.getAttribute('data-skin') || 'indigo';
+        document.body.setAttribute('data-skin', skin);
+    }
+    aplicarTema();
+    window.addEventListener('focus', aplicarTema);
+
+    // Cambiar entre pestañas
+    function cambiarTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        
+        const activeBtn = document.querySelector(`button[onclick*="cambiarTab('${tabName}')"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+        
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        if (tabName === 'bandeja') {
+            cargarSolicitudes(document.getElementById('filtro_estado_solicitud').value);
+        } else if (tabName === 'reglas') {
+            cargarReglas();
+        }
+    }
+
+    // --- TAB 1: SOLICITUD DE AJUSTE ---
+    function buscarPolizas(val) {
+        const list = document.getElementById('autocomplete_list');
+        if (val.trim().length < 2) {
+            list.style.display = 'none';
+            return;
+        }
+
+        fetch(`../../backend/api/centro_tecnico.php?action=listar_polizas&search=${encodeURIComponent(val)}&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito && res.datos.length > 0) {
+                    polizasCache = res.datos;
+                    list.innerHTML = '';
+                    res.datos.forEach(p => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        item.innerHTML = `<strong>${p.numero_poliza}</strong> - ${p.cliente_nombre} (Placa: ${p.vehiculo_placa}) | ${p.aseguradora}`;
+                        item.onclick = () => seleccionarPoliza(p.id);
+                        list.appendChild(item);
+                    });
+                    list.style.display = 'block';
+                } else {
+                    list.style.display = 'none';
+                }
+            })
+            .catch(() => list.style.display = 'none');
+    }
+
+    function seleccionarPoliza(id) {
+        document.getElementById('autocomplete_list').style.display = 'none';
+        
+        fetch(`../../backend/api/centro_tecnico.php?action=obtener_poliza&id=${id}&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito && res.datos) {
+                    polizaSeleccionada = res.datos;
+                    
+                    // Rellenar formulario
+                    document.getElementById('ajuste_poliza_id').value = id;
+                    document.getElementById('lbl_poliza_num').innerText = polizaSeleccionada.numero_poliza;
+                    document.getElementById('lbl_poliza_aseg').innerText = polizaSeleccionada.aseguradora;
+                    document.getElementById('lbl_poliza_prima').innerText = 'RD$ ' + parseFloat(polizaSeleccionada.prima_total).toLocaleString('es-DO', {minimumFractionDigits: 2});
+                    document.getElementById('lbl_poliza_cliente').innerText = polizaSeleccionada.cliente_nombre;
+                    document.getElementById('lbl_poliza_placa').innerText = polizaSeleccionada.vehiculo_placa ? `${polizaSeleccionada.vehiculo_placa} (${polizaSeleccionada.vehiculo_marca || ''} ${polizaSeleccionada.vehiculo_modelo || ''})` : 'N/D';
+
+                    // Valores por defecto para el ajuste
+                    document.getElementById('ajuste_aseguradora').value = polizaSeleccionada.aseguradora;
+                    document.getElementById('ajuste_prima').value = polizaSeleccionada.prima_total;
+                    document.getElementById('ajuste_justificacion').value = '';
+                    document.getElementById('ajuste_soporte').value = '';
+
+                    document.getElementById('datos_poliza_contenedor').style.display = 'block';
+                    cambiarTipoAjuste();
+                    calcularSimulacionLive();
+                } else {
+                    alert("Error al cargar la póliza.");
+                }
+            });
+    }
+
+    function calcularSimulacionLive() {
+        if (!polizaSeleccionada) return;
+
+        const nuevaPrima = parseFloat(document.getElementById('ajuste_prima').value || 0);
+        if (nuevaPrima <= 0) return;
+
+        fetch(`../../backend/api/centro_tecnico.php?action=simular_impacto&token_sesion=${token}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ poliza_id: polizaSeleccionada.id, prima_total_nueva: nuevaPrima })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.exito && res.datos) {
+                const simulacion = res.datos.simulacion_asiento;
+                const rows = document.getElementById('sim_asiento_rows');
+                rows.innerHTML = '';
+
+                simulacion.forEach(line => {
+                    const tr = document.createElement('tr');
+                    const diffFormatted = (line.nuevo - line.original).toLocaleString('es-DO', {minimumFractionDigits: 2});
+                    const diffClass = (line.nuevo - line.original >= 0) ? 'text-impact-positive' : 'text-impact-negative';
+                    const diffSign = (line.nuevo - line.original >= 0) ? '+' : '';
+
+                    tr.innerHTML = `
+                        <td><span style="font-family:monospace; font-weight:700;">${line.cuenta}</span></td>
+                        <td>${line.nombre}</td>
+                        <td><span class="badge-type badge-${line.tipo}">${line.tipo}</span></td>
+                        <td>RD$ ${parseFloat(line.original).toLocaleString('es-DO', {minimumFractionDigits: 2})}</td>
+                        <td>RD$ ${parseFloat(line.nuevo).toLocaleString('es-DO', {minimumFractionDigits: 2})}</td>
+                        <td><span class="${diffClass}">${diffSign}RD$ ${diffFormatted}</span></td>
+                    `;
+                    rows.appendChild(tr);
+                });
+
+                const diffTotal = parseFloat(res.datos.cambio_prima);
+                const labelDiff = document.getElementById('lbl_diferencia_total');
+                if (diffTotal >= 0) {
+                    labelDiff.className = 'text-impact-positive';
+                    labelDiff.innerText = `Diferencia Neta: +RD$ ${diffTotal.toLocaleString('es-DO', {minimumFractionDigits: 2})}`;
+                } else {
+                    labelDiff.className = 'text-impact-negative';
+                    labelDiff.innerText = `Diferencia Neta: -RD$ ${Math.abs(diffTotal).toLocaleString('es-DO', {minimumFractionDigits: 2})}`;
+                }
+            }
+        });
+    }
+
+    function cambiarTipoAjuste() {
+        const tipo = document.getElementById('tipo_cambio').value;
+        const lblJustificacion = document.getElementById('lbl_justificacion');
+        
+        document.querySelectorAll('.campos-dinamicos').forEach(el => el.style.display = 'none');
+        
+        const sim = document.getElementById('contenedor_simulacion');
+        if(sim) sim.style.display = (tipo === 'financiero') ? 'block' : 'none';
+
+        if (tipo === 'financiero') {
+            document.getElementById('campos_financieros').style.display = 'grid';
+            lblJustificacion.innerText = 'Justificación de Ajuste Financiero (VAFF)';
+        } else if (tipo === 'vehiculo') {
+            document.getElementById('campos_vehiculo').style.display = 'grid';
+            lblJustificacion.innerText = 'Justificación de ajuste de datos del Vehículo (VAF)';
+        } else if (tipo === 'cliente') {
+            document.getElementById('campos_cliente').style.display = 'grid';
+            lblJustificacion.innerText = 'Justificación de ajuste de datos del Cliente (VAF)';
+        } else if (tipo === 'intermediario') {
+            document.getElementById('campos_intermediario').style.display = 'grid';
+            lblJustificacion.innerText = 'Justificación de modificación de Intermediario (VAF)';
+        }
+    }
+
+    function triggerSubmitForm() {
+        document.getElementById('form_ajuste_poliza').requestSubmit();
+    }
+
+    function enviarSolicitudAjuste(e) {
+        e.preventDefault();
+        const polizaId = document.getElementById('ajuste_poliza_id').value;
+        const tipoCambio = document.getElementById('tipo_cambio').value;
+        const justificacion = document.getElementById('ajuste_justificacion').value;
+        const fileInput = document.getElementById('ajuste_soporte');
+
+        const formData = new FormData();
+        formData.append('poliza_id', polizaId);
+        formData.append('categoria_cambio', tipoCambio);
+        formData.append('justificacion', justificacion);
+        
+        let valoresNuevos = {};
+        if(tipoCambio === 'financiero') {
+            formData.append('aseguradora', document.getElementById('ajuste_aseguradora').value);
+            formData.append('prima_total', document.getElementById('ajuste_prima').value);
+        } else if(tipoCambio === 'vehiculo') {
+            valoresNuevos = {
+                placa: document.getElementById('ajuste_veh_placa').value,
+                marca: document.getElementById('ajuste_veh_marca').value,
+                chasis: document.getElementById('ajuste_veh_chasis').value
+            };
+        } else if(tipoCambio === 'cliente') {
+            valoresNuevos = {
+                nombre: document.getElementById('ajuste_cli_nombre').value,
+                documento: document.getElementById('ajuste_cli_doc').value
+            };
+        } else if(tipoCambio === 'intermediario') {
+            valoresNuevos = {
+                nombre: document.getElementById('ajuste_int_nombre').value,
+                codigo: document.getElementById('ajuste_int_cod').value
+            };
+        }
+        
+        formData.append('valores_nuevos', JSON.stringify(valoresNuevos));
+
+        if (fileInput.files.length > 0) {
+            formData.append('soporte_file', fileInput.files[0]);
+        }
+
+        fetch(`../../backend/api/centro_tecnico.php?action=crear_solicitud&token_sesion=${token}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => {
+            return res.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch(e) {
+                    console.error("Respuesta cruda del servidor:", text);
+                    throw new Error("Respuesta inválida del servidor: " + text.trim().substring(0, 200));
+                }
+            });
+        })
+        .then(res => {
+            if (res.exito) {
+                alert(res.mensaje);
+                cancelarAjuste();
+                cambiarTab('bandeja');
+            } else {
+                alert("Error: " + res.mensaje);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert(err.message);
+        });
+    }
+
+    function cancelarAjuste() {
+        document.getElementById('buscar_poliza_input').value = '';
+        document.getElementById('datos_poliza_contenedor').style.display = 'none';
+        polizaSeleccionada = null;
+    }
+
+    // --- TAB 2: BANDEJA DE SOLICITUDES ---
+    let subtabBandejaActiva = 'polizas';
+    function cambiarSubtabBandeja(subtab) {
+        subtabBandejaActiva = subtab;
+        document.getElementById('btn_subtab_polizas').classList.toggle('active', subtab === 'polizas');
+        document.getElementById('btn_subtab_reglas').classList.toggle('active', subtab === 'reglas');
+        document.getElementById('bandeja_polizas_container').style.display = subtab === 'polizas' ? 'block' : 'none';
+        document.getElementById('bandeja_reglas_container').style.display = subtab === 'reglas' ? 'block' : 'none';
+
+        if (subtab === 'polizas') {
+            cargarSolicitudes(document.getElementById('filtro_estado_solicitud').value);
+        } else {
+            cargarSolicitudesReglas();
+        }
+    }
+
+    function cargarSolicitudes(estado = '') {
+        const categoria = document.getElementById('filtro_categoria_bandeja').value;
+        const titulo = document.getElementById('lbl_titulo_bandeja');
+        if (categoria === 'financiero') titulo.innerHTML = '<i class="fa-solid fa-list"></i> Bandeja de Solicitudes de Ajustes Financieros';
+        else titulo.innerHTML = '<i class="fa-solid fa-list"></i> Bandeja de Solicitudes de Ajustes';
+
+        const rows = document.getElementById('bandeja_solicitudes_rows');
+        rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando solicitudes...</td></tr>';
+
+        fetch(`../../backend/api/centro_tecnico.php?action=listar_solicitudes&estado=${estado}&categoria=${categoria}&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito) {
+                    rows.innerHTML = '';
+                    if (res.datos.length === 0) {
+                        rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay solicitudes registradas.</td></tr>';
+                        return;
+                    }
+                    res.datos.forEach(s => {
+                        const tr = document.createElement('tr');
+                        const orig = s.campos_originales;
+                        const nuev = s.campos_nuevos;
+
+                        const downloadLink = s.soporte_documental 
+                            ? `<a href="../..${s.soporte_documental}" target="_blank" class="action-btn" style="color:#4f46e5; border-color:#818cf8;"><i class="fa-solid fa-file-arrow-down"></i> Soporte</a>` 
+                            : '<span style="color:#94a3b8; font-size:11px;">N/A</span>';
+
+                        let btnAcciones = '';
+                        if (s.estado === 'pendiente') {
+                            btnAcciones = `
+                                <button class="action-btn" style="color:#059669; border-color:#34d399;" onclick="event.stopPropagation(); abrirModalResolucion(${s.id}, 'aprobada', 'poliza')"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="action-btn danger" style="color:#dc2626; border-color:#f87171;" onclick="event.stopPropagation(); abrirModalResolucion(${s.id}, 'rechazada', 'poliza')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                            `;
+                        } else {
+                            btnAcciones = `<span style="color:#64748b; font-size:11px;">Resuelta por: ${s.aprueba_nombre}<br>${s.fecha_resolucion}</span>`;
+                        }
+                        
+                        let valoresStr = '';
+                        if (s.categoria_cambio === 'financiero' || !s.categoria_cambio) {
+                            valoresStr = `<strong>Aseg:</strong> ${orig.aseguradora} &rarr; <strong>${nuev.aseguradora}</strong><br>
+                                          <strong>Prima:</strong> RD$ ${orig.prima_total ? parseFloat(orig.prima_total).toLocaleString('es-DO') : '0'} &rarr; <strong>RD$ ${nuev.prima_total ? parseFloat(nuev.prima_total).toLocaleString('es-DO') : '0'}</strong>`;
+                        } else {
+                            for (let key in nuev) {
+                                valoresStr += `<strong>${key}:</strong> ${orig[key] || '-'} &rarr; <strong>${nuev[key]}</strong><br>`;
+                            }
+                        }
+
+                        tr.style.cursor = 'pointer';
+                        tr.onclick = () => abrirBitacoraAuditorial(s);
+                        tr.innerHTML = `
+                            <td>${s.id}</td>
+                            <td><strong>${s.numero_poliza}</strong><br><span style="font-size:10px; color:#64748b; text-transform:uppercase;">${s.categoria_cambio || 'FINANCIERO'}</span></td>
+                            <td>${s.solicita_nombre}</td>
+                            <td>${s.fecha_solicitud}</td>
+                            <td><span style="font-size:12px; display:block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${s.justificacion}">${s.justificacion}</span></td>
+                            <td>
+                                <div style="font-size:11px;">${valoresStr}</div>
+                            </td>
+                            <td style="text-align:center;" onclick="event.stopPropagation();">${downloadLink}</td>
+                            <td><span class="badge-status badge-${s.estado === 'pendiente' ? 'pending' : (s.estado === 'aprobada' ? 'approved' : 'rejected')}">${s.estado}</span></td>
+                            <td onclick="event.stopPropagation();"><div style="display:flex; gap:4px;">${btnAcciones}</div></td>
+                        `;
+                        rows.appendChild(tr);
+                    });
+                }
+            });
+    }
+
+    function cargarSolicitudesReglas() {
+        const estado = document.getElementById('filtro_estado_solicitud_regla').value;
+        const rows = document.getElementById('bandeja_solicitudes_reglas_rows');
+        rows.innerHTML = '<tr><td colspan="10" style="text-align:center;">Cargando solicitudes de reglas...</td></tr>';
+
+        fetch(`../../backend/api/centro_tecnico.php?action=listar_solicitudes_reglas&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito) {
+                    rows.innerHTML = '';
+                    let filtrados = res.datos;
+                    if (estado) {
+                        filtrados = res.datos.filter(s => s.estado === estado);
+                    }
+                    if (filtrados.length === 0) {
+                        rows.innerHTML = '<tr><td colspan="10" style="text-align:center;">No hay solicitudes registradas con este estado.</td></tr>';
+                        return;
+                    }
+                    filtrados.forEach(s => {
+                        const tr = document.createElement('tr');
+                        
+                        let btnAcciones = '';
+                        if (s.estado === 'pendiente') {
+                            btnAcciones = `
+                                <button class="action-btn" style="color:#059669; border-color:#34d399;" onclick="abrirModalResolucion(${s.id}, 'aprobada', 'regla')"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="action-btn danger" style="color:#dc2626; border-color:#f87171;" onclick="abrirModalResolucion(${s.id}, 'rechazada', 'regla')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                            `;
+                        } else {
+                            btnAcciones = `<span style="color:#64748b; font-size:11px;">Resuelta por: ${s.aprueba_nombre || 'Sistema'}<br>${s.fecha_resolucion || ''}</span>`;
+                        }
+
+                        let rels = [];
+                        try {
+                            rels = JSON.parse(s.relaciones || '[]');
+                        } catch(e){}
+                        const relsStr = rels.map(r => `<span class="badge-status" style="background:#e0e7ff; color:#4338ca; margin-right:2px; font-size:9px;">${r}</span>`).join(' ');
+
+                        tr.innerHTML = `
+                            <td>${s.id}</td>
+                            <td><strong>${s.codigo}</strong><br><span style="font-size:11px; color:#475569;">${s.nombre}</span></td>
+                            <td><span class="badge-status" style="background:#f1f5f9; color:#475569;">${s.categoria}</span></td>
+                            <td><strong>${s.tipo_validacion}</strong></td>
+                            <td>${s.solicita_nombre}</td>
+                            <td>${s.fecha_solicitud}</td>
+                            <td><span style="font-size:12px; display:block; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${s.justificacion}">${s.justificacion}</span></td>
+                            <td>
+                                <div style="font-size:11px;"><strong>Valor:</strong> ${s.valor_configurado}</div>
+                                <div style="margin-top:4px;">${relsStr}</div>
+                            </td>
+                            <td><span class="badge-status badge-${s.estado === 'pendiente' ? 'pending' : (s.estado === 'aprobada' ? 'approved' : 'rejected')}">${s.estado}</span></td>
+                            <td><div style="display:flex; gap:4px;">${btnAcciones}</div></td>
+                        `;
+                        rows.appendChild(tr);
+                    });
+                }
+            });
+    }
+
+    function abrirModalResolucion(id, estado, tipo = 'poliza') {
+        document.getElementById('resolver_solicitud_id').value = id;
+        document.getElementById('resolver_estado').value = estado;
+        document.getElementById('resolver_motivo').value = '';
+        
+        window._resolver_tipo = tipo;
+
+        const title = document.getElementById('modal_resolucion_title');
+        const confirmBtn = document.getElementById('btn_confirmar_resolucion');
+        
+        if (estado === 'aprobada') {
+            title.innerText = tipo === 'regla' ? "Aprobar Regla de Negocio" : "Aprobar Ajuste Excepcional";
+            confirmBtn.innerText = tipo === 'regla' ? "Aprobar y Aplicar" : "Aprobar y Registrar Asiento";
+            confirmBtn.style.background = "#059669";
+        } else {
+            title.innerText = tipo === 'regla' ? "Rechazar Regla de Negocio" : "Rechazar Ajuste Excepcional";
+            confirmBtn.innerText = "Rechazar Solicitud";
+            confirmBtn.style.background = "#dc2626";
+        }
+
+        document.getElementById('modal_resolucion').style.display = 'flex';
+    }
+
+    function cerrarModalResolucion() {
+        document.getElementById('modal_resolucion').style.display = 'none';
+    }
+
+    function confirmarResolucion() {
+        const id = document.getElementById('resolver_solicitud_id').value;
+        const estado = document.getElementById('resolver_estado').value;
+        const motivo = document.getElementById('resolver_motivo').value.trim();
+
+        if (motivo === '') {
+            alert("Debe ingresar un comentario o motivo de la resolución.");
+            return;
+        }
+
+        const tipo = window._resolver_tipo || 'poliza';
+        const action = tipo === 'regla' ? 'resolver_solicitud_regla' : 'resolver_solicitud';
+        const bodyData = tipo === 'regla' ? { solicitud_id: id, estado: estado, motivo_resolucion: motivo } : { id: id, estado: estado, motivo_resolucion: motivo };
+
+        const formData = new FormData();
+        for (let key in bodyData) {
+            formData.append(key, bodyData[key]);
+        }
+
+        fetch(`../../backend/api/centro_tecnico.php?action=${action}&token_sesion=${token}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.exito) {
+                alert(res.mensaje);
+                cerrarModalResolucion();
+                if (tipo === 'regla') {
+                    cargarSolicitudesReglas();
+                } else {
+                    cargarSolicitudes(document.getElementById('filtro_estado_solicitud').value);
+                }
+            } else {
+                alert("Error: " + res.mensaje);
+            }
+        });
+    }
+
+    let solicitudBitacoraActual = null;
+
+    function abrirBitacoraAuditorial(solicitud) {
+        solicitudBitacoraActual = solicitud.id;
+        const cont = document.getElementById('bitacora_contenido');
+        
+        let valoresNuevosStr = '';
+        let valoresOrigStr = '';
+        const orig = solicitud.campos_originales;
+        const nuev = solicitud.campos_nuevos;
+
+        if (solicitud.categoria_cambio === 'financiero' || !solicitud.categoria_cambio) {
+            valoresOrigStr = `<li>Aseguradora: ${orig.aseguradora || '-'}</li><li>Prima Total: RD$ ${orig.prima_total ? parseFloat(orig.prima_total).toLocaleString('es-DO') : '0'}</li>`;
+            valoresNuevosStr = `<li>Aseguradora: ${nuev.aseguradora || '-'}</li><li>Prima Total: RD$ ${nuev.prima_total ? parseFloat(nuev.prima_total).toLocaleString('es-DO') : '0'}</li>`;
+        } else {
+            for (let key in nuev) {
+                valoresOrigStr += `<li>${key}: ${orig[key] || '-'}</li>`;
+                valoresNuevosStr += `<li>${key}: ${nuev[key] || '-'}</li>`;
+            }
+        }
+
+        const html = `
+            <div style="font-size: 13px; line-height: 1.6; color: #334155;">
+                <h4 style="margin-top:0; color:#1e1b4b; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Detalles de la Póliza</h4>
+                <p><strong>Póliza N°:</strong> ${solicitud.numero_poliza}</p>
+                <p><strong>Categoría de Ajuste:</strong> <span style="text-transform:uppercase; font-weight:700;">${solicitud.categoria_cambio || 'FINANCIERO'}</span></p>
+                
+                <h4 style="color:#1e1b4b; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-top:15px;">Registro de Solicitud (NOFTRAB)</h4>
+                <p><strong>Solicitado por:</strong> ${solicitud.solicita_nombre}</p>
+                <p><strong>Fecha/Hora:</strong> ${solicitud.fecha_solicitud}</p>
+                <p><strong>Justificación:</strong> ${solicitud.justificacion}</p>
+ 
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                    <div style="background:#f1f5f9; padding:10px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <strong>Valores Anteriores:</strong>
+                        <ul style="margin:5px 0 0 20px; padding:0;">${valoresOrigStr}</ul>
+                    </div>
+                    <div style="background:#e0e7ff; padding:10px; border-radius:6px; border:1px solid #c7d2fe;">
+                        <strong>Valores Nuevos:</strong>
+                        <ul style="margin:5px 0 0 20px; padding:0;">${valoresNuevosStr}</ul>
+                    </div>
+                </div>
+ 
+                <h4 style="color:#1e1b4b; border-bottom:1px solid #e2e8f0; padding-bottom:5px; margin-top:15px;">Resolución</h4>
+                <p><strong>Estado:</strong> <span class="badge-status badge-${solicitud.estado === 'pendiente' ? 'pending' : (solicitud.estado === 'aprobada' ? 'approved' : 'rejected')}">${solicitud.estado}</span></p>
+                ${solicitud.estado !== 'pendiente' ? `
+                    <p><strong>Resuelto por:</strong> ${solicitud.aprueba_nombre}</p>
+                    <p><strong>Fecha Resolución:</strong> ${solicitud.fecha_resolucion}</p>
+                    <p><strong>Comentarios:</strong> ${solicitud.motivo_resolucion || 'N/A'}</p>
+                ` : '<p><em>Pendiente de validación</em></p>'}
+            </div>
+        `;
+        
+        cont.innerHTML = html;
+        document.getElementById('btn_imprimir_pdf').style.display = 'inline-block';
+        document.getElementById('btn_enviar_correo').style.display = 'inline-block';
+        
+        document.getElementById('modal_bitacora').style.display = 'flex';
+    }
+
+    function cerrarModalBitacora() {
+        document.getElementById('modal_bitacora').style.display = 'none';
+        solicitudBitacoraActual = null;
+    }
+
+    function imprimirBitacoraPDF() {
+        if(!solicitudBitacoraActual) return;
+        window.open(`../../backend/api/centro_tecnico.php?action=descargar_pdf_solicitud&id=${solicitudBitacoraActual}&token_sesion=${token}`, '_blank');
+    }
+
+    function enviarBitacoraCorreo() {
+        if (solicitudBitacoraActual) {
+            let email = prompt("¿A qué correo desea enviar esta bitácora?", "ahenriquezmarte@gmail.com");
+            if (email === null) return; // User cancelled
+            email = email.trim();
+            if (email === "") {
+                alert("Debe ingresar un correo válido.");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('id', solicitudBitacoraActual);
+            formData.append('correo', email);
+            
+            fetch(`../../backend/api/centro_tecnico.php?action=enviar_correo_solicitud&token_sesion=${token}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.mensaje);
+            })
+            .catch(err => alert("Error enviando correo."));
+        }
+    }
+
+    // --- TAB 3: CATÁLOGO DE REGLAS DE NEGOCIO ---
+    let reglasCache = [];
+
+    function cargarReglas() {
+        const rows = document.getElementById('reglas_rows');
+        rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando catálogo de reglas...</td></tr>';
+
+        fetch(`../../backend/api/centro_tecnico.php?action=listar_reglas&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito) {
+                    reglasCache = res.datos;
+                    filtrarReglas();
+                }
+            });
+    }
+
+    function filtrarReglas() {
+        const search = document.getElementById('buscar_regla_input').value.toLowerCase().trim();
+        const categoria = document.getElementById('filtro_categoria_regla').value;
+        const estado = document.getElementById('filtro_estado_regla').value;
+        const rows = document.getElementById('reglas_rows');
+        rows.innerHTML = '';
+
+        let filtrados = reglasCache.filter(r => {
+            const matchesSearch = r.codigo.toLowerCase().includes(search) || r.nombre.toLowerCase().includes(search);
+            const matchesCat = !categoria || r.categoria === categoria;
+            const matchesEst = !estado || r.estado === estado;
+            return matchesSearch && matchesCat && matchesEst;
+        });
+
+        if (filtrados.length === 0) {
+            rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay reglas de negocio que coincidan con los filtros.</td></tr>';
+            return;
+        }
+
+        filtrados.forEach(r => {
+            const tr = document.createElement('tr');
+            
+            let rels = [];
+            try {
+                rels = JSON.parse(r.relaciones || '[]');
+            } catch(e){}
+            const relsStr = rels.map(rl => `<span class="badge-status" style="background:#e0e7ff; color:#4338ca; margin-right:2px; font-size:9px;">${rl}</span>`).join(' ');
+
+            tr.innerHTML = `
+                <td><span style="font-family:monospace; font-weight:700;">${r.codigo}</span></td>
+                <td><strong>${r.nombre}</strong></td>
+                <td><span class="badge-status" style="background:#f1f5f9; color:#475569;">${r.categoria}</span></td>
+                <td><span style="font-size:12px;">${r.descripcion || 'N/D'}</span></td>
+                <td><strong>${r.valor_configurado}</strong></td>
+                <td>${relsStr || '<span style="color:#94a3b8; font-size:11px;">Ninguna</span>'}</td>
+                <td><span style="font-size:11px; font-style:italic;">${r.mejores_practicas || 'N/D'}</span></td>
+                <td><span class="badge-status badge-${r.estado === 'activo' ? 'approved' : 'rejected'}">${r.estado}</span></td>
+                <td>
+                    <button class="action-btn" style="color:#4f46e5; border-color:#818cf8;" onclick="abrirModalRegla(${r.id})"><i class="fa-solid fa-edit"></i> Editar</button>
+                </td>
+            `;
+            rows.appendChild(tr);
+        });
+    }
+
+    function abrirModalRegla(id = null) {
+        document.getElementById('form_regla').reset();
+        const charCount = document.getElementById('char_count_regla');
+        charCount.innerText = '0 caracteres';
+        charCount.style.color = '#c2410c';
+
+        if (id) {
+            const r = reglasCache.find(x => x.id === id);
+            if (!r) return;
+
+            document.getElementById('modal_regla_title').innerText = "Editar Regla de Negocio";
+            document.getElementById('regla_id').value = r.id;
+            document.getElementById('regla_tipo_solicitud').value = 'modificacion';
+            document.getElementById('regla_codigo').value = r.codigo;
+            document.getElementById('regla_codigo').disabled = true;
+            document.getElementById('regla_nombre').value = r.nombre;
+            document.getElementById('regla_categoria').value = r.categoria;
+            document.getElementById('regla_valor').value = r.valor_configurado;
+            document.getElementById('regla_descripcion').value = r.descripcion || '';
+            document.getElementById('regla_mejores_practicas').value = r.mejores_practicas || '';
+            document.getElementById('regla_justificacion').value = '';
+
+            let rels = [];
+            try {
+                rels = JSON.parse(r.relaciones || '[]');
+            } catch(e){}
+            document.querySelectorAll('input[name="regla_relaciones"]').forEach(chk => {
+                chk.checked = rels.includes(chk.value);
+            });
+
+        } else {
+            document.getElementById('modal_regla_title').innerText = "Nueva Regla de Negocio";
+            document.getElementById('regla_id').value = '';
+            document.getElementById('regla_tipo_solicitud').value = 'creacion';
+            document.getElementById('regla_codigo').disabled = false;
+            document.getElementById('regla_justificacion').value = '';
+        }
+
+        document.getElementById('modal_regla').style.display = 'flex';
+    }
+
+    function cerrarModalRegla() {
+        document.getElementById('modal_regla').style.display = 'none';
+    }
+
+    function actualizarContadorRegla(val) {
+        const count = val.length;
+        const charCount = document.getElementById('char_count_regla');
+        charCount.innerText = `${count} caracteres`;
+        if (count >= 15) {
+            charCount.style.color = '#059669';
+        } else {
+            charCount.style.color = '#c2410c';
+        }
+    }
+
+    function enviarSolicitudRegla(e) {
+        e.preventDefault();
+        
+        const just = document.getElementById('regla_justificacion').value.trim();
+        if (just.length < 15) {
+            alert("La justificación es obligatoria y debe tener al menos 15 caracteres (Norma NOFTRAB).");
+            return;
+        }
+
+        const rels = [];
+        document.querySelectorAll('input[name="regla_relaciones"]:checked').forEach(chk => {
+            rels.push(chk.value);
+        });
+
+        const formData = new FormData();
+        formData.append('regla_id', document.getElementById('regla_id').value);
+        formData.append('tipo_solicitud', document.getElementById('regla_tipo_solicitud').value);
+        formData.append('codigo', document.getElementById('regla_codigo').value);
+        formData.append('nombre', document.getElementById('regla_nombre').value);
+        formData.append('categoria', document.getElementById('regla_categoria').value);
+        formData.append('descripcion', document.getElementById('regla_descripcion').value);
+        formData.append('valor_configurado', document.getElementById('regla_valor').value);
+        formData.append('relaciones', JSON.stringify(rels));
+        formData.append('mejores_practicas', document.getElementById('regla_mejores_practicas').value);
+        formData.append('justificacion', just);
+
+        fetch(`../../backend/api/centro_tecnico.php?action=crear_solicitud_regla&token_sesion=${token}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.exito) {
+                alert(res.mensaje);
+                cerrarModalRegla();
+                cambiarTab('bandeja');
+                cambiarSubtabBandeja('reglas');
+            } else {
+                alert("Error: " + res.mensaje);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Ocurrió un error al enviar la solicitud.");
+        });
+    }
+
+    // Inicialización por defecto
+    cambiarTab('solicitud');
+</script>
+</body>
+</html>

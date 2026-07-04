@@ -499,6 +499,32 @@ $generation_date = date('d/m/Y H:i');
                 <li><strong>Auditoría Técnica (QR):</strong> Código QR de verificación</li>
             </ul>
         </div>
+
+        <div class="feature-card">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Motor de Cancelación a Prorrata y Control de Accesos Granulares</h4>
+            <ul>
+                <li><strong>Cálculo de Prorrata Proporcional (Flat Rate):</strong>
+                    <ul>
+                        <li>Fórmula matemática de prorrata: Días Transcurridos / Días de Vigencia Total * Prima Total.</li>
+                        <li>Diferenciación de saldo: Reembolso a favor del cliente (si el pago supera la prima devengada) o saldo deudor pendiente (si los días consumidos no se han cubierto).</li>
+                    </ul>
+                </li>
+                <li><strong>Acción e Integración de Cobros:</strong>
+                    <ul>
+                        <li>Paso inmediato a estado <strong>CANCELADA</strong> y desactivación de cobertura.</li>
+                        <li>Configuración automática de exclusión del bot de cobranza (<code>bot_excluir = 1</code>) para impedir alertas de mora.</li>
+                        <li>Generación de registro de auditoría en la tabla <code>cancelaciones_polizas</code> y en la bitácora del sistema (<code>logAudit</code>).</li>
+                    </ul>
+                </li>
+                <li><strong>Control de Accesos Granulares (Seguridad de Perfiles):</strong>
+                    <ul>
+                        <li><code>POLIZAS_CANCELAR_INDIVIDUAL</code>: Permite acceder al panel de cancelación de la ficha técnica y cancelar una póliza unitaria.</li>
+                        <li><code>POLIZAS_CANCELAR_GRUPO</code>: Permite seleccionar casillas de verificación y realizar cancelaciones en lote.</li>
+                        <li><code>POLIZAS_CANCELAR_MASIVO</code>: Habilita el botón superior para anular masivamente por corredor, aseguradora o ramo de seguros.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
         
         <div class="feature-card">
             <h4><i class="fa-solid fa-user-plus"></i> Nuevo Cliente (Modal Rápido)</h4>

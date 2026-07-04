@@ -38,14 +38,15 @@ if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_id']) {
     }
 }
 
-if (!$usuario_id) {
+$action = $_GET['action'] ?? $_POST['action'] ?? $_REQUEST['action'] ?? '';
+
+if (!$usuario_id && $action !== 'obtener_marbete_activo') {
     http_response_code(401);
     echo json_encode(["exito" => false, "mensaje" => "Sesión no válida o expirada"]);
     exit;
 }
 
 // ── CONTROL DE ACCESO GRANULADO (NOFTRAB) ────────────────────────────────────
-$action = $_GET['action'] ?? '';
 $db = Database::getInstance()->getConnection();
 
 // Modificaciones requieren permisos de modelador; lecturas y autollenado solo requieren sesión activa
@@ -175,6 +176,17 @@ try {
                 $plantillas[] = $row;
             }
             echo json_encode(["exito" => true, "plantillas" => $plantillas]);
+            break;
+
+        case 'eliminar_plantilla':
+            $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
+            if ($id <= 0) {
+                throw new Exception("ID de plantilla no válido.");
+            }
+            // Borrar de pdf_plantillas (pdf_campos se borrará en cascada si la BD lo tiene, o lo borramos manual)
+            $db->query("DELETE FROM pdf_campos WHERE plantilla_id = $id");
+            $db->query("DELETE FROM pdf_plantillas WHERE id = $id");
+            echo json_encode(["exito" => true, "mensaje" => "Plantilla eliminada correctamente."]);
             break;
 
         case 'subir_plantilla':
@@ -563,7 +575,7 @@ try {
             $q = "SELECT * FROM pdf_plantillas 
                   WHERE tipo_plantilla = 'marbete' 
                     AND (aseguradora_nombre LIKE '%$aseg_esc%' OR nombre LIKE '%$aseg_esc%')
-                  LIMIT 1";
+                  ORDER BY id DESC LIMIT 1";
             $res = $db->query($q);
             if ($res->num_rows === 0) {
                 echo json_encode(["exito" => false, "mensaje" => "No se encontró plantilla de marbete para la aseguradora."]);

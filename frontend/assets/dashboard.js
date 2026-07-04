@@ -95,6 +95,24 @@ class Dashboard {
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.style.display = 'flex';
                 });
+                
+                // Fetch Admin Sys Info
+                fetch('/PLATAFORMA_INTEGRADA/backend/api/system_info.php', {
+                    headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '') }
+                })
+                .then(resp => resp.json())
+                .then(result => {
+                    if (result.exito) {
+                        const sysInfoEl = document.getElementById('admin-sys-info');
+                        if (sysInfoEl) {
+                            sysInfoEl.style.display = 'block';
+                            document.getElementById('sys-version').textContent = result.version;
+                            document.getElementById('sys-db').textContent = result.db_name;
+                            document.getElementById('sys-patch').textContent = result.last_update;
+                        }
+                    }
+                })
+                .catch(err => console.error('Error fetching sys info:', err));
             }
             
             // Carga dinámica de permisos en BD
@@ -791,11 +809,20 @@ class Dashboard {
             }
         }
 
-        // Si es labs_masqf, forzar carga del iframe
-        if (modulo === 'labs_masqf') {
+        // Si es labs_qa, forzar carga del iframe
+        if (modulo === 'labs_qa') {
             const iframe = document.getElementById('labs-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/labs-masqf.html?v=1';
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/labs-qa.html?v=4';
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
+        // Si es centro_tecnico, forzar carga del iframe
+        if (modulo === 'centro_tecnico') {
+            const iframe = document.getElementById('centro-tecnico-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_tecnico.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -805,6 +832,15 @@ class Dashboard {
             const iframe = document.getElementById('modelador-iframe');
             if (iframe) {
                 iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/modelador_pdf.html?t=' + Date.now();
+                iframe.dataset.loaded = 'true';
+            }
+        }
+
+        // Si es centro_negocios, forzar carga del iframe
+        if (modulo === 'centro_negocios') {
+            const iframe = document.getElementById('centro-negocios-iframe');
+            if (iframe && !iframe.dataset.loaded) {
+                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_negocios.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -837,7 +873,9 @@ class Dashboard {
             'reportes': 'REPORTES',
             'usuarios': 'USUARIOS',
             'centro_financiero': 'CENTRO FINANCIERO',
-            'labs_masqf': 'LABS-MASQF (TECNOLOGÍA)',
+            'centro_tecnico': 'CENTRO TÉCNICO DE SEGUROS',
+            'centro_negocios': 'CENTRO DE NEGOCIOS',
+            'labs_qa': 'LABS-QA (CALIDAD Y ACTUALIZACIONES)',
             'modelador_pdf': 'INTEGRADOR DE FORMULARIOS-PDF',
             'configuracion': 'CONFIGURACIÓN',
             'perfil_data': 'PERFIL DATA (MIS ACCESOS)',
@@ -1520,7 +1558,7 @@ class Dashboard {
         
         if (!perfilId) return;
         
-        status.textContent = 'Guardando transaccionalmente con Python...';
+        status.textContent = 'Guardando permisos granulares...';
         status.style.color = '#3b82f6';
         
         // Recopilar todos los permisos
@@ -1532,16 +1570,16 @@ class Dashboard {
             permisos.push({
                 modulo_id: moduloId,
                 funcion_id: funcionId,
-                puede_ejecutar: row.querySelector('.chk-ejecutar').checked,
-                ver_datos: row.querySelector('.chk-ver').checked,
-                crear_datos: row.querySelector('.chk-crear').checked,
-                editar_datos: row.querySelector('.chk-editar').checked,
-                eliminar_datos: row.querySelector('.chk-eliminar').checked,
-                ver_reportes: row.querySelector('.chk-reportes').checked,
-                exportar_datos: row.querySelector('.chk-exportar').checked,
-                importar_datos: row.querySelector('.chk-importar').checked,
-                imprimir_datos: row.querySelector('.chk-imprimir').checked,
-                solo_propios: row.querySelector('.chk-propios').checked
+                puede_ejecutar: row.querySelector('.chk-ejecutar')?.checked || false,
+                ver_datos: row.querySelector('.chk-ver')?.checked || false,
+                crear_datos: row.querySelector('.chk-crear')?.checked || false,
+                editar_datos: row.querySelector('.chk-editar')?.checked || false,
+                eliminar_datos: row.querySelector('.chk-eliminar')?.checked || false,
+                ver_reportes: row.querySelector('.chk-reportes')?.checked || false,
+                exportar_datos: row.querySelector('.chk-exportar')?.checked || false,
+                importar_datos: row.querySelector('.chk-importar')?.checked || false,
+                imprimir_datos: row.querySelector('.chk-imprimir')?.checked || false,
+                solo_propios: row.querySelector('.chk-propios')?.checked || false
             });
         });
         
@@ -1585,6 +1623,440 @@ class Dashboard {
         
         if (chevron) {
             chevron.innerHTML = targetsCollapsed ? '▼' : '▶';
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // CONTROLADORES: MANTENIMIENTO DE PERFILES (ETAPA 1)
+    // ══════════════════════════════════════════════════════════════════════════
+    
+    cambiarSubTabPerfiles(subTab) {
+        const tabMalla = document.getElementById('tab-perfiles-malla');
+        const tabMantenimiento = document.getElementById('tab-perfiles-mantenimiento');
+        const panelMalla = document.getElementById('panel-subtab-perfiles-malla');
+        const panelMantenimiento = document.getElementById('panel-subtab-perfiles-mantenimiento');
+        
+        if (!panelMalla || !panelMantenimiento) return;
+        
+        if (subTab === 'malla') {
+            tabMalla.classList.add('active');
+            tabMantenimiento.classList.remove('active');
+            panelMalla.style.display = 'block';
+            panelMantenimiento.style.display = 'none';
+            this.cargarRejillaPerfiles();
+        } else {
+            tabMantenimiento.classList.add('active');
+            tabMalla.classList.remove('active');
+            panelMantenimiento.style.display = 'block';
+            panelMalla.style.display = 'none';
+            this.cargarPerfilesMantenimiento();
+        }
+    }
+
+    async cargarPerfilesMantenimiento() {
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=listar', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const result = await resp.json();
+            if (result.exito) {
+                this.mantenimientoPerfilesCache = result.datos || [];
+                this.renderMantenimientoPerfilesGrid();
+                
+                // Llenar select de heredar del modal
+                const selectHereda = document.getElementById('perfilMantenimientoHereda');
+                if (selectHereda) {
+                    selectHereda.innerHTML = '<option value="">No copiar (Vacío)</option>';
+                    this.mantenimientoPerfilesCache.forEach(p => {
+                        if (p.estado === 'activo') {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = p.nombre_perfil;
+                            selectHereda.appendChild(opt);
+                        }
+                    });
+                }
+            } else {
+                MQF.toast('Error al cargar perfiles: ' + result.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error('Error cargando mantenimiento de perfiles:', err);
+            MQF.toast('Error de conexión con el servidor', 'error');
+        }
+    }
+
+    renderMantenimientoPerfilesGrid() {
+        const tbody = document.getElementById('perfilesMantenimientoGridBody');
+        if (!tbody) return;
+        
+        const searchVal = (document.getElementById('perfilesSearchInput')?.value || '').toLowerCase();
+        const estadoVal = document.getElementById('perfilesFiltroEstado')?.value || '';
+        
+        let filtered = this.mantenimientoPerfilesCache || [];
+        
+        if (searchVal) {
+            filtered = filtered.filter(p => 
+                (p.nombre_perfil || '').toLowerCase().includes(searchVal) ||
+                (p.descripcion || '').toLowerCase().includes(searchVal)
+            );
+        }
+        
+        if (estadoVal) {
+            filtered = filtered.filter(p => p.estado === estadoVal);
+        }
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 24px; color: var(--mqf-text-secondary, #94a3b8);">
+                        No se encontraron perfiles que coincidan con los filtros.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(p => {
+            const isActivo = p.estado === 'activo';
+            const estadoLabel = isActivo ? 'Activo' : 'Inactivo';
+            const estadoBg = isActivo ? '#dcfce7' : '#fee2e2';
+            const estadoColor = isActivo ? '#15803d' : '#b91c1c';
+            
+            return `
+                <tr>
+                    <td style="text-align:center; font-weight:700; font-family:monospace;">#${p.id}</td>
+                    <td><strong>${p.nombre_perfil}</strong></td>
+                    <td style="font-size:12px; color: var(--mqf-text-secondary, #64748b); max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.descripcion || ''}">${p.descripcion || '-'}</td>
+                    <td style="text-align:center; font-weight:600;">Nivel ${p.nivel_jerarquico}</td>
+                    <td style="text-align:center;">
+                        <span class="status-badge" style="background:${estadoBg}; color:${estadoColor}; border-radius:12px; padding:4px 10px; font-size:11px; font-weight:700; display:inline-block;">
+                            ${estadoLabel}
+                        </span>
+                    </td>
+                    <td style="text-align:center;">
+                        <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-sm" onclick="dashboard.abrirModalMantenimientoPerfil(${p.id})" style="font-size:11px; font-weight:600; padding:4px 8px; border-radius:6px; background:#e0f2fe; color:#0369a1;">✏️ Editar</button>
+                            <button type="button" class="btn btn-sm" onclick="dashboard.actualizarEstadoPerfilMantenimiento(${p.id}, '${isActivo ? 'inactivo' : 'activo'}')" style="font-size:11px; font-weight:600; padding:4px 8px; border-radius:6px; background:${isActivo ? '#fee2e2' : '#dcfce7'}; color:${isActivo ? '#991b1b' : '#166534'};">
+                                ${isActivo ? '🚫 Desactivar' : '✅ Activar'}
+                            </button>
+                            <button type="button" class="btn btn-sm" onclick="dashboard.exportarPerfilData(${p.id})" style="font-size:11px; font-weight:600; padding:4px 8px; border-radius:6px; background:#f1f5f9; color:#334155;">🖨️ Exportar</button>
+                            <button type="button" class="btn btn-sm" onclick="dashboard.cargarAuditoriaPerfil(${p.id})" style="font-size:11px; font-weight:600; padding:4px 8px; border-radius:6px; background:#faf5ff; color:#6b21a8;">📜 Bitácora</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    filtrarPerfilesGrid() {
+        this.renderMantenimientoPerfilesGrid();
+    }
+
+    abrirModalNuevoPerfil() {
+        this.abrirModalMantenimientoPerfil(null);
+    }
+
+    async abrirModalMantenimientoPerfil(perfilId = null) {
+        const form = document.getElementById('formPerfilMantenimiento');
+        if (!form) return;
+        
+        form.reset();
+        document.getElementById('perfilMantenimientoId').value = '';
+        
+        const title = document.getElementById('titleModalPerfilMantenimiento');
+        const containerHereda = document.getElementById('containerHeredaPermisos');
+        
+        if (perfilId) {
+            title.textContent = 'Modificar Perfil Existente';
+            if (containerHereda) containerHereda.style.display = 'none'; // No heredar si ya existe
+            
+            try {
+                const token = localStorage.getItem('token_sesion') || '';
+                const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const result = await resp.json();
+                if (result.exito && result.datos) {
+                    const p = result.datos;
+                    document.getElementById('perfilMantenimientoId').value = p.id;
+                    document.getElementById('perfilMantenimientoNombre').value = p.nombre_perfil;
+                    document.getElementById('perfilMantenimientoDescripcion').value = p.descripcion || '';
+                    document.getElementById('perfilMantenimientoNivel').value = p.nivel_jerarquico;
+                    document.getElementById('perfilMantenimientoEstado').checked = p.estado === 'activo';
+                    
+                    abrirModal('modalPerfilMantenimiento');
+                } else {
+                    MQF.toast('Error al obtener perfil: ' + result.mensaje, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                MQF.toast('Error de red al obtener detalles del perfil', 'error');
+            }
+        } else {
+            title.textContent = 'Registrar Nuevo Perfil';
+            if (containerHereda) containerHereda.style.display = 'block';
+            abrirModal('modalPerfilMantenimiento');
+        }
+    }
+
+    async guardarPerfilMantenimiento(e) {
+        e.preventDefault();
+        
+        const id = document.getElementById('perfilMantenimientoId').value;
+        const nombre = document.getElementById('perfilMantenimientoNombre').value.trim();
+        const descripcion = document.getElementById('perfilMantenimientoDescripcion').value.trim();
+        const nivel = parseInt(document.getElementById('perfilMantenimientoNivel').value, 10);
+        const estado = document.getElementById('perfilMantenimientoEstado').checked ? 'activo' : 'inactivo';
+        const heredarDe = document.getElementById('perfilMantenimientoHereda')?.value || '';
+        
+        if (!nombre || isNaN(nivel)) {
+            MQF.toast('Por favor complete los campos obligatorios.', 'warning');
+            return;
+        }
+        
+        const datos = {
+            id: id || null,
+            nombre_perfil: nombre,
+            descripcion: descripcion,
+            nivel_jerarquico: nivel,
+            estado: estado,
+            heredar_de: heredarDe
+        };
+        
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=guardar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(datos)
+            });
+            const result = await resp.json();
+            if (result.exito) {
+                MQF.toast(result.mensaje || 'Perfil guardado con éxito transaccional.', 'success');
+                cerrarModal('modalPerfilMantenimiento');
+                this.cargarPerfilesMantenimiento();
+                this.cargarRejillaPerfiles();
+            } else {
+                MQF.toast('Error: ' + result.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            MQF.toast('Error de conexión al guardar el perfil', 'error');
+        }
+    }
+
+    async actualizarEstadoPerfilMantenimiento(perfilId, nuevoEstado) {
+        const accionText = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
+        if (!confirm(`¿Está seguro que desea ${accionText} este perfil?`)) return;
+        
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=actualizar_estado', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ id: perfilId, estado: nuevoEstado })
+            });
+            const result = await resp.json();
+            if (result.exito) {
+                MQF.toast(result.mensaje || 'Estado del perfil actualizado.', 'success');
+                this.cargarPerfilesMantenimiento();
+                this.cargarRejillaPerfiles();
+            } else {
+                MQF.toast('Error: ' + result.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            MQF.toast('Error de red al actualizar estado del perfil', 'error');
+        }
+    }
+
+    async cargarAuditoriaPerfil(perfilId) {
+        const container = document.getElementById('perfilAuditoriaTimeline');
+        if (!container) return;
+        
+        container.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.6;">Cargando historial de auditoría...</div>';
+        
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=auditoria&perfil_id=${perfilId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const result = await resp.json();
+            if (result.exito && Array.isArray(result.datos)) {
+                const logs = result.datos;
+                if (logs.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding: 20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; color:#94a3b8; font-size:13px;">
+                            No existen registros de auditoría para este perfil en la bitácora inmutable.
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = logs.map(log => {
+                        const date = new Date(log.fecha_evento).toLocaleString('es-ES');
+                        let badgeColor = '#6b7280';
+                        if (log.tipo_evento === 'create') badgeColor = '#10b981';
+                        if (log.tipo_evento === 'update') badgeColor = '#3b82f6';
+                        if (log.tipo_evento === 'delete' || log.tipo_evento === 'disable') badgeColor = '#ef4444';
+                        
+                        return `
+                            <div style="display:flex; gap:16px; border-left: 2px solid #e2e8f0; padding-left: 16px; margin-left: 8px; position:relative; padding-bottom: 8px;">
+                                <div style="width:12px; height:12px; border-radius:50%; background:${badgeColor}; position:absolute; left:-7px; top:4px; box-shadow: 0 0 0 4px #fff;"></div>
+                                <div style="flex:1;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                        <strong style="font-size:13px; color:#1e293b;">${log.descripcion_evento}</strong>
+                                        <span style="font-size:11px; color:#64748b; font-weight:600; font-family:monospace;">${date}</span>
+                                    </div>
+                                    <p style="font-size:12px; color:#475569; margin: 4px 0 8px 0; line-height:1.4;">
+                                        ${log.valor_anterior ? `<strong>Anterior:</strong> <code style="font-size:11px; background:#f1f5f9; padding:2px 4px; border-radius:4px;">${log.valor_anterior}</code><br/>` : ''}
+                                        ${log.valor_nuevo ? `<strong>Nuevo:</strong> <code style="font-size:11px; background:#f0fdf4; padding:2px 4px; border-radius:4px; color:#166534;">${log.valor_nuevo}</code>` : ''}
+                                    </p>
+                                    <div style="display:flex; gap:12px; font-size:11px; color:#94a3b8; font-family:monospace;">
+                                        <span>IP: ${log.direccion_ip || 'N/D'}</span>
+                                        <span>User-Agent: ${log.navegador_user_agent || 'N/D'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                abrirModal('modalPerfilAuditoria');
+            } else {
+                MQF.toast('Error al obtener bitácora: ' + result.mensaje, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            MQF.toast('Error de red al consultar la bitácora', 'error');
+        }
+    }
+
+    async exportarPerfilData(perfilId) {
+        try {
+            const token = localStorage.getItem('token_sesion') || '';
+            MQF.toast('Obteniendo información del perfil para exportar...', 'info');
+            
+            // 1. Obtener detalles del perfil
+            const respP = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const dataP = await respP.json();
+            
+            // 2. Obtener permisos de la malla
+            const respM = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/obtener/${perfilId}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const dataM = await respM.json();
+            
+            if (!dataP.exito || !dataM.exito) {
+                MQF.toast('Error al recuperar la data completa del perfil.', 'error');
+                return;
+            }
+            
+            const perfil = dataP.datos;
+            const permisos = dataM.datos || [];
+            
+            // Crear vista de impresión premium
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                MQF.toast('Por favor permita las ventanas emergentes para imprimir.', 'warning');
+                return;
+            }
+            
+            let permisosHtml = permisos.map(p => {
+                const getCheck = (val) => val == 1 ? '✔️ SI' : '❌ NO';
+                return `
+                    <tr>
+                        <td style="padding:8px; border:1px solid #ddd;"><strong>${p.nombre_modulo}</strong></td>
+                        <td style="padding:8px; border:1px solid #ddd;">${p.nombre_funcion}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.puede_ejecutar)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.ver_datos)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.crear_datos)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.editar_datos)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.eliminar_datos)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.ver_reportes)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.exportar_datos)}</td>
+                        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${getCheck(p.imprimir_datos)}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Reporte de Perfil - ${perfil.nombre_perfil}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; padding:40px; color:#333; line-height:1.6; }
+                        h1 { color:#1e1b4b; border-bottom:2px solid #312e81; padding-bottom:10px; margin-bottom:20px; }
+                        h2 { color:#312e81; margin-top:30px; }
+                        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:30px; background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; }
+                        .info-item { font-size:14px; }
+                        .info-label { font-weight:700; color:#475569; }
+                        table { width:100%; border-collapse:collapse; margin-top:15px; font-size:12px; }
+                        th { background:#1e1b4b; color:#fff; text-align:left; padding:10px; }
+                        .footer { margin-top:50px; font-size:11px; text-align:center; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:15px; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display:none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div style="display:flex; justify-content:space-between; align-items:center;" class="no-print">
+                        <button onclick="window.print()" style="padding:10px 20px; background:#1e1b4b; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">🖨️ Imprimir Reporte</button>
+                        <button onclick="window.close()" style="padding:10px 20px; background:#f1f5f9; color:#334155; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Cerrar Ventana</button>
+                    </div>
+                    <h1>🛡️ Ficha Técnica de Perfil de Accesos</h1>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="info-label">Nombre del Perfil:</span> ${perfil.nombre_perfil}</div>
+                        <div class="info-item"><span class="info-label">Nivel Jerárquico:</span> Nivel ${perfil.nivel_jerarquico}</div>
+                        <div class="info-item" style="grid-column:1/-1;"><span class="info-label">Descripción:</span> ${perfil.descripcion || 'Sin descripción.'}</div>
+                        <div class="info-item"><span class="info-label">Estado actual:</span> ${perfil.estado.toUpperCase()}</div>
+                        <div class="info-item"><span class="info-label">Fecha de Generación:</span> ${new Date().toLocaleString('es-ES')}</div>
+                    </div>
+                    
+                    <h2>🔑 Malla Curricular de Permisos Granulares</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Módulo</th>
+                                <th>Función</th>
+                                <th>Ejecutar</th>
+                                <th>Ver Datos</th>
+                                <th>Crear</th>
+                                <th>Editar</th>
+                                <th>Eliminar</th>
+                                <th>Reportes</th>
+                                <th>Exportar</th>
+                                <th>Imprimir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${permisosHtml || '<tr><td colspan="10" style="text-align:center; padding:15px;">No hay permisos explícitos en la malla. Acceso predeterminado por rol.</td></tr>'}
+                        </tbody>
+                    </table>
+                    
+                    <div class="footer">
+                        Plataforma Integrada MÁS QUE FIANZAS &copy; ${new Date().getFullYear()} - Sistema de Gestión de Permisos bajo Norma NOFTRAB. Bitácora de Auditoría Activa.
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            // Opcional: auto disparar impresión
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            
+        } catch (err) {
+            console.error(err);
+            MQF.toast('Error al exportar/imprimir el perfil.', 'error');
         }
     }
 }

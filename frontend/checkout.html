@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Checkout de Venta Rápida - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="assets/lib/fontawesome/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --secondary: #f59e0b;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .checkout-container {
+            width: 100%;
+            max-width: 580px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        .header-branding {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header-branding h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #a5b4fc, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-branding p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .campaign-banner {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 13px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Step wizard navigation dots */
+        .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--border);
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        /* Form styling */
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            box-sizing: border-box;
+            background-color: #1e293b !important;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white !important;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:-webkit-autofill,
+        .form-group input:-webkit-autofill:hover, 
+        .form-group input:-webkit-autofill:focus,
+        .form-group input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+            -webkit-text-fill-color: #f8fafc !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        /* Simulated Card view */
+        .credit-card-preview {
+            background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);
+            border-radius: 12px;
+            padding: 20px;
+            height: 130px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .chip {
+            width: 32px;
+            height: 24px;
+            background-color: #f59e0b;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .card-number {
+            font-size: 18px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Error/Success views */
+        .status-view {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Error Screen -->
+        <div id="error-screen" class="card status-view" style="display: none;">
+            <div class="status-icon" style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i></div>
+            <h2 class="h4">Enlace no disponible</h2>
+            <p id="error-message" class="text-muted font-size-14"></p>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="success-screen" class="card status-view" style="display: none;">
+            <div class="status-icon" style="color: #10b981;"><i class="fas fa-check-circle"></i></div>
+            <h2 class="h4">¡Emisión y Pago Exitosos!</h2>
+            <p class="text-muted font-size-14">Tu cobertura se encuentra activa. Hemos enviado el comprobante a tu correo electrónico.</p>
+            
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 15px; text-align: left; margin: 20px 0;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span class="text-muted font-size-12">No. Póliza:</span>
+                    <strong id="success-poliza-no"></strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="text-muted font-size-12">NCF Consumidor Final:</span>
+                    <strong id="success-ncf"></strong>
+                </div>
+            </div>
+
+            <button class="btn" onclick="descargarPDF()"><i class="fas fa-file-pdf"></i> Descargar Certificado PDF</button>
+        </div>
+
+        <!-- Main Form Wizard -->
+        <div id="checkout-form-container" class="card" style="display: none;">
+            <div class="header-branding">
+                <h1>MÁS QUE FIANZAS</h1>
+                <p id="branding-vendedor">Tu Agente de Seguros de Confianza</p>
+            </div>
+
+            <div class="campaign-banner">
+                <i class="fas fa-gift"></i>
+                <div>
+                    <span id="banner-text">Campaña de Venta Rápida.</span>
+                </div>
+            </div>
+
+            <div class="step-dots">
+                <div class="dot active" id="dot-1"></div>
+                <div class="dot" id="dot-2"></div>
+                <div class="dot" id="dot-3"></div>
+            </div>
+
+            <form id="form-checkout">
+                <!-- STEP 1: ASEGURADO -->
+                <div class="form-step active" id="step-1-content">
+                    <h3 style="margin-top: 0; font-size: 16px; margin-bottom: 10px;">1. Datos del Asegurado</h3>
+                    
+                    <!-- OCR de Cédula -->
+                    <div style="background: rgba(79, 70, 229, 0.08); border: 1px dashed rgba(79, 70, 229, 0.4); border-radius: 8px; padding: 12px; margin-bottom: 18px; text-align: center;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">⚡ Auto-completar con reconocimiento de Cédula</span>
+                        <input type="file" id="file-ocr-cedula" accept="image/*" style="display:none;" onchange="ejecutarOcr('cedula', this)">
+                        <button type="button" class="btn" style="padding: 8px 12px; font-size: 12px; width: auto; margin: 0 auto; background: var(--primary);" onclick="document.getElementById('file-ocr-cedula').click()">
+                            <i class="fas fa-camera"></i> Subir Cédula (OCR)
+                        </button>
+                        <span id="ocr-cedula-status" style="font-size: 11px; display: block; margin-top: 5px; color: var(--secondary);"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre y Apellido</label>
+                        <input type="text" id="cust-name" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cédula / RNC</label>
+                        <input type="text" id="cust-rnc" placeholder="Ej: 001-1234567-8" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="cust-email" placeholder="Ej: juan.perez@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="cust-phone" placeholder="Ej: 809-555-0199" required>
+                    </div>
+                    <button type="button" class="btn" onclick="nextStep(2)">Continuar <i class="fas fa-arrow-right"></i></button>
+                </div>
+
+                <!-- STEP 2: VEHICULO -->
+                <div class="form-step" id="step-2-content">
+                    <h3 style="margin-top: 0; font-size: 16px; margin-bottom: 10px;">2. Datos del Vehículo</h3>
+
+                    <!-- OCR de Matrícula -->
+                    <div style="background: rgba(79, 70, 229, 0.08); border: 1px dashed rgba(79, 70, 229, 0.4); border-radius: 8px; padding: 12px; margin-bottom: 18px; text-align: center;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">⚡ Auto-completar con reconocimiento de Matrícula</span>
+                        <input type="file" id="file-ocr-matricula" accept="image/*" style="display:none;" onchange="ejecutarOcr('matricula', this)">
+                        <button type="button" class="btn" style="padding: 8px 12px; font-size: 12px; width: auto; margin: 0 auto; background: var(--primary);" onclick="document.getElementById('file-ocr-matricula').click()">
+                            <i class="fas fa-camera"></i> Subir Matrícula (OCR)
+                        </button>
+                        <span id="ocr-matricula-status" style="font-size: 11px; display: block; margin-top: 5px; color: var(--secondary);"></span>
+                    </div>
+
+                    <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Marca</label>
+                            <input type="text" id="veh-marca" placeholder="Ej: Toyota" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Modelo</label>
+                            <input type="text" id="veh-modelo" placeholder="Ej: Rav4" required>
+                        </div>
+                    </div>
+                    <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Año</label>
+                            <input type="number" id="veh-anio" placeholder="Ej: 2022" min="1980" max="2027" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Color</label>
+                            <input type="text" id="veh-color" placeholder="Ej: Negro" required>
+                        </div>
+                    </div>
+                    <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Placa / Registro</label>
+                            <input type="text" id="veh-placa" placeholder="Ej: A123456" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Matrícula</label>
+                            <input type="text" id="veh-matricula" placeholder="Ej: 1234567" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Chasis (VIN)</label>
+                        <input type="text" id="veh-chasis" placeholder="Ej: 1FTFW1EF..." required>
+                    </div>
+                    <button type="button" class="btn" onclick="nextStep(3)">Continuar <i class="fas fa-arrow-right"></i></button>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(1)">Atrás</button>
+                </div>
+
+                <!-- STEP 3: PAGO -->
+                <div class="form-step" id="step-3-content">
+                    <h3 style="margin-top: 0; font-size: 16px; margin-bottom: 15px;">3. Pasarela de Pago</h3>
+                    
+                    <div style="background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 18px;">
+                        <h4 style="margin-top: 0; color: var(--secondary); font-size: 14px; margin-bottom: 12px;"><i class="fas fa-university"></i> Transferencia Bancaria (BanReservas)</h4>
+                        <p style="font-size: 13px; color: var(--text-main); margin: 0 0 12px 0; line-height: 1.4;">
+                            Realice la transferencia a la cuenta de la empresa. La emisión quedará en estado <strong>Pendiente de Aprobación</strong> y se activará inmediatamente validemos el depósito.
+                        </p>
+                        <div style="background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 8px; font-size: 13px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span class="text-muted">Banco:</span>
+                                <strong>BANRESERVAS</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span class="text-muted">Beneficiario:</span>
+                                <strong>MAS QUE FIANZAS SRL</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span class="text-muted">No. Cuenta:</span>
+                                <strong style="font-family: monospace; letter-spacing: 0.5px;">9609367540</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subir Comprobante de Transferencia <span style="color:#ef4444">*</span></label>
+                        <input type="file" id="pago-comprobante" accept="image/*,application/pdf" required style="padding: 8px 10px;">
+                        <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px;">Suba una captura de pantalla, foto o archivo PDF del comprobante de pago.</span>
+                    </div>
+
+                    <button type="button" class="btn" id="btn-submit-payment" onclick="procesarPagoCheckout()"><i class="fas fa-paper-plane"></i> Enviar Pago y Emitir Póliza</button>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Atrás</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref') || '';
+        let polizaEmitidaId = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!ref) {
+                showError("No se proporcionó un código de referencia de enlace de venta.");
+                return;
+            }
+            cargarConfiguracionCheckout();
+
+        });
+
+        async function cargarConfiguracionCheckout() {
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=cargar_checkout&ref=${ref}`);
+                const data = await res.json();
+                if (data.exito) {
+                    document.getElementById('branding-vendedor').textContent = `Agente: ${data.vendedor.nombre} ${data.vendedor.apellido} (${data.vendedor.email})`;
+                    
+                    let bannerText = `Emisión inmediata de tu Seguro de ${data.enlace.ramo} con ${data.enlace.aseguradora}.`;
+                    if (data.enlace.descuento_aplicado > 0) {
+                        bannerText += ` ¡Descuento de ${data.enlace.descuento_aplicado}% aplicado!`;
+                    }
+                    document.getElementById('banner-text').textContent = bannerText;
+
+                    document.getElementById('checkout-form-container').style.display = 'block';
+                } else {
+                    showError(data.mensaje);
+                }
+            } catch(e) {
+                showError("Error al conectar con la pasarela de pagos.");
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('error-message').textContent = msg;
+            document.getElementById('error-screen').style.display = 'block';
+            document.getElementById('checkout-form-container').style.display = 'none';
+        }
+
+        function nextStep(step) {
+            // Validaciones sencillas antes de pasar de pestaña
+            if (step === 2) {
+                if (!document.getElementById('cust-name').value || !document.getElementById('cust-rnc').value || !document.getElementById('cust-email').value || !document.getElementById('cust-phone').value) {
+                    alert('Por favor complete todos los datos requeridos del asegurado.');
+                    return;
+                }
+            } else if (step === 3) {
+                if (!document.getElementById('veh-marca').value || !document.getElementById('veh-modelo').value || !document.getElementById('veh-anio').value || !document.getElementById('veh-color').value || !document.getElementById('veh-placa').value || !document.getElementById('veh-matricula').value || !document.getElementById('veh-chasis').value) {
+                    alert('Por favor complete todos los datos del vehículo (incluyendo Placa y Matrícula).');
+                    return;
+                }
+            }
+
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            const targetContent = document.getElementById(`step-${step}-content`);
+            if (targetContent) targetContent.classList.add('active');
+
+            document.querySelectorAll('.dot').forEach(el => el.classList.remove('active'));
+            for(let i=1; i<=step; i++) {
+                const targetDot = document.getElementById(`dot-${i}`);
+                if (targetDot) targetDot.classList.add('active');
+            }
+        }
+
+        function prevStep(step) {
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            const targetContent = document.getElementById(`step-${step}-content`);
+            if (targetContent) targetContent.classList.add('active');
+
+            document.querySelectorAll('.dot').forEach(el => el.classList.remove('active'));
+            for(let i=1; i<=step; i++) {
+                const targetDot = document.getElementById(`dot-${i}`);
+                if (targetDot) targetDot.classList.add('active');
+            }
+        }
+
+        // ── LÓGICA DE OCR GOOGLE VISION ───────────────────────────────────────
+        async function ejecutarOcr(tipo, inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById(`ocr-${tipo}-status`);
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analizando documento con inteligencia artificial...';
+
+            const fd = new FormData();
+            fd.append('imagen', file);
+            fd.append('tipo', tipo);
+
+            try {
+                const res = await fetch('/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=procesar_ocr', {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    const datos = data.datos;
+                    if (tipo === 'cedula') {
+                        if (datos.nombre) document.getElementById('cust-name').value = datos.nombre;
+                        if (datos.cedula) document.getElementById('cust-rnc').value = datos.cedula;
+                        statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981"></i> Datos de cédula auto-completados.';
+                    } else {
+                        if (datos.marca) document.getElementById('veh-marca').value = datos.marca;
+                        if (datos.modelo) document.getElementById('veh-modelo').value = datos.modelo;
+                        if (datos.anio) document.getElementById('veh-anio').value = datos.anio;
+                        if (datos.color) document.getElementById('veh-color').value = datos.color;
+                        if (datos.placa) document.getElementById('veh-placa').value = datos.placa;
+                        if (datos.matricula) document.getElementById('veh-matricula').value = datos.matricula;
+                        if (datos.chasis) document.getElementById('veh-chasis').value = datos.chasis;
+                        statusEl.innerHTML = '<i class="fas fa-check-circle" style="color:#10b981"></i> Datos del vehículo auto-completados.';
+                    }
+                } else {
+                    statusEl.innerHTML = `<i class="fas fa-times-circle" style="color:#ef4444"></i> Error: ${data.mensaje}`;
+                }
+            } catch(e) {
+                statusEl.innerHTML = '<i class="fas fa-times-circle" style="color:#ef4444"></i> Error al procesar el reconocimiento.';
+            } finally {
+                inputEl.value = ''; // Limpiar input para permitir re-intentar
+            }
+        }
+
+        async function procesarPagoCheckout() {
+            const comprobanteInput = document.getElementById('pago-comprobante');
+            if (comprobanteInput.required && (!comprobanteInput.files || !comprobanteInput.files[0])) {
+                alert('Por favor suba el comprobante de transferencia bancaria.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-payment');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando emisión y pago...';
+
+            const fd = new FormData();
+            fd.append('ref', ref);
+            fd.append('nombre_razon_social', document.getElementById('cust-name').value);
+            fd.append('rnc', document.getElementById('cust-rnc').value);
+            fd.append('correo', document.getElementById('cust-email').value);
+            fd.append('telefono', document.getElementById('cust-phone').value);
+            fd.append('placa', document.getElementById('veh-placa').value);
+            fd.append('matricula', document.getElementById('veh-matricula').value);
+            fd.append('chasis', document.getElementById('veh-chasis').value);
+            fd.append('marca', document.getElementById('veh-marca').value);
+            fd.append('modelo', document.getElementById('veh-modelo').value);
+            fd.append('anio', document.getElementById('veh-anio').value);
+            fd.append('color', document.getElementById('veh-color').value);
+            fd.append('tipo_vehiculo', 'Sedan');
+            fd.append('metodo_pago', 'transferencia');
+            fd.append('comprobante', comprobanteInput.files[0]);
+
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=procesar_pago`, {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    polizaEmitidaId = data.poliza_id;
+                    document.getElementById('success-poliza-no').textContent = data.numero_poliza;
+                    document.getElementById('success-ncf').textContent = data.ncf;
+                    
+                    if (data.pendiente) {
+                        const successHeader = document.querySelector('#success-screen h2');
+                        const successDesc = document.querySelector('#success-screen p');
+                        const successIcon = document.querySelector('#success-screen .status-icon');
+                        if (successHeader) successHeader.textContent = "¡Propuesta de Emisión Registrada!";
+                        if (successIcon) successIcon.style.color = "#f59e0b"; // Naranja / Amarillo
+                        if (successDesc) {
+                            successDesc.innerHTML = "Tu póliza se ha emitido en estado <strong>Pendiente de Aprobación</strong>.<br>El certificado temporal con sello indicativo ya está disponible. Se activará en circulación una vez validemos tu depósito.";
+                        }
+                    }
+                    // Ocultar el formulario
+                    const formContainer = document.getElementById('checkout-form-container');
+                    formContainer.style.display = 'none';
+
+                    // Bloquear botón "Atrás" manipulando el historial
+                    window.history.pushState(null, null, window.location.href);
+                    window.onpopstate = function () {
+                        window.history.pushState(null, null, window.location.href);
+                    };
+
+                    document.getElementById('success-screen').style.display = 'block';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Emisión Rechazada',
+                        text: data.mensaje,
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Pago y Emitir Póliza';
+                }
+            } catch(e) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Red',
+                    text: 'Ocurrió un problema de comunicación con el servidor al procesar la emisión.',
+                    confirmButtonColor: '#4f46e5'
+                });
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Pago y Emitir Póliza';
+            }
+        }
+
+        function descargarPDF() {
+            if (!polizaEmitidaId) return;
+            window.location.href = `/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=descargar_pdf&id=${polizaEmitidaId}`;
+        }
+    </script>
+</body>
+</html>

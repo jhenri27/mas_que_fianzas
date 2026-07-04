@@ -251,7 +251,7 @@ class PerfilManager {
             }
 
             // Preparar campos para actualizar
-            $campos_actualizables = ['nombre_perfil', 'descripcion', 'estado'];
+            $campos_actualizables = ['nombre_perfil', 'descripcion', 'estado', 'nivel_jerarquico'];
             $campos_actualizar = [];
             $tipos = '';
             $valores = [];
@@ -423,8 +423,9 @@ class PerfilManager {
      * Copiar permisos heredados de otro perfil
      */
     private function copiarPermisosHeredados($perfil_origen, $perfil_destino) {
-        $sql = "SELECT perfil_id, funcion_id, modulo_id, ver_datos, crear_datos, 
-                       editar_datos, eliminar_datos, ver_reportes, exportar_datos, solo_propios
+        $sql = "SELECT funcion_id, modulo_id, puede_ejecutar, ver_datos, crear_datos, 
+                       editar_datos, eliminar_datos, ver_reportes, exportar_datos, 
+                       importar_datos, imprimir_datos, solo_propios
                 FROM permisos_perfil 
                 WHERE perfil_id = ?";
 
@@ -435,23 +436,27 @@ class PerfilManager {
 
         $sql_insert = "INSERT INTO permisos_perfil 
                       (perfil_id, funcion_id, modulo_id, puede_ejecutar, ver_datos, crear_datos, 
-                       editar_datos, eliminar_datos, ver_reportes, exportar_datos, solo_propios) 
-                      VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)";
+                       editar_datos, eliminar_datos, ver_reportes, exportar_datos, 
+                       importar_datos, imprimir_datos, solo_propios, creado_por) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt_insert = $this->db->prepare($sql_insert);
 
         while ($row = $result->fetch_assoc()) {
             $stmt_insert->bind_param(
-                "iiiiiiiiiii",
+                "iiiiiiiiiiiiii",
                 $perfil_destino,
                 $row['funcion_id'],
                 $row['modulo_id'],
+                $row['puede_ejecutar'],
                 $row['ver_datos'],
                 $row['crear_datos'],
                 $row['editar_datos'],
                 $row['eliminar_datos'],
                 $row['ver_reportes'],
                 $row['exportar_datos'],
+                $row['importar_datos'],
+                $row['imprimir_datos'],
                 $row['solo_propios'],
                 $perfil_origen
             );
@@ -461,6 +466,53 @@ class PerfilManager {
 
         $stmt->close();
         $stmt_insert->close();
+    }
+
+    /**
+     * Copiar permisos de un perfil a otro (público)
+     */
+    public function copiarPermisos($perfil_origen, $perfil_destino, $usuario_operador) {
+        try {
+            if (!tienePermiso($usuario_operador, 'PER_ASIGNAR') && !tienePermiso($usuario_operador, 'USU_TOTAL')) {
+                return ['exito' => false, 'mensaje' => 'No tiene permisos para copiar permisos'];
+            }
+
+            // Verificar que ambos perfiles existan
+            $stmt = $this->db->prepare("SELECT nombre_perfil FROM perfiles WHERE id = ?");
+            
+            $stmt->bind_param("i", $perfil_origen);
+            $stmt->execute();
+            $orig_res = $stmt->get_result();
+            $orig_perfil = $orig_res->fetch_assoc();
+            
+            $stmt->bind_param("i", $perfil_destino);
+            $stmt->execute();
+            $dest_res = $stmt->get_result();
+            $dest_perfil = $dest_res->fetch_assoc();
+            
+            $stmt->close();
+
+            if (!$orig_perfil || !$dest_perfil) {
+                return ['exito' => false, 'mensaje' => 'Perfil de origen o destino no encontrado'];
+            }
+
+            // Eliminar permisos existentes en el destino
+            $sql_delete = "DELETE FROM permisos_perfil WHERE perfil_id = ?";
+            $stmt_delete = $this->db->prepare($sql_delete);
+            $stmt_delete->bind_param("i", $perfil_destino);
+            $stmt_delete->execute();
+            $stmt_delete->close();
+
+            // Copiar los permisos
+            $this->copiarPermisosHeredados($perfil_origen, $perfil_destino);
+
+            logAudit($usuario_operador, 'copiar_permisos', 'permisos_perfil', 'PER_ASIGNAR', "Permisos copiados desde {$orig_perfil['nombre_perfil']} hacia {$dest_perfil['nombre_perfil']}", 'exitoso', null, 'perfiles', $perfil_destino);
+
+            return ['exito' => true, 'mensaje' => 'Permisos copiados exitosamente'];
+
+        } catch (Exception $e) {
+            return ['exito' => false, 'mensaje' => 'Error: ' . $e->getMessage()];
+        }
     }
 
     /**

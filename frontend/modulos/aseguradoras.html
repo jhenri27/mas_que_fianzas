@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aseguradoras | MÁS QUE FIANZAS</title>
+<style>
+/* ── Variables / Skin Obsidian ──────────────────────────────────────────── */
+:root {
+  --bg:          #0f1117;
+  --bg-card:     #181c27;
+  --bg-input:    #1e2235;
+  --border:      #2a3050;
+  --accent:      #7c6af7;
+  --accent-glow: rgba(124,106,247,.28);
+  --text:        #e2e8f0;
+  --text-muted:  #8896a9;
+  --success:     #22c55e;
+  --danger:      #ef4444;
+  --warning:     #f59e0b;
+  --radius:      14px;
+  --shadow:      0 4px 30px rgba(0,0,0,.45);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.mod-header {
+  background: linear-gradient(135deg, #1a1f35 0%, #252c4a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 22px 32px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.mod-header-icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.mod-header-title { font-size: 1.35rem; font-weight: 700; }
+.mod-header-sub   { font-size: .82rem; color: var(--text-muted); margin-top: 2px; }
+.mod-header-btn   { margin-left: auto; }
+
+/* ── Button ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 10px;
+  font-size: .875rem; font-weight: 600; cursor: pointer;
+  border: none; transition: all .2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  color: #fff;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px var(--accent-glow); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+.btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+.btn-danger:hover { background: rgba(239,68,68,.25); }
+.btn-sm { padding: 6px 14px; font-size: .78rem; }
+
+/* ── Main content ────────────────────────────────────────────────────────── */
+.content { padding: 32px; }
+
+/* ── Cards grid ─────────────────────────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.aseg-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  position: relative;
+}
+.aseg-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: rgba(124,106,247,.4);
+}
+
+.aseg-card-banner {
+  height: 6px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+}
+
+.aseg-card-body { padding: 22px 20px; }
+
+.aseg-logo-wrap {
+  width: 72px; height: 72px;
+  background: var(--bg-input);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .2s;
+  position: relative;
+}
+.aseg-logo-wrap:hover { border-color: var(--accent); }
+.aseg-logo-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+.aseg-logo-placeholder { font-size: 26px; color: var(--text-muted); }
+.aseg-logo-overlay {
+  position: absolute; inset: 0;
+  background: rgba(124,106,247,.7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff;
+  opacity: 0; transition: opacity .2s;
+}
+.aseg-logo-wrap:hover .aseg-logo-overlay { opacity: 1; }
+
+.aseg-info { flex: 1; }
+.aseg-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.aseg-code { font-size: .75rem; color: var(--text-muted); font-family: monospace; letter-spacing: .5px; }
+.aseg-rnc  { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: .72rem; font-weight: 600;
+}
+.badge-activo   { background: rgba(34,197,94,.15);  color: var(--success); }
+.badge-inactivo { background: rgba(239,68,68,.12);  color: var(--danger); }
+
+.aseg-meta {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px;
+}
+.aseg-tarifarios { font-size: .75rem; color: var(--text-muted); }
+
+/* ── Logo upload input hidden ────────────────────────────────────────────── */
+.logo-input-hidden { display: none; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 64px 32px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 52px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 1.15rem; color: var(--text); margin-bottom: 8px; }
+
+/* ── Skeleton ────────────────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-input) 25%, #242840 50%, var(--bg-input) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.72); z-index: 1000;
+  align-items: center; justify-content: center;
+  animation: fadeIn .2s;
+}
+.modal-backdrop.open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%; max-width: 520px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  animation: slideUp .25s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.modal-title {
+  font-size: 1.15rem; font-weight: 700;
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* ── Form ────────────────────────────────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: .82rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; letter-spacing: .3px; }
+.form-label span { color: var(--danger); }
+.form-control {
+  width: 100%; padding: 11px 14px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: .875rem;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+/* ── Toast ───────────────────────────────────────────────────────────────── */
+#toastContainer {
+  position: fixed; bottom: 28px; right: 28px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+}
+.toast {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 14px 20px; border-radius: 12px;
+  box-shadow: var(--shadow); font-size: .875rem;
+  display: flex; align-items: center; gap: 10px;
+  animation: slideUp .3s;
+  min-width: 260px; max-width: 360px;
+}
+.toast.success { border-left: 4px solid var(--success); }
+.toast.error   { border-left: 4px solid var(--danger); }
+.toast.info    { border-left: 4px solid var(--accent); }
+
+/* ── Loader ─────────────────────────────────────────────────────────────── */
+#pageLoader {
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Upload logo drag-drop zone in modal ─────────────────────────────────── */
+.logo-dropzone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 24px; text-align: center; cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative; overflow: hidden;
+}
+.logo-dropzone:hover, .logo-dropzone.drag { border-color: var(--accent); background: rgba(124,106,247,.07); }
+.logo-dropzone img { max-height: 80px; object-fit: contain; border-radius: 8px; }
+.logo-dropzone .dz-icon { font-size: 32px; margin-bottom: 8px; }
+.logo-dropzone .dz-text { font-size: .8rem; color: var(--text-muted); }
+.logo-dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
+<div class="mod-header">
+  <div class="mod-header-icon">🏢</div>
+  <div>
+    <div class="mod-header-title">Gestión de Aseguradoras</div>
+    <div class="mod-header-sub">Administra las compañías aseguradoras integradas al sistema · logos · tarifarios</div>
+  </div>
+  <div class="mod-header-btn">
+    <button class="btn btn-primary" onclick="abrirModal()">
+      <span>＋</span> Nueva Aseguradora
+    </button>
+  </div>
+</div>
+
+<!-- ═══ CONTENT ══════════════════════════════════════════════════════════════ -->
+<div class="content">
+  <div id="pageLoader"><div class="spinner"></div></div>
+  <div id="cardsGrid" class="cards-grid" style="display:none"></div>
+  <div id="emptyState" class="empty-state" style="display:none">
+    <div class="empty-icon">🏢</div>
+    <h3>No hay aseguradoras registradas</h3>
+    <p>Crea la primera aseguradora con el botón de arriba.</p>
+  </div>
+</div>
+
+<!-- ═══ MODAL: CREAR / EDITAR ════════════════════════════════════════════════ -->
+<div id="modalBackdrop" class="modal-backdrop" onclick="cerrarModalClick(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-title">
+      <span id="modalIcon">🏢</span>
+      <span id="modalTitle">Nueva Aseguradora</span>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Código <span>*</span></label>
+        <input id="fCodigo" class="form-control" type="text" placeholder="MULTI" maxlength="20" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre <span>*</span></label>
+        <input id="fNombre" class="form-control" type="text" placeholder="Multiseguros">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">RNC</label>
+      <input id="fRnc" class="form-control" type="text" placeholder="1-30-00001-4">
+    </div>
+
+    <!-- Logo upload (solo en edición, después de crear) -->
+    <div id="logoSection" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Logo de la Aseguradora</label>
+        <div class="logo-dropzone" id="logoDZ" onclick="document.getElementById('logoFileInput').click()">
+          <div id="dzContent">
+            <div class="dz-icon">🖼️</div>
+            <div class="dz-text">Haz clic para subir o arrastra el logo aquí<br><small>PNG, JPG, WEBP, SVG · máx 2 MB</small></div>
+          </div>
+          <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" onchange="previewLogo(this)">
+        </div>
+        <div id="logoUploadActions" style="display:none; margin-top:10px; text-align:right">
+          <button class="btn btn-primary btn-sm" id="btnSubirLogo" onclick="subirLogo()">
+            📤 Subir Logo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnGuardar" onclick="guardar()">
+        💾 Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═════════════════════════════════════════════════════════════════ -->
+<div id="toastContainer"></div>
+
+<!-- ═══ SCRIPT ═══════════════════════════════════════════════════════════════ -->
+<script>
+const API = '../../../backend/api/companias.php';
+let aseguradoras = [];
+let editId = null;
+let pendingLogoFile = null;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function token() {
+  try { return window.parent?.MQF?.getToken?.() || localStorage.getItem('mqf_token') || ''; }
+  catch { return localStorage.getItem('mqf_token') || ''; }
+}
+
+async function apiFetch(params, body = null, isFormData = false) {
+  const url = API + '?' + new URLSearchParams(params);
+  const opts = {
+    headers: { 'Authorization': 'Bearer ' + token() }
+  };
+  if (body) {
+    opts.method = 'POST';
+    if (isFormData) {
+      opts.body = body;
+    } else {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(body);
+    }
+  } else {
+    opts.method = 'GET';
+  }
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+function toast(msg, type = 'info') {
+  // Intentar usar el sistema de toast del padre
+  try {
+    if (window.parent?.MQF?.toast) { window.parent.MQF.toast(msg, type); return; }
+    if (window.parent?.showToast) { window.parent.showToast(msg, type); return; }
+  } catch {}
+  // Toast local
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+async function cargar() {
+  document.getElementById('pageLoader').style.display = 'flex';
+  document.getElementById('cardsGrid').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+
+  const res = await apiFetch({ action: 'listar_aseguradoras' });
+
+  document.getElementById('pageLoader').style.display = 'none';
+
+  if (!res.exito) { toast('Error al cargar aseguradoras: ' + res.mensaje, 'error'); return; }
+
+  aseguradoras = res.data || [];
+
+  if (!aseguradoras.length) {
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('cardsGrid').style.display = 'grid';
+  document.getElementById('cardsGrid').innerHTML = aseguradoras.map(renderCard).join('');
+}
+
+function colorBanner(nombre) {
+  if (/patria/i.test(nombre))      return 'background: linear-gradient(90deg,#b40000,#ef4444)';
+  if (/pepin|pepín/i.test(nombre)) return 'background: linear-gradient(90deg,#b8860b,#daa520)';
+  if (/midas/i.test(nombre))       return 'background: linear-gradient(90deg,#00783c,#22c55e)';
+  return 'background: linear-gradient(90deg,#004488,#7c6af7)'; // Multiseguros default
+}
+
+function renderCard(a) {
+  const logoHtml = a.logo_url
+    ? `<img src="${a.logo_url}?t=${Date.now()}" alt="${a.nombre}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
+    : '';
+  const placeholderStyle = a.logo_url ? 'display:none' : '';
+
+  return `
+  <div class="aseg-card" id="card-${a.id}">
+    <div class="aseg-card-banner" style="${colorBanner(a.nombre)}"></div>
+    <div class="aseg-card-body">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <!-- Logo with click-to-upload -->
+        <div class="aseg-logo-wrap" title="Clic para subir logo" onclick="abrirUploadLogo(${a.id})">
+          ${logoHtml}
+          <div class="aseg-logo-placeholder" style="${placeholderStyle}">🏢</div>
+          <div class="aseg-logo-overlay">📤</div>
+        </div>
+        <!-- Info -->
+        <div class="aseg-info">
+          <div class="aseg-name">${a.nombre}</div>
+          <div class="aseg-code">${a.codigo}</div>
+          <div class="aseg-rnc">${a.rnc ? 'RNC: ' + a.rnc : '<em style="color:var(--text-muted)">Sin RNC</em>'}</div>
+          <div style="margin-top:6px">
+            <span class="badge badge-${a.estado}">${a.estado === 'activo' ? '✅ Activo' : '⛔ Inactivo'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="aseg-meta">
+        <span class="aseg-tarifarios">📊 ${a.total_tarifarios || 0} tarifarios</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="abrirModal(${a.id})">✏️ Editar</button>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEstado(${a.id})">${a.estado === 'activo' ? '⛔' : '✅'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function abrirModal(id = null) {
+  editId = id;
+  pendingLogoFile = null;
+  document.getElementById('logoUploadActions').style.display = 'none';
+
+  if (id) {
+    const a = aseguradoras.find(x => x.id == id);
+    document.getElementById('modalTitle').textContent = 'Editar Aseguradora';
+    document.getElementById('modalIcon').textContent = '✏️';
+    document.getElementById('fCodigo').value = a.codigo;
+    document.getElementById('fNombre').value = a.nombre;
+    document.getElementById('fRnc').value = a.rnc || '';
+    document.getElementById('logoSection').style.display = 'block';
+    // Preview logo actual
+    if (a.logo_url) {
+      document.getElementById('dzContent').innerHTML = `<img src="${a.logo_url}?t=${Date.now()}" style="max-height:80px;border-radius:8px;object-fit:contain"><div class="dz-text" style="margin-top:6px">Haz clic para cambiar el logo</div>`;
+    } else {
+      document.getElementById('dzContent').innerHTML = `<div class="dz-icon">🖼️</div><div class="dz-text">Haz clic para subir o arrastra el logo aquí<br><small>PNG, JPG, WEBP, SVG · máx 2 MB</small></div>`;
+    }
+  } else {
+    document.getElementById('modalTitle').textContent = 'Nueva Aseguradora';
+    document.getElementById('modalIcon').textContent = '🏢';
+    document.getElementById('fCodigo').value = '';
+    document.getElementById('fNombre').value = '';
+    document.getElementById('fRnc').value = '';
+    document.getElementById('logoSection').style.display = 'none';
+  }
+
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('fCodigo').focus();
+}
+
+function cerrarModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+  editId = null;
+  pendingLogoFile = null;
+  document.getElementById('logoFileInput').value = '';
+}
+
+function cerrarModalClick(e) {
+  if (e.target === document.getElementById('modalBackdrop')) cerrarModal();
+}
+
+// ── Logo upload desde card directamente ───────────────────────────────────────
+function abrirUploadLogo(id) {
+  editId = id;
+  const a = aseguradoras.find(x => x.id == id);
+  document.getElementById('modalTitle').textContent = `Logo: ${a.nombre}`;
+  document.getElementById('modalIcon').textContent = '📤';
+  document.getElementById('fCodigo').value = a.codigo;
+  document.getElementById('fNombre').value = a.nombre;
+  document.getElementById('fRnc').value = a.rnc || '';
+  document.getElementById('logoSection').style.display = 'block';
+  if (a.logo_url) {
+    document.getElementById('dzContent').innerHTML = `<img src="${a.logo_url}?t=${Date.now()}" style="max-height:80px;border-radius:8px;object-fit:contain"><div class="dz-text" style="margin-top:6px">Haz clic para cambiar el logo</div>`;
+  } else {
+    document.getElementById('dzContent').innerHTML = `<div class="dz-icon">🖼️</div><div class="dz-text">Haz clic para subir o arrastra el logo aquí<br><small>PNG, JPG, WEBP, SVG · máx 2 MB</small></div>`;
+  }
+  document.getElementById('logoUploadActions').style.display = 'none';
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+// ── Logo preview ──────────────────────────────────────────────────────────────
+function previewLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingLogoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('dzContent').innerHTML = `
+      <img src="${e.target.result}" style="max-height:80px;border-radius:8px;object-fit:contain">
+      <div class="dz-text" style="margin-top:6px">${file.name} · ${(file.size/1024).toFixed(1)} KB</div>`;
+    document.getElementById('logoUploadActions').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Upload logo ───────────────────────────────────────────────────────────────
+async function subirLogo() {
+  if (!pendingLogoFile || !editId) { toast('Selecciona un archivo primero', 'error'); return; }
+
+  const btn = document.getElementById('btnSubirLogo');
+  btn.disabled = true; btn.textContent = '⏳ Subiendo...';
+
+  const fd = new FormData();
+  fd.append('logo', pendingLogoFile);
+  fd.append('id', editId);
+
+  const res = await apiFetch({ action: 'subir_logo_aseguradora' }, fd, true);
+  btn.disabled = false; btn.textContent = '📤 Subir Logo';
+
+  if (res.exito) {
+    toast('✅ Logo subido y actualizado exitosamente', 'success');
+    // Actualizar cache local
+    const a = aseguradoras.find(x => x.id == editId);
+    if (a) a.logo_url = res.logo_url;
+    // Refrescar card
+    const card = document.getElementById(`card-${editId}`);
+    if (card) card.outerHTML = renderCard(aseguradoras.find(x => x.id == editId));
+    pendingLogoFile = null;
+    document.getElementById('logoFileInput').value = '';
+    document.getElementById('logoUploadActions').style.display = 'none';
+  } else {
+    toast('Error: ' + res.mensaje, 'error');
+  }
+}
+
+// ── Guardar (crear / editar) ──────────────────────────────────────────────────
+async function guardar() {
+  const codigo = document.getElementById('fCodigo').value.trim().toUpperCase();
+  const nombre = document.getElementById('fNombre').value.trim();
+  const rnc    = document.getElementById('fRnc').value.trim();
+
+  if (!codigo || !nombre) { toast('Código y nombre son obligatorios', 'error'); return; }
+
+  const btn = document.getElementById('btnGuardar');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+
+  const payload = { codigo, nombre, rnc };
+  if (editId) payload.id = editId;
+
+  const res = await apiFetch({ action: 'guardar_aseguradora' }, payload);
+  btn.disabled = false; btn.textContent = '💾 Guardar';
+
+  if (res.exito) {
+    toast(res.mensaje, 'success');
+    cerrarModal();
+    await cargar();
+  } else {
+    toast('Error: ' + res.mensaje, 'error');
+  }
+}
+
+// ── Toggle estado ─────────────────────────────────────────────────────────────
+async function toggleEstado(id) {
+  const a = aseguradoras.find(x => x.id == id);
+  const accion = a.estado === 'activo' ? 'inactivar' : 'activar';
+  if (!confirm(`¿Deseas ${accion} la aseguradora "${a.nombre}"?`)) return;
+
+  const res = await apiFetch({ action: 'toggle_aseguradora' }, { id });
+  if (res.exito) {
+    toast(res.mensaje, 'success');
+    await cargar();
+  } else {
+    toast('Error: ' + res.mensaje, 'error');
+  }
+}
+
+// ── Drag & drop para la zona de logo ─────────────────────────────────────────
+document.getElementById('logoDZ').addEventListener('dragover', e => {
+  e.preventDefault(); document.getElementById('logoDZ').classList.add('drag');
+});
+document.getElementById('logoDZ').addEventListener('dragleave', () => {
+  document.getElementById('logoDZ').classList.remove('drag');
+});
+document.getElementById('logoDZ').addEventListener('drop', e => {
+  e.preventDefault(); document.getElementById('logoDZ').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const input = document.getElementById('logoFileInput');
+    const dt = new DataTransfer(); dt.items.add(file);
+    input.files = dt.files;
+    previewLogo(input);
+  }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+cargar();
+</script>
+</body>
+</html>

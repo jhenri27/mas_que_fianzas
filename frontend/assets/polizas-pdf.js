@@ -214,10 +214,10 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
                     const plantW_mm = parseFloat(dbMapeo.plantilla.ancho_mm) || 210.0;
                     const plantH_mm = parseFloat(dbMapeo.plantilla.alto_mm) || 297.0;
 
-                    const x_pt = (parseFloat(campo.pos_x) / plantW_mm) * pageW_pt;
-                    const y_pt = pageH_pt - (parseFloat(campo.pos_y) / plantH_mm) * pageH_pt;
-                    
                     const size = parseFloat(campo.font_size) || 7.0;
+                    const x_pt = (parseFloat(campo.pos_x) / plantW_mm) * pageW_pt;
+                    const y_pt = (pageH_pt - (parseFloat(campo.pos_y) / plantH_mm) * pageH_pt) - size;
+                    
                     const font = campo.font_weight === 'bold' ? fontBold : fontRegular;
                     
                     const hex = (campo.color || '#000000').replace('#', '');
@@ -236,6 +236,25 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
                         color: rgb(r_val, g_val, b_val)
                     });
                 };
+
+                if (!dbMapeo && asegSearch === 'PATRIA') {
+                    dbMapeo = {
+                        plantilla: { ancho_mm: 210.10, alto_mm: 297.05 },
+                        campos: [
+                            { variable: 'cliente.nombre', pos_x: 24.94, pos_y: 71.84, font_size: 7.5 },
+                            { variable: 'poliza.numero_poliza', pos_x: 25.04, pos_y: 74.81, font_size: 7.5 },
+                            { variable: 'vehiculo.tipo_vehiculo', pos_x: 25.09, pos_y: 78.56, font_size: 7.5 },
+                            { variable: 'vehiculo.chasis', pos_x: 25.19, pos_y: 82.08, font_size: 7.0 },
+                            { variable: 'vehiculo.placa', pos_x: 25.09, pos_y: 85.28, font_size: 7.5 },
+                            { variable: 'poliza.fecha_inicio', pos_x: 26.41, pos_y: 88.98, font_size: 7.5 },
+                            { variable: 'poliza.fecha_fin', pos_x: 43.80, pos_y: 89.01, font_size: 7.5 },
+                            { variable: 'vehiculo.uso', pos_x: 71.66, pos_y: 78.35, font_size: 7.5 },
+                            { variable: 'vehiculo.marca', pos_x: 69.36, pos_y: 81.75, font_size: 7.5 },
+                            { variable: 'vehiculo.modelo', pos_x: 58.37, pos_y: 89.05, font_size: 7.5 },
+                            { variable: 'vehiculo.anio', pos_x: 65.69, pos_y: 85.25, font_size: 7.5 }
+                        ]
+                    };
+                }
 
                 if (dbMapeo) {
                     dbMapeo.campos.forEach(drawFieldDB);
@@ -527,10 +546,10 @@ async function generarMarbetePDF(poliza, vehiculo, opts = {}) {
                     const plantH_mm = parseFloat(dbMapeo.plantilla.alto_mm) || 279.4;
 
                     // Convertir a puntos de la plantilla Letter (612x792) y aplicar el desplazamiento de la tarjeta
-                    const x_pt = (parseFloat(campo.pos_x) / plantW_mm) * 612 - 122;
-                    const y_pt = (792 - (parseFloat(campo.pos_y) / plantH_mm) * 792) - 9;
-                    
                     const size = parseFloat(campo.font_size) || 7.0;
+                    const x_pt = (parseFloat(campo.pos_x) / plantW_mm) * 612 - 122;
+                    const y_pt = ((792 - (parseFloat(campo.pos_y) / plantH_mm) * 792) - 9) - size;
+                    
                     const font = campo.font_weight === 'bold' ? fontBold : fontRegular;
                     
                     const hex = (campo.color || '#000000').replace('#', '');
@@ -1659,7 +1678,9 @@ async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
     const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
     try {
-        const fileUrl = `/PLATAFORMA_INTEGRADA/backend/uploads/plantillas_pdf/${plantilla.archivo_base}`;
+        const fileUrl = plantilla.archivo_base.startsWith('uploads/') 
+            ? `/PLATAFORMA_INTEGRADA/${plantilla.archivo_base}`
+            : `/PLATAFORMA_INTEGRADA/backend/uploads/plantillas_pdf/${plantilla.archivo_base}`;
         const fileRes = await fetch(fileUrl);
         if (!fileRes.ok) throw new Error(`Archivo de plantilla no encontrado: ${plantilla.archivo_base}`);
         const fileBuffer = await fileRes.arrayBuffer();
@@ -1700,32 +1721,8 @@ async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
 
         // ── LOGO ──────────────────────────────────────────────────────────
         const esMarbete = (plantilla.nombre || '').toLowerCase().includes('marbete');
-        let logoURI = window.LOGO_MQF_B64; // Default to master brand logo
-
-        if (esMarbete) {
-            const asegNombre = (plantilla.aseguradora_nombre || data.poliza?.aseguradora || 'MULTISEGUROS').toUpperCase().trim();
-            if (window.LOGOS && window.LOGOS[asegNombre]) {
-                logoURI = window.LOGOS[asegNombre];
-            } else if (asegNombre === 'MULTISEGUROS') {
-                logoURI = window.LOGO_MULTISEGUROS_B64;
-            } else if (window.LOGOS && window.LOGOS['MULTISEGUROS']) {
-                logoURI = window.LOGOS['MULTISEGUROS'];
-            } else {
-                logoURI = window.LOGO_MULTISEGUROS_B64;
-            }
-        }
-
-        console.log('[PDF] Logo using selection:', logoURI ? 'OK len='+logoURI.length : 'NO');
-        if (logoURI) {
-            try {
-                const logoBytes = dataURItoBytes(logoURI);
-                const isJpg = logoURI.startsWith('data:image/jpeg') || logoURI.startsWith('data:image/jpg');
-                const logoImg = isJpg ? await pdfDoc.embedJpg(logoBytes) : await pdfDoc.embedPng(logoBytes);
-                const logoW = 100, logoH = 38;
-                firstPage.drawImage(logoImg, { x: 100, y: pageHeight - 58, width: logoW, height: logoH });
-                console.log('[PDF] Logo incrustado OK');
-            } catch(e) { console.warn('[PDF] Error logo:', e.message); }
-        }
+        // El logo grande quemado ya no se dibuja, porque las plantillas subidas
+        // ya lo traen en el diseño original del fondo.
 
         // ── QR ────────────────────────────────────────────────────────────
         const nroPol = (data.poliza && data.poliza.numero_poliza) || '';
@@ -1740,57 +1737,58 @@ async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
                     // Buscar si hay mapeo dinámico para el QR
                     const mappedQR = plantilla.campos ? plantilla.campos.find(c => c.variable === 'sistema.qr_msqf') : null;
                     
-                    let QS = 65;
-                    let qrX = pageWidth - QS - 12;
-                    let qrY = 12;
-                    
                     if (mappedQR) {
+                        const plantW_mm = parseFloat(plantilla.ancho_mm) || (pageWidth * 25.4 / 72);
+                        const plantH_mm = parseFloat(plantilla.alto_mm) || (pageHeight * 25.4 / 72);
+                        
+                        let QS = 65; // Default fallback
                         const mappedWidth = parseFloat(mappedQR.ancho || mappedQR.font_size);
                         if (mappedWidth > 0) {
-                            QS = mappedWidth;
+                            // Convertir ancho en milímetros a puntos del PDF
+                            QS = (mappedWidth / plantW_mm) * pageWidth;
                         }
-                        qrX = parseFloat(mappedQR.pos_x);
-                        const y_top = pageHeight - parseFloat(mappedQR.pos_y);
-                        qrY = y_top - QS;
-                    }
-                    
-                    firstPage.drawImage(qrImg, { x: qrX, y: qrY, width: QS, height: QS });
+                        const qrX = (parseFloat(mappedQR.pos_x) / plantW_mm) * pageWidth;
+                        const y_top = pageHeight - (parseFloat(mappedQR.pos_y) / plantH_mm) * pageHeight;
+                        const qrY = y_top - QS;
+                        
+                        firstPage.drawImage(qrImg, { x: qrX, y: qrY, width: QS, height: QS });
 
-                    // Embed master brand logo inside QR center for marbetes
-                    if (esMarbete) {
-                        const overlaySize = QS * 0.22; // 14.3pt
-                        const overlayX = qrX + (QS - overlaySize) / 2;
-                        const overlayY = qrY + (QS - overlaySize) / 2;
+                        // Embed master brand logo inside QR center for marbetes
+                        if (esMarbete) {
+                            const overlaySize = QS * 0.22; // 14.3pt
+                            const overlayX = qrX + (QS - overlaySize) / 2;
+                            const overlayY = qrY + (QS - overlaySize) / 2;
 
-                        // Solid white square to clear QR code center
-                        firstPage.drawRectangle({
-                            x: overlayX,
-                            y: overlayY,
-                            width: overlaySize,
-                            height: overlaySize,
-                            color: rgb(1, 1, 1)
-                        });
+                            // Solid white square to clear QR code center
+                            firstPage.drawRectangle({
+                                x: overlayX,
+                                y: overlayY,
+                                width: overlaySize,
+                                height: overlaySize,
+                                color: rgb(1, 1, 1)
+                            });
 
-                        // Draw brand logo in the center
-                        if (window.LOGO_MQF_B64) {
-                            try {
-                                const masterLogoBytes = dataURItoBytes(window.LOGO_MQF_B64);
-                                const isJpgMaster = window.LOGO_MQF_B64.startsWith('data:image/jpeg') || window.LOGO_MQF_B64.startsWith('data:image/jpg');
-                                const masterLogoImg = isJpgMaster ? await pdfDoc.embedJpg(masterLogoBytes) : await pdfDoc.embedPng(masterLogoBytes);
-                                firstPage.drawImage(masterLogoImg, {
-                                    x: overlayX + 1.0,
-                                    y: overlayY + 1.0,
-                                    width: overlaySize - 2.0,
-                                    height: overlaySize - 2.0
-                                });
-                            } catch(eMaster) {
-                                console.warn('[PDF] Error QR center brand logo:', eMaster.message);
+                            // Draw brand logo in the center
+                            if (window.LOGO_MQF_B64) {
+                                try {
+                                    const masterLogoBytes = dataURItoBytes(window.LOGO_MQF_B64);
+                                    const isJpgMaster = window.LOGO_MQF_B64.startsWith('data:image/jpeg') || window.LOGO_MQF_B64.startsWith('data:image/jpg');
+                                    const masterLogoImg = isJpgMaster ? await pdfDoc.embedJpg(masterLogoBytes) : await pdfDoc.embedPng(masterLogoBytes);
+                                    firstPage.drawImage(masterLogoImg, {
+                                        x: overlayX + 1.0,
+                                        y: overlayY + 1.0,
+                                        width: overlaySize - 2.0,
+                                        height: overlaySize - 2.0
+                                    });
+                                } catch(eMaster) {
+                                    console.warn('[PDF] Error QR center brand logo:', eMaster.message);
+                                }
                             }
                         }
-                    }
 
-                    firstPage.drawText('Escanear para verificar', { x: pageWidth - QS - 10, y: 9, size: 5.5, font: fontBold, color: rgb(0, 0.2, 0.6) });
-                    console.log('[PDF] QR incrustado OK');
+                        firstPage.drawText('Escanear para verificar', { x: qrX + (QS*0.1), y: Math.max(qrY - 8, 3), size: QS * 0.08, font: fontBold, color: rgb(0, 0.2, 0.6) });
+                        console.log('[PDF] QR incrustado OK');
+                    }
                 }
             } catch(e) { console.warn('[PDF] Error QR:', e.message); }
         }
@@ -1805,20 +1803,45 @@ async function generarDocumentoDinamicoPDF(plantilla, data, opts = {}) {
         };
 
         if (plantilla.campos && plantilla.campos.length > 0) {
+            const plantW_mm = parseFloat(plantilla.ancho_mm) || (pageWidth * 25.4 / 72);
+            const plantH_mm = parseFloat(plantilla.alto_mm) || (pageHeight * 25.4 / 72);
+            
+            // Relación matemática entre el ancho en puntos que asume el Mapeador HTML y el ancho real del PDF base
+            const assumed_page_width_pts = plantW_mm * 2.83464;
+            const scaleRatio = pageWidth / assumed_page_width_pts;
+
             plantilla.campos.forEach(c => {
                 if (c.variable === 'sistema.qr_msqf') return;
                 const valor = resolveVar(c.variable);
-                const fontSize = parseFloat(c.font_size) || 9;
-                const posX    = parseFloat(c.pos_x);
-                // Invertir Y: pdf-lib tiene (0,0) en la esquina inferior izquierda
-                const posY    = pageHeight - parseFloat(c.pos_y) - fontSize;
+                
+                const rawSize = parseFloat(c.font_size) || 9;
+                const fontSize = rawSize * scaleRatio;
+                
+                const posX = (parseFloat(c.pos_x) / plantW_mm) * pageWidth;
+                const posY = pageHeight - (parseFloat(c.pos_y) / plantH_mm) * pageHeight - fontSize;
+                
                 const isBold  = c.negrita == 1 || c.negrita === true || c.negrita === '1' || c.font_weight === 'bold';
+                const f = isBold ? fontBold : fontRegular;
+
+                // Opacar Fondo (dibujar rectangulo blanco si el campo lo requiere)
+                const opacar = c.fondo_opaco == 1 || c.fondo_opaco === '1' || c.fondo_opaco === true || c.fondo_opaco === 'true';
+                if (opacar && valor.trim() !== '') {
+                    const textWidth = f.widthOfTextAtSize(valor, fontSize);
+                    // Dibujar un pequeño padding alrededor
+                    firstPage.drawRectangle({
+                        x: posX - 1,
+                        y: posY - (fontSize * 0.2), // Bajar un poco para cubrir descenders
+                        width: textWidth + 2,
+                        height: fontSize * 1.2, // Altura que cubre todo el texto
+                        color: rgb(1, 1, 1) // Blanco puro
+                    });
+                }
 
                 firstPage.drawText(valor, {
                     x: posX,
                     y: posY,
                     size: fontSize,
-                    font: isBold ? fontBold : fontRegular,
+                    font: f,
                     color: rgb(0, 0, 0)
                 });
             });

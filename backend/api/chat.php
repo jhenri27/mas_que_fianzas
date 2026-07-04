@@ -960,11 +960,11 @@ try {
                     SELECT emisor_id FROM mensajes_chat WHERE receptor_id = ?
                     UNION
                     SELECT receptor_id FROM mensajes_chat WHERE emisor_id = ?
-                )
+                ) AND u.id != ?
                 ORDER BY ultima_fecha DESC
             ";
             $stmt_int = $db->prepare($sql_interacciones);
-            $stmt_int->bind_param("iiiii", $usuario_id, $usuario_id, $usuario_id, $usuario_id, $usuario_id);
+            $stmt_int->bind_param("iiiiii", $usuario_id, $usuario_id, $usuario_id, $usuario_id, $usuario_id, $usuario_id);
             $stmt_int->execute();
             $res_int = $stmt_int->get_result();
             $conversaciones = [];

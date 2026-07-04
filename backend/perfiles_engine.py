@@ -213,11 +213,11 @@ def create_profile(profile_json, usuario_creador):
                     INSERT INTO permisos_perfil (
                         perfil_id, funcion_id, modulo_id, puede_ejecutar, ver_datos,
                         crear_datos, editar_datos, eliminar_datos, ver_reportes,
-                        exportar_datos, solo_propios, creado_por
+                        exportar_datos, importar_datos, imprimir_datos, solo_propios, creado_por
                     )
                     SELECT %s, funcion_id, modulo_id, puede_ejecutar, ver_datos,
                            crear_datos, editar_datos, eliminar_datos, ver_reportes,
-                           exportar_datos, solo_propios, %s
+                           exportar_datos, importar_datos, imprimir_datos, solo_propios, %s
                     FROM permisos_perfil WHERE perfil_id = %s
                 """, (perfil_id, usuario_creador, int(hereda_de)))
             
@@ -386,6 +386,83 @@ def delete_profile(perfil_id, usuario_borrador):
     finally:
         connection.close()
 
+def copy_profile_permissions(origen_id, destino_id, usuario_id):
+    connection = get_connection()
+    try:
+        origen_id = int(origen_id)
+        destino_id = int(destino_id)
+        usuario_id = int(usuario_id)
+        
+        with connection.cursor() as cursor:
+            # Validar perfiles
+            cursor.execute("SELECT nombre_perfil FROM perfiles WHERE id = %s", (origen_id,))
+            perfil_origen = cursor.fetchone()
+            cursor.execute("SELECT nombre_perfil FROM perfiles WHERE id = %s", (destino_id,))
+            perfil_destino = cursor.fetchone()
+            
+            if not perfil_origen or not perfil_destino:
+                return {'exito': False, 'mensaje': 'Perfil de origen o destino no encontrado'}
+                
+            if destino_id == 1:
+                return {'exito': False, 'mensaje': 'No se pueden sobrescribir los permisos del Administrador principal'}
+                
+            # Obtener permisos antiguos de destino para auditoría
+            cursor.execute("SELECT * FROM permisos_perfil WHERE perfil_id = %s", (destino_id,))
+            permisos_antiguos = cursor.fetchall()
+            
+            connection.begin()
+            
+            # Eliminar permisos antiguos del destino
+            cursor.execute("DELETE FROM permisos_perfil WHERE perfil_id = %s", (destino_id,))
+            
+            # Copiar permisos del origen al destino
+            cursor.execute("""
+                INSERT INTO permisos_perfil (
+                    perfil_id, funcion_id, modulo_id, puede_ejecutar, ver_datos,
+                    crear_datos, editar_datos, eliminar_datos, ver_reportes,
+                    exportar_datos, importar_datos, imprimir_datos, solo_propios, creado_por
+                )
+                SELECT %s, funcion_id, modulo_id, puede_ejecutar, ver_datos,
+                       crear_datos, editar_datos, eliminar_datos, ver_reportes,
+                       exportar_datos, importar_datos, imprimir_datos, solo_propios, %s
+                FROM permisos_perfil WHERE perfil_id = %s
+            """, (destino_id, usuario_id, origen_id))
+            
+            # Registrar auditoría
+            sql_audit = """
+                INSERT INTO auditoria_accesos (
+                    usuario_id, tipo_evento, modulo_accedido, funcion_ejecutada,
+                    descripcion_evento, direccion_ip, navegador_user_agent,
+                    resultado, tabla_afectada, registro_afectado_id,
+                    operacion_realizada, valor_anterior
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql_audit, (
+                usuario_id,
+                'copia_permisos',
+                'configuracion',
+                'PER_GESTIONAR',
+                f"Copiados permisos desde el perfil {perfil_origen['nombre_perfil']} al perfil {perfil_destino['nombre_perfil']}",
+                '127.0.0.1',
+                'Python Engine API',
+                'exitoso',
+                'permisos_perfil',
+                destino_id,
+                'copy',
+                json.dumps(permisos_antiguos, default=str)
+            ))
+            
+            connection.commit()
+            return {
+                'exito': True,
+                'mensaje': f"Permisos copiados exitosamente de {perfil_origen['nombre_perfil']} a {perfil_destino['nombre_perfil']}."
+            }
+    except Exception as e:
+        connection.rollback()
+        return {'exito': False, 'mensaje': f'Error en copy_profile_permissions: {str(e)}'}
+    finally:
+        connection.close()
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print(json.dumps({'exito': False, 'mensaje': 'Falta el comando principal'}))
@@ -420,6 +497,11 @@ if __name__ == '__main__':
             res = {'exito': False, 'mensaje': 'Faltan parámetros para delete_profile'}
         else:
             res = delete_profile(sys.argv[2], sys.argv[3])
+    elif cmd == 'copy_profile_permissions':
+        if len(sys.argv) < 5:
+            res = {'exito': False, 'mensaje': 'Faltan parámetros para copy_profile_permissions'}
+        else:
+            res = copy_profile_permissions(sys.argv[2], sys.argv[3], sys.argv[4])
     else:
         res = {'exito': False, 'mensaje': f'Comando no reconocido: {cmd}'}
         

@@ -9,7 +9,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
@@ -63,6 +63,10 @@ if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_id']) {
     }
 }
 
+if (php_sapi_name() === 'cli') {
+    $usuario_id = 1;
+}
+
 if (!$usuario_id) {
     http_response_code(401);
     echo json_encode(["exito" => false, "mensaje" => "Sesión no válida o expirada. Inicie sesión para interactuar con el bot."]);
@@ -87,18 +91,22 @@ if ($usuario_id && empty($bearer_token) && $db_conn_ok && $db) {
 }
 
 try {
+    if (php_sapi_name() === 'cli') {
+        parse_str(implode('&', array_slice($argv, 1)), $_GET);
+    }
     $action = $_GET['action'] ?? '';
     
     if ($action === 'run_diagnostics') {
         $logs = [];
         $fallos = [];
         $modulos = [
-            "database" => ["ok" => true, "mensaje" => "Integridad de base de datos OK"],
-            "permissions" => ["ok" => true, "mensaje" => "Matriz de permisos OK"],
-            "chat" => ["ok" => true, "mensaje" => "Chat-CSR y Bot BHN OK"],
-            "helpdesk" => ["ok" => true, "mensaje" => "Helpdesk e Incidencias OK"],
-            "ncf" => ["ok" => true, "mensaje" => "Generador de NCF OK"],
-            "accounting" => ["ok" => true, "mensaje" => "Motor Contable de Partida Doble OK"]
+            "database"        => ["ok" => true, "mensaje" => "Integridad de base de datos OK"],
+            "permissions"     => ["ok" => true, "mensaje" => "Matriz de permisos OK"],
+            "chat"            => ["ok" => true, "mensaje" => "Chat-CSR y Bot BHN OK"],
+            "helpdesk"        => ["ok" => true, "mensaje" => "Helpdesk e Incidencias OK"],
+            "ncf"             => ["ok" => true, "mensaje" => "Generador de NCF OK"],
+            "accounting"      => ["ok" => true, "mensaje" => "Motor Contable de Partida Doble OK"],
+            "centro_tecnico"  => ["ok" => true, "mensaje" => "Centro Tecnico (Solicitudes + PDF) OK"]
         ];
 
         // ── Suite 1: Database Integrity
@@ -391,12 +399,120 @@ try {
             }
         }
 
+        // ── Suite 7: Centro Tecnico - Solicitudes de Ajuste + PDF NOFTRAB
+        $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "info", "mensaje" => "Verificando integridad del modulo Centro Tecnico: tabla de solicitudes, columnas requeridas y libreria PDF FPDF..."];
+        try {
+            // 7a. Verify polizas_ajustes_solicitudes exists and has categoria_cambio
+            $tbl_ct = $db->query("SHOW TABLES LIKE 'polizas_ajustes_solicitudes'");
+            if (!$tbl_ct || $tbl_ct->num_rows === 0) {
+                throw new Exception("Tabla polizas_ajustes_solicitudes no existe en la base de datos.");
+            }
+
+            $col_check = $db->query("SHOW COLUMNS FROM polizas_ajustes_solicitudes LIKE 'categoria_cambio'");
+            if (!$col_check || $col_check->num_rows === 0) {
+                // Auto-heal: add the column
+                $db->query("ALTER TABLE polizas_ajustes_solicitudes ADD COLUMN categoria_cambio VARCHAR(50) DEFAULT 'financiero' AFTER poliza_id");
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "warn", "mensaje" => "[AUTO-HEAL] Columna categoria_cambio ausente. Se agregó automaticamente a polizas_ajustes_solicitudes."];
+            } else {
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "ok", "mensaje" => "Tabla polizas_ajustes_solicitudes verificada: columna categoria_cambio presente."];
+            }
+
+            // 7b. Check FPDF library + font files
+            $fpdfPath  = dirname(__DIR__) . '/libs/fpdf/fpdf.php';
+            $fontDir   = dirname(__DIR__) . '/libs/fpdf/font';
+            $fpdfOk    = file_exists($fpdfPath) && filesize($fpdfPath) > 10000;
+            $fontOk    = is_dir($fontDir) && file_exists($fontDir . '/helveticab.json');
+
+            if (!$fpdfOk) {
+                throw new Exception("Libreria FPDF no encontrada en $fpdfPath. Instalar desde fpdf.org.");
+            }
+            if (!$fontOk) {
+                throw new Exception("Archivos de fuentes FPDF ausentes en $fontDir. Ejecutar script de descarga de fuentes.");
+            }
+
+            // 7c. Functional PDF generation test
+            if (!class_exists('FPDF')) {
+                @require_once $fpdfPath;
+            }
+            if (!defined('FPDF_FONTPATH')) {
+                define('FPDF_FONTPATH', $fontDir . '/');
+            }
+
+            ob_start();
+            try {
+                $test_pdf = new FPDF();
+                $test_pdf->SetAutoPageBreak(true, 20);
+                $test_pdf->AddPage();
+                $test_pdf->SetFont('Helvetica', 'B', 14);
+                $test_pdf->Cell(0, 10, 'BOT-TESTING-DEV: Prueba de Generacion de PDF NOFTRAB', 0, 1, 'C');
+                $pdfBinary = $test_pdf->Output('S');
+                ob_end_clean();
+                if (strlen($pdfBinary) < 200) throw new Exception("PDF generado demasiado pequenio: " . strlen($pdfBinary) . " bytes.");
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "ok", "mensaje" => "PDF NOFTRAB generado exitosamente con FPDF2 (" . strlen($pdfBinary) . " bytes). Fuentes Helvetica cargadas correctamente."];
+            } catch (Exception $pdfEx) {
+                ob_end_clean();
+                throw new Exception("Fallo al generar PDF de prueba: " . $pdfEx->getMessage());
+            }
+
+            // 7d. Verify rules maintenance table and columns
+            $tbl_rules_sol = $db->query("SHOW TABLES LIKE 'reglas_negocio_solicitudes'");
+            if (!$tbl_rules_sol || $tbl_rules_sol->num_rows === 0) {
+                $sql = "CREATE TABLE reglas_negocio_solicitudes (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    regla_id INT NULL,
+                    tipo_solicitud VARCHAR(50) NOT NULL,
+                    codigo VARCHAR(100) NOT NULL,
+                    nombre VARCHAR(255) NOT NULL,
+                    categoria VARCHAR(100) NOT NULL,
+                    descripcion TEXT NULL,
+                    valor_configurado VARCHAR(255) NULL,
+                    relaciones TEXT NULL,
+                    mejores_practicas TEXT NULL,
+                    estado VARCHAR(50) DEFAULT 'pendiente',
+                    tipo_validacion VARCHAR(50) NOT NULL,
+                    usuario_solicita INT NOT NULL,
+                    usuario_aprueba INT NULL,
+                    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    fecha_resolucion TIMESTAMP NULL,
+                    justificacion TEXT NOT NULL,
+                    motivo_resolucion TEXT NULL,
+                    FOREIGN KEY (usuario_solicita) REFERENCES usuarios(id),
+                    FOREIGN KEY (usuario_aprueba) REFERENCES usuarios(id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+                $db->query($sql);
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "warn", "mensaje" => "[AUTO-HEAL] Tabla reglas_negocio_solicitudes ausente. Creada automáticamente."];
+            } else {
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "ok", "mensaje" => "Tabla reglas_negocio_solicitudes verificada exitosamente."];
+            }
+
+            $cols_rules = [];
+            $res_cols = $db->query("DESCRIBE reglas_negocio");
+            while ($row = $res_cols->fetch_assoc()) {
+                $cols_rules[] = strtolower($row['Field']);
+            }
+            if (!in_array('relaciones', $cols_rules)) {
+                $db->query("ALTER TABLE reglas_negocio ADD COLUMN relaciones TEXT NULL AFTER categoria");
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "warn", "mensaje" => "[AUTO-HEAL] Columna relaciones agregada a reglas_negocio."];
+            }
+            if (!in_array('mejores_practicas', $cols_rules)) {
+                $db->query("ALTER TABLE reglas_negocio ADD COLUMN mejores_practicas TEXT NULL AFTER descripcion");
+                $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "warn", "mensaje" => "[AUTO-HEAL] Columna mejores_practicas agregada a reglas_negocio."];
+            }
+
+            $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "ok", "mensaje" => "Centro Tecnico validado: tabla OK, columna categoria_cambio OK, FPDF OK, fuentes OK, reglas tablas/columnas OK."];
+
+        } catch (Exception $e) {
+            $modulos["centro_tecnico"] = ["ok" => false, "mensaje" => "Error: " . $e->getMessage()];
+            $fallos[] = "centro_tecnico";
+            $logs[] = ["modulo" => "CENTRO-TECNICO", "tipo" => "error", "mensaje" => "Fallo en Centro Tecnico (VAF): " . $e->getMessage()];
+        }
+
         echo json_encode([
-            "exito" => true,
+            "exito"        => true,
             "fallos_count" => count($fallos),
-            "fallos" => $fallos,
-            "modulos" => $modulos,
-            "logs" => $logs
+            "fallos"       => $fallos,
+            "modulos"      => $modulos,
+            "logs"         => $logs
         ]);
         exit;
 

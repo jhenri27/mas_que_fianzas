@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <title>Centro de Negocios - MAS QUE FIANZAS</title>
+    <link rel="icon" type="image/x-icon" href="../assets/mqf-favicon.ico">
+    <link rel="stylesheet" href="../assets/lib/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../assets/design-system.css">
+    <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
+    <link rel="stylesheet" href="../assets/components.css">
+    <script src="../assets/components.js"></script>
+    <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
+    <style>
+        .sidebar { display: none !important; }
+        .top-navbar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding-top: 0 !important; }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--mqf-bg, #f4f6fb);
+            color: var(--mqf-text, #1e293b);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .content-area {
+            padding: 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Grid layouts */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .columns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+            margin-bottom: 25px;
+            align-items: start;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .columns-grid, .links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Bonos achievements progress */
+        .progress-bar-container {
+            background: var(--mqf-surface-2, #e2e8f0);
+            border-radius: 8px;
+            height: 10px;
+            width: 100%;
+            margin-top: 8px;
+            overflow: hidden;
+            border: 1px solid var(--mqf-border);
+        }
+        .progress-fill {
+            background: var(--mqf-gradient, linear-gradient(90deg, #4f46e5, #818cf8));
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bono-item {
+            background: var(--mqf-surface, rgba(255,255,255,0.4));
+            border: 1px solid var(--mqf-border, #e2e8f0);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .bono-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--mqf-shadow-sm);
+        }
+
+        /* Badge design overrides for compatibility */
+        .mqf-badge--custom-active {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--mqf-success, #10b981);
+        }
+        .mqf-badge--custom-inactive {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--mqf-text-muted, #64748b);
+        }
+
+        /* Specific card layout enhancements */
+        .mb-4 { margin-bottom: 24px; }
+        .mb-3 { margin-bottom: 16px; }
+        .mt-2 { margin-top: 8px; }
+        .mt-3 { margin-top: 16px; }
+        .gap-2 { gap: 8px; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <!-- Premium Header aligned with platform guidelines -->
+    <div class="mqf-module-header">
+        <h1 class="mqf-module-header__title"><i class="fas fa-briefcase"></i> Centro de Negocios</h1>
+        <p class="mqf-module-header__subtitle">Estadísticas de ventas, bonos por logros y expansión de enlaces online.</p>
+        <div class="mqf-module-tabs">
+            <button class="mqf-module-tab active" onclick="switchTab('tab-stats')"><i class="fas fa-chart-pie"></i> Estadísticas de Negocio</button>
+            <button class="mqf-module-tab" id="btn-admin-bonos" style="display:none;" onclick="switchTab('tab-admin-bonos')"><i class="fas fa-cog"></i> Configuración de Bonos</button>
+            <button class="mqf-module-tab" onclick="switchTab('tab-links')"><i class="fas fa-share-nodes"></i> Enlaces y Promoción</button>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <!-- TAB 1: ESTADISTICAS DE NEGOCIOS -->
+        <div id="tab-stats" class="tab-panel active">
+            <!-- Metrics Grid utilizing standardized design system KPI cards -->
+            <div class="metrics-grid">
+                <div class="mqf-kpi-card">
+                    <div class="mqf-kpi-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <div>
+                        <div class="mqf-kpi-label">Total Primas Emitidas</div>
+                        <div class="mqf-kpi-value" id="stat-total-primas">RD$ 0.00</div>
+                    </div>
+                </div>
+                <div class="mqf-kpi-card mqf-kpi-card--success">
+                    <div class="mqf-kpi-icon"><i class="fas fa-file-signature"></i></div>
+                    <div>
+                        <div class="mqf-kpi-label">Pólizas Emitidas</div>
+                        <div class="mqf-kpi-value" id="stat-cantidad-polizas">0</div>
+                    </div>
+                </div>
+                <div class="mqf-kpi-card mqf-kpi-card--warning">
+                    <div class="mqf-kpi-icon"><i class="fas fa-link"></i></div>
+                    <div>
+                        <div class="mqf-kpi-label">Conversión Enlaces</div>
+                        <div class="mqf-kpi-value" id="stat-conversion">0.00%</div>
+                    </div>
+                </div>
+                <div class="mqf-kpi-card">
+                    <div class="mqf-kpi-icon"><i class="fas fa-eye"></i></div>
+                    <div>
+                        <div class="mqf-kpi-label">Visitas / Ventas</div>
+                        <div class="mqf-kpi-value" id="stat-enlaces-vistas">0 / 0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Double Columns layout: Users performance & Active logros -->
+            <div class="columns-grid">
+                <div class="mqf-card">
+                    <div class="mqf-card-header">
+                        <h3 class="mqf-card-title"><i class="fas fa-users"></i> Ventas por Perfil de Usuario</h3>
+                    </div>
+                    <div class="mqf-table-wrapper">
+                        <table class="mqf-table">
+                            <thead>
+                                <tr>
+                                    <th>Perfil</th>
+                                    <th style="text-align: center;">Pólizas</th>
+                                    <th style="text-align: right;">Total Primas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ventas-perfil">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mqf-card">
+                    <div class="mqf-card-header">
+                        <h3 class="mqf-card-title"><i class="fas fa-trophy"></i> Mis Logros y Bonos de Venta</h3>
+                    </div>
+                    <div id="list-mis-logros">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: CONFIGURACION DE BONOS (ADMIN ONLY) -->
+        <div id="tab-admin-bonos" class="tab-panel">
+            <div class="mqf-card mb-4">
+                <div class="mqf-card-header">
+                    <h3 class="mqf-card-title"><i class="fas fa-gift"></i> Esquemas de Incentivos del Mercado</h3>
+                    <button class="mqf-btn mqf-btn--primary" onclick="abrirModalBono()"><i class="fas fa-plus"></i> Configurar Nuevo Bono</button>
+                </div>
+                
+                <div class="mqf-table-wrapper">
+                    <table class="mqf-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Meta</th>
+                                <th>Premio</th>
+                                <th>Período</th>
+                                <th>Estado</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-config-bonos">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mqf-card">
+                <div class="mqf-card-header">
+                    <h3 class="mqf-card-title"><i class="fas fa-history"></i> Trazabilidad de Logros Alcanzados</h3>
+                </div>
+                <div class="mqf-table-wrapper">
+                    <table class="mqf-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Bono</th>
+                                <th>Progreso</th>
+                                <th>Premio</th>
+                                <th>Fecha Logro</th>
+                                <th>Pago</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-logros-usuarios">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: PROMO Y ENLACES DE VENTAS -->
+        <div id="tab-links" class="tab-panel">
+            <div class="links-grid">
+                <!-- Generador de Links -->
+                <div class="mqf-card">
+                    <div class="mqf-card-header">
+                        <h3 class="mqf-card-title"><i class="fas fa-plus-circle"></i> Generador de Enlace</h3>
+                    </div>
+                    <form id="form-crear-enlace" onsubmit="crearEnlaceVenta(event)">
+                        <div class="mqf-form-group">
+                            <label>Ramo de Seguro</label>
+                            <select class="mqf-select" id="link-ramo" required>
+                                <option value="Vehículos de Motor">Vehículos de Motor</option>
+                                <option value="Fianzas">Fianzas</option>
+                                <option value="Incendio y Líneas Aliadas">Incendio y Líneas Aliadas</option>
+                            </select>
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Aseguradora</label>
+                            <select class="mqf-select" id="link-aseguradora" required>
+                                <option value="Multiseguros">Multiseguros</option>
+                                <option value="Midas Seguros">Midas Seguros</option>
+                                <option value="Seguros Patria">Seguros Patria</option>
+                                <option value="Seguros Pepín">Seguros Pepín</option>
+                            </select>
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Descuento Especial (%)</label>
+                            <input type="number" class="mqf-input" id="link-descuento" min="0" max="25" step="0.5" value="0">
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Descripción / Campaña</label>
+                            <input type="text" class="mqf-input" id="link-descripcion" placeholder="Ej: Campaña Redes Julio">
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Fecha de Expiración (Opcional)</label>
+                            <input type="date" class="mqf-input" id="link-fecha-exp">
+                        </div>
+                        <button type="submit" class="mqf-btn mqf-btn--primary mqf-btn--full mt-3"><i class="fas fa-magic"></i> Generar Enlace Serverless</button>
+                    </form>
+                </div>
+
+                <!-- Historial de Enlaces -->
+                <div class="mqf-card">
+                    <div class="mqf-card-header">
+                        <h3 class="mqf-card-title"><i class="fas fa-list-check"></i> Mis Enlaces Generados</h3>
+                    </div>
+                    <div class="mqf-table-wrapper">
+                        <table class="mqf-table">
+                            <thead>
+                                <tr>
+                                    <th>Detalles</th>
+                                    <th>Descuento</th>
+                                    <th>Visitas / Ventas</th>
+                                    <th>Estado</th>
+                                    <th style="text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-enlaces">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURAR BONO -->
+    <div id="modal-bono" class="mqf-modal-backdrop">
+        <div class="mqf-modal">
+            <div class="mqf-modal-header">
+                <h4 class="mqf-modal-title" id="modal-bono-title"><i class="fas fa-gift"></i> Configurar Bono de Venta</h4>
+                <button class="mqf-modal-close" onclick="cerrarModalBono()">&times;</button>
+            </div>
+            <form id="form-bono" onsubmit="guardarBono(event)">
+                <div class="mqf-modal-body">
+                    <input type="hidden" id="bono-id">
+                    <div class="mqf-form-group">
+                        <label>Nombre del Bono</label>
+                        <input type="text" class="mqf-input" id="bono-nombre" placeholder="Ej: Bono Trimestral de Ley" required>
+                    </div>
+                    <div class="mqf-form-group">
+                        <label>Descripción / Reglas</label>
+                        <textarea class="mqf-textarea" id="bono-desc" rows="3" placeholder="Detalla las condiciones..."></textarea>
+                    </div>
+                    <div class="mqf-form-grid-2">
+                        <div class="mqf-form-group">
+                            <label>Tipo de Meta</label>
+                            <select class="mqf-select" id="bono-tipo-meta" required>
+                                <option value="ventas_cantidad">Cantidad de Pólizas</option>
+                                <option value="monto_prima">Monto de Prima Emitida (RD$)</option>
+                            </select>
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Valor de la Meta</label>
+                            <input type="number" class="mqf-input" id="bono-valor-meta" min="1" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="mqf-form-group">
+                        <label>Premio / Incentivo (RD$)</label>
+                        <input type="number" class="mqf-input" id="bono-monto" min="1" step="0.01" required>
+                    </div>
+                    <div class="mqf-form-grid-2">
+                        <div class="mqf-form-group">
+                            <label>Fecha Inicio</label>
+                            <input type="date" class="mqf-input" id="bono-fecha-ini" required>
+                        </div>
+                        <div class="mqf-form-group">
+                            <label>Fecha Fin</label>
+                            <input type="date" class="mqf-input" id="bono-fecha-fin" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="mqf-modal-footer">
+                    <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalBono()">Cancelar</button>
+                    <button type="submit" class="mqf-btn mqf-btn--primary">Guardar Esquema</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PAGAR BONO -->
+    <div id="modal-pagar-bono" class="mqf-modal-backdrop">
+        <div class="mqf-modal">
+            <div class="mqf-modal-header">
+                <h4 class="mqf-modal-title"><i class="fas fa-credit-card"></i> Registrar Pago de Incentivo</h4>
+                <button class="mqf-modal-close" onclick="cerrarModalPagoBono()">&times;</button>
+            </div>
+            <form id="form-pagar-bono" onsubmit="guardarPagoBono(event)">
+                <div class="mqf-modal-body">
+                    <input type="hidden" id="pagar-logro-id">
+                    <div class="mqf-form-group">
+                        <label>Referencia / Comprobante de Pago</label>
+                        <input type="text" class="mqf-input" id="pagar-ref" placeholder="Ej: Transf. Reservas #12345" required>
+                    </div>
+                </div>
+                <div class="mqf-modal-footer">
+                    <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalPagoBono()">Cancelar</button>
+                    <button type="submit" class="mqf-btn mqf-btn--primary">Registrar Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MOSTRAR QR -->
+    <div id="modal-qr" class="mqf-modal-backdrop">
+        <div class="mqf-modal mqf-modal--sm">
+            <div class="mqf-modal-header">
+                <h4 class="mqf-modal-title"><i class="fas fa-qrcode"></i> Código QR de Venta Rápida</h4>
+                <button class="mqf-modal-close" onclick="cerrarModalQR()">&times;</button>
+            </div>
+            <div class="mqf-modal-body text-center">
+                <div id="qr-container" style="margin: 20px 0;">
+                    <!-- QR dynamically loaded -->
+                </div>
+                <p style="font-size: 13px; color: var(--mqf-text-muted); margin-bottom: 20px;">Muestra este código QR o compártelo para redirigir a los clientes al checkout simplificado de emisión inmediata.</p>
+            </div>
+            <div class="mqf-modal-footer" style="justify-content: center;">
+                <button type="button" class="mqf-btn mqf-btn--secondary" onclick="cerrarModalQR()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('token_sesion') || '';
+        let esAdmin = false;
+        let esSupervisor = false;
+
+        function showToast(msg, type = 'success') {
+            if (window.parent && window.parent.MQF && typeof window.parent.MQF.toast === 'function') {
+                window.parent.MQF.toast(msg, type);
+            } else if (window.MQF && typeof window.MQF.toast === 'function') {
+                window.MQF.toast(msg, type);
+            } else {
+                console.log(`[Toast ${type}] ${msg}`);
+            }
+        }
+
+        // Synchronize themes dynamically with parent dashboard message events
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'mqf-skin-set') {
+                document.body.setAttribute('data-skin', e.data.skin);
+                document.documentElement.setAttribute('data-skin', e.data.skin);
+            }
+        });
+
+        // Initialize skin locally from localStorage config
+        (function() {
+            const s = localStorage.getItem('mqf-skin') || 'indigo';
+            document.body.setAttribute('data-skin', s);
+            document.documentElement.setAttribute('data-skin', s);
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar rol inicial
+            obtenerEstadisticasYVerificarRol();
+            cargarEnlaces();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.mqf-module-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const activePanel = document.getElementById(tabId);
+            if (activePanel) activePanel.classList.add('active');
+
+            if (tabId === 'tab-admin-bonos') {
+                cargarBonosConfiguracion();
+                cargarLogrosUsuarios();
+            } else if (tabId === 'tab-stats') {
+                obtenerEstadisticasYVerificarRol();
+            } else if (tabId === 'tab-links') {
+                cargarEnlaces();
+            }
+        }
+
+        async function obtenerEstadisticasYVerificarRol() {
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=obtener_estadisticas`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    // Cargar métricas
+                    document.getElementById('stat-total-primas').textContent = 'RD$ ' + data.metricas.total_primas.toLocaleString('es-DO', {minimumFractionDigits:2, maximumFractionDigits:2});
+                    document.getElementById('stat-cantidad-polizas').textContent = data.metricas.cantidad_polizas;
+                    document.getElementById('stat-conversion').textContent = data.metricas.tasa_conversion + '%';
+                    document.getElementById('stat-enlaces-vistas').textContent = data.metricas.enlaces_vistas + ' / ' + data.metricas.enlaces_conversiones;
+
+                    // Mostrar botón admin/bonos
+                    esAdmin = true;
+                    document.getElementById('btn-admin-bonos').style.display = 'flex';
+
+                    // Rellenar tabla ventas por perfil
+                    let htmlPerfil = '';
+                    if (data.ventas_perfil.length === 0) {
+                        htmlPerfil = '<tr><td colspan="3" class="text-center text-muted" style="padding:24px;">No hay ventas registradas aún.</td></tr>';
+                    } else {
+                        data.ventas_perfil.forEach(v => {
+                            htmlPerfil += `
+                                <tr>
+                                    <td><strong class="text-secondary">${v.nombre_perfil}</strong></td>
+                                    <td class="text-center">${v.cantidad_ventas}</td>
+                                    <td class="text-right font-weight-bold text-dark">RD$ ${v.prima_emitida.toLocaleString('es-DO', {minimumFractionDigits:2})}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    document.getElementById('table-ventas-perfil').innerHTML = htmlPerfil;
+
+                    // Rellenar mis logros
+                    let htmlLogros = '';
+                    if (data.logros.length === 0) {
+                        htmlLogros = '<div class="text-center text-muted py-4" style="padding: 24px;">No tienes bonos activos asignados.</div>';
+                    } else {
+                        data.logros.forEach(l => {
+                            const pct = Math.min((l.progreso_actual / l.valor_meta) * 100, 100);
+                            const lblMeta = l.tipo_meta === 'ventas_cantidad' ? `${l.valor_meta} pólizas` : `RD$ ${l.valor_meta.toLocaleString('es-DO')}`;
+                            const lblProg = l.tipo_meta === 'ventas_cantidad' ? `${l.progreso_actual} pólizas` : `RD$ ${l.progreso_actual.toLocaleString('es-DO')}`;
+                            
+                            htmlLogros += `
+                                <div class="bono-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <strong style="font-size:14px; font-weight:700;">${l.nombre_bono}</strong>
+                                        <span class="mqf-badge ${l.completado ? 'mqf-badge--custom-active' : 'mqf-badge--custom-inactive'}">
+                                            ${l.completado ? (l.pagado ? '✓ Pagado' : '✓ Alcanzado') : 'En curso'}
+                                        </span>
+                                    </div>
+                                    <p style="font-size: 12px; color: var(--mqf-text-muted); margin: 0 0 12px 0;">${l.descripcion || ''}</p>
+                                    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--mqf-text-secondary); margin-bottom: 4px;">
+                                        <span>Progreso: <strong>${lblProg}</strong> / ${lblMeta}</span>
+                                        <span>Incentivo: <strong style="color:var(--mqf-primary);">RD$ ${l.monto_bono.toLocaleString('es-DO')}</strong></span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-fill" style="width: ${pct}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    document.getElementById('list-mis-logros').innerHTML = htmlLogros;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function cargarBonosConfiguracion() {
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=listar_bonos`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    let html = '';
+                    data.datos.forEach(b => {
+                        const lblMeta = b.tipo_meta === 'ventas_cantidad' ? `${b.valor_meta} pólizas` : `RD$ ${b.valor_meta.toLocaleString('es-DO')}`;
+                        html += `
+                            <tr>
+                                <td><strong>${b.nombre_bono}</strong><br><small class="text-muted">${b.descripcion || ''}</small></td>
+                                <td>${lblMeta}</td>
+                                <td class="font-weight-bold text-success">RD$ ${b.monto_bono.toLocaleString('es-DO')}</td>
+                                <td><small>${b.fecha_inicio} al ${b.fecha_fin}</small></td>
+                                <td><span class="mqf-badge ${b.estado === 'activo' ? 'mqf-badge--custom-active' : 'mqf-badge--custom-inactive'}">${b.estado}</span></td>
+                                <td class="text-right">
+                                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm mqf-btn--icon" onclick="eliminarBono(${b.id})"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('table-config-bonos').innerHTML = html;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function cargarLogrosUsuarios() {
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=listar_logros_usuarios`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    let html = '';
+                    data.datos.forEach(l => {
+                        html += `
+                            <tr>
+                                <td><strong>${l.nombre} ${l.apellido}</strong><br><small class="text-muted">@${l.username}</small></td>
+                                <td>${l.nombre_bono}</td>
+                                <td>${l.progreso_actual}</td>
+                                <td class="font-weight-bold text-success">RD$ ${l.monto_bono.toLocaleString('es-DO')}</td>
+                                <td><small>${l.fecha_completado ? l.fecha_completado.substring(0, 10) : 'Pendiente'}</small></td>
+                                <td>
+                                    <span class="mqf-badge ${l.pagado ? 'mqf-badge--custom-active' : 'mqf-badge--custom-inactive'}">
+                                        ${l.pagado ? 'Pagado' : 'Pendiente'}
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    ${l.completado && !l.pagado ? `<button class="mqf-btn mqf-btn--success mqf-btn--sm" onclick="abrirModalPago(${l.id})"><i class="fas fa-check"></i> Pagar</button>` : '—'}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('table-logros-usuarios').innerHTML = html;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function cargarEnlaces() {
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=listar_enlaces`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    let html = '';
+                    data.datos.forEach(e => {
+                        const port = window.location.port ? ':' + window.location.port : '';
+                        const linkUrl = `${window.location.protocol}//${window.location.hostname}${port}/PLATAFORMA_INTEGRADA/frontend/checkout.html?ref=${e.codigo_enlace}`;
+                        const conv = e.vistas > 0 ? ((e.conversiones / e.vistas) * 100).toFixed(1) + '%' : '0.0%';
+
+                        html += `
+                            <tr>
+                                <td>
+                                    <strong>${e.ramo} - ${e.aseguradora}</strong><br>
+                                    <small class="text-muted">${e.descripcion || 'Sin descripción'}</small>
+                                </td>
+                                <td class="text-center font-weight-bold text-primary">${e.descuento_aplicado}%</td>
+                                <td class="text-center">${e.vistas} / ${e.conversiones} <small class="text-muted">(${conv})</small></td>
+                                <td>
+                                    <span class="mqf-badge ${e.estado === 'activo' ? 'mqf-badge--custom-active' : 'mqf-badge--custom-inactive'}">${e.estado}</span>
+                                </td>
+                                <td class="text-right">
+                                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm mqf-btn--icon" onclick="copiarEnlace('${linkUrl}')" title="Copiar enlace"><i class="fas fa-copy"></i></button>
+                                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm mqf-btn--icon" onclick="mostrarQR('${linkUrl}')" title="Mostrar QR"><i class="fas fa-qrcode"></i></button>
+                                    <button class="mqf-btn mqf-btn--secondary mqf-btn--sm mqf-btn--icon" onclick="toggleEnlace(${e.id}, '${e.estado}')" title="Cambiar Estado">
+                                        <i class="fas ${e.estado === 'activo' ? 'fa-pause' : 'fa-play'}"></i>
+                                    </button>
+                                    <button class="mqf-btn mqf-btn--danger mqf-btn--sm mqf-btn--icon" onclick="eliminarEnlace(${e.id})" title="Eliminar Enlace">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('table-enlaces').innerHTML = html;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function crearEnlaceVenta(event) {
+            event.preventDefault();
+            const ramo = document.getElementById('link-ramo').value;
+            const aseguradora = document.getElementById('link-aseguradora').value;
+            const descuento = document.getElementById('link-descuento').value;
+            const descripcion = document.getElementById('link-descripcion').value;
+            const fecha_exp = document.getElementById('link-fecha-exp').value;
+
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=crear_enlace`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `ramo=${encodeURIComponent(ramo)}&aseguradora=${encodeURIComponent(aseguradora)}&descuento_aplicado=${descuento}&descripcion=${encodeURIComponent(descripcion)}&fecha_expiracion=${fecha_exp}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Enlace de venta online creado con éxito.', 'success');
+                    document.getElementById('form-crear-enlace').reset();
+                    cargarEnlaces();
+                } else {
+                    showToast('Error: ' + data.mensaje, 'error');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function toggleEnlace(id, estadoActual) {
+            const estado = estadoActual === 'activo' ? 'inactivo' : 'activo';
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=toggle_enlace`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${id}&estado=${estado}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Estado del enlace modificado.', 'success');
+                    cargarEnlaces();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function eliminarEnlace(id) {
+            if (!confirm('¿Seguro que deseas eliminar este enlace de venta online permanentemente?')) return;
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=eliminar_enlace`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${id}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Enlace eliminado permanentemente.', 'success');
+                    cargarEnlaces();
+                } else {
+                    showToast('Error: ' + data.mensaje, 'error');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function copiarEnlace(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Enlace copiado al portapapeles.', 'success');
+            }).catch(() => {
+                showToast('Error al copiar enlace.', 'error');
+            });
+        }
+
+        function mostrarQR(url) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+            document.getElementById('qr-container').innerHTML = `<img src="${qrUrl}" alt="QR" style="border: 4px solid var(--mqf-border, #e2e8f0); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1)">`;
+            document.getElementById('modal-qr').classList.add('active');
+        }
+
+        function cerrarModalQR() {
+            document.getElementById('modal-qr').classList.remove('active');
+        }
+
+        // Metodos Bonos
+        function abrirModalBono() {
+            document.getElementById('form-bono').reset();
+            document.getElementById('bono-id').value = '';
+            document.getElementById('modal-bono-title').innerHTML = '<i class="fas fa-gift"></i> Configurar Bono de Venta';
+            document.getElementById('modal-bono').classList.add('active');
+        }
+
+        function cerrarModalBono() {
+            document.getElementById('modal-bono').classList.remove('active');
+        }
+
+        async function guardarBono(event) {
+            event.preventDefault();
+            const id = document.getElementById('bono-id').value;
+            const nombre = document.getElementById('bono-nombre').value;
+            const desc = document.getElementById('bono-desc').value;
+            const tipo = document.getElementById('bono-tipo-meta').value;
+            const valor = document.getElementById('bono-valor-meta').value;
+            const monto = document.getElementById('bono-monto').value;
+            const inicio = document.getElementById('bono-fecha-ini').value;
+            const fin = document.getElementById('bono-fecha-fin').value;
+
+            const action = id ? 'editar_bono' : 'crear_bono';
+
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${id}&nombre_bono=${encodeURIComponent(nombre)}&descripcion=${encodeURIComponent(desc)}&tipo_meta=${tipo}&valor_meta=${valor}&monto_bono=${monto}&fecha_inicio=${inicio}&fecha_fin=${fin}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Bono de venta configurado exitosamente.', 'success');
+                    cerrarModalBono();
+                    cargarBonosConfiguracion();
+                } else {
+                    showToast('Error: ' + data.mensaje, 'error');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function eliminarBono(id) {
+            if (!confirm('¿Seguro que deseas eliminar este bono configurado?')) return;
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=eliminar_bono`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${id}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Bono eliminado.', 'success');
+                    cargarBonosConfiguracion();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function abrirModalPago(logroId) {
+            document.getElementById('pagar-logro-id').value = logroId;
+            document.getElementById('pagar-ref').value = '';
+            document.getElementById('modal-pagar-bono').classList.add('active');
+        }
+
+        function cerrarModalPagoBono() {
+            document.getElementById('modal-pagar-bono').classList.remove('active');
+        }
+
+        async function guardarPagoBono(event) {
+            event.preventDefault();
+            const logroId = document.getElementById('pagar-logro-id').value;
+            const ref = document.getElementById('pagar-ref').value;
+
+            try {
+                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=marcar_bono_pagado`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `logro_id=${logroId}&referencia_pago=${encodeURIComponent(ref)}`
+                });
+                const data = await res.json();
+                if (data.exito) {
+                    showToast('Pago del incentivo registrado con éxito.', 'success');
+                    cerrarModalPagoBono();
+                    cargarLogrosUsuarios();
+                } else {
+                    showToast('Error: ' + data.mensaje, 'error');
+                }
+            } catch(e) { console.error(e); }
+        }
+    </script>
+</body>
+</html>

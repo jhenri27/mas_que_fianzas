@@ -90,6 +90,17 @@ try {
             
             echo json_encode(["exito" => true, "data" => $companias]);
             exit;
+        } elseif ($action === 'listar_aseguradoras') {
+            $sql = "SELECT fa.id, fa.codigo, fa.nombre, fa.rnc, fa.logo_url, fa.estado, fa.creado_en,
+                           COUNT(ft.id) AS total_tarifarios
+                    FROM fianza_aseguradoras fa
+                    LEFT JOIN fianza_tarifarios ft ON ft.aseguradora_id = fa.id
+                    GROUP BY fa.id ORDER BY fa.nombre ASC";
+            $res2 = $db->query($sql);
+            $data = [];
+            while ($row = $res2->fetch_assoc()) $data[] = $row;
+            echo json_encode(["exito" => true, "data" => $data]);
+            exit;
         } else {
             throw new Exception("Acción GET no soportada.");
         }
@@ -225,9 +236,110 @@ try {
             $db->commit();
             echo json_encode(["exito" => true, "mensaje" => "Estado de la compañía modificado con éxito.", "nuevo_estado" => $nuevo_estado]);
             exit;
+        // ─── GESTIÓN DE ASEGURADORAS (fianza_aseguradoras) ──────────────────────
+        } elseif ($action === 'guardar_aseguradora') {
+            $id     = isset($input['id']) ? (int)$input['id'] : null;
+            $codigo = strtoupper(trim($input['codigo'] ?? ''));
+            $nombre = trim($input['nombre'] ?? '');
+            $rnc    = trim($input['rnc'] ?? '') ?: null;
+
+            if (!$codigo || !$nombre) throw new Exception('Código y nombre de aseguradora son obligatorios.');
+
+            if ($id) {
+                $stmt = $db->prepare("UPDATE fianza_aseguradoras SET codigo=?, nombre=?, rnc=? WHERE id=?");
+                $stmt->bind_param('sssi', $codigo, $nombre, $rnc, $id);
+                $stmt->execute(); $stmt->close();
+                logAudit($usuario_actual, 'editar_aseguradora', 'Configuracion', 'CONF_COMPANIAS_EDITAR', "Editó aseguradora ID $id: $nombre", 'exitoso', null, 'fianza_aseguradoras', $id, null, $input);
+                echo json_encode(["exito" => true, "mensaje" => "Aseguradora actualizada con éxito.", "id" => $id]);
+            } else {
+                $chk = $db->prepare("SELECT id FROM fianza_aseguradoras WHERE codigo=? OR nombre=? LIMIT 1");
+                $chk->bind_param('ss', $codigo, $nombre);
+                $chk->execute();
+                if ($chk->get_result()->fetch_assoc()) { $chk->close(); throw new Exception('Ya existe una aseguradora con ese código o nombre.'); }
+                $chk->close();
+
+                $stmt = $db->prepare("INSERT INTO fianza_aseguradoras (codigo, nombre, rnc, estado) VALUES (?, ?, ?, 'activo')");
+                $stmt->bind_param('sss', $codigo, $nombre, $rnc);
+                $stmt->execute(); $newId = $db->insert_id; $stmt->close();
+                logAudit($usuario_actual, 'crear_aseguradora', 'Configuracion', 'CONF_COMPANIAS_EDITAR', "Creó aseguradora: $nombre", 'exitoso', null, 'fianza_aseguradoras', $newId, null, $input);
+                echo json_encode(["exito" => true, "mensaje" => "Aseguradora creada con éxito.", "id" => $newId]);
+            }
+            exit;
+        } elseif ($action === 'toggle_aseguradora') {
+            $id = isset($input['id']) ? (int)$input['id'] : 0;
+            if (!$id) throw new Exception('ID requerido.');
+            $stmt = $db->prepare("UPDATE fianza_aseguradoras SET estado = IF(estado='activo','inactivo','activo') WHERE id=?");
+            $stmt->bind_param('i', $id); $stmt->execute(); $stmt->close();
+            echo json_encode(["exito" => true, "mensaje" => "Estado de aseguradora actualizado."]);
+            exit;
+        } elseif ($action === 'subir_logo_aseguradora') {
+            // ── Upload de logo (multipart/form-data) ─────────────────────────
+            $logoId  = (int)($_POST['id'] ?? 0);
+            $logDir  = realpath(dirname(__DIR__, 2) . '/frontend/assets/logos/aseguradoras');
+            $logBase = '/PLATAFORMA_INTEGRADA/frontend/assets/logos/aseguradoras';
+
+            if (!$logoId) throw new Exception('ID de aseguradora requerido.');
+
+            if (empty($_FILES['logo']) || $_FILES['logo']['error'] !== UPLOAD_ERR_OK) {
+                $uploadErrors = [
+                    UPLOAD_ERR_INI_SIZE  => 'El archivo supera upload_max_filesize del servidor.',
+                    UPLOAD_ERR_FORM_SIZE => 'El archivo supera MAX_FILE_SIZE del formulario.',
+                    UPLOAD_ERR_PARTIAL   => 'El archivo fue subido parcialmente.',
+                    UPLOAD_ERR_NO_FILE   => 'No se seleccionó ningún archivo.',
+                ];
+                $errCode = $_FILES['logo']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $errMsg  = $uploadErrors[$errCode] ?? 'Error desconocido al subir el archivo (código: ' . $errCode . ').';
+                throw new Exception($errMsg);
+            }
+
+            $file    = $_FILES['logo'];
+            $allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+            $mime    = mime_content_type($file['tmp_name']);
+
+            if ($file['size'] > 2 * 1024 * 1024) throw new Exception('El archivo supera el tamaño máximo de 2 MB.');
+            if (!in_array($mime, $allowed))         throw new Exception('Formato no permitido. Use PNG, JPG, WEBP o SVG.');
+            if (!$logDir || !is_dir($logDir))       throw new Exception('Directorio de logos no accesible en el servidor.');
+
+            // Eliminar logo anterior si existe
+            $prevStmt = $db->prepare('SELECT logo_url FROM fianza_aseguradoras WHERE id=? LIMIT 1');
+            $prevStmt->bind_param('i', $logoId); $prevStmt->execute();
+            $prevRow = $prevStmt->get_result()->fetch_assoc(); $prevStmt->close();
+            if (!empty($prevRow['logo_url'])) {
+                $oldFile = realpath(dirname(__DIR__, 2) . parse_url($prevRow['logo_url'], PHP_URL_PATH));
+                if ($oldFile && file_exists($oldFile)) @unlink($oldFile);
+            }
+
+            $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $filename = 'logo_aseg_' . $logoId . '_' . time() . '.' . $ext;
+            $dest     = $logDir . DIRECTORY_SEPARATOR . $filename;
+
+            if (!move_uploaded_file($file['tmp_name'], $dest)) {
+                throw new Exception('Error al guardar el archivo en el servidor.');
+            }
+
+            $logoUrl  = $logBase . '/' . $filename;
+            $updStmt  = $db->prepare('UPDATE fianza_aseguradoras SET logo_url=? WHERE id=?');
+            $updStmt->bind_param('si', $logoUrl, $logoId); $ok = $updStmt->execute(); $updStmt->close();
+
+            if (!$ok) throw new Exception('Logo guardado en disco pero no se pudo actualizar la base de datos.');
+
+            if (function_exists('logAudit')) logAudit($usuario_actual, 'subir_logo', 'fianza_aseguradoras', $logoId, "Logo subido: $logoUrl", 'exitoso', null, 'companias');
+            echo json_encode(['exito' => true, 'mensaje' => 'Logo subido exitosamente.', 'logo_url' => $logoUrl]);
+            exit;
         } else {
             throw new Exception("Acción POST no soportada.");
         }
+    } elseif ($method === 'GET' && $action === 'listar_aseguradoras') {
+        $sql = "SELECT fa.id, fa.codigo, fa.nombre, fa.rnc, fa.logo_url, fa.estado, fa.creado_en,
+                       COUNT(ft.id) AS total_tarifarios
+                FROM fianza_aseguradoras fa
+                LEFT JOIN fianza_tarifarios ft ON ft.aseguradora_id = fa.id
+                GROUP BY fa.id ORDER BY fa.nombre ASC";
+        $res = $db->query($sql);
+        $data = [];
+        while ($row = $res->fetch_assoc()) $data[] = $row;
+        echo json_encode(["exito" => true, "data" => $data]);
+        exit;
     } else {
         http_response_code(405);
         echo json_encode(["exito" => false, "mensaje" => "Método HTTP no soportado."]);
@@ -237,3 +349,4 @@ try {
     http_response_code(500);
     echo json_encode(["exito" => false, "mensaje" => $e->getMessage()]);
 }
+

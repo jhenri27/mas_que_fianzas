@@ -161,6 +161,135 @@ try {
                 $ok = $polizaManager->cambiarEstado($id, $estado);
                 echo json_encode(["exito" => $ok, "mensaje" => $ok ? "Estado actualizado" : "Error al actualizar estado"]);
             }
+            elseif ($action === 'preview_cancelar') {
+                if (!tienePermiso($usuario_actual, 'POLIZAS_CANCELAR_INDIVIDUAL')) {
+                    echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para calcular prorrata de cancelación"]);
+                    break;
+                }
+                $id = $datos['id'] ?? $_GET['id'] ?? null;
+                $fecha = $datos['fecha_cancelacion'] ?? $_GET['fecha_cancelacion'] ?? null;
+                if (!$id) {
+                    echo json_encode(["exito" => false, "mensaje" => "ID de póliza requerido"]);
+                    break;
+                }
+                try {
+                    $res = $polizaManager->calcularProrrataCancelacion($id, $fecha);
+                    echo json_encode(["exito" => true, "data" => $res]);
+                } catch (Exception $e) {
+                    echo json_encode(["exito" => false, "mensaje" => $e->getMessage()]);
+                }
+            }
+            elseif ($action === 'cancelar_individual') {
+                if (!tienePermiso($usuario_actual, 'POLIZAS_CANCELAR_INDIVIDUAL')) {
+                    echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para cancelar pólizas de forma individual"]);
+                    break;
+                }
+                $id = $datos['id'] ?? null;
+                $justificacion = $datos['justificacion'] ?? '';
+                $fecha = $datos['fecha_cancelacion'] ?? null;
+                if (!$id || empty($justificacion)) {
+                    echo json_encode(["exito" => false, "mensaje" => "ID de póliza y justificación requeridos"]);
+                    break;
+                }
+                $res = $polizaManager->cancelarPoliza($id, $justificacion, 'individual', $usuario_actual, $fecha, true);
+                echo json_encode($res);
+            }
+            elseif ($action === 'cancelar_seleccion') {
+                if (!tienePermiso($usuario_actual, 'POLIZAS_CANCELAR_GRUPO')) {
+                    echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para realizar cancelación grupal por selección"]);
+                    break;
+                }
+                $ids = $datos['ids'] ?? [];
+                $justificacion = $datos['justificacion'] ?? '';
+                if (empty($ids) || empty($justificacion)) {
+                    echo json_encode(["exito" => false, "mensaje" => "Lista de pólizas y justificación requeridas"]);
+                    break;
+                }
+                $exitosos = 0; $fallidos = 0; $errores = [];
+                foreach ($ids as $id) {
+                    $res = $polizaManager->cancelarPoliza($id, $justificacion, 'seleccion', $usuario_actual, null, true);
+                    if ($res['exito']) {
+                        $exitosos++;
+                    } else {
+                        $fallidos++;
+                        $errores[] = "ID {$id}: " . $res['mensaje'];
+                    }
+                }
+                echo json_encode([
+                    "exito" => $exitosos > 0,
+                    "mensaje" => "Proceso completado. Canceladas con éxito: {$exitosos}. Fallidas: {$fallidos}.",
+                    "detalles" => [
+                        "exitosas" => $exitosos,
+                        "fallidas" => $fallidos,
+                        "errores" => $errores
+                    ]
+                ]);
+            }
+            elseif ($action === 'cancelar_masiva') {
+                if (!tienePermiso($usuario_actual, 'POLIZAS_CANCELAR_MASIVO')) {
+                    echo json_encode(["exito" => false, "mensaje" => "No tiene permisos para realizar cancelación masiva de pólizas"]);
+                    break;
+                }
+                $filtros = $datos['filtros'] ?? [];
+                $justificacion = $datos['justificacion'] ?? '';
+                if (empty($justificacion)) {
+                    echo json_encode(["exito" => false, "mensaje" => "La justificación de la cancelación masiva es obligatoria"]);
+                    break;
+                }
+
+                // Construir consulta para buscar las pólizas activas que cumplen los filtros
+                $db = Database::getInstance()->getConnection();
+                $sql = "SELECT p.id FROM polizas p WHERE p.estado = 'activa'";
+                $params = [];
+                $types = '';
+
+                if (!empty($filtros['agente'])) {
+                    $sql .= " AND p.emitida_por = ?";
+                    $params[] = (int)$filtros['agente'];
+                    $types .= 'i';
+                }
+                if (!empty($filtros['ramo'])) {
+                    $sql .= " AND p.ramo = ?";
+                    $params[] = $filtros['ramo'];
+                    $types .= 's';
+                }
+                if (!empty($filtros['aseguradora'])) {
+                    $sql .= " AND p.aseguradora = ?";
+                    $params[] = $filtros['aseguradora'];
+                    $types .= 's';
+                }
+
+                $stmt = $db->prepare($sql);
+                if ($types) {
+                    $stmt->bind_param($types, ...$params);
+                }
+                $stmt->execute();
+                $resQuery = $stmt->get_result();
+                
+                $ids = [];
+                while ($r = $resQuery->fetch_assoc()) {
+                    $ids[] = (int)$r['id'];
+                }
+                $stmt->close();
+
+                if (empty($ids)) {
+                    echo json_encode(["exito" => false, "mensaje" => "No se encontraron pólizas activas con los filtros especificados."]);
+                    break;
+                }
+
+                $exitosos = 0; $fallidos = 0;
+                foreach ($ids as $id) {
+                    $res = $polizaManager->cancelarPoliza($id, $justificacion, 'masiva', $usuario_actual, null, true);
+                    if ($res['exito']) $exitosos++;
+                    else $fallidos++;
+                }
+
+                echo json_encode([
+                    "exito" => $exitosos > 0,
+                    "mensaje" => "Cancelación masiva completada. Procesadas con éxito: {$exitosos}. Fallidas: {$fallidos}.",
+                    "total_afectadas" => count($ids)
+                ]);
+            }
             elseif ($action === 'enviar_correo') {
                 $email = trim($datos['email'] ?? '');
                 $pdf_base64 = $datos['pdf_base64'] ?? '';

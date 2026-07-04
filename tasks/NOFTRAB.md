@@ -81,7 +81,7 @@ Sé conciso pero preciso. NO modifiques nada.
 
 ---
 
-## 4. VERIFICACIÓN ANTES DE FINALIZAR
+## 4. VERIFICACIÓN ANTES DE FINALIZAR (VAF)
 
 **Nunca marcar como ✅ sin demostrar funcionamiento:**
 

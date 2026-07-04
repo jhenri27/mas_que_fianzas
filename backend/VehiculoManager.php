@@ -89,16 +89,17 @@ class VehiculoManager {
         }
 
         $sql = "INSERT INTO vehiculos (
-                    cliente_id, placa, chasis, motor, marca, modelo, 
+                    cliente_id, placa, matricula, chasis, motor, marca, modelo, 
                     anio, color, tipo_vehiculo, uso, capacidad, 
                     valor_comercial, creado_por
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         if (!$stmt) return ['exito' => false, 'mensaje' => 'Error SQL: ' . $this->db->error];
 
         $cli_id = $datos['cliente_id'];
         $placa = $datos['placa'] ?? null;
+        $matricula = $datos['matricula'] ?? null;
         $chasis = $datos['chasis'] ?? null;
         $motor = $datos['motor'] ?? null;
         $marca = $datos['marca'] ?? null;
@@ -111,8 +112,8 @@ class VehiculoManager {
         $valor = !empty($datos['valor_comercial']) ? floatval($datos['valor_comercial']) : 0;
         $creado_por = $datos['creado_por'] ?? null;
 
-        $stmt->bind_param("issssssssssdi", 
-            $cli_id, $placa, $chasis, $motor, $marca, $modelo, 
+        $stmt->bind_param("issssssssssdii", 
+            $cli_id, $placa, $matricula, $chasis, $motor, $marca, $modelo, 
             $anio, $color, $tipo, $uso, $capacidad, $valor, $creado_por
         );
         
@@ -141,7 +142,7 @@ class VehiculoManager {
         }
 
         $sql = "UPDATE vehiculos SET 
-                    placa=?, chasis=?, motor=?, marca=?, modelo=?, 
+                    placa=?, matricula=?, chasis=?, motor=?, marca=?, modelo=?, 
                     anio=?, color=?, tipo_vehiculo=?, uso=?, capacidad=?, 
                     valor_comercial=? 
                 WHERE id=?";
@@ -150,6 +151,7 @@ class VehiculoManager {
         if (!$stmt) return ['exito' => false, 'mensaje' => 'Error SQL: ' . $this->db->error];
         
         $placa = $datos['placa'] ?? null;
+        $matricula = $datos['matricula'] ?? null;
         $chasis = $datos['chasis'] ?? null;
         $motor = $datos['motor'] ?? null;
         $marca = $datos['marca'] ?? null;
@@ -161,8 +163,8 @@ class VehiculoManager {
         $capacidad = $datos['capacidad'] ?? null;
         $valor = !empty($datos['valor_comercial']) ? floatval($datos['valor_comercial']) : 0;
 
-        $stmt->bind_param("ssssssssssdi", 
-            $placa, $chasis, $motor, $marca, $modelo, 
+        $stmt->bind_param("ssssssssssdii", 
+            $placa, $matricula, $chasis, $motor, $marca, $modelo, 
             $anio, $color, $tipo, $uso, $capacidad, $valor, $id
         );
         
