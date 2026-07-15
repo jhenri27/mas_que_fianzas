@@ -1,8 +1,8 @@
 {
     "server": "smtp.gmail.com",
     "port": 587,
-    "username": "pastorandersonhenriquez@gmail.com",
-    "password": "ujxw vwkx ftik cydf",
+    "username": "YOUR_GMAIL_USERNAME@gmail.com",
+    "password": "YOUR_GMAIL_APP_PASSWORD",
     "encryption": "tls",
     "timeout": 15
 }

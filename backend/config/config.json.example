@@ -1,9 +1,9 @@
 {
     "smtp": {
-        "server": "mail.masquefianzas.com",
+        "server": "mail.example.com",
         "port": 465,
-        "username": "info@masquefianzas.com",
-        "password": "M4sq53F14nz4s",
+        "username": "info@example.com",
+        "password": "YOUR_SMTP_PASSWORD",
         "encryption": "ssl",
         "timeout": 10
     },

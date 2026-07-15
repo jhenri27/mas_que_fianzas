@@ -52,11 +52,11 @@ class Mailer {
             $this->server     = 'mail.masquefianzas.com';
             $this->port       = 465;
             $this->username   = 'info@masquefianzas.com';
-            $this->password   = 'M4sq53F14nz4s';
+            $this->password   = ''; // Eliminado por seguridad
             $this->timeout    = 15;
             $this->encryption = 'ssl';
             $this->fromName   = 'MAS QUE FIANZAS';
-            $this->log_message("Config no encontrada o vacía, usando valores por defecto.", 'WARNING');
+            $this->log_message("Config no encontrada o vacía, usando valores por defecto sin contraseña.", 'WARNING');
         }
     }
 

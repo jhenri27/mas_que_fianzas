@@ -24,3 +24,11 @@ tasks/dev/
 *.zip
 test_pgc.php
 frontend/assets/fotos/
+
+# Credenciales y archivos sensibles
+Credenciales para accesar a la VPS.txt
+backend/google-key.json
+backend/config/config.json
+backend/config/google_drive.json
+backend/config/smtp.json
+

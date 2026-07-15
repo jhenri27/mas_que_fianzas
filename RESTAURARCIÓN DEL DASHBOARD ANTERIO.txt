@@ -8,3 +8,29 @@ Copy-Item -Path "dashboard.js.bak" -Destination "dashboard.js" -Force
 
 # Restaurar la estructura HTML
 git checkout ../dashboard.html
+------------------------------
+------------------------------
+Multiseguros-
+Reservas*
+Midas-
+Aps*
+-----------------------------
+Multiseguros
+Reservas
+Midas
+Aps
+-------------------------------
+Que pasaría su utilizo una fianza en pdf con daos como plantilla en el modelador, se superpondrían los datos o se eliminarían los datos detrás de las variables, quiero saber que sucedería en este caso si tienes respuesta si no la tienes, analiza las mejores practicas del mercado para que podamos enfrentar situaciones como estas y aprovecharlas--
+---------------------
+Previsualización Real en Tiempo Real, Plan de Implementación--
+
+-------------
+Bot-Desk-IA
+Siglas: BD-IA
+----
+Bot-Busines-IA
+Siglas: BB-IA
+----
+Bot-Client Service-IA
+Siglas: BCS-IA
+-----------------POL-2026-1675
