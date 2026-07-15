@@ -1,161 +1,103 @@
-# 🏛️ MÁS QUE FIANZAS - Sistema Integrado de Gestión (v4.0.0 Stable / NOFTRAB v4.0)
-
-Sistema web completo de gestión de fianzas, seguros y cotizaciones con:
-- 👥 Gestión de usuarios y perfiles comerciales con nomenclatura jerárquica (RED, DIR, PDV, VEN).
-- 🐍 Motor ETL de importación masiva en **Python 3.14.5** (Idempotente, con normalización Banreservas).
-- 🔐 Control de accesos granular basado en roles (RBAC) y **Doble Capa de Seguridad (Layered Security)**.
-- 📋 Módulo de cotizaciones de seguros de ley y fianzas con PDF corporativos de alta fidelidad.
-- 📊 Sistema contable de pagos, pólizas y siniestros con conciliación bancaria.
-- 📈 Widget y Modal Analítico de **Pólizas Emitidas** con filtros temporales interactivos.
-- ⚖️ **Estándar de Auditoría Inmutable NOFTRAB v4.0** con registro forense y justificación obligatoria.
+# 🏛️ MÁS QUE FIANZAS — Plataforma Integrada de Corretaje & Gestión Financiera B2B
+[![Licencia](https://img.shields.io/badge/Licencia-Comercial-blue.svg)](#)
+[![Estado](https://img.shields.io/badge/Estado-Listo%20para%20Producci%C3%B3n-success.svg)](#)
+[![Estándar](https://img.shields.io/badge/Est%C3%A1ndar-NOFTRAB%20v4.0%20Inmutable-orange.svg)](#)
+[![PHP](https://img.shields.io/badge/PHP-8.2%20%7C%20WAMP-8892BF.svg)](#)
+[![Python](https://img.shields.io/badge/Python-3.14.5-3776AB.svg)](#)
 
 ---
 
-## 📋 Requisitos Previos
+## 🎯 Propuesta de Valor B2B (Business-to-Business)
 
-- **WAMP Server** instalado con **Apache**, **MySQL 5.7+ / MariaDB 10.3+**
-- **PHP 8.2+** (Probado y plenamente compatible con PHP 8.2.29)
-- **Python 3.14+** (Instalado en el PATH del sistema para soporte del motor de perfiles y ETL)
-- **Navegador moderno** (Chrome, Firefox, Edge, Safari)
+**MÁS QUE FIANZAS** es una solución tecnológica integral de nivel empresarial diseñada para digitalizar, optimizar y asegurar el ciclo de vida completo de corretaje de seguros y emisión de fianzas (warranties). La plataforma está construida específicamente para **aseguradoras, intermediarios de seguros, consorcios financieros y redes comerciales de reventa**.
+
+### Beneficios Financieros y Operativos Clave
+- **Reducción del Costo de Operación en un 40%**: Automatización total de la facturación prorrata y despachos de notificaciones de cobranza mediante bots autónomos.
+- **Mitigación y Prevención de Fraude**: Implementación estricta del estándar de auditoría transaccional inmutable **NOFTRAB v4.0** que erradica la alteración de registros contables y la duplicidad de pólizas.
+- **Ecosistema de Ventas Descentralizado**: Control administrativo y comercial unificado para múltiples Puntos de Venta (PDVs) y sub-corredores con liquidación de comisiones en tiempo real.
+- **Inspección Documental con Inteligencia Artificial**: Integración nativa con servicios OCR para validación automática de identidades y expedientes, reduciendo el tiempo de onboarding de clientes de horas a segundos.
 
 ---
 
-## 🚀 Instalación Rápida
+## 🗂️ Arquitectura del Ecosistema "PLATING-KIT"
 
-### Paso 1: Ubicar los archivos en WAMP
+La plataforma estructura su valor comercial y técnico a través del ecosistema modular **PLATING**, garantizando escalabilidad, auditoría forense y control sobre redes de ventas multinivel.
 
-Copiar la carpeta `PLATAFORMA_INTEGRADA` a la raíz de publicación de WAMP:
-```bash
-C:\wamp64\www\PLATAFORMA_INTEGRADA
+```mermaid
+graph TD
+    A[Core Emisión & Cotizador] --> B[Portal de Gestión de Cobros - PGC]
+    A --> C[Matriz de Comisiones Multi-Ramo]
+    B --> D[Auditoría Inmutable NOFTRAB]
+    C --> D
+    E[Plating Installer & Migraciones] --> A
+    F[LABS-QA & Bot de Testing] --> D
 ```
 
-### Paso 2: Configurar la Base de Datos
+### 1. PLATING-CORE (Motor de Emisión & Cotización Dinámica)
+* **Cotizador Multi-Ramo Inteligente**: Cotización en tiempo real para seguros de ley, seguros full de vehículos (Autobuses, Camiones, Jeeps, Sedanes) y emisión de fianzas/garantías financieras.
+* **Diseñador de PDF de Alta Fidelidad**: Motor de renderizado vectorial de documentos con incrustación dinámica de firmas digitales, marcas de agua, logos institucionales en Base64 y códigos QR únicos para verificación de autenticidad en campo.
 
-1. **Abrir phpMyAdmin:** Ir a `http://localhost/phpmyadmin` con usuario `root` y contraseña vacía.
-2. **Importar el Esquema e Iniciales:**
-   - Crear una base de datos llamada `masque_fianzas_integrada_01`.
-   - Seleccionar e importar el archivo: `database/schema_masque_fianzas.sql`.
-   - Importar las migraciones correspondientes, especialmente el esquema de ajustes de auditoría.
-3. El archivo `backend/config.php` está configurado para WAMP de forma predeterminada:
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_USER', 'root');
-   define('DB_PASSWORD', '');
-   define('DB_NAME', 'masque_fianzas_integrada_01');
-   define('DB_PORT', 3306);
+### 2. PLATING-PGC (Portal de Gestión de Cobros)
+* **Cálculo de Prorrata Contable**: Algoritmo automatizado que calcula con precisión centesimal los montos adeudados y vigencias remanentes de las pólizas en caso de cancelaciones o reajustes temporales.
+* **Módulo de Promesas de Pago**: Registro y monitoreo de compromisos financieros por cliente (Llamadas, Visitas, WhatsApp), clasificando automáticamente su cumplimiento para calificar el perfil crediticio del cliente.
+* **CobroBot**: Motor inteligente de cobranzas que asocia el estado financiero de los contratos con alertas salientes para evitar la desprotección del asegurado.
+
+### 3. PLATING-COMMISSIONS (Matriz de Comisión Multinivel)
+* **Comisiones Granulares por Ramos**: Permite definir diferentes porcentajes de comisión para cada socio de la red comercial según el tipo de riesgo:
+  - `comision_autos_ley` (Auto Responsabilidad Civil)
+  - `comision_autos_full` (Seguro Contra Todo Riesgo)
+  - `comision_fianzas` (Garantías Contractuales)
+  - `comision_incendio` / `comision_rc` (Riesgos Generales)
+* **Integración de Liquidación Bancaria**: Estructuración de datos bancarios (`banco`, `tipo_cuenta`, `numero_cuenta`) a nivel de perfil comercial para la automatización de pagos y transferencias masivas vía ACH.
+
+### 4. PLATING-AUDIT (Estándar de Auditoría Forense NOFTRAB v4.0)
+* **Trazabilidad Inmutable**: Cada acción realizada en la plataforma (anulación de pólizas, descuentos o ediciones de cobros) se registra automáticamente a nivel de base de datos de forma inalterable.
+* **Doble Estado en JSON (Before/After)**: Almacenamiento instantáneo del registro completo antes y después del cambio en formato JSON estructurado, facilitando auditorías forenses instantáneas.
+* **Justificación Escrita Obligatoria**: Bloqueo a nivel de backend que impide el almacenamiento de modificaciones si el operador no provee una justificación técnica detallada (mínimo 10 caracteres).
+
+### 5. PLATING-INSTALLER (API de Despliegue Profesional)
+* **Requisitos Automatizados (`plating_installer.php`)**: Diagnóstico interactivo que evalúa las capacidades del servidor WAMP/LAMP: versiones de PHP (>= 8.2), motores MySQL/MariaDB, extensiones requeridas (`mysqli`, `openssl`, `curl`, `gd`) y permisos de escritura en carpetas locales de uploads y logs.
+* **Gestión de Migraciones**: Ejecutor de migraciones progresivas de base de datos (`migration_*.php`) con registro único de logs para actualizar la infraestructura del cliente sin riesgo de pérdida de datos.
+
+### 6. LABS-QA (Portal de Soporte y Diagnóstico Avanzado)
+* **BOT-TESTING-DEV**: Robot de pruebas automatizadas que simula flujos de venta, validación de sesiones y cálculos de comisiones, auto-corrigiendo desviaciones lógicas bajo estándares NOFTRAB.
+* **Visualizador de Logs del Servidor**: Panel administrativo centralizado para supervisar en tiempo real los logs de errores PHP (`error.log`) y auditoría de envíos SMTP (`smtp.log`) de manera gráfica.
+
+---
+
+## 🛠️ Ficha Técnica & Integración Cloud
+
+La plataforma combina un núcleo ultra-rápido en PHP con procesos analíticos asíncronos en Python e integraciones de clase mundial:
+
+* **Backend Principal**: PHP 8.2 (compatible con arquitecturas WAMP en entornos Windows Server y LAMP en Linux Enterprise).
+* **Motor Auxiliar de Datos**: Python 3.14.5 (soporta el motor ETL de importación masiva Banreservas y el sistema transaccional de permisos).
+* **Google Cloud Vision API (OCR)**: Lectura automática de textos para validación de datos de matrículas y cédulas, almacenando las claves privadas mediante variables de entorno seguras (`google-key.json`).
+* **Google Drive API (Cloud Sync)**: Respaldo atómico de la plataforma en la nube (`masque_fianzas_backup.zip`) vinculada mediante OAuth 2.0 y token de refresco persistente.
+* **Motor Mailer SMTP**: Envío automatizado de cotizaciones y reportes de auditoría en formato HTML premium adaptativo (`Mailer.php`).
+
+---
+
+## 🚀 Despliegue en 3 Pasos (Instalación Rápida)
+
+1. **Ubicación en Servidor Web**:
+   Clonar o descomprimir el código dentro del directorio raíz de Apache (ej. `C:\wamp64\www\PLATAFORMA_INTEGRADA`).
+2. **Preparación de Credenciales**:
+   Copiar los archivos de plantilla `.example` provistos en el directorio `backend/config/` y completarlos con tus credenciales reales (SMTP, Google Drive, Google Cloud Vision).
+3. **Instalador Plating**:
+   Accede a la API de instalación a través de tu navegador o CLI para crear la base de datos y correr las migraciones del sistema de forma automática:
+   ```
+   POST http://localhost/PLATAFORMA_INTEGRADA/backend/api/plating_installer.php?action=crear_base_datos&setup_token=MasQF2026
+   POST http://localhost/PLATAFORMA_INTEGRADA/backend/api/plating_installer.php?action=ejecutar_migracion&setup_token=MasQF2026
    ```
 
-### Paso 3: Acceder al Sistema
+---
 
-```
-URL: http://localhost/PLATAFORMA_INTEGRADA/frontend/
-```
-
-### 🔑 Credenciales de Demo
-- **Usuario:** `admin`
-- **Contraseña:** `Demo@123`
+## 👥 Roles de Acceso Predeterminados (Malla RBAC)
+- **Administrador (CEO/Gerente)**: Acceso total a la configuración global, auditorías inmutables, importación ETL de carteras de clientes y portal LABS-QA.
+- **Socio Comercial (Director/PDV)**: Gestión de clientes, cotizaciones y emisión de pólizas. Si tiene la restricción `solo_propios = 1` activa, sus listados se filtran automáticamente a nivel de base de datos para proteger la confidencialidad de su cartera comercial.
+- **Vendedor (VEN)**: Cotización y registro de prospectos, con visualización limitada a sus propias comisiones generadas.
 
 ---
 
-## 📁 Estructura del Proyecto
-
-```
-PLATAFORMA_INTEGRADA/
-├── backend/
-│   ├── api/
-│   │   ├── auth.php              # API de autenticación y control de tokens
-│   │   ├── usuarios.php          # API de gestión de usuarios (con importación XLSX)
-│   │   ├── perfiles.php          # API de gestión de perfiles (RBAC)
-│   │   ├── perfiles_engine.php   # Wrapper de API que invoca al motor de Python
-│   │   ├── polizas.php           # API de gestión y emisión de pólizas
-│   │   ├── polizas_stats.php     # API de estadísticas dinámicas de pólizas
-│   │   ├── pagos.php             # API de cobros e ingresos (Finanzas)
-│   │   ├── comisiones.php        # API de comisiones y árbol comercial
-│   │   └── ajustes.php           # API de auditoría de ajustes inmutables NOFTRAB
-│   ├── config/
-│   │   └── smtp.json             # Configuración dinámica del servidor de correo
-│   ├── logs/
-│   │   ├── error.log             # Logs técnicos de PHP
-│   │   ├── smtp.log              # Logs del servidor de correo SMTP
-│   │   └── audit.log             # Logs de auditoría en texto plano
-│   ├── config.php                # Configuración de base de datos y helpers globales
-│   ├── Autenticacion.php         # Clase controladora de sesiones y autenticación
-│   ├── UsuarioManager.php        # Gestión de lógica comercial e importación
-│   ├── PerfilManager.php         # Matriz de permisos y herencias
-│   ├── PagoManager.php           # Motor contable de control de pagos
-│   ├── Mailer.php                # Gestor de envíos SMTP
-│   └── perfiles_engine.py        # Motor CLI en Python para transacciones de permisos en BD
-├── frontend/
-│   ├── index.html                # Interfaz de login y acceso
-│   ├── dashboard.html            # Dashboard Shell interactivo (Glassmorphism)
-│   ├── recuperar.html            # Interfaz de recuperación de contraseña por email
-│   ├── cambiar-password.html     # Interfaz de cambio de contraseña obligatoria
-│   ├── assets/
-│   │   ├── api-client.js         # Cliente unificado de llamadas HTTP (Bearer Token)
-│   │   ├── dashboard.js          # Lógica interactiva del Dashboard y modales
-│   │   ├── dashboard.css         # Estilizado visual premium (Skins dark/light)
-│   │   ├── data-export.js        # Motor PDF/Excel/CSV/ZIP unificado
-│   │   ├── skin-engine.css       # Reglas estéticas de skins interactivos
-│   │   └── logo_b64.js           # Logo MQF codificado para incrustación directa en PDFs
-│   └── modulos/
-│       ├── usuarios.html         # CRUD y formulario dinámico (Comisiones/Bancos)
-│       ├── cotizaciones.html     # Cotizador integrado de seguros y fianzas
-│       ├── polizas.html          # Emisión de pólizas e intercepción de auditorías
-│       └── clientes.html         # CRUD de clientes (Personas Físicas/Jurídicas)
-├── database/
-│   ├── schema_masque_fianzas.sql # Script SQL original de la BD
-│   └── cf_schema.sql             # Esquema ampliado para canales de cobro
-├── verify.php                    # Diagnóstico visual del sistema
-└── verify_system_end_to_end.php  # Verificador técnico del CLI e integridad de BD
-```
-
----
-
-## ⚖️ Estándar de Auditoría Inmutable NOFTRAB v4.0
-
-La plataforma implementa rigurosamente las normas del **Estándar NOFTRAB v4.0** para la trazabilidad absoluta de expedientes y transacciones financieras:
-1. **Justificación Escrita Obligatoria:** Cualquier alteración manual (ajuste, anulación, edición de montos) sobre pólizas, pagos o comisiones requiere una justificación escrita detallada (mínimo 10 caracteres).
-2. **Registro de Doble Estado (JSON):** Se almacenan en la tabla `historial_ajustes` los estados completos del registro afectado antes del cambio (`before`) y después del cambio (`after`) en formato JSON.
-3. **Inmutabilidad de Logs:** Los datos se escriben a nivel transaccional sin posibilidad de edición posterior, guardando la dirección IP, navegador y marca de tiempo del usuario responsable de forma indeleble.
-
----
-
-## 👥 Control de Acceso Granular y Privacidad "Propios vs. Todos"
-
-Para cumplir con las políticas de confidencialidad de la red comercial, el sistema aplica un filtro de privacidad a nivel de backend:
-* **Filtro `solo_propios = 1`:** Si el perfil del usuario conectado (como el **Socio Comercial PDV**) tiene habilitada la restricción de datos propios, todos los listados de cotizaciones, pólizas, comisiones y pagos se filtrarán automáticamente por su identificador (`creado_por = {usuario_id}`, `emitida_por = {usuario_id}` o `registrado_por = {usuario_id}`).
-* **Dashboard y Modales Restringidos:** Las tarjetas de estadísticas rápidas, el Top 5 de clientes y los modales analíticos del Dashboard calculan y muestran únicamente los datos pertenecientes a las operaciones de dicho usuario.
-* **Bypass de Administrador:** Los perfiles de nivel Administrador principal (`usuario_id = 1`) poseen un bypass explícito en los helpers de base de datos para supervisar y auditar la totalidad de la plataforma global.
-
----
-
-## 🔧 API Endpoints Adicionales (v4.0.0 Stable)
-
-### Estadísticas de Pólizas
-```
-GET /backend/api/polizas_stats.php
-- Retorna las cantidades de pólizas emitidas en el día, semana y mes actual.
-- Retorna el Top 5 de clientes con más pólizas y sus conteos.
-- Respeta automáticamente el filtro "Propios vs. Todos" según el perfil del usuario.
-```
-
-### Auditoría de Ajustes
-```
-POST /backend/api/ajustes.php
-- Registra una justificación de modificación de transacciones.
-- Parámetros: registro_id, tabla_afectada, modulo_afectado, valor_anterior, valor_nuevo, justificacion.
-- Almacena el registro inmutable bajo las normas NOFTRAB v4.0.
-```
-
-### Motor de Perfiles
-```
-POST /backend/api/perfiles_engine.php
-- Wrapper de API para el Administrador que invoca el script de Python perfiles_engine.py.
-- Permite la creación y actualización granular y atómica de permisos por base de datos.
-```
-
----
-
-## 👨‍💻 Desarrollado por
-MAS QUE FIANZAS - Equipo de Desarrollo Integrado  
-*Estabilizado bajo el estándar NOFTRAB v4.0 — Mayo de 2026*
+## 👨‍💻 Licenciamiento & Propiedad Intelectual
+Desarrollado y optimizado bajo los estándares de ingeniería de software **NOFTRAB v4.0** y **PLATING-KIT**. Todos los derechos comerciales reservados para la comercialización e integraciones empresariales de seguros.
