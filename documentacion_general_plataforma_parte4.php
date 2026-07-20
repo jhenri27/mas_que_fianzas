@@ -314,6 +314,16 @@ $generation_date = date('d/m/Y H:i');
             <h3>2. LABS-MASQF</h3>
             <p>Centro de Tecnología y Diagnóstico</p>
         </div>
+        <div class="doc-btn" onclick="mostrarDocumento(3)">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+            <h3>3. Centro Técnico de Seguros</h3>
+            <p>Ajustes excepcionales, simulación contable y reglas NOFTRAB/VAF</p>
+        </div>
+        <div class="doc-btn" onclick="mostrarDocumento(4)">
+            <i class="fa-solid fa-sliders"></i>
+            <h3>4. Configuración del Sistema</h3>
+            <p>Parámetros globales, validador de documentos y motor SMTP/Nube</p>
+        </div>
     </div>
 </div>
 
@@ -1248,6 +1258,215 @@ class BOTTestingDEV {
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- DOCUMENTO 3: CENTRO TÉCNICO DE SEGUROS -->
+<!-- ========================================== -->
+<div class="documento" id="documento3">
+    <div class="doc-header">
+        <h1><i class="fa-solid fa-screwdriver-wrench" style="color:#6366f1;"></i> Centro Técnico de Seguros</h1>
+        <div class="meta">
+            <span><i class="fa-solid fa-code-branch"></i> Versión: 4.0 NOFTRAB</span>
+            <span><i class="fa-solid fa-calendar"></i> Actualizado: <?php echo $generation_date; ?></span>
+            <span><i class="fa-solid fa-shield-halved"></i> Norma: Regla 4-VAF / NOFTRAB</span>
+        </div>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card cumple">
+            <div class="label">Ajustes Financieros</div>
+            <div class="value">Aprobación VAF</div>
+            <div class="desc">Ajustes a primas, vigencias, vehículos y datos de clientes</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Simulación Contable</div>
+            <div class="value">Tiempo Real</div>
+            <div class="desc">Asientos automáticos de débito/crédito pre-ejecución</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Reglas Procesadas</div>
+            <div class="value">Unicidad Strict</div>
+            <div class="desc">Control global de Cédula, RNC, VIN, Placa y Fianzas</div>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-circle-info"></i> 1. Resumen Ejecutivo y Alcance</h2>
+        <p>El <strong>Centro Técnico de Seguros</strong> es el módulo de control de alta jerarquía del sistema <strong>MÁS QUE FIANZAS</strong>. Ha sido diseñado e implementado rigurosamente bajo las especificaciones de las <strong>Normas NOFTRAB</strong> y la <strong>Regla 4-VAF</strong>. Permite autorizar ajustes excepcionales sobre documentos emitidos, simular el impacto contable en tiempo real, catalogar reglas de negocio operativas y controlar la unicidad de identificadores y documentos procesados en toda la plataforma.</p>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-list-check"></i> 2. Funcionalidades Principales</h2>
+        
+        <h3>2.1 Solicitud de Ajustes Excepcionales</h3>
+        <p>Permite solicitar modificaciones sobre pólizas o cotizaciones con auditoría estricta:</p>
+        <ul>
+            <li><strong>Ajustes Financieros</strong>: Modificación justificada de prima neta, impuestos y aseguradora.</li>
+            <li><strong>Ajustes de Vehículo</strong>: Corrección de Placa, Marca, Modelo, Año y Chasis (VIN).</li>
+            <li><strong>Ajustes de Cliente</strong>: Actualización de Razón Social/Nombre, Cédula, RNC y Teléfono.</li>
+            <li><strong>Soporte Documental Obligatorio</strong>: Carga requerida de archivos PDF/Imagen de soporte y justificación de al menos 15 caracteres.</li>
+        </ul>
+
+        <h3>2.2 Bandeja de Aprobaciones y Resoluciones</h3>
+        <p>Los usuarios con perfil <strong>Administrador (ID 1)</strong> cuentan con la bandeja unificada de aprobación/rechazo de solicitudes:</p>
+        <ul>
+            <li>Verificación dual de solicitudes pendientes.</li>
+            <li>Aprobación o rechazo con comentarios justificados e impacto inmediato en BD.</li>
+            <li>Generación automática de asientos contables al aprobar ajustes financieros.</li>
+        </ul>
+
+        <h3>2.3 Catálogo de Reglas de Negocio Configurable</h3>
+        <p>Gestor dinámico para activar/desactivar y ajustar valores de reglas contables y operativas (límites ACH, recargos de mora, comisiones máximas por producto y límites de antigüedad).</p>
+
+        <h3>2.4 Reglas de Documentos Procesados e Identificadores</h3>
+        <p>Pestaña especializada para el control de unicidad global:</p>
+        <ul>
+            <li><strong>Cédula Dominicana (Luhn Mod 10)</strong>: Verificación de algoritmo y prohibición de duplicados de clientes.</li>
+            <li><strong>RNC Dominicana (Mod 11 DGII)</strong>: Validación formal de sociedades comerciales.</li>
+            <li><strong>Vehículos (Chasis/VIN y Placa)</strong>: Impedimento estricto de registrar el mismo vehículo en múltiples cotizaciones/pólizas activas.</li>
+            <li><strong>Fianzas</strong>: Control de unicidad estricta para números de fianza y certificados.</li>
+        </ul>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-database"></i> 3. Arquitectura Backend y Endpoints</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Acción API (`backend/api/centro_tecnico.php`)</th>
+                    <th>Método</th>
+                    <th>Descripción y Resultado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>`action=buscar_poliza`</td>
+                    <td>GET</td>
+                    <td>Busca pólizas activas por número, cliente o placa.</td>
+                </tr>
+                <tr>
+                    <td>`action=crear_solicitud`</td>
+                    <td>POST</td>
+                    <td>Registra una solicitud de ajuste con soporte adjunto.</td>
+                </tr>
+                <tr>
+                    <td>`action=listar_solicitudes`</td>
+                    <td>GET</td>
+                    <td>Devuelve la lista de solicitudes pendientes/procesadas.</td>
+                </tr>
+                <tr>
+                    <td>`action=procesar_solicitud`</td>
+                    <td>POST</td>
+                    <td>Aprueba o rechaza una solicitud ejecutando cambios en BD.</td>
+                </tr>
+                <tr>
+                    <td>`action=listar_reglas`</td>
+                    <td>GET</td>
+                    <td>Retorna el catálogo completo de reglas de negocio y documentos.</td>
+                </tr>
+                <tr>
+                    <td>`action=guardar_regla`</td>
+                    <td>POST</td>
+                    <td>Crea o actualiza una regla de negocio/documento con justificación VAF.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-doc">
+        <p><strong><?php echo $platform_name; ?></strong> - Centro Técnico de Seguros | Documentación Técnica</p>
+        <p>Clasificación: <strong>CONFIDENCIAL / NOFTRAB</strong> | Versión: 4.0</p>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- DOCUMENTO 4: CONFIGURACIÓN DEL SISTEMA -->
+<!-- ========================================== -->
+<div class="documento" id="documento4">
+    <div class="doc-header">
+        <h1><i class="fa-solid fa-sliders" style="color:#6366f1;"></i> Configuración del Sistema y Parámetros</h1>
+        <div class="meta">
+            <span><i class="fa-solid fa-code-branch"></i> Versión: 9.0</span>
+            <span><i class="fa-solid fa-calendar"></i> Actualizado: <?php echo $generation_date; ?></span>
+            <span><i class="fa-solid fa-lock"></i> ISO 27001 / NOFTRAB</span>
+        </div>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card cumple">
+            <div class="label">Empresa y Logo</div>
+            <div class="value">Parametrizado</div>
+            <div class="desc">Nombre comercial, RNC, dirección y logo MQF Base64</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Validador Documentos</div>
+            <div class="value">NOFTRAB 4-VAF</div>
+            <div class="desc">Validación modular de Cédula, RNC, Pasaporte y Licencia</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Motor SMTP</div>
+            <div class="value">Plantillas HTML</div>
+            <div class="desc">Notificaciones parametrizables con variables dinámicas</div>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-circle-info"></i> 1. Resumen Ejecutivo</h2>
+        <p>El módulo de <strong>Configuración del Sistema</strong> centraliza todos los parámetros globales de la plataforma <strong>MÁS QUE FIANZAS</strong>. Permite a los administradores del sistema gestionar la información corporativa, los interruptores master de validación de documentos (Norma 4-VAF), las políticas de seguridad y expiración de tokens JWT/Bearer, las plantillas dinámicas de notificaciones por e-mail SMTP y las credenciales de integraciones externas (WhatsApp, Pasarela de Pagos, Google Drive y OneDrive).</p>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-list-check"></i> 2. Módulos y Pestañas de Configuración</h2>
+        
+        <h3>2.1 Datos Institucionales de la Empresa</h3>
+        <ul>
+            <li>Razón social oficial: <strong>MÁS QUE FIANZAS, S.R.L.</strong></li>
+            <li>RNC de la empresa, dirección fiscal, teléfono de contacto y correo oficial de soporte.</li>
+            <li>Carga e inserción del logotipo oficial MQF en formato Base64 para reportes e impresiones PDF.</li>
+        </ul>
+
+        <h3>2.2 Validador de Documentos Dominicanos (4-VAF)</h3>
+        <p>Gestión de interruptores de validación documental estricta:</p>
+        <ul>
+            <li>`VALIDADOR_DOCS_ACTIVO`: Interruptor general del motor de validación.</li>
+            <li>`VALIDADOR_DOCS_COTIZACIONES`: Validación en emisión y edición de cotizaciones.</li>
+            <li>`VALIDADOR_DOCS_CLIENTES`: Validación al registrar nuevos clientes o editar sus expedientes.</li>
+            <li>`VALIDADOR_DOCS_USUARIOS`: Validación de cédulas de usuarios y colaboradores.</li>
+            <li>`VALIDADOR_DOCS_POLIZAS` y `VALIDADOR_DOCS_FIANZAS`: Validación documental en suscripción de pólizas/fianzas.</li>
+        </ul>
+
+        <h3>2.3 Parámetros de Seguridad y Sesión</h3>
+        <ul>
+            <li>Política de contraseñas complejas (Mayúscula, minúscula, número, carácter especial).</li>
+            <li>Tiempo de expiración de sesión (Tokens JWT/Bearer) y tiempo de inactividad de pantalla.</li>
+            <li>Intentos máximos de inicio de sesión antes del bloqueo preventivo de cuenta.</li>
+        </ul>
+
+        <h3>2.4 Notificaciones Automáticas y Servidor SMTP</h3>
+        <ul>
+            <li>Configuración del servidor SMTP (`Host`, `Puerto 587/465`, `Usuario`, `Password`, `Seguridad SSL/TLS`).</li>
+            <li>Plantillas HTML parametrizables con variables `{{NUMERO}}`, `{{CLIENTE}}`, `{{TOTAL_FMT}}`, `{{FECHA_LOCAL}}`.</li>
+            <li>Envío automático de comprobantes de pago, cotizaciones en PDF y avisos de vencimiento.</li>
+        </ul>
+
+        <h3>2.5 Tasas Financieras e Impuestos</h3>
+        <ul>
+            <li>Tasa oficial de ITBIS (18.00%).</li>
+            <li>Comisiones base y techos por ramos de seguro y fianzas de fiel cumplimiento/anticipo.</li>
+            <li>Configuración de recargos por mora y días de gracia institucionales.</li>
+        </ul>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-code"></i> 3. Gestión Backend de Parámetros</h2>
+        <p>Las configuraciones son almacenadas en la tabla MySQL `configuracion` y consumidas dinámicamente mediante la API `backend/api/configuracion.php` con caché de sesión para optimizar el tiempo de respuesta en milisegundos.</p>
+    </div>
+
+    <div class="footer-doc">
+        <p><strong><?php echo $platform_name; ?></strong> - Configuración del Sistema | Documentación Técnica</p>
+        <p>Clasificación: <strong>CONFIDENCIAL</strong> | Versión: 9.0</p>
+    </div>
+</div>
+
 <script>
 let documentoActivo = null;
 
@@ -1261,7 +1480,9 @@ function mostrarDocumento(num) {
     documentoActivo = num;
     const titulos = [
         '📄 Modelador PDF',
-        '📄 LABS-MASQF'
+        '📄 LABS-MASQF',
+        '🛠️ Centro Técnico de Seguros',
+        '🎛️ Configuración del Sistema'
     ];
     document.getElementById('actionTitle').textContent = titulos[num - 1];
     
@@ -1315,7 +1536,9 @@ async function descargarPDF() {
         
         const nombres = [
             'Modelador_PDF',
-            'LABS_MASQF'
+            'LABS_MASQF',
+            'Centro_Tecnico',
+            'Configuracion_Sistema'
         ];
         
         doc.save('Documentacion_Plataforma_Parte4_' + nombres[documentoActivo - 1] + '.pdf');

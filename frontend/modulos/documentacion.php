@@ -121,6 +121,18 @@ $modulo_metadata = [
         'doc_url' => '../../documentacion_general_plataforma_parte3.php?doc=6',
         'cumplimiento' => 100,
         'iso' => 'NOFTRAB v4.0'
+    ],
+    'centro_tecnico.html' => [
+        'nombre' => 'Centro Técnico de Seguros',
+        'doc_url' => '../../documentacion_general_plataforma_parte4.php?doc=3',
+        'cumplimiento' => 100,
+        'iso' => 'NOFTRAB v4.0 / Regla 4-VAF'
+    ],
+    'configuracion.php' => [
+        'nombre' => 'Configuración del Sistema',
+        'doc_url' => '../../documentacion_general_plataforma_parte4.php?doc=4',
+        'cumplimiento' => 99,
+        'iso' => 'ISO 27001 / NOFTRAB'
     ]
 ];
 
