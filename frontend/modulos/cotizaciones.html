@@ -34,6 +34,8 @@
   <script src="../assets/api-client.js?v=8.0.0"></script>
   <!-- Motor de exportación con dibujarCotizacionPDF() -->
   <script src="../assets/data-export.js"></script>
+  <!-- Componentes UI y Modales de Confirmación MQF -->
+  <script src="../assets/components.js"></script>
   <!-- React -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -784,7 +786,12 @@
       const id = window._editingFianzaId;
       if (!id) return;
       
-      const confirmacion = confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.');
+      const confirmacion = await MQF.confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.', {
+        title: 'Eliminar Cotización',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        type: 'danger'
+      });
       if (!confirmacion) return;
       
       const btn = document.getElementById('btn-eliminar-fianza');
@@ -1045,7 +1052,12 @@
         MQF.toast('ID de cotización no válido', 'error');
         return;
       }
-      const confirmacion = confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.');
+      const confirmacion = await MQF.confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.', {
+        title: 'Eliminar Cotización',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        type: 'danger'
+      });
       if (!confirmacion) return;
 
       try {
@@ -1098,7 +1110,12 @@
         return;
       }
       
-      const confirmacion = confirm('¿Está seguro de que desea eliminar las ' + ids.length + ' cotizaciones seleccionadas? Esta acción no se puede deshacer.');
+      const confirmacion = await MQF.confirm('¿Está seguro de que desea eliminar las ' + ids.length + ' cotizaciones seleccionadas? Esta acción no se puede deshacer.', {
+        title: 'Eliminar Cotizaciones Seleccionadas',
+        confirmText: 'Eliminar Seleccionadas',
+        cancelText: 'Cancelar',
+        type: 'danger'
+      });
       if (!confirmacion) return;
       
       const btn = document.getElementById('btn-eliminar-masivo');
@@ -1956,8 +1973,14 @@
             </button>
 
             {editingId && (
-              <button type="button" onClick={() => {
-                if (confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.')) {
+              <button type="button" onClick={async () => {
+                const confirmacion = await MQF.confirm('¿Está seguro de que desea eliminar esta cotización? Esta acción no se puede deshacer.', {
+                  title: 'Eliminar Cotización',
+                  confirmText: 'Eliminar',
+                  cancelText: 'Cancelar',
+                  type: 'danger'
+                });
+                if (confirmacion) {
                   setIsSaving(true);
                   api.solicitud('/cotizaciones.php?action=eliminar', 'POST', { id: editingId }).then(res => {
                     setIsSaving(false);
@@ -2013,9 +2036,11 @@
 
 
 
-    function InsurerCard({ comp, onDownload, onShare, onEmit, loadingEmit }) {
+    function InsurerCard({ comp, onDownload, onShare, onEmit, loadingEmit, onSave, savingComp }) {
       const [emitResult, setEmitResult] = React.useState(null);
       const [emitLoading, setEmitLoading] = React.useState(false);
+      const [saveResult, setSaveResult] = React.useState(null);
+      const isSavingThis = savingComp === comp.name;
 
       // Determinar color de acento y brillo (glow) para el estilo premium
       let accentColor = '#6366f1'; // Color por defecto (indigo)
@@ -2191,6 +2216,35 @@
               </button>
             </div>
 
+            {/* Botón Guardar Cotización */}
+            <button
+              type="button"
+              disabled={isSavingThis}
+              onClick={() => {
+                setSaveResult(null);
+                onSave(comp)
+                  .then(() => setSaveResult({ success: true, message: '✅ Guardada en historial' }))
+                  .catch(err => setSaveResult({ success: false, message: err.message || 'Error al guardar' }));
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border transition-all text-xs font-semibold"
+              style={{
+                backgroundColor: isSavingThis ? 'var(--mqf-surface-2)' : '#f0fdf4',
+                borderColor: '#86efac',
+                color: '#15803d'
+              }}
+            >
+              {isSavingThis
+                ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando...</>
+                : <><i className="fa-solid fa-floppy-disk"></i> Guardar Cotización</>
+              }
+            </button>
+            {saveResult && (
+              <div className={`p-2 rounded-lg text-[11px] border flex items-start gap-1.5 ${saveResult.success ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30' : 'bg-red-950/20 text-red-400 border-red-900/30'}`}>
+                <i className={`fa-solid ${saveResult.success ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-red-400'} mt-0.5`}></i>
+                <div className="flex-1">{saveResult.message}</div>
+              </div>
+            )}
+
             <button 
               type="button"
               onClick={handleEmit}
@@ -2232,6 +2286,8 @@
       const [pricingRows, setPricingRows] = React.useState([]);
       const [loadingEmit, setLoadingEmit] = React.useState(null);
       const [shareModalData, setShareModalData] = React.useState(null);
+      const [savingComp, setSavingComp] = React.useState(null);
+      const [savingAll, setSavingAll] = React.useState(false);
 
       React.useEffect(() => {
         fetch(PRICING_JSON_PATH)
@@ -2395,32 +2451,125 @@
         }
       }
 
+      // Validación client-side de cédula dominicana (Luhn mod10) - NOFTRAB
+      function _validarCedulaDOM(cedula) {
+        if (!cedula) return false;
+        const clean = cedula.replace(/\D/g, '');
+        if (clean.length !== 11) return false;
+        const pesos = [1, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+        let suma = 0;
+        for (let i = 0; i < 10; i++) {
+          let mult = parseInt(clean[i]) * pesos[i];
+          if (mult >= 10) suma += Math.floor(mult / 10) + (mult % 10);
+          else suma += mult;
+        }
+        const digitoCalc = (10 - (suma % 10)) % 10;
+        return digitoCalc === parseInt(clean[10]);
+      }
+
+      function _buildCotizacionData(comp) {
+        const numCot = 'SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
+        // NOFTRAB: Limpiar cédula/RNC si no es válida para evitar rechazo del backend (Norma 4-VAF)
+        const cedulaRaw = state?.cedula || '';
+        const cedulaDigits = cedulaRaw.replace(/\D/g, '');
+        // Cédula: 11 dígitos, Luhn mod10. RNC: 9 dígitos, aceptar sin validar mod11 (empresa puede no tener mod11 estricto)
+        const cedulaValida = cedulaDigits.length === 11 ? _validarCedulaDOM(cedulaRaw)
+                           : cedulaDigits.length === 9  ? true  // RNC aceptado tal cual
+                           : cedulaDigits.length === 0  ? true  // campo vacío, ok
+                           : false;
+        const cedulaFinal = cedulaValida ? cedulaRaw : '';
+        if (cedulaRaw && !cedulaValida) {
+          console.warn('[NOFTRAB 4-VAF] Cédula inválida omitida del payload (dígito verificador incorrecto):', cedulaRaw);
+        }
+        return {
+          tipo: 'SEGURO DE LEY',
+          subtipo: state.type,
+          numero: numCot,
+          cliente: state.cliente || 'A QUIEN CORRESPONDA',
+          cedula: cedulaFinal,
+          email: state.emailCliente || '',
+          telefono: '',
+          uso: state.uso,
+          capacidad: state.capacidad,
+          aseguradora: comp.name,
+          cobertura: comp.cobertura,
+          plazo: 0,
+          prima_base: comp.prima,
+          servicios_opcionales: JSON.stringify(state.optionalSelected || {}),
+          prima_mensual: 0,
+          impuesto: 0,
+          total: comp.total,
+          usar_ncf: state.usarNCF || false,
+          fecha: new Date().toISOString()
+        };
+      }
+
+      // Guardar UNA cotización en el historial (sin redirigir) - NOFTRAB 4-VAF
+      function handleSaveCotizacion(comp) {
+        return new Promise((resolve, reject) => {
+          if (!state || !state.type || !state.uso || !state.capacidad) {
+            const msg = 'Complete Tipo, Uso y Capacidad antes de guardar';
+            MQF.toast('⚠️ ' + msg, 'warning');
+            reject(new Error(msg));
+            return;
+          }
+          setSavingComp(comp.name);
+          const data = _buildCotizacionData(comp);
+          console.log('[4-VAF] Guardando cotización:', data.numero, '| Aseguradora:', comp.name, '| Total:', data.total);
+          api.solicitud('/cotizaciones.php?action=guardar', 'POST', data).then(res => {
+            setSavingComp(null);
+            console.log('[4-VAF] Respuesta backend:', res);
+            if (res.exito) {
+              MQF.toast('✅ Cotización ' + comp.name + ' guardada en historial', 'success');
+              cargarHistorial();
+              resolve(res);
+            } else {
+              const msg = res.mensaje || 'Error desconocido al guardar';
+              MQF.toast('❌ Error: ' + msg, 'error');
+              reject(new Error(msg));
+            }
+          }).catch(e => {
+            setSavingComp(null);
+            console.error('[4-VAF] Error de red al guardar:', e);
+            MQF.toast('❌ Error de conexión: ' + e.message, 'error');
+            reject(e);
+          });
+        });
+      }
+
+      // Guardar TODAS las aseguradoras disponibles de una vez - NOFTRAB 4-VAF
+      async function handleSaveAllCotizaciones() {
+        if (!state || !state.type || !state.uso || !state.capacidad) {
+          MQF.toast('⚠️ Complete Tipo, Uso y Capacidad antes de guardar', 'warning');
+          return;
+        }
+        const available = comparisons.filter(c => c.available);
+        if (!available.length) { MQF.toast('No hay cotizaciones disponibles para guardar', 'warning'); return; }
+        setSavingAll(true);
+        let saved = 0, errors = 0;
+        for (const comp of available) {
+          try {
+            const data = _buildCotizacionData(comp);
+            console.log('[4-VAF] Guardando (batch):', data.numero, '|', comp.name);
+            const res = await api.solicitud('/cotizaciones.php?action=guardar', 'POST', data);
+            console.log('[4-VAF] Respuesta batch:', comp.name, res.exito, res.mensaje);
+            if (res.exito) { saved++; } else { errors++; console.warn('[4-VAF] Error en', comp.name, ':', res.mensaje); }
+          } catch(e) { errors++; console.error('[4-VAF] Excepción en', comp.name, ':', e); }
+        }
+        setSavingAll(false);
+        if (saved > 0) {
+          MQF.toast('✅ ' + saved + ' cotización(es) guardadas' + (errors > 0 ? ' (' + errors + ' con error)' : ''), 'success');
+          cargarHistorial();
+          showTab('historial');
+        } else {
+          MQF.toast('❌ Error al guardar todas (' + errors + ' errores). Revisa la consola del navegador.', 'error');
+        }
+      }
+
       function handleEmitPolicy(comp) {
         return new Promise((resolve, reject) => {
           setLoadingEmit(comp.name);
-          const numCot = 'SL-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 9000 + 1000);
-          const data = {
-            tipo: 'SEGURO DE LEY',
-            subtipo: state.type,
-            numero: numCot,
-            cliente: state.cliente,
-            cedula: state.cedula,
-            email: state.emailCliente,
-            telefono: '',
-            uso: state.uso,
-            capacidad: state.capacidad,
-            aseguradora: comp.name,
-            cobertura: comp.cobertura,
-            plazo: 0,
-            prima_base: comp.prima,
-            servicios_opcionales: JSON.stringify(state.optionalSelected),
-            prima_mensual: 0,
-            impuesto: 0,
-            total: comp.total,
-            usar_ncf: state.usarNCF,
-            fecha: new Date().toISOString()
-          };
-
+          const data = _buildCotizacionData(comp);
           api.solicitud('/cotizaciones.php?action=guardar', 'POST', data).then(res => {
             setLoadingEmit(null);
             if (res.exito) {
@@ -2510,6 +2659,35 @@
                     className="comp-input w-full rounded-xl py-2.5 pl-10 pr-4 text-xs font-medium placeholder-slate-500 transition-all outline-none" 
                   />
                 </div>
+                {(() => {
+                  const raw = state?.cedula || '';
+                  const digits = raw.replace(/\D/g,'');
+                  if (digits.length === 11) {
+                    const pesos=[1,2,1,2,1,2,1,2,1,2]; let s=0;
+                    for(let i=0;i<10;i++){let m=parseInt(digits[i])*pesos[i];if(m>=10)s+=Math.floor(m/10)+(m%10);else s+=m;}
+                    const ok=((10-(s%10))%10)===parseInt(digits[10]);
+                    if(!ok) return (
+                      <div style={{
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        color: '#c2410c',
+                        backgroundColor: '#fff7ed',
+                        border: '1px solid #fdba74',
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        marginTop: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 4px rgba(234, 88, 12, 0.1)'
+                      }}>
+                        <i className="fa-solid fa-triangle-exclamation" style={{ color: '#ea580c', fontSize: '13px' }}></i>
+                        <span>Cédula inválida — dígito verificador incorrecto (se omitirá)</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
               <div className="mqf-form-group">
                 <label className="block text-xs font-bold uppercase tracking-wider mb-2 comp-label">Correo Electrónico</label>
@@ -2681,10 +2859,30 @@
                     Cliente: <strong style={{ color: 'var(--mqf-text)' }}>{state.cliente || 'A QUIEN CORRESPONDA'}</strong> | Ced/RNC: <strong style={{ color: 'var(--mqf-text)' }}>{state.cedula || 'N/A'}</strong>
                   </p>
                 </div>
-                <div className="text-right comp-card-addon p-3 rounded-lg">
-                  <div className="text-xs font-semibold uppercase" style={{ color: 'var(--mqf-text-muted)' }}>Vehículo Seleccionado</div>
-                  <div className="font-bold uppercase" style={{ color: 'var(--mqf-primary)' }}>{state.type}</div>
-                  <div className="text-[11px] mt-1" style={{ color: 'var(--mqf-text-secondary)' }}>{state.capacidad} | Uso: {state.uso}</div>
+                <div className="flex flex-col items-end gap-3">
+                  <div className="text-right comp-card-addon p-3 rounded-lg">
+                    <div className="text-xs font-semibold uppercase" style={{ color: 'var(--mqf-text-muted)' }}>Vehículo Seleccionado</div>
+                    <div className="font-bold uppercase" style={{ color: 'var(--mqf-primary)' }}>{state.type}</div>
+                    <div className="text-[11px] mt-1" style={{ color: 'var(--mqf-text-secondary)' }}>{state.capacidad} | Uso: {state.uso}</div>
+                  </div>
+                  {/* Botón Guardar Todas */}
+                  <button
+                    type="button"
+                    disabled={savingAll}
+                    onClick={handleSaveAllCotizaciones}
+                    className="flex items-center gap-2 py-2.5 px-5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-lg"
+                    style={{
+                      background: savingAll ? '#6b7280' : 'linear-gradient(135deg, #059669, #10b981)',
+                      color: '#ffffff',
+                      boxShadow: '0 4px 15px -3px rgba(16,185,129,0.5)',
+                      opacity: savingAll ? 0.7 : 1
+                    }}
+                  >
+                    {savingAll
+                      ? <><i className="fa-solid fa-spinner fa-spin"></i> Guardando todas...</>
+                      : <><i className="fa-solid fa-floppy-disk"></i> Guardar Todas en Historial</>
+                    }
+                  </button>
                 </div>
               </div>
 
@@ -2697,7 +2895,9 @@
                     onDownload={handleDownloadPDF} 
                     onShare={handleShare} 
                     onEmit={handleEmitPolicy} 
-                    loadingEmit={loadingEmit} 
+                    loadingEmit={loadingEmit}
+                    onSave={handleSaveCotizacion}
+                    savingComp={savingComp}
                   />
                 ))}
               </div>

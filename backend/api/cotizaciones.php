@@ -130,6 +130,10 @@ function insertar_cotizacion($db, $c, $usuario_actual = 1) {
     return $ok;
 }
 
+function validarCedulaDuplicadaCliente($db, $cedula, $nombreCliente) {
+    return ValidadorDocumentos::validarDocumentoUnicoGlobal($db, $cedula, $nombreCliente);
+}
+
 try {
     $db = Database::getInstance()->getConnection();
     crearTablaIfNeeded($db);
@@ -186,6 +190,14 @@ try {
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
                 respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+
+        // Validación de Cédula Duplicada para Clientes Distintos (Normas NOFTRAB / 4-VAF)
+        if (!empty($datos['cedula'])) {
+            $errDup = validarCedulaDuplicadaCliente($db, $datos['cedula'], $datos['cliente'] ?? '');
+            if ($errDup) {
+                respuestaJSON(false, $errDup, null, 400);
             }
         }
         
@@ -300,6 +312,14 @@ try {
             }
             if (!empty($datos['telefono']) && !ValidadorDocumentos::validarTelefono($datos['telefono'])) {
                 respuestaJSON(false, 'El teléfono especificado no es válido (debe tener 10 dígitos y código de área 809, 829 o 849).', null, 400);
+            }
+        }
+
+        // Validación de Cédula Duplicada para Clientes Distintos (Normas NOFTRAB / 4-VAF)
+        if (!empty($datos['cedula'])) {
+            $errDup = validarCedulaDuplicadaCliente($db, $datos['cedula'], $datos['cliente'] ?? '');
+            if ($errDup) {
+                respuestaJSON(false, $errDup, null, 400);
             }
         }
 

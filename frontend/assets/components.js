@@ -128,21 +128,26 @@ const MQF = (() => {
       if (existing) existing.remove();
 
       const backdrop = document.createElement('div');
+      const isDanger = type === 'danger';
+      const iconClass = isDanger ? 'fa-triangle-exclamation' : (type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-question');
+      const iconColor = isDanger ? '#ef4444' : (type === 'warning' ? '#f59e0b' : 'var(--mqf-primary)');
+      const headerBorder = isDanger ? 'rgba(239, 68, 68, 0.2)' : 'var(--mqf-border, rgba(255, 255, 255, 0.1))';
+
       backdrop.id = CONFIRM_ID;
       backdrop.className = 'mqf-modal-backdrop';
       backdrop.innerHTML = `
-        <div class="mqf-modal mqf-modal--sm" role="dialog" aria-modal="true">
-          <div class="mqf-modal-header">
-            <h3 class="mqf-modal-title">
-              <i class="fa-solid fa-circle-question"></i> ${title}
+        <div class="mqf-modal mqf-modal--sm" role="dialog" aria-modal="true" style="border-radius:20px; overflow:hidden; border: 1px solid ${headerBorder}; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+          <div class="mqf-modal-header" style="border-bottom: 1px solid ${headerBorder}; padding: 18px 24px; background: ${isDanger ? 'rgba(239, 68, 68, 0.05)' : 'transparent'};">
+            <h3 class="mqf-modal-title" style="display:flex; align-items:center; gap:12px; font-weight:800; font-size:16px; color:var(--mqf-text);">
+              <i class="fa-solid ${iconClass}" style="color:${iconColor}; font-size:18px;"></i> ${title}
             </h3>
           </div>
-          <div class="mqf-modal-body">
-            <p style="color:var(--mqf-text-secondary);font-size:var(--mqf-text-base);line-height:1.6;">${message}</p>
+          <div class="mqf-modal-body" style="padding: 24px; color:var(--mqf-text-secondary); font-size:14px; line-height:1.6;">
+            ${message}
           </div>
-          <div class="mqf-modal-footer">
-            <button id="mqf-confirm-cancel" class="mqf-btn mqf-btn--secondary">${cancelText}</button>
-            <button id="mqf-confirm-ok" class="mqf-btn mqf-btn--${type}">${confirmText}</button>
+          <div class="mqf-modal-footer" style="border-top: 1px solid var(--mqf-border, rgba(255, 255, 255, 0.1)); padding: 16px 24px; display:flex; justify-content:flex-end; gap:12px; background: var(--mqf-surface-2, transparent);">
+            <button id="mqf-confirm-cancel" class="mqf-btn mqf-btn--secondary" style="border-radius:10px; padding:10px 20px; font-weight:600;">${cancelText}</button>
+            <button id="mqf-confirm-ok" class="mqf-btn mqf-btn--${type}" style="border-radius:10px; padding:10px 22px; font-weight:700; background: ${isDanger ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, var(--mqf-primary), var(--mqf-primary-dark, #4f46e5))'}; color:#ffffff; box-shadow: ${isDanger ? '0 4px 15px rgba(239, 68, 68, 0.4)' : '0 4px 15px rgba(99, 102, 241, 0.4)'};">${confirmText}</button>
           </div>
         </div>
       `;

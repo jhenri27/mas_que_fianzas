@@ -192,6 +192,7 @@
         <button class="tab-btn active" onclick="cambiarTab('solicitud')"><i class="fa-solid fa-pen-to-square"></i> Solicitud de Ajuste</button>
         <button class="tab-btn" onclick="cambiarTab('bandeja')"><i class="fa-solid fa-list-check"></i> Bandeja de Aprobaciones</button>
         <button class="tab-btn" onclick="cambiarTab('reglas')"><i class="fa-solid fa-gavel"></i> Reglas de Negocio</button>
+        <button class="tab-btn" onclick="cambiarTab('reglas-docs')"><i class="fa-solid fa-id-card"></i> Reglas de Documentos Procesados</button>
     </div>
 
     <!-- ================== TABS CONTENIDO ================== -->
@@ -490,84 +491,147 @@
         </div>
     </div>
 
+    <!-- TAB 4: REGLAS DE DOCUMENTOS PROCESADOS -->
+    <div id="tab-reglas-docs" class="tab-panel">
+        <div class="card" style="padding: 25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h3 class="card-title" style="margin:0; font-weight:700;"><i class="fa-solid fa-id-card"></i> Reglas de Documentos Procesados e Identificadores</h3>
+                    <p style="font-size:12px; color:var(--mqf-text-secondary); margin:4px 0 0 0;">Control y configuración de unicidad para Cédulas, RNC, Pasaportes, Licencias, Placas, Chasis/VIN y Fianzas (Normas NOFTRAB / 4-VAF)</p>
+                </div>
+                <button class="btn btn-primary" onclick="abrirModalRegla(null, 'documentos')"><i class="fa-solid fa-plus"></i> Nueva Regla de Documento</button>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:200px;">
+                    <input type="text" id="buscar_regla_doc_input" class="form-input" placeholder="Buscar regla de documento, VIN, placa..." oninput="filtrarReglasDocs()">
+                </div>
+                <div>
+                    <select id="filtro_categoria_regla_doc" class="form-input" style="width:200px;" onchange="filtrarReglasDocs()">
+                        <option value="">Todas las Categorías</option>
+                        <option value="documentos">Documentos de Identidad</option>
+                        <option value="vehiculos">Datos de Vehículos</option>
+                        <option value="fianzas">Identificadores de Fianzas</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="filtro_estado_regla_doc" class="form-input" style="width:140px;" onchange="filtrarReglasDocs()">
+                        <option value="">Todos los Estados</option>
+                        <option value="activo">Activa</option>
+                        <option value="inactivo">Inactiva</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="overflow-x:auto;">
+                <table class="data-table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Regla de Documento / ID</th>
+                            <th>Categoría</th>
+                            <th>Descripción NOFTRAB</th>
+                            <th>Unicidad / Valor</th>
+                            <th>Módulos Afectados</th>
+                            <th>Buenas Prácticas</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reglas_docs_rows">
+                        <!-- Inyectado dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
 </main>
 
-<!-- MODAL NUEVA/EDITAR REGLA DE NEGOCIO -->
-<div id="modal_regla" class="modal-overlay">
-    <div class="modal-box" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 id="modal_regla_title">Nueva Regla de Negocio</h3>
-            <button class="modal-close" onclick="cerrarModalRegla()">&times;</button>
+<!-- MODAL NUEVA/EDITAR REGLA DE NEGOCIO Y DOCUMENTOS (Obsidian Dark Glassmorphism) -->
+<div id="modal_regla" class="modal-overlay" style="background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+    <div class="modal-box" style="max-width: 620px; background: var(--mqf-surface-1, #111827); border: 1px solid var(--mqf-border, rgba(255, 255, 255, 0.15)); border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.2);">
+        <div class="modal-header" style="background: rgba(99, 102, 241, 0.08); border-bottom: 1px solid var(--mqf-border, rgba(255, 255, 255, 0.12)); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <h3 id="modal_regla_title" style="margin: 0; font-size: 17px; font-weight: 800; color: var(--mqf-text, #ffffff); display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-gavel" style="color: var(--mqf-primary, #818cf8);"></i> <span>Nueva Regla de Negocio</span>
+            </h3>
+            <button class="modal-close" style="background: rgba(255,255,255,0.08); border: none; color: var(--mqf-text-secondary, #94a3b8); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s;" onclick="cerrarModalRegla()">&times;</button>
         </div>
         <form id="form_regla" onsubmit="enviarSolicitudRegla(event)">
-            <div class="modal-body" style="grid-template-columns:1fr; gap:12px; padding:20px; max-height:450px; overflow-y:auto;">
+            <div class="modal-body" style="grid-template-columns:1fr; gap:16px; padding:24px; max-height:520px; overflow-y:auto; background: transparent;">
                 <input type="hidden" id="regla_id">
                 <input type="hidden" id="regla_tipo_solicitud" value="creacion">
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
                     <div>
-                        <label class="form-label" for="regla_codigo">Código de la Regla</label>
-                        <input type="text" id="regla_codigo" class="form-input" required placeholder="Ej: LIM_COBRO_ACH">
+                        <label class="form-label" for="regla_codigo" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Código de la Regla</label>
+                        <input type="text" id="regla_codigo" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px;" required placeholder="Ej: VAL_DOC_CEDULA_UNICIDAD">
                     </div>
                     <div>
-                        <label class="form-label" for="regla_nombre">Nombre</label>
-                        <input type="text" id="regla_nombre" class="form-input" required placeholder="Ej: Límite cobros por ACH">
+                        <label class="form-label" for="regla_nombre" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Nombre de la Regla</label>
+                        <input type="text" id="regla_nombre" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px;" required placeholder="Ej: Unicidad de Cédula Dominicana">
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
                     <div>
-                        <label class="form-label" for="regla_categoria">Categoría</label>
-                        <select id="regla_categoria" class="form-input" required>
-                            <option value="plataforma">Plataforma (VAF)</option>
-                            <option value="aseguradoras">Aseguradoras (VAF)</option>
-                            <option value="perfiles">Perfiles (VAF)</option>
-                            <option value="productos">Productos (VAF)</option>
-                            <option value="cobros">Cobros (VAFF)</option>
-                            <option value="ventas">Ventas (VAFF)</option>
-                            <option value="comisiones">Comisiones (VAFF)</option>
+                        <label class="form-label" for="regla_categoria" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Categoría</label>
+                        <select id="regla_categoria" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px;" required>
+                            <option value="documentos" style="background:#1e293b; color:#fff;">Documentos de Identidad (VAF)</option>
+                            <option value="vehiculos" style="background:#1e293b; color:#fff;">Datos de Vehículos (VAF)</option>
+                            <option value="fianzas" style="background:#1e293b; color:#fff;">Identificadores de Fianzas (VAF)</option>
+                            <option value="plataforma" style="background:#1e293b; color:#fff;">Plataforma (VAF)</option>
+                            <option value="aseguradoras" style="background:#1e293b; color:#fff;">Aseguradoras (VAF)</option>
+                            <option value="perfiles" style="background:#1e293b; color:#fff;">Perfiles (VAF)</option>
+                            <option value="productos" style="background:#1e293b; color:#fff;">Productos (VAF)</option>
+                            <option value="cobros" style="background:#1e293b; color:#fff;">Cobros (VAFF)</option>
+                            <option value="ventas" style="background:#1e293b; color:#fff;">Ventas (VAFF)</option>
+                            <option value="comisiones" style="background:#1e293b; color:#fff;">Comisiones (VAFF)</option>
                         </select>
                     </div>
                     <div>
-                        <label class="form-label" for="regla_valor">Valor Configurado</label>
-                        <input type="text" id="regla_valor" class="form-input" required placeholder="Ej: 50000.00">
+                        <label class="form-label" for="regla_valor" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Valor / Configuración</label>
+                        <input type="text" id="regla_valor" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px;" required placeholder="Ej: UNICO_STRICT o 50000.00">
                     </div>
                 </div>
 
                 <div>
-                    <label class="form-label">Relación del Ajuste (Multiselección)</label>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #cbd5e1;">
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="aseguradoras"> Aseguradoras</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="plataforma"> Plataforma</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="productos"> Productos</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="ventas"> Ventas</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="cobros"> Cobros</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="comisiones"> Comisiones</label>
-                        <label style="font-size:12px; display:flex; align-items:center; gap:4px;"><input type="checkbox" name="regla_relaciones" value="perfiles"> Perfiles</label>
+                    <label class="form-label" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Relación del Ajuste (Multiselección Módulos)</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; background: var(--mqf-surface-2, rgba(255,255,255,0.04)); padding:14px; border-radius:12px; border:1px solid var(--mqf-border, rgba(255,255,255,0.12));">
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="clientes"> Clientes</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="cotizaciones"> Cotizaciones</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="fianzas"> Fianzas</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="polizas"> Pólizas</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="vehiculos"> Vehículos</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="usuarios"> Usuarios</label>
+                        <label style="font-size:12px; color: var(--mqf-text, #e2e8f0); display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" name="regla_relaciones" value="aseguradoras"> Aseguradoras</label>
                     </div>
                 </div>
 
                 <div>
-                    <label class="form-label" for="regla_descripcion">Descripción</label>
-                    <textarea id="regla_descripcion" class="form-input" style="height:60px; resize:none;" placeholder="Describa el objetivo de esta regla contable u operativa..."></textarea>
+                    <label class="form-label" for="regla_descripcion" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Descripción NOFTRAB</label>
+                    <textarea id="regla_descripcion" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px; height:60px; resize:none;" placeholder="Describa el objetivo de esta regla técnica u operativa..."></textarea>
                 </div>
 
                 <div>
-                    <label class="form-label" for="regla_mejores_practicas">Novedades y Mejores Prácticas del Mercado</label>
-                    <textarea id="regla_mejores_practicas" class="form-input" style="height:60px; resize:none;" placeholder="Indique la justificación basada en novedades y mejores prácticas del mercado..."></textarea>
+                    <label class="form-label" for="regla_mejores_practicas" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--mqf-text-secondary, #94a3b8); margin-bottom: 6px; display: block;">Novedades y Mejores Prácticas del Mercado</label>
+                    <textarea id="regla_mejores_practicas" class="form-input" style="width:100%; background: var(--mqf-surface-2, rgba(255,255,255,0.05)); color: var(--mqf-text, #ffffff); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius: 10px; padding: 10px 14px; font-size: 13px; height:60px; resize:none;" placeholder="Indique la justificación basada en novedades y mejores prácticas del mercado..."></textarea>
                 </div>
 
-                <div style="background:#fff7ed; padding:10px; border-radius:6px; border:1px solid #ffedd5;">
-                    <label class="form-label" for="regla_justificacion" style="color:#c2410c;"><i class="fa-solid fa-triangle-exclamation"></i> Justificación de Cambio (Exigido VAF/VAFF - Mín. 15 caracteres)</label>
-                    <textarea id="regla_justificacion" class="form-input" style="height:60px; resize:none;" required placeholder="Escriba la justificación formal del cambio de regla..." oninput="actualizarContadorRegla(this.value)"></textarea>
-                    <div style="text-align:right; font-size:10px; color:#c2410c; margin-top:2px;" id="char_count_regla">0 caracteres</div>
+                <div style="background: rgba(249, 115, 22, 0.08); padding:14px; border-radius:12px; border: 1px solid rgba(249, 115, 22, 0.3);">
+                    <label class="form-label" for="regla_justificacion" style="color:#f97316; font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:8px;"><i class="fa-solid fa-triangle-exclamation"></i> Justificación de Cambio (Exigido VAF/VAFF - Mín. 15 caracteres)</label>
+                    <textarea id="regla_justificacion" class="form-input" style="width:100%; background: rgba(0,0,0,0.3); color:#ffffff; border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 10px; padding:10px 14px; font-size: 13px; height:65px; resize:none;" required placeholder="Escriba la justificación formal del cambio de regla..." oninput="actualizarContadorRegla(this.value)"></textarea>
+                    <div style="text-align:right; font-size:11px; font-weight:600; color:#f97316; margin-top:4px;" id="char_count_regla">0 caracteres</div>
                 </div>
             </div>
-            <div class="modal-footer" style="padding:16px 20px; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc; border-top:1px solid #e2e8f0;">
-                <button type="button" class="btn-cancel" onclick="cerrarModalRegla()">Cancelar</button>
-                <button type="submit" class="btn-save" style="background:#4f46e5;"><i class="fa-solid fa-paper-plane"></i> Enviar a Validación</button>
+            <div class="modal-footer" style="padding: 16px 24px; display:flex; justify-content:flex-end; gap:12px; background: var(--mqf-surface-2, rgba(0,0,0,0.2)); border-top: 1px solid var(--mqf-border, rgba(255, 255, 255, 0.1));">
+                <button type="button" class="btn-cancel" style="background: rgba(255,255,255,0.08); color: var(--mqf-text-secondary, #94a3b8); border: 1px solid var(--mqf-border, rgba(255,255,255,0.15)); border-radius:10px; padding:10px 20px; font-weight:600; cursor:pointer;" onclick="cerrarModalRegla()">Cancelar</button>
+                <button type="submit" class="btn-save" style="background: linear-gradient(135deg, var(--mqf-primary, #6366f1), #4f46e5); color:#ffffff; font-weight:700; border-radius:10px; padding:10px 22px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35); border:none; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> Enviar a Validación</button>
             </div>
+        </form>
+    </div>
+</div>
         </form>
     </div>
 </div>
@@ -644,6 +708,8 @@
             cargarSolicitudes(document.getElementById('filtro_estado_solicitud').value);
         } else if (tabName === 'reglas') {
             cargarReglas();
+        } else if (tabName === 'reglas-docs') {
+            cargarReglasDocs();
         }
     }
 
@@ -1225,17 +1291,83 @@
         });
     }
 
-    function abrirModalRegla(id = null) {
+    // --- TAB 4: REGLAS DE DOCUMENTOS PROCESADOS E IDENTIFICADORES ---
+    function cargarReglasDocs() {
+        const rows = document.getElementById('reglas_docs_rows');
+        if (!rows) return;
+        rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">Cargando catálogo de reglas de documentos...</td></tr>';
+
+        fetch(`../../backend/api/centro_tecnico.php?action=listar_reglas&token_sesion=${token}`)
+            .then(res => res.json())
+            .then(res => {
+                if (res.exito) {
+                    reglasCache = res.datos;
+                    filtrarReglasDocs();
+                }
+            });
+    }
+
+    function filtrarReglasDocs() {
+        const searchElem = document.getElementById('buscar_regla_doc_input');
+        const search = searchElem ? searchElem.value.toLowerCase().trim() : '';
+        const catElem = document.getElementById('filtro_categoria_regla_doc');
+        const categoria = catElem ? catElem.value : '';
+        const estElem = document.getElementById('filtro_estado_regla_doc');
+        const estado = estElem ? estElem.value : '';
+        const rows = document.getElementById('reglas_docs_rows');
+        if (!rows) return;
+        rows.innerHTML = '';
+
+        const docCategories = ['documentos', 'vehiculos', 'fianzas'];
+
+        let filtrados = reglasCache.filter(r => {
+            const isDocCat = docCategories.includes(r.categoria) || r.codigo.startsWith('VAL_');
+            if (!isDocCat) return false;
+            const matchesSearch = r.codigo.toLowerCase().includes(search) || r.nombre.toLowerCase().includes(search) || (r.descripcion && r.descripcion.toLowerCase().includes(search));
+            const matchesCat = !categoria || r.categoria === categoria;
+            const matchesEst = !estado || r.estado === estado;
+            return matchesSearch && matchesCat && matchesEst;
+        });
+
+        if (filtrados.length === 0) {
+            rows.innerHTML = '<tr><td colspan="9" style="text-align:center;">No hay reglas de documentos que coincidan con los filtros.</td></tr>';
+            return;
+        }
+
+        filtrados.forEach(r => {
+            const tr = document.createElement('tr');
+            let rels = [];
+            try { rels = JSON.parse(r.relaciones || '[]'); } catch(e){}
+            const relsStr = rels.map(rl => `<span class="badge-status" style="background:rgba(99, 102, 241, 0.15); color:#818cf8; border:1px solid rgba(99, 102, 241, 0.3); margin-right:2px; font-size:9px;">${rl}</span>`).join(' ');
+
+            tr.innerHTML = `
+                <td><span style="font-family:monospace; font-weight:700; color:#818cf8;">${r.codigo}</span></td>
+                <td><strong>${r.nombre}</strong></td>
+                <td><span class="badge-status" style="background:rgba(255,255,255,0.08); color:var(--mqf-text-secondary);">${r.categoria}</span></td>
+                <td><span style="font-size:12px;">${r.descripcion || 'N/D'}</span></td>
+                <td><strong style="color:#10b981;">${r.valor_configurado}</strong></td>
+                <td>${relsStr || '<span style="color:#94a3b8; font-size:11px;">Todos</span>'}</td>
+                <td><span style="font-size:11px; font-style:italic;">${r.mejores_practicas || 'N/D'}</span></td>
+                <td><span class="badge-status badge-${r.estado === 'activo' ? 'approved' : 'rejected'}">${r.estado}</span></td>
+                <td>
+                    <button class="action-btn" style="color:#818cf8; border-color:rgba(129, 140, 248, 0.4);" onclick="abrirModalRegla(${r.id})"><i class="fa-solid fa-edit"></i> Editar</button>
+                </td>
+            `;
+            rows.appendChild(tr);
+        });
+    }
+
+    function abrirModalRegla(id = null, defaultCategoria = null) {
         document.getElementById('form_regla').reset();
         const charCount = document.getElementById('char_count_regla');
         charCount.innerText = '0 caracteres';
-        charCount.style.color = '#c2410c';
+        charCount.style.color = '#f97316';
 
         if (id) {
             const r = reglasCache.find(x => x.id === id);
             if (!r) return;
 
-            document.getElementById('modal_regla_title').innerText = "Editar Regla de Negocio";
+            document.getElementById('modal_regla_title').innerText = "Editar Regla de Negocio / Documento";
             document.getElementById('regla_id').value = r.id;
             document.getElementById('regla_tipo_solicitud').value = 'modificacion';
             document.getElementById('regla_codigo').value = r.codigo;
@@ -1256,11 +1388,14 @@
             });
 
         } else {
-            document.getElementById('modal_regla_title').innerText = "Nueva Regla de Negocio";
+            document.getElementById('modal_regla_title').innerText = defaultCategoria ? "Nueva Regla de Documento / ID" : "Nueva Regla de Negocio";
             document.getElementById('regla_id').value = '';
             document.getElementById('regla_tipo_solicitud').value = 'creacion';
             document.getElementById('regla_codigo').disabled = false;
             document.getElementById('regla_justificacion').value = '';
+            if (defaultCategoria) {
+                document.getElementById('regla_categoria').value = defaultCategoria;
+            }
         }
 
         document.getElementById('modal_regla').style.display = 'flex';
