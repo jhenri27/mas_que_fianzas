@@ -666,10 +666,10 @@ $generation_date = date('d/m/Y H:i');
         
         <div class="code-block">
 // Cálculo de Prima Neta
-prima_neta = prima_total / 1.18
+prima_neta = prima_total / 1.16
 
-// Cálculo de ITBIS
-itbis = prima_neta * 0.18
+// Cálculo de ISC (Impuesto Selectivo al Consumo - Ley 146-02 de Seguros / DGII - Exento de ITBIS)
+isc = prima_neta * 0.16
 
 // Cálculo de Cuota según Periodicidad
 if (periodicidad == 'MENSUAL') cuota = prima_total / 12

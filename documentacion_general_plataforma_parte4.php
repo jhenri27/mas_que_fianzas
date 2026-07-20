@@ -437,7 +437,7 @@ $generation_date = date('d/m/Y H:i');
                 <li><strong>Datos Primas y Costos:</strong>
                     <ul>
                         <li>Prima Neta</li>
-                        <li>ITBIS (18%)</li>
+                        <li>ISC (16% / Exento ITBIS Ley 146-02 DGII)</li>
                         <li>Total a Pagar</li>
                     </ul>
                 </li>
@@ -1450,7 +1450,7 @@ class BOTTestingDEV {
 
         <h3>2.5 Tasas Financieras e Impuestos</h3>
         <ul>
-            <li>Tasa oficial de ITBIS (18.00%).</li>
+            <li>Régimen Fiscal de Seguros: Exención de ITBIS según Ley de Seguros 146-02 de la Superintendencia de Seguros (SIS) y normativa DGII (Aplicación de Impuesto Selectivo al Consumo ISC 16% sobre primas o exenciones por tipo de fianza).</li>
             <li>Comisiones base y techos por ramos de seguro y fianzas de fiel cumplimiento/anticipo.</li>
             <li>Configuración de recargos por mora y días de gracia institucionales.</li>
         </ul>
