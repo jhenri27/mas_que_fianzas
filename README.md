@@ -63,16 +63,28 @@ graph TD
 * **BOT-TESTING-DEV**: Robot de pruebas automatizadas que simula flujos de venta, validación de sesiones y cálculos de comisiones, auto-corrigiendo desviaciones lógicas bajo estándares NOFTRAB.
 * **Visualizador de Logs del Servidor**: Panel administrativo centralizado para supervisar en tiempo real los logs de errores PHP (`error.log`) y auditoría de envíos SMTP (`smtp.log`) de manera gráfica.
 
+### 7. PLATING-CENTRO-TECNICO (Centro Técnico de Seguros & Control 4-VAF)
+* **Solicitudes de Ajustes Excepcionales**: Gestión jerárquica de solicitudes de modificación para pólizas o cotizaciones emitidas (financieros: prima/aseguradora; vehículo: placa/marca/chasis; cliente: nombre/cédula; e intermediarios) con soporte adjunto obligatorio y justificación técnica VAF.
+* **Simulación Contable Pre-Ejecución**: Calculador de impacto en tiempo real que pre-visualiza los asientos de débito/crédito (primas cobradas, comisiones por pagar, cuentas por cobrar aseguradoras) antes de aplicar cualquier cambio financiero.
+* **Catálogo de Reglas de Negocio Configurable**: Gestor de parámetros operativos y contables con auditoría de versión y multiselección de módulos afectados.
+* **Reglas de Documentos Procesados e Identificadores**: Control administrable de unicidad global para Cédulas (Luhn Mod 10), RNC (Mod 11 DGII), Pasaportes, Licencias de Conducir, Placas, Chasis/VIN y Números de Fianza/Póliza.
+
+### 8. PLATING-CONFIG (Configuración Central & Validador de Documentos 4-VAF)
+* **Validador de Documentos Dominicanos**: Interruptores master y por módulo (`VALIDADOR_DOCS_COTIZACIONES`, `VALIDADOR_DOCS_CLIENTES`, `VALIDADOR_DOCS_USUARIOS`, `VALIDADOR_DOCS_POLIZAS`, `VALIDADOR_DOCS_FIANZAS`) para control estricto de documentos de identidad.
+* **Datos Corporativos & Logo Base64**: Parámetros de razón social, RNC institucional, teléfonos, correo oficial e incrustación de logotipo oficial MQF en formato Base64 para impresiones PDF de alta definición.
+* **Motor SMTP & Plantillas HTML**: Notificaciones automáticas parametrizables con variables dinámicas (`{{NUMERO}}`, `{{CLIENTE}}`, `{{TOTAL_FMT}}`, `{{FECHA_LOCAL}}`).
+* **Documentación Técnica Modular (`documentacion.php`)**: Centro unificado de manuales interactivos por módulo con exportación directa en formato PDF vectorial.
+
 ---
 
 ## 🛠️ Ficha Técnica & Integración Cloud
 
 La plataforma combina un núcleo ultra-rápido en PHP con procesos analíticos asíncronos en Python e integraciones de clase mundial:
 
-* **Backend Principal**: PHP 8.2 (compatible con arquitecturas WAMP en entornos Windows Server y LAMP en Linux Enterprise).
+* **Backend Principal**: PHP 8.2 / 8.4 (compatible con arquitecturas WAMP en entornos Windows Server y LAMP en Linux Enterprise).
 * **Motor Auxiliar de Datos**: Python 3.14.5 (soporta el motor ETL de importación masiva Banreservas y el sistema transaccional de permisos).
 * **Google Cloud Vision API (OCR)**: Lectura automática de textos para validación de datos de matrículas y cédulas, almacenando las claves privadas mediante variables de entorno seguras (`google-key.json`).
-* **Google Drive API (Cloud Sync)**: Respaldo atómico de la plataforma en la nube (`masque_fianzas_backup.zip`) vinculada mediante OAuth 2.0 y token de refresco persistente.
+* **Google Drive API & OneDrive (Cloud Sync)**: Respaldo atómico de la plataforma en la nube (`masque_fianzas_backup.zip` / `Backup_Plataforma_Integrada.zip`) vinculada mediante OAuth 2.0 y scripts de respaldos automatizados.
 * **Motor Mailer SMTP**: Envío automatizado de cotizaciones y reportes de auditoría en formato HTML premium adaptativo (`Mailer.php`).
 
 ---
@@ -93,7 +105,7 @@ La plataforma combina un núcleo ultra-rápido en PHP con procesos analíticos a
 ---
 
 ## 👥 Roles de Acceso Predeterminados (Malla RBAC)
-- **Administrador (CEO/Gerente)**: Acceso total a la configuración global, auditorías inmutables, importación ETL de carteras de clientes y portal LABS-QA.
+- **Administrador (CEO/Gerente - Perfil 1)**: Acceso total a la configuración global, Centro Técnico, bandeja de aprobaciones de ajustes, auditorías inmutables NOFTRAB, importación ETL y portal LABS-QA.
 - **Socio Comercial (Director/PDV)**: Gestión de clientes, cotizaciones y emisión de pólizas. Si tiene la restricción `solo_propios = 1` activa, sus listados se filtran automáticamente a nivel de base de datos para proteger la confidencialidad de su cartera comercial.
 - **Vendedor (VEN)**: Cotización y registro de prospectos, con visualización limitada a sus propias comisiones generadas.
 
