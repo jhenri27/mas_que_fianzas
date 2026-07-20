@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aseguradoras | MÁS QUE FIANZAS</title>
+<script src="../assets/components.js"></script>
 <style>
 /* ── Variables / Skin Obsidian ──────────────────────────────────────────── */
 :root {
@@ -595,7 +596,7 @@ async function guardar() {
 async function toggleEstado(id) {
   const a = aseguradoras.find(x => x.id == id);
   const accion = a.estado === 'activo' ? 'inactivar' : 'activar';
-  if (!confirm(`¿Deseas ${accion} la aseguradora "${a.nombre}"?`)) return;
+  if (!(await MQF.confirm(`¿Deseas ${accion} la aseguradora "<strong>${a.nombre}</strong>"?`, { type: a.estado === 'activo' ? 'danger' : 'warning' }))) return;
 
   const res = await apiFetch({ action: 'toggle_aseguradora' }, { id });
   if (res.exito) {

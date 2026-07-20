@@ -1520,7 +1520,7 @@
         }
 
         async function aprobarPagoLocal(pagoId) {
-            if (!confirm('¿Está seguro de aprobar y validar contablemente este depósito bancario?')) return;
+            if (!(await MQF.confirm('¿Está seguro de aprobar y validar contablemente este depósito bancario?', { type: 'success' }))) return;
             try {
                 const res = await api.solicitud('/pagos.php?action=aprobar', 'POST', { id: pagoId });
                 if (res.exito) {
@@ -1537,7 +1537,7 @@
         }
 
         async function rechazarPagoLocal(pagoId) {
-            if (!confirm('¿Está seguro de rechazar e invalidar este comprobante de pago?')) return;
+            if (!(await MQF.confirm('¿Está seguro de rechazar e invalidar este comprobante de pago?', { type: 'danger' }))) return;
             try {
                 const res = await api.solicitud('/pagos.php?action=rechazar', 'POST', { id: pagoId });
                 if (res.exito) {
@@ -1878,7 +1878,7 @@
         }
 
         async function ejecutarBotManual() {
-            if (!confirm('¿Desea disparar la ejecución manual de cobro del bot? Se enviarán alertas y recordatorios pendientes.')) return;
+            if (!(await MQF.confirm('¿Desea disparar la ejecución manual de cobro del bot? Se enviarán alertas y recordatorios pendientes.', { type: 'warning' }))) return;
             try {
                 MQF.toast('Ejecutando secuencia del bot en segundo plano...', 'info');
                 const res = await api.solicitud('/cobros.php?action=ejecutar_bot_manual', 'POST');

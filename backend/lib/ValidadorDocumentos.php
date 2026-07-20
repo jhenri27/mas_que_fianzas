@@ -280,14 +280,14 @@ class ValidadorDocumentos {
 
         $checkTable = $db->query("SHOW TABLES LIKE 'fianzas'");
         if ($checkTable && $checkTable->num_rows > 0) {
-            $stmt = $db->prepare("SELECT numero_fianza, afianzado_nombre FROM fianzas WHERE UPPER(numero_fianza) = ? LIMIT 1");
+            $stmt = $db->prepare("SELECT numero_fianza, cliente_nombre FROM fianzas WHERE UPPER(numero_fianza) = ? LIMIT 1");
             if ($stmt) {
                 $stmt->bind_param("s", $numLimpio);
                 $stmt->execute();
                 $res = $stmt->get_result();
                 if ($row = $res->fetch_assoc()) {
                     $stmt->close();
-                    return "La Fianza N° '$numeroFianza' ya se encuentra registrada en el sistema a nombre de {$row['afianzado_nombre']}. Según las Normas NOFTRAB no se permiten números de fianza duplicados.";
+                    return "La Fianza N° '$numeroFianza' ya se encuentra registrada en el sistema a nombre de {$row['cliente_nombre']}. Según las Normas NOFTRAB no se permiten números de fianza duplicados.";
                 }
                 $stmt->close();
             }

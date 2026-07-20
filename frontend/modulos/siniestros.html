@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
     <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <script src="../assets/components.js"></script>
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
     
     <style>
@@ -590,7 +591,7 @@
             confirmMsg = `¿Confirma proceder con la liquidación e indemnización del caso por ${fmt(selectedSiniestro.monto_aprobado)}? Esto generará el desembolso y el asiento de caja correspondiente de forma automática.`;
         }
 
-        if (!confirm(confirmMsg)) return;
+        if (!(await MQF.confirm(confirmMsg, { type: nuevoEst === 'pagado' ? 'success' : 'warning' }))) return;
 
         try {
             const res = await api.solicitud('/siniestros.php?action=actualizar_estado', 'POST', {

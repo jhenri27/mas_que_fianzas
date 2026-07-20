@@ -697,7 +697,7 @@
         }
 
         async function eliminarEnlace(id) {
-            if (!confirm('¿Seguro que deseas eliminar este enlace de venta online permanentemente?')) return;
+            if (!(await MQF.confirm('¿Seguro que deseas eliminar este enlace de venta online permanentemente?', { type: 'danger' }))) return;
             try {
                 const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=eliminar_enlace`, {
                     method: 'POST',
@@ -781,7 +781,7 @@
         }
 
         async function eliminarBono(id) {
-            if (!confirm('¿Seguro que deseas eliminar este bono configurado?')) return;
+            if (!(await MQF.confirm('¿Seguro que deseas eliminar este bono configurado?', { type: 'danger' }))) return;
             try {
                 const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/centro_negocios.php?action=eliminar_bono`, {
                     method: 'POST',

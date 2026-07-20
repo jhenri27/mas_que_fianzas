@@ -646,9 +646,14 @@
             <div class="helpdesk-list-header">
                 <div class="list-title-row">
                     <h3>Incidencias</h3>
-                    <button class="btn btn-primary btn-sm" onclick="abrirModalCrear()">
-                        <span>➕</span> Nueva
-                    </button>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn btn-secondary btn-sm" onclick="window.open('documentacion.php', '_blank')" title="Consultar Catálogo KEDB de Errores NOFTRAB">
+                            <span>📚</span> KEDB Errores
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalCrear()">
+                            <span>➕</span> Nueva
+                        </button>
+                    </div>
                 </div>
                 <div class="filter-tabs">
                     <button class="filter-tab active" id="tab-t-todos" onclick="filtrarTickets('todos')">Todos</button>

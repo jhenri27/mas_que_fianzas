@@ -133,6 +133,12 @@ $modulo_metadata = [
         'doc_url' => '../../documentacion_general_plataforma_parte4.php?doc=4',
         'cumplimiento' => 99,
         'iso' => 'ISO 27001 / NOFTRAB'
+    ],
+    'catalogo_errores_noftrab.md' => [
+        'nombre' => 'Catálogo KEDB de Errores Codificados',
+        'doc_url' => '../../docs/catalogo_errores_noftrab.md',
+        'cumplimiento' => 100,
+        'iso' => 'NOFTRAB v4.0 / KEDB'
     ]
 ];
 

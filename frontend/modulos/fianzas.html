@@ -1295,7 +1295,7 @@
   }
 
   async function convertirVigente(id) {
-    if (!confirm('¿Convertir esta cotización en una fianza vigente?')) return;
+    if (!(await MQF.confirm('¿Convertir esta cotización en una fianza vigente?', { type: 'warning' }))) return;
     try {
       const res = await api.solicitud('/fianzas.php?action=actualizar_estado', 'POST', { 
         fianza_id: id, 
@@ -1314,7 +1314,7 @@
   }
 
   async function eliminarFianza(id) {
-    if (!confirm('¿Eliminar esta fianza permanentemente? Esta acción no se puede deshacer.')) return;
+    if (!(await MQF.confirm('¿Eliminar esta fianza permanentemente? Esta acción no se puede deshacer.', { type: 'danger' }))) return;
     try {
       const res = await api.solicitud('/fianzas.php?action=eliminar', 'POST', { id });
       if (res.exito) {

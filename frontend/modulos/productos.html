@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../assets/design-system.css?v=9.0">
     <link rel="stylesheet" href="../assets/skin-engine.css?v=12.0">
     <link rel="stylesheet" href="../assets/components.css?v=9.0">
+    <script src="../assets/components.js"></script>
     <link rel="stylesheet" href="../assets/dashboard.css?v=9.1.0">
     
     <!-- Excel & PDF Export/Import libs -->
@@ -648,7 +649,7 @@
     }
 
     async function eliminarDeducible(id) {
-        if (!confirm("¿Está seguro de eliminar esta regla de deducible?")) return;
+        if (!(await MQF.confirm('¿Está seguro de eliminar esta regla de deducible?', { type: 'danger' }))) return;
         const prodId = document.getElementById('ded-prod-id').value;
         try {
             const res = await api.solicitud('/productos.php?action=eliminar_deducible', 'POST', { id });
