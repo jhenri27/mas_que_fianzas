@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLATING INSURANCE — Estrategia Comercial & Hoja de Ruta InsurTech</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #070a12;
+            --surface-card: #0f172a;
+            --surface-card-hover: #1e293b;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --primary-gold: #f59e0b;
+            --primary-amber: #d97706;
+            --indigo-accent: #6366f1;
+            --purple-accent: #a855f7;
+            --emerald-accent: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 30px 20px;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.12) 0%, transparent 45%);
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; }
+
+        /* HEADER EJECUTIVO GOLD/INSURTECH */
+        .exec-header {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 25px rgba(245, 158, 11, 0.1);
+        }
+
+        .exec-title h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .exec-title p { color: var(--text-secondary); font-size: 16px; }
+
+        .gold-badge {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            padding: 10px 20px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary-gold), var(--primary-amber));
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.5);
+        }
+
+        /* GRID KPIS COMERCIALES */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 22px;
+            margin-bottom: 35px;
+        }
+
+        .kpi-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border-glass);
+            border-radius: 22px;
+            padding: 26px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--purple-accent));
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .kpi-icon {
+            width: 50px; height: 50px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 16px;
+        }
+
+        .kpi-value { font-size: 32px; font-weight: 800; color: #ffffff; line-height: 1.1; margin-bottom: 6px; }
+        .kpi-label { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+        .kpi-sub { font-size: 12px; color: #fbbf24; margin-top: 6px; font-weight: 700; }
+
+        /* SECCIONES Y TABLAS */
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 35px; }
+        @media (max-width: 992px) { .grid-2col { grid-template-columns: 1fr; } }
+
+        .card-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 22px; border-bottom: 1px solid var(--border-glass); padding-bottom: 14px;
+        }
+
+        .panel-header h2 {
+            font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 12px; color: #ffffff;
+        }
+
+        /* MONETIZACION PLANES */
+        .plan-box {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .plan-box:hover {
+            border-color: rgba(245, 158, 11, 0.4);
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .plan-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .plan-name { font-weight: 800; font-size: 16px; color: #fbbf24; }
+        .plan-price { font-weight: 800; font-size: 18px; color: #ffffff; }
+
+        /* TABLA COMPARATIVA */
+        .exec-table { width: 100%; border-collapse: collapse; }
+        .exec-table th { text-align: left; padding: 12px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border-glass); }
+        .exec-table td { padding: 14px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .exec-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .feature-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            background: rgba(99, 102, 241, 0.15); color: #818cf8;
+        }
+
+        /* HOJA DE RUTA ESTRATEGICA */
+        .roadmap-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 992px) { .roadmap-list { grid-template-columns: 1fr; } }
+
+        .roadmap-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 24px;
+        }
+
+        .roadmap-card h3 { font-size: 16px; font-weight: 800; color: #fbbf24; margin-bottom: 8px; }
+        .roadmap-card p { font-size: 13px; color: var(--text-secondary); }
+
+        .footer { margin-top: 40px; text-align: center; padding: 25px; border-top: 1px solid var(--border-glass); color: var(--text-muted); font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER EJECUTIVO PLATING INSURANCE -->
+        <header class="exec-header">
+            <div class="exec-title">
+                <h1><i class="fa-solid fa-shield-cat" style="color:var(--primary-gold);"></i> PLATING INSURANCE</h1>
+                <p>Documento Clave de Estrategia Comercial, Monetización y Expansión InsurTech White-Label</p>
+            </div>
+            <div style="display:flex; gap:14px; align-items:center;">
+                <div class="gold-badge">
+                    <i class="fa-solid fa-crown"></i> MODELO DE COMERCIALIZACIÓN SAAS
+                </div>
+                <button class="btn-action" onclick="window.print()">
+                    <i class="fa-solid fa-print"></i> Exportar Informe
+                </button>
+            </div>
+        </header>
+
+        <!-- KPIS ESTRATEGICOS -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(245, 158, 11, 0.15); color:var(--primary-gold);">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div class="kpi-value">SaaS White-Label</div>
+                <div class="kpi-label">Plataforma Multi-Inquilino</div>
+                <div class="kpi-sub">★ Personalización de Marca en 1 Clic</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(16, 185, 129, 0.15); color:var(--emerald-accent);">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <div class="kpi-value">Red PDV / POS</div>
+                <div class="kpi-label">Socio PDV & Corredores</div>
+                <div class="kpi-sub">★ Comisiones Automatizadas en Cascada</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(99, 102, 241, 0.15); color:var(--indigo-accent);">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <div class="kpi-value">ISC 16% / ITBIS 0%</div>
+                <div class="kpi-label">Cumplimiento Ley 146-02 / DGII</div>
+                <div class="kpi-sub">★ NCF B02 Automatizado en Origen</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background:rgba(168, 85, 247, 0.15); color:var(--purple-accent);">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="kpi-value">QA AutoBot E2E</div>
+                <div class="kpi-label">Pruebas Continuas en Pantalla</div>
+                <div class="kpi-sub">★ 0% Errores en Producción</div>
+            </div>
+        </section>
+
+        <!-- SECCIONES DE DETALLE -->
+        <div class="grid-2col">
+
+            <!-- MODELO DE MONETIZACION Y PLANES -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-gem" style="color:var(--primary-gold);"></i> Esquema de Monetización y Licenciamiento B2B</h2>
+                </div>
+
+                <div class="plan-box">
+                    <div class="plan-title">
+                        <span class="plan-name">1. Plan Starter (Agentes Independientes)</span>
+                        <span class="plan-price">US$ 49 / mes</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary);">Acceso a cotizador rápido de Pólizas de Ley y Fianzas comerciales con NCF B02, hasta 100 transacciones mensuales.</p>
+                </div>
+
+                <div class="plan-box" style="border-color:rgba(245, 158, 11, 0.5); background:rgba(245, 158, 11, 0.08);">
+                    <div class="plan-title">
+                        <span class="plan-name">2. Plan Professional (Socio PDV & Puntos de Venta)</span>
+                        <span class="plan-price">US$ 149 / mes</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary);">Red de vendedores ilimitada, motor de comisiones automatizadas, emisión masiva de pólizas y portal de clientes personalizado.</p>
+                </div>
+
+                <div class="plan-box">
+                    <div class="plan-title">
+                        <span class="plan-name">3. Plan Enterprise (Aseguradoras & MGAs)</span>
+                        <span class="plan-price">US$ 499+ / mes</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary);">Licencia White-Label completa en VPS dedicada (8 vCPU / 24GB RAM), API REST total, motor contable en partida doble y módulo BOT-VISUAL-TEST-E2E.</p>
+                </div>
+            </div>
+
+            <!-- DIFERENCIADORES COMPETITIVOS CLAVE -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-trophy" style="color:var(--emerald-accent);"></i> Ventajas Competitivas Únicas</h2>
+                </div>
+                <table class="exec-table">
+                    <thead>
+                        <tr>
+                            <th>Diferenciador Clave</th>
+                            <th>Beneficio Comercial Inmediato</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="feature-badge">White-Label Skinning</span></td>
+                            <td>Permite a cualquier broker o aseguradora adaptar el portal a sus colores y logo en 1 segundo.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="feature-badge">Fianzas 1er Requerimiento</span></td>
+                            <td>Especialización técnica líder en el mercado para licitaciones del Estado (Contrataciones Públicas).</td>
+                        </tr>
+                        <tr>
+                            <td><span class="feature-badge">Validación Biométrica/Luhn</span></td>
+                            <td>Elimina fraudes de Cédulas (Luhn Mod 10) y RNC (Mod 11 DGII) antes de cotizar.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="feature-badge">Asiento Contable Atómico</span></td>
+                            <td>Genera la contabilidad automática en partida doble sin requerir software contables externos.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="feature-badge">QA AutoBot E2E</span></td>
+                            <td>Garantía de calidad continua que previene caídas de sistema o fallas en formularios.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- HOJA DE RUTA COMERCIAL 2026-2028 -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-compass-drafting" style="color:var(--indigo-accent);"></i> Hoja de Ruta de Comercialización y Expansión</h2>
+            </div>
+            <div class="roadmap-list">
+                <div class="roadmap-card">
+                    <h3>Fase 1: Dominio Local (Q3-Q4 2026)</h3>
+                    <p>Posicionamiento de <strong>PLATING INSURANCE</strong> como la plataforma tecnológica preferida para Corredores y Puntos de Venta (Socio PDV) en la República Dominicana.</p>
+                </div>
+                <div class="roadmap-card">
+                    <h3>Fase 2: Alianzas Aseguradoras (Q1-Q2 2027)</h3>
+                    <p>Integración directa mediante API REST con las principales compañías aseguradoras del mercado nacional para emisión instantánea y sincronización de cartera.</p>
+                </div>
+                <div class="roadmap-card">
+                    <h3>Fase 3: Expansión Regional (2027-2028)</h3>
+                    <p>Adaptación del motor multi-moneda e impositivo para expansión del SaaS en el Caribe y Centroamérica.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>PLATING INSURANCE — Estrategia de Comercialización e Innovación InsurTech | MÁS QUE FIANZAS v4.0</p>
+            <p style="font-size:11px; margin-top:4px; color:var(--text-muted);">Documento Clave de Recomendaciones Estratégicas B2B / SaaS</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
