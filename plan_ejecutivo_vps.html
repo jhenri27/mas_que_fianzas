@@ -304,6 +304,11 @@
             box-shadow: 0 0 10px var(--primary);
         }
 
+        .timeline-step.highlight::before {
+            background: var(--accent-emerald);
+            box-shadow: 0 0 15px var(--accent-emerald);
+        }
+
         .timeline-step h4 {
             font-size: 15px;
             font-weight: 700;
@@ -314,6 +319,17 @@
         .timeline-step p {
             font-size: 13px;
             color: var(--text-secondary);
+        }
+
+        .badge-sec {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 6px;
         }
 
         /* FOOTER EJECUTIVO */
@@ -339,7 +355,7 @@
             </div>
             <div style="display:flex; gap:12px; align-items:center;">
                 <div class="exec-badge">
-                    <i class="fa-solid fa-server"></i> VPS 169.58.51.147 AUDITADA
+                    <i class="fa-solid fa-shield-halved"></i> CANAL SEGURO LOCAL / DRIVE ACTIVO
                 </div>
                 <button class="btn-print" onclick="window.print()">
                     <i class="fa-solid fa-print"></i> Imprimir Plan
@@ -471,20 +487,24 @@
         <!-- TIMELINE DE DESPLIEGUE PASO A PASO -->
         <div class="card-panel">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Hoja de Ruta de Despliegue Automatizado (Paso a Paso)</h2>
+                <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Hoja de Ruta de Despliegue Automatizado (Paso a Paso Refinado)</h2>
             </div>
             <div class="timeline">
                 <div class="timeline-step">
                     <h4>Paso 1: Aprovisionamiento del Entorno LEMP en Ubuntu</h4>
-                    <p>Instalación automatizada por SSH de Nginx Web Server, PHP 8.3 FPM con extensiones de alto rendimiento, MySQL Server 8.4 y utilidades de seguridad.</p>
+                    <p>Instalación automatizada por SSH de Nginx Web Server, PHP 8.3 FPM con extensiones de alto rendimiento, MySQL Server 8.4 y utilidades de seguridad (UFW + Fail2ban).</p>
                 </div>
                 <div class="timeline-step">
                     <h4>Paso 2: Configuración de Base de Datos e Importación Atómica</h4>
-                    <p>Creación del usuario seguro `mqf_user`, base de datos `masque_fianzas_integrada_01` e importación del dump `db_backup.sql` asignando 16GB de memoria para índices.</p>
+                    <p>Creación del usuario seguro `mqf_user`, base de datos `masque_fianzas_integrada_01` e importación del dump `db_backup.sql` asignando 16 GB de memoria RAM para índices InnoDB.</p>
                 </div>
-                <div class="timeline-step">
-                    <h4>Paso 3: Clonación y Despliegue del Código Fuente</h4>
-                    <p>Sincronización del repositorio oficial `origin master` desde GitHub en `/var/www/masque_fianzas/` y asignación de permisos `www-data` para máxima seguridad.</p>
+                <div class="timeline-step highlight">
+                    <span class="badge-sec">🔒 REQUERIMIENTO DE SEGURIDAD REFINADO</span>
+                    <h4>Paso 3: Sincronización Segura de Código + Bundle de Credenciales de Producción</h4>
+                    <p>
+                        Transferencia directa por canal cifrado SSH/SCP de la copia de seguridad completa (código fuente + bundle de credenciales en `/backend/config/` incluyendo claves privadas de OCR, API keys, credenciales SMTP y de pasarelas de pago) desde la <strong>PC Local / Google Drive Seguro</strong> hacia `/var/www/masque_fianzas/`.
+                        <br><em style="color:#34d399; font-size:12px;">✓ Garantiza el funcionamiento operativo 100% inmediato sin exponer credenciales sensibles en repositorios públicos/compartidos de GitHub.</em>
+                    </p>
                 </div>
                 <div class="timeline-step">
                     <h4>Paso 4: Certificación SSL y Cifrado HTTPS</h4>
@@ -495,7 +515,7 @@
 
         <!-- FOOTER EJECUTIVO -->
         <footer class="exec-footer">
-            <p>MÁS QUE FIANZAS — Sistema Integrado de Gestión | Plan Ejecutivo de Infraestructura Cloud v4.0</p>
+            <p>MÁS QUE FIANZAS — Sistema Integrado de Gestión | Plan Ejecutivo de Infraestructura Cloud v4.1 (Protocolo Seguro)</p>
             <p style="font-size:11px; margin-top:4px; color:var(--text-muted);">Auditado y Generado por Antigravity AI Engine para la VPS 169.58.51.147</p>
         </footer>
 
