@@ -657,24 +657,15 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">1. PERFIL OBJETIVO A DIAGNOSTICAR</label>
-                                <select id="bv-perfil-select" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
-                                    <option value="pdv.prueba" selected>🏬 Socio PDV / Punto de Venta (pdv.prueba)</option>
-                                    <option value="admin">👑 Administrador de Sistema (Full Access)</option>
-                                    <option value="cumplimiento">🛡️ Oficial de Cumplimiento (NOFTRAB)</option>
-                                    <option value="operaciones">💼 Operaciones y Emisión</option>
-                                    <option value="corredor">📊 Corredor / Broker de Seguros</option>
+                                <select id="bv-perfil-select" onchange="cargarModulosBotVisualPorPerfil()" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <!-- Carga dinámica con los 11 perfiles de la base de datos -->
                                 </select>
                             </div>
 
                             <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">2. MÓDULO PLATAFORMA</label>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">2. MÓDULO PLATAFORMA (23 MÓDULOS)</label>
                                 <select id="bv-modulo-select" onchange="actualizarEscenariosBotVisual()" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
-                                    <option value="polizas" selected>📜 Módulo de Pólizas (Endosos, Cancelaciones, PDF)</option>
-                                    <option value="fianzas">🛡️ Módulo de Fianzas (Licitación, NCF B02, Cesión)</option>
-                                    <option value="pagos_contabilidad">💰 Pagos & Contabilidad (Recibos, Partida Doble)</option>
-                                    <option value="siniestros">🚨 Módulo de Siniestros (Notificación, Finiquito)</option>
-                                    <option value="centro_negocios">📊 Centro de Negocios (Comisiones, Reportes DGII)</option>
-                                    <option value="cumplimiento_vaf">⚖️ Cumplimiento NOFTRAB / 4-VAF (Luhn, Mod 11)</option>
+                                    <!-- Carga dinámica por perfil RBAC -->
                                 </select>
                             </div>
 
@@ -1330,25 +1321,62 @@
         }
 
         async function cargarEscenariosBotVisual() {
-            if (bvScenariosData) {
-                actualizarEscenariosBotVisual();
-                return;
-            }
-            bvLog('Cargando mapa de escenarios multimodulares...', 'cmd');
+            bvLog('Cargando mapa de 23 Módulos y 11 Perfiles RBAC desde la base de datos...', 'cmd');
             try {
                 const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
                 const res = await fetch(`${BV_API}?action=get_scenarios&token_sesion=${token}`).then(r => r.json());
                 if (res.exito && res.datos) {
                     bvScenariosData = res.datos;
-                    actualizarEscenariosBotVisual();
-                    bvLog('Mapa de escenarios cargado correctamente.', 'res');
+                    
+                    // 1. Poblar select de perfiles con los 11 perfiles de la DB
+                    const perfSel = document.getElementById('bv-perfil-select');
+                    if (perfSel) {
+                        perfSel.innerHTML = '';
+                        res.datos.perfiles.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id || p.codigo;
+                            opt.textContent = p.nombre;
+                            if (p.id == 5 || p.codigo === '5' || (p.nombre && p.nombre.includes('PDV'))) opt.selected = true;
+                            perfSel.appendChild(opt);
+                        });
+                    }
+                    
+                    // 2. Cargar módulos dinámicos filtrados por permisos RBAC del perfil
+                    await cargarModulosBotVisualPorPerfil();
+                    bvLog('Mapa multimodular y perfiles RBAC cargados correctamente.', 'res');
                 } else {
                     bvLog(`Fallo al cargar escenarios: ${res.mensaje || 'Respuesta inválida'}`, 'err');
-                    actualizarEscenariosBotVisual();
                 }
             } catch(e) {
                 bvLog(`Cargando catálogo estandarizado multimodular: ${e.message}`, 'res');
-                actualizarEscenariosBotVisual();
+            }
+        }
+
+        async function cargarModulosBotVisualPorPerfil() {
+            const perfSel = document.getElementById('bv-perfil-select');
+            const modSel = document.getElementById('bv-modulo-select');
+            if (!perfSel || !modSel) return;
+
+            const perfilId = perfSel.value;
+            bvLog(`Consultando permisos de malla RBAC para perfil ID [${perfilId}]...`, 'cmd');
+
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+            try {
+                const res = await fetch(`${BV_API}?action=get_scenarios&perfil_id=${perfilId}&token_sesion=${token}`).then(r => r.json());
+                if (res.exito && res.datos && res.datos.modulos) {
+                    bvScenariosData = res.datos;
+                    modSel.innerHTML = '';
+                    res.datos.modulos.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.codigo;
+                        const rbacBadge = m.rbac_permitido ? ' (Autorizado)' : ' (🛡️ RBAC Guard - Acceso Denegado)';
+                        opt.textContent = m.nombre + rbacBadge;
+                        modSel.appendChild(opt);
+                    });
+                    actualizarEscenariosBotVisual();
+                }
+            } catch(e) {
+                bvLog(`Error al consultar permisos de módulo: ${e.message}`, 'err');
             }
         }
 
@@ -1360,48 +1388,17 @@
             const modCodigo = modSel.value;
             escSel.innerHTML = '';
 
-            const fallbacks = {
-                polizas: [
-                    {codigo: 'emision_individual', nombre: 'Emisión de Póliza Individual (ISC 16% / ITBIS 0%)'},
-                    {codigo: 'endoso_cobertura', nombre: 'Endoso de Cobertura con Recálculo Impositivo'},
-                    {codigo: 'cancelacion_masiva', nombre: 'Cancelación Masiva con Justificación VAF'},
-                    {codigo: 'generacion_pdf', nombre: 'Generación e Impresión de Carátula PDF'}
-                ],
-                fianzas: [
-                    {codigo: 'licitacion_1er_req', nombre: 'Fianza de Licitación (1er Requerimiento)'},
-                    {codigo: 'emision_ncf_b02', nombre: 'Emisión con Comprobante Fiscal NCF B02'},
-                    {codigo: 'cesion_derechos', nombre: 'Declaración de Veracidad y Cesión de Información'}
-                ],
-                pagos_contabilidad: [
-                    {codigo: 'recibo_ingreso', nombre: 'Cobro de Prima y Recibo de Ingreso'},
-                    {codigo: 'asiento_partida_doble', nombre: 'Asiento Contable Automático en Partida Doble'},
-                    {codigo: 'amortizacion_cuotas', nombre: 'Tabla de Amortización y Financiamiento'}
-                ],
-                siniestros: [
-                    {codigo: 'notificacion_reclamo', nombre: 'Notificación de Reclamo y Reserva'},
-                    {codigo: 'ajustador_finiquito', nombre: 'Inspección de Ajustador y Finiquito'}
-                ],
-                centro_negocios: [
-                    {codigo: 'liquidacion_comisiones', nombre: 'Liquidación de Comisiones en Cascada'},
-                    {codigo: 'exportacion_dgii', nombre: 'Generación de Archivos DGII (606, 607 e ISC)'}
-                ],
-                cumplimiento_vaf: [
-                    {codigo: 'validar_luhn_mod10', nombre: 'Algoritmo Luhn Mod 10 (Cédula Dominicana)'},
-                    {codigo: 'validar_rnc_mod11', nombre: 'Algoritmo Mod 11 DGII (RNC)'},
-                    {codigo: 'unicidad_vin_chasis', nombre: 'Enforzamiento Unicidad VIN / Chasis / Placa'}
-                ]
-            };
-
-            const list = (bvScenariosData && bvScenariosData.modulos) ? 
-                (bvScenariosData.modulos.find(m => m.codigo === modCodigo)?.escenarios || fallbacks[modCodigo]) : 
-                (fallbacks[modCodigo] || fallbacks.polizas);
-
-            list.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.codigo;
-                opt.textContent = item.nombre;
-                escSel.appendChild(opt);
-            });
+            if (bvScenariosData && bvScenariosData.modulos) {
+                const targetMod = bvScenariosData.modulos.find(m => m.codigo === modCodigo);
+                if (targetMod && targetMod.escenarios) {
+                    targetMod.escenarios.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.codigo;
+                        opt.textContent = item.nombre;
+                        escSel.appendChild(opt);
+                    });
+                }
+            }
         }
 
         async function ejecutarBotVisualE2E() {
