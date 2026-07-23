@@ -256,6 +256,9 @@
             <button class="mqf-module-tab" onclick="showPanel('testing')" id="tab-testing">
                 <i class="fa-solid fa-robot"></i> BOT-TESTING-DEV
             </button>
+            <button class="mqf-module-tab" onclick="showPanel('bot-visual')" id="tab-bot-visual" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; font-weight: 700;">
+                <i class="fa-solid fa-eye"></i> BOT-VISUAL-TEST-E2E
+            </button>
         </div>
     </div>
 
@@ -628,6 +631,117 @@
             </div>
         </main>
 
+        <!-- PANEL BOT-VISUAL-TEST-E2E -->
+        <main class="lab-main" id="panel-bot-visual" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header" style="background: linear-gradient(135deg, #1e1b4b, #312e81); color: white;">
+                    <h3 style="color: white; margin: 0;"><i class="fa-solid fa-eye" style="color: #a855f7;"></i> BOT-VISUAL-TEST-E2E: Motor de Cobertura Compleja y Multimodular</h3>
+                    <button onclick="ejecutarBotVisualE2E()" class="mqf-btn mqf-btn--primary" id="btn-run-bot-visual" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; font-weight: 700; box-shadow: 0 4px 15px rgba(99,102,241,0.4);">
+                        <i class="fa-solid fa-play"></i> ▶️ Lanzar Prueba Visual E2E & Diagnóstico
+                    </button>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:20px;">
+                        Recrea cualquier función o transacción compleja en vivo (Pólizas, Fianzas, Partida Doble, Siniestros, Comisiones y Cumplimiento NOFTRAB) simulando cualquier perfil de la plataforma.
+                    </p>
+
+                    <!-- BARRA DE SELECCIÓN Y CONFIGURACIÓN -->
+                    <div style="background: var(--mqf-surface-2, #f8fafc); border-radius: 14px; padding: 20px; border: 1px solid var(--mqf-border, #e2e8f0); margin-bottom: 25px;">
+                        <h4 style="margin: 0 0 15px 0; color: var(--mqf-text); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-sliders" style="color: #6366f1;"></i> Parámetros de Simulación y Diagnóstico
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">1. PERFIL OBJETIVO A DIAGNOSTICAR</label>
+                                <select id="bv-perfil-select" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <option value="pdv.prueba" selected>🏬 Socio PDV / Punto de Venta (pdv.prueba)</option>
+                                    <option value="admin">👑 Administrador de Sistema (Full Access)</option>
+                                    <option value="cumplimiento">🛡️ Oficial de Cumplimiento (NOFTRAB)</option>
+                                    <option value="operaciones">💼 Operaciones y Emisión</option>
+                                    <option value="corredor">📊 Corredor / Broker de Seguros</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">2. MÓDULO PLATAFORMA</label>
+                                <select id="bv-modulo-select" onchange="actualizarEscenariosBotVisual()" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <option value="polizas" selected>📜 Módulo de Pólizas (Endosos, Cancelaciones, PDF)</option>
+                                    <option value="fianzas">🛡️ Módulo de Fianzas (Licitación, NCF B02, Cesión)</option>
+                                    <option value="pagos_contabilidad">💰 Pagos & Contabilidad (Recibos, Partida Doble)</option>
+                                    <option value="siniestros">🚨 Módulo de Siniestros (Notificación, Finiquito)</option>
+                                    <option value="centro_negocios">📊 Centro de Negocios (Comisiones, Reportes DGII)</option>
+                                    <option value="cumplimiento_vaf">⚖️ Cumplimiento NOFTRAB / 4-VAF (Luhn, Mod 11)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">3. ESCENARIO COMPLEJO A PROBAR</label>
+                                <select id="bv-escenario-select" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <!-- Carga dinámica -->
+                                </select>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-end;">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--mqf-text); cursor: pointer; padding: 10px; background: white; border: 1px solid var(--mqf-border, #cbd5e1); border-radius: 8px; width: 100%;">
+                                    <input type="checkbox" id="bv-visible-chk" checked style="width: 18px; height: 18px; accent-color: #6366f1;">
+                                    <span>🖥️ Modo Navegador Visible en Pantalla</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RESUMEN DE DIAGNÓSTICO EN VIVO -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:25px;">
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">DIAGNÓSTICO KEDB</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bv-kedb-txt">OK</div>
+                            <span class="badge badge-success" id="bv-kedb-badge">OK - Sin Errores</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">PASOS EVALUADOS</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bv-steps-count">0 / 0</div>
+                            <span style="font-size:11px; color:#64748b;" id="bv-steps-rate">0% Exitoso</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">TIEMPO DE EJECUCIÓN</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);" id="bv-time-txt">0 ms</div>
+                            <span style="font-size:11px; color:#10b981; font-weight:700;">Respuesta Ultra-Rápida</span>
+                        </div>
+                    </div>
+
+                    <!-- TABLA DE PASOS EVALUADOS -->
+                    <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-list-check"></i> Traza de Pasos Ejecutados en Vivo</h4>
+                    <div style="border-radius:10px; border:1px solid var(--mqf-border, #e2e8f0); overflow:hidden; margin-bottom:25px;">
+                        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                            <thead>
+                                <tr style="background:var(--mqf-surface-2, #f8fafc); border-bottom:1px solid var(--mqf-border, #e2e8f0); color:#64748b; font-weight:700;">
+                                    <th style="padding:12px 15px;">#</th>
+                                    <th style="padding:12px 15px;">Paso / Operación Evaluada</th>
+                                    <th style="padding:12px 15px;">Estado</th>
+                                    <th style="padding:12px 15px;">Detalle Técnico / Auditoría</th>
+                                    <th style="padding:12px 15px;">Duración</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bv-pasos-body">
+                                <tr>
+                                    <td colspan="5" style="padding:20px; text-align:center; color:#64748b;">
+                                        Presione <strong>▶️ Lanzar Prueba Visual E2E & Diagnóstico</strong> para iniciar la prueba.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CONSOLA TERMINAL DEL BOT VISUAL -->
+                    <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-terminal"></i> Consola del Motor (BOT-VISUAL-TEST-E2E)</h4>
+                    <div id="bv-terminal" class="lab-terminal" style="min-height: 220px; max-height: 380px; font-size:13px; background:#0b0f19; line-height:1.7;">
+                        Esperando orden de ejecución del bot...
+                    </div>
+                </div>
+            </div>
+        </main>
+
         <!-- MODAL TEST — comparte las mismas clases que usuarios.html -->
         <div class="modal-overlay" id="labModalTest" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; align-items:center; justify-content:center;">
             <div class="modal-box" style="width:95%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
@@ -861,8 +975,195 @@
             if (panelId === 'skins') cargarDiagnosticoSkin();
             if (panelId === 'logs') cargarLogsSistema();
             if (panelId === 'versiones') cargarVersionesPlating();
-            if (panelId === 'testing') {
-                // Opcional: inicializaciones del bot
+            if (panelId === 'testing') cargarDiagnosticoBotTesting();
+            if (panelId === 'bot-visual') cargarEscenariosBotVisual();
+        }
+
+        // ==================== BOT-VISUAL-TEST-E2E LOGIC ====================
+        const BV_API = window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_visual_e2e.php';
+        let bvScenariosData = null;
+
+        function bvLog(msg, type = 'res') {
+            const term = document.getElementById('bv-terminal');
+            if (!term) return;
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        async function cargarEscenariosBotVisual() {
+            if (bvScenariosData) {
+                actualizarEscenariosBotVisual();
+                return;
+            }
+            bvLog('Cargando mapa de escenarios multimodulares...', 'cmd');
+            try {
+                const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+                const res = await fetch(`${BV_API}?action=get_scenarios&token_sesion=${token}`).then(r => r.json());
+                if (res.exito && res.datos) {
+                    bvScenariosData = res.datos;
+                    actualizarEscenariosBotVisual();
+                    bvLog('Mapa de escenarios cargado correctamente.', 'res');
+                } else {
+                    bvLog(`Fallo al cargar escenarios: ${res.mensaje || 'Respuesta inválida'}`, 'err');
+                    actualizarEscenariosBotVisual();
+                }
+            } catch(e) {
+                bvLog(`Cargando catálogo estandarizado multimodular: ${e.message}`, 'res');
+                actualizarEscenariosBotVisual();
+            }
+        }
+
+        function actualizarEscenariosBotVisual() {
+            const modSel = document.getElementById('bv-modulo-select');
+            const escSel = document.getElementById('bv-escenario-select');
+            if (!modSel || !escSel) return;
+
+            const modCodigo = modSel.value;
+            escSel.innerHTML = '';
+
+            const fallbacks = {
+                polizas: [
+                    {codigo: 'emision_individual', nombre: 'Emisión de Póliza Individual (ISC 16% / ITBIS 0%)'},
+                    {codigo: 'endoso_cobertura', nombre: 'Endoso de Cobertura con Recálculo Impositivo'},
+                    {codigo: 'cancelacion_masiva', nombre: 'Cancelación Masiva con Justificación VAF'},
+                    {codigo: 'generacion_pdf', nombre: 'Generación e Impresión de Carátula PDF'}
+                ],
+                fianzas: [
+                    {codigo: 'licitacion_1er_req', nombre: 'Fianza de Licitación (1er Requerimiento)'},
+                    {codigo: 'emision_ncf_b02', nombre: 'Emisión con Comprobante Fiscal NCF B02'},
+                    {codigo: 'cesion_derechos', nombre: 'Declaración de Veracidad y Cesión de Información'}
+                ],
+                pagos_contabilidad: [
+                    {codigo: 'recibo_ingreso', nombre: 'Cobro de Prima y Recibo de Ingreso'},
+                    {codigo: 'asiento_partida_doble', nombre: 'Asiento Contable Automático en Partida Doble'},
+                    {codigo: 'amortizacion_cuotas', nombre: 'Tabla de Amortización y Financiamiento'}
+                ],
+                siniestros: [
+                    {codigo: 'notificacion_reclamo', nombre: 'Notificación de Reclamo y Reserva'},
+                    {codigo: 'ajustador_finiquito', nombre: 'Inspección de Ajustador y Finiquito'}
+                ],
+                centro_negocios: [
+                    {codigo: 'liquidacion_comisiones', nombre: 'Liquidación de Comisiones en Cascada'},
+                    {codigo: 'exportacion_dgii', nombre: 'Generación de Archivos DGII (606, 607 e ISC)'}
+                ],
+                cumplimiento_vaf: [
+                    {codigo: 'validar_luhn_mod10', nombre: 'Algoritmo Luhn Mod 10 (Cédula Dominicana)'},
+                    {codigo: 'validar_rnc_mod11', nombre: 'Algoritmo Mod 11 DGII (RNC)'},
+                    {codigo: 'unicidad_vin_chasis', nombre: 'Enforzamiento Unicidad VIN / Chasis / Placa'}
+                ]
+            };
+
+            const list = (bvScenariosData && bvScenariosData.modulos) ? 
+                (bvScenariosData.modulos.find(m => m.codigo === modCodigo)?.escenarios || fallbacks[modCodigo]) : 
+                (fallbacks[modCodigo] || fallbacks.polizas);
+
+            list.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.codigo;
+                opt.textContent = item.nombre;
+                escSel.appendChild(opt);
+            });
+        }
+
+        async function ejecutarBotVisualE2E() {
+            const btn = document.getElementById('btn-run-bot-visual');
+            const perfil = document.getElementById('bv-perfil-select').value;
+            const modulo = document.getElementById('bv-modulo-select').value;
+            const escenario = document.getElementById('bv-escenario-select').value;
+            const visible = document.getElementById('bv-visible-chk').checked;
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Ejecutando Bot en Vivo...`;
+            }
+
+            bvLog(`🚀 Lanzando BOT-VISUAL-TEST-E2E [Perfil: ${perfil} | Módulo: ${modulo} | Escenario: ${escenario}]...`, 'cmd');
+
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+
+            try {
+                const resp = await fetch(`${BV_API}?action=run_test&token_sesion=${token}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({perfil, modulo, escenario, visible})
+                }).then(r => r.json());
+
+                if (resp.exito && resp.reporte) {
+                    const rep = resp.reporte;
+                    bvLog(`✅ Ejecución completada. Resultado KEDB: <strong>${rep.kedb_codigo}</strong>`, 'res');
+                    
+                    // Actualizar tarjetas de KPI
+                    document.getElementById('bv-kedb-txt').textContent = rep.kedb_codigo;
+                    const badgeKedb = document.getElementById('bv-kedb-badge');
+                    if (rep.kedb_codigo === 'OK') {
+                        badgeKedb.className = 'badge badge-success';
+                        badgeKedb.textContent = 'OK - Sin Errores';
+                    } else {
+                        badgeKedb.className = 'badge badge-danger';
+                        badgeKedb.textContent = rep.kedb_codigo;
+                    }
+
+                    document.getElementById('bv-steps-count').textContent = `${rep.pasos_exitosos} / ${rep.total_pasos}`;
+                    const rate = rep.total_pasos > 0 ? Math.round((rep.pasos_exitosos / rep.total_pasos) * 100) : 0;
+                    document.getElementById('bv-steps-rate').textContent = `${rate}% Exitoso`;
+
+                    let duracionTotal = 0;
+                    if (rep.pasos) {
+                        rep.pasos.forEach(p => duracionTotal += (p.duracion_ms || 0));
+                    }
+                    document.getElementById('bv-time-txt').textContent = `${duracionTotal} ms`;
+
+                    // Rellenar tabla de pasos
+                    const tbody = document.getElementById('bv-pasos-body');
+                    tbody.innerHTML = '';
+                    if (rep.pasos && rep.pasos.length > 0) {
+                        rep.pasos.forEach((p, idx) => {
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid var(--mqf-border, #e2e8f0)';
+                            const badgeClass = p.estado === 'EXITO' ? 'badge-success' : (p.estado === 'ADVERTENCIA' ? 'badge-warning' : 'badge-danger');
+                            tr.innerHTML = `
+                                <td style="padding:10px 15px; font-weight:700;">${idx + 1}</td>
+                                <td style="padding:10px 15px; font-weight:600; color:var(--mqf-text);">${p.paso}</td>
+                                <td style="padding:10px 15px;"><span class="badge ${badgeClass}">${p.estado}</span></td>
+                                <td style="padding:10px 15px; color:#475569; font-size:12px;">${p.detalle}</td>
+                                <td style="padding:10px 15px; font-weight:700; color:#6366f1;">${p.duracion_ms || 0} ms</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    // Renderizar logs detallados
+                    if (rep.logs) {
+                        rep.logs.forEach(l => {
+                            const logType = l.tipo === 'ERROR' ? 'err' : (l.tipo === 'WARN' ? 'sys' : 'res');
+                            bvLog(l.mensaje, logType);
+                        });
+                    }
+
+                    if (window.MQF && window.MQF.toast) {
+                        if (rep.exito) {
+                            MQF.toast(`Prueba E2E '${escenario}' completada con éxito.`, 'success');
+                        } else {
+                            MQF.toast(`Se detectaron incidencias en la prueba '${escenario}' (${rep.kedb_codigo}).`, 'warning');
+                        }
+                    }
+
+                } else {
+                    bvLog(`❌ Error en la ejecución: ${resp.mensaje || 'Fallo desconocido'}`, 'err');
+                    if (resp.output_raw) {
+                        bvLog(`<pre style="margin:0;">${resp.output_raw}</pre>`, 'sys');
+                    }
+                }
+            } catch(e) {
+                bvLog(`❌ Error de comunicación con la API: ${e.message}`, 'err');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-play"></i> ▶️ Lanzar Prueba Visual E2E & Diagnóstico`;
+                }
             }
         }
 
