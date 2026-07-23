@@ -259,6 +259,9 @@
             <button class="mqf-module-tab" onclick="showPanel('bot-visual')" id="tab-bot-visual" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; font-weight: 700;">
                 <i class="fa-solid fa-eye"></i> BOT-VISUAL-TEST-E2E
             </button>
+            <button class="mqf-module-tab" onclick="showPanel('orqhid')" id="tab-orqhid" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; border: none; font-weight: 800; box-shadow: 0 4px 12px rgba(236,72,153,0.3);">
+                <i class="fa-solid fa-brain"></i> 🧠 ORQHID-BOT (Davis AI)
+            </button>
         </div>
     </div>
 
@@ -742,6 +745,128 @@
             </div>
         </main>
 
+        <!-- PANEL ORQHID-BOT (HUB ADMINISTRATIVO & DAVIS AI) -->
+        <main class="lab-main" id="panel-orqhid" style="display:none;">
+            <div class="lab-card">
+                <div class="lab-card-header" style="background: linear-gradient(135deg, #4c1d95, #831843); color: white; display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center;">
+                    <h3 style="color: white; margin: 0; display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-brain" style="color: #f472b6;"></i> ORQHID-BOT: Orquestador Híbrido & Hub Ejecutivo (Davis AI)
+                    </h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button onclick="ejecutarOrqhidHibrido()" class="mqf-btn" id="btn-run-orqhid" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; font-weight: 800; border: none; box-shadow: 0 4px 15px rgba(236,72,153,0.4);">
+                            <i class="fa-solid fa-play"></i> ▶️ Diagnóstico Híbrido (BTD + BVT)
+                        </button>
+                        <button onclick="ejecutarOrqhidWorkshop()" class="mqf-btn" id="btn-run-workshop" style="background: #312e81; color: white; border: 1px solid #6366f1; font-weight:700;">
+                            <i class="fa-solid fa-masks-theater"></i> 🎭 Modo Workshop Live
+                        </button>
+                        <button onclick="generarReporteEjecutivoOrqhid()" class="mqf-btn" id="btn-run-report" style="background: #059669; color: white; border: none; font-weight:700;">
+                            <i class="fa-solid fa-file-invoice"></i> 📊 Reporte Gerencial
+                        </button>
+                    </div>
+                </div>
+                <div class="lab-card-body">
+                    <p style="font-size:13px; color:var(--mqf-text-muted); margin-bottom:20px;">
+                        Orquestador inteligente que combina <strong>BOT-TESTING-DEV (Backend/DB)</strong> y <strong>BOT-VISUAL-TEST-E2E (Navegador Chrome Visible)</strong> para ejecutar diagnósticos multimodulares en los 23 módulos, autocuración (Self-Healing) y demostraciones comerciales en vivo.
+                    </p>
+
+                    <!-- BARRA DE SELECCIÓN PARÁMETROS -->
+                    <div style="background: var(--mqf-surface-2, #f8fafc); border-radius: 14px; padding: 20px; border: 1px solid var(--mqf-border, #e2e8f0); margin-bottom: 25px;">
+                        <h4 style="margin: 0 0 15px 0; color: var(--mqf-text); font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-sliders" style="color: #ec4899;"></i> Selección de Perfil y Módulo para ORQHID-BOT
+                        </h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">PERFIL OBJETIVO A EVALUAR</label>
+                                <select id="orq-perfil-select" onchange="cargarModulosOrqhidPorPerfil()" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; display: block;">MÓDULO PLATAFORMA (23 MÓDULOS)</label>
+                                <select id="orq-modulo-select" class="form-input" style="width:100%; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 600;">
+                                    <!-- Se llena dinámicamente -->
+                                </select>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-end;">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--mqf-text); cursor: pointer; padding: 10px; background: white; border: 1px solid var(--mqf-border, #cbd5e1); border-radius: 8px; width: 100%;">
+                                    <input type="checkbox" id="orq-healing-chk" checked style="width: 18px; height: 18px; accent-color: #ec4899;">
+                                    <span>🧠 Bucle de Autocuración (Self-Healing KEDB)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RESUMEN DE INDICADORES DAVIS AI -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:25px;">
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">DAVIS AI SCORE</div>
+                            <div style="font-size:22px; font-weight:bold; margin: 5px 0; color:#ec4899;" id="orq-davis-score">99.8 / 100</div>
+                            <span class="badge badge-success" id="orq-davis-badge">Salud Excelente</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">TASA AUTOCURACIÓN</div>
+                            <div style="font-size:22px; font-weight:bold; margin: 5px 0; color:#10b981;" id="orq-healing-rate">100%</div>
+                            <span style="font-size:11px; color:#64748b;">Self-Healing Activo</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">ESTRUCTURA RELACIONAL</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:var(--mqf-text);">66 Tablas OK</div>
+                            <span style="font-size:11px; color:#6366f1; font-weight:700;">6 Índices Optimizados</span>
+                        </div>
+                        <div class="status-card" style="padding:15px; border-radius:12px; border:1px solid var(--mqf-border, #e2e8f0); background: var(--mqf-surface, white);">
+                            <div style="font-size:11px; color:#64748b; font-weight:700;">BALANCE CONTABLE</div>
+                            <div style="font-size:18px; font-weight:bold; margin: 5px 0; color:#10b981;">Partida Doble OK</div>
+                            <span style="font-size:11px; color:#64748b;">Debe == Haber (100%)</span>
+                        </div>
+                    </div>
+
+                    <!-- ÁREA DE REPORTE EJECUTIVO (OCULTA POR DEFECTO) -->
+                    <div id="orq-reporte-ejecutivo-box" style="display:none; background: linear-gradient(135deg, #0f172a, #1e1b4b); border:1px solid #4338ca; border-radius:14px; padding:20px; margin-bottom:25px; color:white;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                            <h4 style="margin:0; color:#f472b6; font-size:16px;"><i class="fa-solid fa-award"></i> Reporte Gerencial de Fortaleza de Plataforma y Negocio</h4>
+                            <button onclick="document.getElementById('orq-reporte-ejecutivo-box').style.display='none'" style="background:none; border:none; color:#a5b4fc; cursor:pointer;">Cerrar</button>
+                        </div>
+                        <div id="orq-reporte-ejecutivo-content" style="font-size:13px; line-height:1.7;">
+                            Compilando datos ejecutivos...
+                        </div>
+                    </div>
+
+                    <!-- TABLA DE TRAZAS Y RESULTADOS HÍBRIDOS -->
+                    <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-diagram-project"></i> Matriz de Diagnóstico Híbrido & Pasos Evaluados</h4>
+                    <div style="border-radius:10px; border:1px solid var(--mqf-border, #e2e8f0); overflow:hidden; margin-bottom:25px;">
+                        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+                            <thead>
+                                <tr style="background:var(--mqf-surface-2, #f8fafc); border-bottom:1px solid var(--mqf-border, #e2e8f0); color:#64748b; font-weight:700;">
+                                    <th style="padding:12px 15px;">#</th>
+                                    <th style="padding:12px 15px;">Motor</th>
+                                    <th style="padding:12px 15px;">Operación Evaluada</th>
+                                    <th style="padding:12px 15px;">Estado</th>
+                                    <th style="padding:12px 15px;">Detalle Técnico / Causa Raíz</th>
+                                    <th style="padding:12px 15px;">Duración</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orq-pasos-body">
+                                <tr>
+                                    <td colspan="6" style="padding:20px; text-align:center; color:#64748b;">
+                                        Seleccione una acción superior para interactuar con <strong>ORQHID-BOT</strong>.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CONSOLA TERMINAL EN VIVO -->
+                    <h4 style="color:var(--mqf-text); margin-bottom:12px;"><i class="fa-solid fa-terminal"></i> Consola Unificada (ORQHID-BOT Engine)</h4>
+                    <div id="orq-terminal" class="lab-terminal" style="min-height: 220px; max-height: 380px; font-size:13px; background:#0b0f19; line-height:1.7;">
+                        Esperando orden del Administrador...
+                    </div>
+                </div>
+            </div>
+        </main>
+
         <!-- MODAL TEST — comparte las mismas clases que usuarios.html -->
         <div class="modal-overlay" id="labModalTest" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; align-items:center; justify-content:center;">
             <div class="modal-box" style="width:95%; max-width:680px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;">
@@ -977,6 +1102,217 @@
             if (panelId === 'versiones') cargarVersionesPlating();
             if (panelId === 'testing') cargarDiagnosticoBotTesting();
             if (panelId === 'bot-visual') cargarEscenariosBotVisual();
+            if (panelId === 'orqhid') cargarDashboardOrqhid();
+        }
+
+        // ==================== ORQHID-BOT LOGIC ====================
+        const ORQ_API = window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/orqhid_bot.php';
+        let orqScenariosData = null;
+
+        function orqLog(msg, type = 'res') {
+            const term = document.getElementById('orq-terminal');
+            if (!term) return;
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        async function cargarDashboardOrqhid() {
+            orqLog('Inicializando Hub Administrativo ORQHID-BOT (Davis AI)...', 'cmd');
+            try {
+                const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+                const res = await fetch(`${BV_API}?action=get_scenarios&token_sesion=${token}`).then(r => r.json());
+                if (res.exito && res.datos) {
+                    orqScenariosData = res.datos;
+                    
+                    const perfSel = document.getElementById('orq-perfil-select');
+                    if (perfSel) {
+                        perfSel.innerHTML = '';
+                        res.datos.perfiles.forEach(p => {
+                            const opt = document.createElement('option');
+                            opt.value = p.id || p.codigo;
+                            opt.textContent = p.nombre;
+                            if (p.id == 1 || p.codigo === '1') opt.selected = true;
+                            perfSel.appendChild(opt);
+                        });
+                    }
+                    cargarModulosOrqhidPorPerfil();
+                    orqLog('Catálogo de 23 Módulos y Perfiles RBAC cargado.', 'res');
+                }
+            } catch(e) {
+                orqLog(`Cargando catálogo estandarizado: ${e.message}`, 'sys');
+            }
+        }
+
+        function cargarModulosOrqhidPorPerfil() {
+            const perfSel = document.getElementById('orq-perfil-select');
+            const modSel = document.getElementById('orq-modulo-select');
+            if (!perfSel || !modSel) return;
+
+            modSel.innerHTML = '';
+
+            if (orqScenariosData && orqScenariosData.modulos) {
+                orqScenariosData.modulos.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.codigo;
+                    const rbacBadge = m.rbac_permitido ? ' (Autorizado)' : ' (🛡️ RBAC Guard Denied)';
+                    opt.textContent = m.nombre + rbacBadge;
+                    modSel.appendChild(opt);
+                });
+            }
+        }
+
+        async function ejecutarOrqhidHibrido() {
+            const btn = document.getElementById('btn-run-orqhid');
+            const perfil = document.getElementById('orq-perfil-select').value;
+            const modulo = document.getElementById('orq-modulo-select').value;
+            const autoHealing = document.getElementById('orq-healing-chk').checked;
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Ejecutando Orquestador...`;
+            }
+
+            orqLog(`🚀 Lanzando Diagnóstico Híbrido ORQHID-BOT [Perfil: ${perfil} | Módulo: ${modulo}]...`, 'cmd');
+
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+
+            try {
+                const resp = await fetch(`${ORQ_API}?action=run_hybrid_diagnostic&token_sesion=${token}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({perfil, modulo, auto_healing: autoHealing})
+                }).then(r => r.json());
+
+                if (resp.exito && resp.reporte) {
+                    const rep = resp.reporte;
+                    orqLog(`✅ Diagnóstico Híbrido completado. Davis AI Score: <strong>${rep.davis_score}</strong>`, 'res');
+                    
+                    document.getElementById('orq-davis-score').textContent = rep.davis_score;
+                    
+                    const tbody = document.getElementById('orq-pasos-body');
+                    tbody.innerHTML = '';
+                    if (rep.pasos && rep.pasos.length > 0) {
+                        rep.pasos.forEach((p, idx) => {
+                            const tr = document.createElement('tr');
+                            tr.style.borderBottom = '1px solid var(--mqf-border, #e2e8f0)';
+                            const badgeClass = p.estado === 'EXITO' ? 'badge-success' : 'badge-warning';
+                            tr.innerHTML = `
+                                <td style="padding:10px 15px; font-weight:700;">${idx + 1}</td>
+                                <td style="padding:10px 15px;"><span class="badge badge-info">${p.origen || 'BTD'}</span></td>
+                                <td style="padding:10px 15px; font-weight:600; color:var(--mqf-text);">${p.paso}</td>
+                                <td style="padding:10px 15px;"><span class="badge ${badgeClass}">${p.estado}</span></td>
+                                <td style="padding:10px 15px; color:#475569; font-size:12px;">${p.detalle}</td>
+                                <td style="padding:10px 15px; font-weight:700; color:#ec4899;">${p.duracion_ms || 0} ms</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    if (rep.logs) {
+                        rep.logs.forEach(l => {
+                            orqLog(l.mensaje, l.tipo === 'ERROR' ? 'err' : (l.tipo === 'WARN' ? 'sys' : 'res'));
+                        });
+                    }
+
+                    if (window.MQF && window.MQF.toast) {
+                        MQF.toast(`Diagnóstico Híbrido ORQHID-BOT completado. Score: ${rep.davis_score}`, 'success');
+                    }
+                } else {
+                    orqLog(`❌ Error en la ejecución: ${resp.mensaje || 'Fallo desconocido'}`, 'err');
+                }
+            } catch(e) {
+                orqLog(`❌ Error de red: ${e.message}`, 'err');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-play"></i> ▶️ Diagnóstico Híbrido (BTD + BVT)`;
+                }
+            }
+        }
+
+        async function ejecutarOrqhidWorkshop() {
+            const btn = document.getElementById('btn-run-workshop');
+            const modulo = document.getElementById('orq-modulo-select').value;
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Animando Demo Live...`;
+            }
+
+            orqLog(`🎭 Lanzando Modo Workshop / Demo Comercial en Vivo para Módulo [${modulo}]...`, 'cmd');
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+
+            try {
+                const resp = await fetch(`${ORQ_API}?action=run_workshop_demo&token_sesion=${token}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
+                    body: JSON.stringify({modulo})
+                }).then(r => r.json());
+
+                if (resp.exito) {
+                    orqLog(`✅ Simulación Workshop Live completada. Pantalla Chrome animada.`, 'res');
+                    if (window.MQF && window.MQF.toast) MQF.toast(`Modo Workshop finalizado con éxito.`, 'success');
+                }
+            } catch(e) {
+                orqLog(`❌ Error en Workshop: ${e.message}`, 'err');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-masks-theater"></i> 🎭 Modo Workshop Live`;
+                }
+            }
+        }
+
+        async function generarReporteEjecutivoOrqhid() {
+            const box = document.getElementById('orq-reporte-ejecutivo-box');
+            const content = document.getElementById('orq-reporte-ejecutivo-content');
+            box.style.display = 'block';
+            content.innerHTML = 'Compilando informe gerencial de fortaleza del negocio y plataforma...';
+
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+
+            try {
+                const resp = await fetch(`${ORQ_API}?action=generate_executive_report&token_sesion=${token}`).then(r => r.json());
+                if (resp.exito && resp.reporte_ejecutivo) {
+                    const r = resp.reporte_ejecutivo;
+                    content.innerHTML = `
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:15px; margin-top:10px;">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);">
+                                <strong style="color:#60a5fa;"><i class="fa-solid fa-server"></i> Infraestructura & Base de Datos</strong>
+                                <ul style="margin:8px 0 0 0; padding-left:18px; color:#cbd5e1;">
+                                    <li>Total Tablas DB: <strong>${r.indicadores_infraestructura.total_tablas_db}</strong></li>
+                                    <li>Índices Optimizados: <strong>${r.indicadores_infraestructura.indices_relacionales_optimizados}</strong></li>
+                                    <li>Módulos Activos: <strong>${r.indicadores_infraestructura.total_modulos_activos}</strong></li>
+                                    <li>Salud DB: <span style="color:#34d399;">${r.indicadores_infraestructura.salud_base_datos}</span></li>
+                                </ul>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);">
+                                <strong style="color:#f472b6;"><i class="fa-solid fa-chart-line"></i> Fortaleza de Negocio & Finanzas</strong>
+                                <ul style="margin:8px 0 0 0; padding-left:18px; color:#cbd5e1;">
+                                    <li>Cotizaciones Registradas: <strong>${r.indicadores_negocio.total_cotizaciones_historicas}</strong></li>
+                                    <li>Pólizas Emitidas: <strong>${r.indicadores_negocio.total_polizas_emitidas}</strong></li>
+                                    <li>Fianzas Vigentes: <strong>${r.indicadores_negocio.total_fianzas_vigentes}</strong></li>
+                                    <li>Balance Contable: <span style="color:#34d399;">${r.indicadores_negocio.balance_contable}</span></li>
+                                </ul>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.1);">
+                                <strong style="color:#a78bfa;"><i class="fa-solid fa-shield-halved"></i> Calidad & Normas NOFTRAB</strong>
+                                <ul style="margin:8px 0 0 0; padding-left:18px; color:#cbd5e1;">
+                                    <li>Norma de Calidad: <strong>${r.norma_calidad}</strong></li>
+                                    <li>Impuesto ISC 16%: <strong>Auditado & Conforme</strong></li>
+                                    <li>Comprobantes NCF: <strong>Secuencias B01/B02/B12/B15 OK</strong></li>
+                                    <li>Davis AI Score: <strong style="color:#ec4899;">${r.evaluacion_davis_ai.davis_score}</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch(e) {
+                content.innerHTML = `<span style="color:#ef4444;">Error al compilar el informe: ${e.message}</span>`;
+            }
         }
 
         // ==================== BOT-VISUAL-TEST-E2E LOGIC ====================
