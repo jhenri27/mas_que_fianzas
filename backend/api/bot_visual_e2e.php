@@ -20,7 +20,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Validar token de autorización
 $bearer_token = null;
 $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? '') : '');
 if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
@@ -76,7 +75,6 @@ if (!$usuario_id) {
     exit;
 }
 
-// Validar permiso RBAC `modulo_bot_visual_e2e` (Admin ID 1 tiene bypass)
 if ($usuario_id != 1 && function_exists('tienePermiso') && !tienePermiso($usuario_id, 'modulo_bot_visual_e2e') && !tienePermiso($usuario_id, 'CONF_TOTAL')) {
     http_response_code(403);
     echo json_encode(["exito" => false, "mensaje" => "Acceso denegado: Su perfil no tiene asignado el permiso 'modulo_bot_visual_e2e'."]);
@@ -86,8 +84,22 @@ if ($usuario_id != 1 && function_exists('tienePermiso') && !tienePermiso($usuari
 $action = $_GET['action'] ?? $_POST['action'] ?? 'get_scenarios';
 
 if ($action === 'get_scenarios') {
-    $perfil_target_id = (int)($_GET['perfil_id'] ?? $_POST['perfil_id'] ?? 1);
-    $perfil_codigo = $_GET['perfil'] ?? $_POST['perfil'] ?? 'admin';
+    $perfil_param = $_GET['perfil_id'] ?? $_POST['perfil_id'] ?? $_GET['perfil'] ?? $_POST['perfil'] ?? 5;
+    $perfil_target_id = is_numeric($perfil_param) ? (int)$perfil_param : 5;
+
+    if (!is_numeric($perfil_param) && $db_conn_ok && $db) {
+        $stmt_p = $db->prepare("SELECT id FROM perfiles WHERE id = ? OR nombre_perfil LIKE ? OR siglas = ? LIMIT 1");
+        if ($stmt_p) {
+            $search = "%" . $perfil_param . "%";
+            $stmt_p->bind_param("sss", $perfil_param, $search, $perfil_param);
+            $stmt_p->execute();
+            $res_p = $stmt_p->get_result();
+            if ($r_p = $res_p->fetch_assoc()) {
+                $perfil_target_id = (int)$r_p['id'];
+            }
+            $stmt_p->close();
+        }
+    }
 
     // Obtener perfiles de la DB
     $perfiles_db = [];
@@ -319,7 +331,7 @@ if ($action === 'get_scenarios') {
 
     // Consultar permisos RBAC reales si se especifica un perfil
     $permisos_permitidos_modulo_ids = [];
-    if ($perfil_target_id == 1 || $perfil_codigo === 'admin' || $perfil_codigo === '1') {
+    if ($perfil_target_id === 1) {
         // Admin tiene acceso a TODOS los módulos
         foreach ($todos_los_modulos as $m) {
             $permisos_permitidos_modulo_ids[] = $m['modulo_id'];
@@ -344,9 +356,11 @@ if ($action === 'get_scenarios') {
         
         if (!$tiene_acceso) {
             // Añadir escenario de prueba negativa de seguridad RBAC Guard
-            $mod_item['escenarios'][] = [
-                "codigo" => "rbac_guard_denied",
-                "nombre" => "🛡️ Prueba Negativa de Seguridad (Verificar Bloqueo RBAC 403)"
+            $mod_item['escenarios'] = [
+                [
+                    "codigo" => "rbac_guard_denied",
+                    "nombre" => "🛡️ Prueba Negativa de Seguridad (Verificar Bloqueo RBAC 403)"
+                ]
             ];
         }
         $modulos_procesados[] = $mod_item;
@@ -367,7 +381,7 @@ if ($action === 'run_test') {
     $raw_input = file_get_contents('php://input');
     $input = json_decode($raw_input, true) ?: $_POST;
 
-    $perfil = escapeshellarg($input['perfil'] ?? 'pdv.prueba');
+    $perfil = escapeshellarg($input['perfil'] ?? '5');
     $modulo = escapeshellarg($input['modulo'] ?? 'polizas');
     $escenario = escapeshellarg($input['escenario'] ?? 'emision_individual');
     $visible = ($input['visible'] ?? true) ? 'true' : 'false';
@@ -380,7 +394,6 @@ if ($action === 'run_test') {
     exec($cmd, $output, $return_var);
     $output_str = implode("\n", $output);
 
-    // Extraer JSON_RESULT del output de Python
     $reporte_json = null;
     if (preg_match('/--- JSON_RESULT_START ---\s*(\{.*?\})\s*--- JSON_RESULT_END ---/s', $output_str, $matches)) {
         $reporte_json = json_decode($matches[1], true);

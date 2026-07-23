@@ -1114,7 +1114,7 @@
             orqLog('Inicializando Hub Administrativo ORQHID-BOT (Davis AI)...', 'cmd');
             try {
                 const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
-                const res = await fetch(`${BV_API}?action=get_scenarios&token_sesion=${token}`).then(r => r.json());
+                const res = await fetch(`${BV_API}?action=get_scenarios&perfil_id=1&token_sesion=${token}`).then(r => r.json());
                 if (res.exito && res.datos) {
                     orqScenariosData = res.datos;
                     
@@ -1129,7 +1129,7 @@
                             perfSel.appendChild(opt);
                         });
                     }
-                    cargarModulosOrqhidPorPerfil();
+                    await cargarModulosOrqhidPorPerfil();
                     orqLog('Catálogo de 23 Módulos y Perfiles RBAC cargado.', 'res');
                 }
             } catch(e) {
@@ -1137,21 +1137,28 @@
             }
         }
 
-        function cargarModulosOrqhidPorPerfil() {
+        async function cargarModulosOrqhidPorPerfil() {
             const perfSel = document.getElementById('orq-perfil-select');
             const modSel = document.getElementById('orq-modulo-select');
             if (!perfSel || !modSel) return;
 
-            modSel.innerHTML = '';
-
-            if (orqScenariosData && orqScenariosData.modulos) {
-                orqScenariosData.modulos.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m.codigo;
-                    const rbacBadge = m.rbac_permitido ? ' (Autorizado)' : ' (🛡️ RBAC Guard Denied)';
-                    opt.textContent = m.nombre + rbacBadge;
-                    modSel.appendChild(opt);
-                });
+            const perfilId = perfSel.value;
+            const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
+            try {
+                const res = await fetch(`${BV_API}?action=get_scenarios&perfil_id=${perfilId}&token_sesion=${token}`).then(r => r.json());
+                if (res.exito && res.datos && res.datos.modulos) {
+                    orqScenariosData = res.datos;
+                    modSel.innerHTML = '';
+                    res.datos.modulos.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.codigo;
+                        const rbacBadge = m.rbac_permitido ? ' (Autorizado)' : ' (🛡️ RBAC Guard Denied)';
+                        opt.textContent = m.nombre + rbacBadge;
+                        modSel.appendChild(opt);
+                    });
+                }
+            } catch(e) {
+                orqLog(`Error al actualizar catálogo de perfil: ${e.message}`, 'sys');
             }
         }
 
