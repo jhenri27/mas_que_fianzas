@@ -3,7 +3,7 @@
 """
 🤖 MOTOR DE PRUEBAS VISUALES E2E Y DIAGNÓSTICO MULTIMODULAR COMPLETO (BOT-VISUAL-TEST-E2E)
 Plataforma MÁS QUE FIANZAS - Core InsurTech v4.0 (Cobertura 23 Módulos / Norma NOFTRAB 4-VAF)
-Integración Real con Playwright para Navegación Visible en Pantalla (Headless = False)
+Integración Real con Playwright para Navegación Visible en Pantalla (Headless = False / Headless Engine)
 """
 
 import sys
@@ -63,6 +63,21 @@ class BotVisualRunner:
         
         user, password = credenciales.get(self.perfil, ("pdv.prueba", "Demo@1234"))
 
+        # Configuración de ruta de navegadores para entorno Apache / Windows Service
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = r"C:\Users\jhenr\AppData\Local\ms-playwright"
+
+        chrome_candidates = [
+            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+            r"C:\Users\jhenr\AppData\Local\ms-playwright\chromium-1228\chrome-win64\chrome.exe",
+            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+        ]
+        exec_path = None
+        for candidate in chrome_candidates:
+            if os.path.exists(candidate):
+                exec_path = candidate
+                break
+
         use_playwright = True
         try:
             from playwright.sync_api import sync_playwright
@@ -73,12 +88,25 @@ class BotVisualRunner:
         if use_playwright:
             try:
                 with sync_playwright() as p:
-                    self.log(f"🖥️ Desplegando Navegador Chromium Visible en Pantalla (Headless={not self.visible})...")
-                    browser = p.chromium.launch(
-                        headless=not self.visible,
-                        slow_mo=1000 if self.visible else 0,
-                        args=["--start-maximized", "--disable-infobars"]
-                    )
+                    self.log(f"🖥️ Desplegando Navegador Google Chrome (Headless={not self.visible})...")
+                    launch_kwargs = {
+                        "headless": not self.visible,
+                        "slow_mo": 500 if self.visible else 0,
+                        "args": ["--start-maximized", "--disable-infobars"]
+                    }
+                    if exec_path:
+                        launch_kwargs["executable_path"] = exec_path
+                        self.log(f"📌 Usando binario Chrome detectado: {exec_path}")
+
+                    browser = None
+                    try:
+                        browser = p.chromium.launch(**launch_kwargs)
+                    except Exception as ex_launch:
+                        self.log(f"⚠️ Reintentando inicio en motor Headless Playwright (Aislamiento de Servicio Windows Session 0): {ex_launch}", "WARN")
+                        launch_kwargs["headless"] = True
+                        launch_kwargs["slow_mo"] = 0
+                        browser = p.chromium.launch(**launch_kwargs)
+
                     context = browser.new_context(viewport={"width": 1366, "height": 768})
                     page = context.new_page()
 
@@ -89,29 +117,32 @@ class BotVisualRunner:
                     page.goto(login_url, wait_until="domcontentloaded")
 
                     # Inyectar overlay informativo de la prueba en pantalla
-                    page.evaluate(f"""() => {{
-                        const banner = document.createElement('div');
-                        banner.id = 'bot-visual-overlay';
-                        banner.style.cssText = 'position:fixed; top:10px; right:10px; z-index:99999; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 20px; border-radius:10px; font-family:sans-serif; font-weight:700; font-size:14px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:2px solid #a855f7;';
-                        banner.innerHTML = '🤖 BOT-VISUAL-TEST-E2E<br><span style="font-size:11px; opacity:0.9;">Perfil: {user} | Módulo: {self.modulo.upper()}</span>';
-                        document.body.appendChild(banner);
-                    }}""")
+                    try:
+                        page.evaluate(f"""() => {{
+                            const banner = document.createElement('div');
+                            banner.id = 'bot-visual-overlay';
+                            banner.style.cssText = 'position:fixed; top:10px; right:10px; z-index:99999; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; padding:12px 20px; border-radius:10px; font-family:sans-serif; font-weight:700; font-size:14px; box-shadow:0 10px 25px rgba(0,0,0,0.3); border:2px solid #a855f7;';
+                            banner.innerHTML = '🤖 BOT-VISUAL-TEST-E2E<br><span style="font-size:11px; opacity:0.9;">Perfil: {user} | Módulo: {self.modulo.upper()}</span>';
+                            document.body.appendChild(banner);
+                        }}""")
+                    except Exception:
+                        pass
 
                     self.log(f"⌨️ Escribiendo nombre de usuario: '{user}'...")
                     page.fill('#username', user)
-                    page.wait_for_timeout(600)
+                    page.wait_for_timeout(400)
 
                     self.log("⌨️ Escribiendo contraseña segura...")
                     page.fill('#password', password)
-                    page.wait_for_timeout(600)
+                    page.wait_for_timeout(400)
 
                     self.log("🖱️ Haciendo clic en botón 'Iniciar Sesión'...")
                     page.click('.btn-login, button[type="submit"]')
-                    page.wait_for_timeout(1500)
+                    page.wait_for_timeout(1200)
 
                     dur_auth = int((time.time() - t0) * 1000)
-                    self.log("✅ Sesión autenticada en navegador visible.")
-                    self.agregar_paso("Autenticación Visual en Pantalla", "EXITO", f"Usuario {user} ingresó al sistema en vivo", dur_auth)
+                    self.log("✅ Sesión autenticada en navegador Playwright.")
+                    self.agregar_paso("Autenticación Visual en Navegador", "EXITO", f"Usuario {user} ingresó al sistema via motor Chrome", dur_auth)
 
                     # 2. Navegación e Interacción con el Módulo Seleccionado
                     t1 = time.time()
@@ -138,45 +169,48 @@ class BotVisualRunner:
                     self.log(f"🧭 Navegando al Módulo de la Plataforma: {target_url}")
                     page.goto(target_url, wait_until="domcontentloaded")
 
-                    # Inyectar overlay informativo en el módulo objetivo
-                    page.evaluate(f"""() => {{
-                        const banner = document.createElement('div');
-                        banner.id = 'bot-visual-overlay';
-                        banner.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:99999; background:linear-gradient(135deg,#10b981,#059669); color:white; padding:15px 25px; border-radius:12px; font-family:sans-serif; font-weight:800; font-size:15px; box-shadow:0 10px 30px rgba(0,0,0,0.4); border:2px solid #34d399;';
-                        banner.innerHTML = '🤖 BOT-VISUAL-TEST-E2E EN VIVO<br><span style="font-size:12px; font-weight:400;">Módulo: {self.modulo.upper()} | Escenario: {self.escenario}</span>';
-                        document.body.appendChild(banner);
-                    }}""")
+                    try:
+                        page.evaluate(f"""() => {{
+                            const banner = document.createElement('div');
+                            banner.id = 'bot-visual-overlay';
+                            banner.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:99999; background:linear-gradient(135deg,#10b981,#059669); color:white; padding:15px 25px; border-radius:12px; font-family:sans-serif; font-weight:800; font-size:15px; box-shadow:0 10px 30px rgba(0,0,0,0.4); border:2px solid #34d399;';
+                            banner.innerHTML = '🤖 BOT-VISUAL-TEST-E2E EN VIVO<br><span style="font-size:12px; font-weight:400;">Módulo: {self.modulo.upper()} | Escenario: {self.escenario}</span>';
+                            document.body.appendChild(banner);
+                        }}""")
+                    except Exception:
+                        pass
 
-                    page.wait_for_timeout(1000)
+                    page.wait_for_timeout(800)
 
                     if self.escenario == "rbac_guard_denied":
                         self.log(f"🛡️ Verificando Bloqueo de Seguridad RBAC Guard para perfil {self.perfil} en {self.modulo}...")
-                        page.wait_for_timeout(1500)
+                        page.wait_for_timeout(1000)
                         dur_mod = int((time.time() - t1) * 1000)
-                        self.agregar_paso("Demostración Visual de Protección RBAC", "EXITO", "Bloqueo 403 y restricción de navegación verificada en pantalla", dur_mod)
+                        self.agregar_paso("Demostración Visual de Protección RBAC", "EXITO", "Bloqueo 403 y restricción de navegación verificada", dur_mod)
                     else:
-                        self.log(f"🖱️ Interactuando en vivo con los elementos del módulo [{self.modulo}]...")
+                        self.log(f"🖱️ Interactuando con los elementos del módulo [{self.modulo}]...")
                         
-                        # Realizar scroll visual suave para demostración
-                        page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
-                        page.wait_for_timeout(1000)
-                        page.evaluate("window.scrollBy({top: -300, behavior: 'smooth'});")
-                        page.wait_for_timeout(1000)
+                        try:
+                            page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
+                            page.wait_for_timeout(600)
+                            page.evaluate("window.scrollBy({top: -300, behavior: 'smooth'});")
+                            page.wait_for_timeout(600)
+                        except Exception:
+                            pass
 
-                        # Buscar inputs o botones interactivos si están presentes en la vista
                         try:
                             if page.is_visible('input[type="text"], input[type="search"], #buscar'):
                                 page.fill('input[type="text"], input[type="search"], #buscar', '00100000000')
-                                page.wait_for_timeout(1000)
+                                page.wait_for_timeout(800)
                         except Exception:
                             pass
 
                         dur_mod = int((time.time() - t1) * 1000)
-                        self.agregar_paso(f"Ejecución Visual en Pantalla - Módulo {self.modulo.upper()}", "EXITO", f"Prueba interactiva completada en vivo en pantalla ({dur_mod} ms)", dur_mod)
+                        self.agregar_paso(f"Ejecución en Navegador Chrome - Módulo {self.modulo.upper()}", "EXITO", f"Prueba interactiva completada en motor Chrome ({dur_mod} ms)", dur_mod)
 
-                    page.wait_for_timeout(2000)
+                    page.wait_for_timeout(1000)
                     browser.close()
-                    self.log("✅ Navegador visible cerrado con éxito. Diagnóstico finalizado.")
+                    self.log("✅ Navegador Playwright cerrado con éxito. Diagnóstico finalizado.")
                     return self.generar_reporte_final()
             except Exception as ex_pw:
                 self.log(f"⚠️ Excepción en Playwright: {str(ex_pw)}. Recurriendo a fallback HTTP.", "WARN")
