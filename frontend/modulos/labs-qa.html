@@ -1380,8 +1380,10 @@
             document.getElementById('bot-status-badge').textContent = 'Running';
             
             try {
-                const token = localStorage.getItem('token_sesion') || '';
-                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php?action=run_diagnostics&token_sesion=' + token);
+                const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('mqf_token_sesion') || sessionStorage.getItem('token_sesion') || localStorage.getItem('token_sesion') || '';
+                const r = await fetch(window.location.origin + '/PLATAFORMA_INTEGRADA/backend/api/bot_testing_dev.php?action=run_diagnostics&token_sesion=' + token, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const res = await r.json();
                 
                 if (res.exito) {
