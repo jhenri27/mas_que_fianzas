@@ -9,9 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.querySelector('.btn-login');
     const alertaContainer = document.getElementById('alertaContainer');
 
+    const isSubdir = window.location.pathname.startsWith('/PLATAFORMA_INTEGRADA');
+    const basePrefix = isSubdir ? '/PLATAFORMA_INTEGRADA' : '';
+
     // Verificar si ya hay sesión activa
     if (api.tieneSesion()) {
-        window.location.href = '/PLATAFORMA_INTEGRADA/frontend/dashboard.html';
+        window.location.href = `${basePrefix}/frontend/dashboard.html`;
     }
 
     /**
@@ -43,9 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Redirigir al dashboard
                 setTimeout(() => {
                     if (resultado.requiere_cambio_password) {
-                        window.location.href = '/PLATAFORMA_INTEGRADA/frontend/cambiar-password.html';
+                        window.location.href = `${basePrefix}/frontend/cambiar-password.html`;
                     } else {
-                        window.location.href = '/PLATAFORMA_INTEGRADA/frontend/dashboard.html';
+                        window.location.href = `${basePrefix}/frontend/dashboard.html`;
                     }
                 }, 1500);
             } else {

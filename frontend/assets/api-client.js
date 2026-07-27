@@ -5,8 +5,10 @@
 
 class APIClient {
     constructor() {
-        // Usar URL relativa para compatibilidad con cualquier dominio/IP
-        this.baseURL = '/PLATAFORMA_INTEGRADA/backend/api';
+        // Detectar automáticamente si la app corre en subdirectorio (WAMP) o raíz (VPS)
+        const isSubdir = window.location.pathname.startsWith('/PLATAFORMA_INTEGRADA');
+        this.basePrefix = isSubdir ? '/PLATAFORMA_INTEGRADA' : '';
+        this.baseURL = `${this.basePrefix}/backend/api`;
         this.tokenSesion = localStorage.getItem('token_sesion') || null;
         this.usuario = JSON.parse(localStorage.getItem('usuario_actual') || 'null');
     }
@@ -39,10 +41,11 @@ class APIClient {
             // Si la respuesta es 401, limpiar sesión y redirigir al login (manejando iframe breakout)
             if (!response.ok && response.status === 401) {
                 this.limpiarSesion();
+                const targetUrl = `${this.basePrefix}/frontend/`;
                 if (window.top) {
-                    window.top.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                    window.top.location.href = targetUrl;
                 } else {
-                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+                    window.location.href = targetUrl;
                 }
             }
 
