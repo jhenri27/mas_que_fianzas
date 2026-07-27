@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLAN EJECUTIVO DE MIGRACIÓN VPS CLOUD - MÁS QUE FIANZAS</title>
+    <title>PLAN EJECUTIVO DE MIGRACIÓN, AMBIENTES Y MÓDULO UNIFICADO JOTFORM APPS - MÁS QUE FIANZAS</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -23,11 +23,7 @@
             --text-muted: #64748b;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Outfit', sans-serif;
@@ -41,10 +37,7 @@
             min-height: 100vh;
         }
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1280px; margin: 0 auto; }
 
         /* HEADER EJECUTIVO */
         .exec-header {
@@ -58,10 +51,12 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
         .exec-title h1 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
             background: linear-gradient(135deg, #ffffff, #94a3b8);
             -webkit-background-clip: text;
@@ -72,10 +67,7 @@
             gap: 12px;
         }
 
-        .exec-title p {
-            color: var(--text-secondary);
-            font-size: 15px;
-        }
+        .exec-title p { color: var(--text-secondary); font-size: 14px; }
 
         .exec-badge {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
@@ -108,7 +100,7 @@
             box-shadow: 0 8px 25px var(--primary-glow);
         }
 
-        /* GRID DE METRICAS CLAVE (KPIs) */
+        /* GRID DE KPIS EJECUTIVOS */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -130,10 +122,8 @@
         .kpi-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
             background: linear-gradient(90deg, var(--primary), var(--accent-purple));
         }
 
@@ -144,8 +134,7 @@
         }
 
         .kpi-icon {
-            width: 46px;
-            height: 46px;
+            width: 46px; height: 46px;
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -162,18 +151,9 @@
             margin-bottom: 4px;
         }
 
-        .kpi-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
+        .kpi-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
 
-        .kpi-sub {
-            font-size: 11px;
-            color: var(--accent-emerald);
-            margin-top: 6px;
-            font-weight: 600;
-        }
+        .kpi-sub { font-size: 11px; color: var(--accent-emerald); margin-top: 6px; font-weight: 600; }
 
         /* SECCIONES Y TABLAS */
         .grid-2col {
@@ -183,9 +163,7 @@
             margin-bottom: 30px;
         }
 
-        @media (max-width: 992px) {
-            .grid-2col { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 992px) { .grid-2col { grid-template-columns: 1fr; } }
 
         .card-panel {
             background: rgba(17, 24, 39, 0.7);
@@ -193,6 +171,7 @@
             border: 1px solid var(--border-glass);
             border-radius: 24px;
             padding: 28px;
+            margin-bottom: 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
         }
 
@@ -214,11 +193,8 @@
             color: #ffffff;
         }
 
-        /* TABLA COMPARATIVA */
-        .exec-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        /* TABLA COMPARATIVA DE APPS JOTFORM */
+        .exec-table { width: 100%; border-collapse: collapse; }
 
         .exec-table th {
             text-align: left;
@@ -232,13 +208,11 @@
 
         .exec-table td {
             padding: 14px;
-            font-size: 14px;
+            font-size: 13.5px;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
 
-        .exec-table tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
+        .exec-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
         .val-badge {
             display: inline-block;
@@ -273,11 +247,7 @@
             margin-bottom: 4px;
         }
 
-        .spec-item .value {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-        }
+        .spec-item .value { font-size: 14.5px; font-weight: 700; color: #ffffff; }
 
         /* TIMELINE PASO A PASO */
         .timeline {
@@ -286,18 +256,13 @@
             border-left: 2px solid rgba(99, 102, 241, 0.3);
         }
 
-        .timeline-step {
-            position: relative;
-            margin-bottom: 24px;
-        }
+        .timeline-step { position: relative; margin-bottom: 24px; }
 
         .timeline-step::before {
             content: '';
             position: absolute;
-            left: -31px;
-            top: 2px;
-            width: 12px;
-            height: 12px;
+            left: -31px; top: 2px;
+            width: 12px; height: 12px;
             border-radius: 50%;
             background: var(--primary);
             border: 3px solid var(--bg-dark);
@@ -309,17 +274,8 @@
             box-shadow: 0 0 15px var(--accent-emerald);
         }
 
-        .timeline-step h4 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
-
-        .timeline-step p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
+        .timeline-step h4 { font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 4px; }
+        .timeline-step p { font-size: 13.5px; color: var(--text-secondary); }
 
         .badge-sec {
             display: inline-block;
@@ -331,6 +287,39 @@
             font-weight: 700;
             margin-bottom: 6px;
         }
+
+        /* STACK CARDS DE DESARROLLO PAIR PROGRAMMING */
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .stack-card {
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stack-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .stack-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .stack-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
 
         /* FOOTER EJECUTIVO */
         .exec-footer {
@@ -350,12 +339,12 @@
         <!-- HEADER EJECUTIVO -->
         <header class="exec-header">
             <div class="exec-title">
-                <h1><i class="fa-solid fa-cloud-bolt" style="color:var(--primary);"></i> PLAN EJECUTIVO DE MIGRACIÓN CLOUD VPS</h1>
-                <p>Plataforma Integrada de Gestión de Fianzas y Seguros — MÁS QUE FIANZAS</p>
+                <h1><i class="fa-solid fa-mobile-screen-button" style="color:var(--primary);"></i> PLAN EJECUTIVO DE MIGRACIÓN & UNIFICACIÓN DE APPS JOTFORM (NORMA NOFTRAB)</h1>
+                <p>Plataforma Integrada MÁS QUE FIANZAS (Subdominio Web, App Android Multi-Perfil & Módulo Operaciones Técnicas)</p>
             </div>
             <div style="display:flex; gap:12px; align-items:center;">
                 <div class="exec-badge">
-                    <i class="fa-solid fa-shield-halved"></i> CANAL SEGURO LOCAL / DRIVE ACTIVO
+                    <i class="fa-solid fa-shield-halved"></i> AUDITORÍA NOFTRAB 4.0 ACTIVE
                 </div>
                 <button class="btn-print" onclick="window.print()">
                     <i class="fa-solid fa-print"></i> Imprimir Plan
@@ -363,160 +352,246 @@
             </div>
         </header>
 
-        <!-- GRID DE KPIS EJECUTIVOS -->
+        <!-- GRID DE KPIS EJECUTIVOS DE USUARIOS Y APPS A MIGRAR -->
         <section class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-icon" style="background:rgba(99, 102, 241, 0.15); color:var(--primary);">
-                    <i class="fa-solid fa-users"></i>
+                    <i class="fa-solid fa-car-on"></i>
                 </div>
-                <div class="kpi-value">3,000+</div>
-                <div class="kpi-label">Concurrencia de Usuarios</div>
-                <div class="kpi-sub">▲ +150x vs Servidor Local WAMP</div>
+                <div class="kpi-value">112</div>
+                <div class="kpi-label">Usuarios +QF Seguros de Autos</div>
+                <div class="kpi-sub">🔑 Perfil Socio Comercial PDV + Login Gmail</div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-icon" style="background:rgba(16, 185, 129, 0.15); color:var(--accent-emerald);">
-                    <i class="fa-solid fa-microchip"></i>
+                    <i class="fa-solid fa-truck-ramp-box"></i>
                 </div>
-                <div class="kpi-value">8 vCPUs</div>
-                <div class="kpi-label">AMD EPYC Enterprise</div>
-                <div class="kpi-sub">▲ Procesamiento Paralelo Multimodular</div>
+                <div class="kpi-value">4</div>
+                <div class="kpi-label">Usuarios Mensajería +QF</div>
+                <div class="kpi-sub">📦 Perfil Perito-Mensajero (Nuevo ROL)</div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-icon" style="background:rgba(168, 85, 247, 0.15); color:var(--accent-purple);">
-                    <i class="fa-solid fa-memory"></i>
+                    <i class="fa-solid fa-building-user"></i>
                 </div>
-                <div class="kpi-value">24 GB</div>
-                <div class="kpi-label">Memoria RAM DDR4</div>
-                <div class="kpi-sub">▲ 16 GB Asignados a Caché InnoDB MySQL</div>
+                <div class="kpi-value">3</div>
+                <div class="kpi-label">Usuarios +QF Oficina Virtual</div>
+                <div class="kpi-sub">⚙️ Perfil Gerente Técnico (Aprobador)</div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-icon" style="background:rgba(6, 182, 212, 0.15); color:var(--accent-cyan);">
-                    <i class="fa-solid fa-bolt"></i>
+                    <i class="fa-solid fa-mobile-retro"></i>
                 </div>
-                <div class="kpi-value">&lt; 25 ms</div>
-                <div class="kpi-label">Tiempo de Respuesta API</div>
-                <div class="kpi-sub">⚡ OPcache + JIT PHP 8.3 Activo</div>
+                <div class="kpi-value">1 App</div>
+                <div class="kpi-label">Android Unificada Multiperfil</div>
+                <div class="kpi-sub">📱 Presentación Dinámica según Login</div>
             </div>
         </section>
 
-        <!-- SECCIONES DE DETALLE -->
+        <!-- SECCIÓN 3 REESTRUCTURADA: MATRIZ DE MIGRACIÓN DE LAS 3 APPS DE JOTFORM -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-layer-group" style="color:var(--accent-purple);"></i> 3. REESTRUCTURACIÓN: MÓDULO DE OPERACIONES TÉCNICAS Y UNIFICACIÓN DE APPS JOTFORM</h2>
+                <span class="badge-sec">Análisis de Integridad NOFTRAB 4.0</span>
+            </div>
+            <p style="color:var(--text-secondary); margin-bottom:20px; font-size:14px;">
+                La absorción de Jotform **no será genérica**. Se extraerán y migrarán **exclusivamente las 3 Apps operativas de Jotform Workspace** hacia una **única App nativa para Android (`app.masquefianzas.com`) y módulo Web**, la cual adaptará dinámicamente sus vistas, títulos de interfaz, permisos y formularios según el perfil del usuario autenticado:
+            </p>
+
+            <table class="exec-table">
+                <thead>
+                    <tr>
+                        <th>App Origen en Jotform</th>
+                        <th>URL / ID Registro Jotform</th>
+                        <th>Perfil Asignado en Plataforma</th>
+                        <th>Usuarios a Migrar</th>
+                        <th>Habilidades Especiales & Funcionalidad Nube</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>+QF SEGUROS DE AUTOS</strong></td>
+                        <td><a href="https://app.jotform.com/app/260768444519871" target="_blank" style="color:var(--primary);">app/260768444519871</a></td>
+                        <td><span class="val-badge val-new">Socio Comercial PDV</span></td>
+                        <td><strong>112 Usuarios</strong></td>
+                        <td>
+                            • <strong>Google OAuth / Login con Gmail</strong> habilitado.<br>
+                            • Emisión rápida de cotizaciones y seguros de autos desde PDV.<br>
+                            • Validación de Cédula/RNC (Luhn Mod 10 / Mod 11 DGII).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>MENSAJERIA +QF</strong></td>
+                        <td><a href="https://app.jotform.com/261593518544868" target="_blank" style="color:var(--primary);">261593518544868</a></td>
+                        <td><span class="val-badge val-old" style="background:rgba(168, 85, 247, 0.2); color:#c084fc;">Perito-Mensajero (Nuevo)</span></td>
+                        <td><strong>4 Usuarios</strong></td>
+                        <td>
+                            • Creación del perfil de control operativo de entregas.<br>
+                            • Captura de firmas digitales y fotos de inspección en campo.<br>
+                            • Trazabilidad de entregas de pólizas y cobros en ruta.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>+QF Oficina Virtual</strong></td>
+                        <td><a href="https://app.jotform.com/253413620953858" target="_blank" style="color:var(--primary);">253413620953858</a></td>
+                        <td><span class="val-badge val-new" style="background:rgba(6, 182, 212, 0.2); color:#22d3ee;">Gerente Técnico</span></td>
+                        <td><strong>3 Usuarios</strong></td>
+                        <td>
+                            • Panel de control técnico y aprobación de fianzas/pólizas.<br>
+                            • Asignación de secuencias NCF (B12/B15/B01).<br>
+                            • Auditoría forense inmutable de trámites.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MIGRACIÓN DE PAD-28/32 Y ARQUITECTURA DE SOFTWARE -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-cubes" style="color:var(--accent-amber);"></i> Migración de Desarrollo PAD-28/32 & Despliegue Multi-Perfil</h2>
+            </div>
+            <div class="timeline">
+                
+                <div class="timeline-step highlight">
+                    <span class="badge-sec">MIGRACIÓN INMEDIATA WAMP ➔ VPS</span>
+                    <h4>Migración del Desarrollo PAD-28/32 en WAMP a la VPS</h4>
+                    <p>Transferencia atómica del código fuente local WAMP y componentes **PAD-28/32** hacia la VPS (`85.239.248.147`) en `/var/www/plataforma_integrada/` (PROD) y `/var/www/dev_plataforma/` (DEV) para continuar su desarrollo activo en la nube.</p>
+                </div>
+
+                <div class="timeline-step">
+                    <span class="badge-sec">MIGRACIÓN DE DATOS E HISTORIAL DE 119 USUARIOS</span>
+                    <h4>Ingesta Atómica de Usuarios y Formularios de Jotform a MySQL 8.4</h4>
+                    <p>Extracción del historial completo de datos de las 3 Apps de Jotform (112 Socios PDV + 4 Peritos-Mensajeros + 3 Gerentes Técnicos = **119 usuarios totales**) migrando sus credenciales, archivos adjuntos y registros hacia la base de datos de producción.</p>
+                </div>
+
+                <div class="timeline-step">
+                    <span class="badge-sec">AUTENTICACIÓN SINGLE SIGN-ON (GOOGLE OAUTH)</span>
+                    <h4>Integración de Login con Gmail para Socios Comerciales PDV</h4>
+                    <p>Desarrollo del servicio de inicio de sesión con Google (Google OAuth 2.0 Client) en el frontend y backend para permitir a los **112 Socios Comerciales PDV** loguearse con 1 clic usando su cuenta corporativa/personal de Gmail.</p>
+                </div>
+
+                <div class="timeline-step">
+                    <span class="badge-sec">APP ANDROID UNIFICADA DUAL (WEB + MOBILE)</span>
+                    <h4>Despliegue de la App Android (`app.masquefianzas.com`)</h4>
+                    <p>Empaquetado de la aplicación móvil unificada. Al iniciar sesión, la App detecta el perfil y presenta el nombre original de la App de Jotform (`+QF SEGUROS DE AUTOS`, `MENSAJERIA +QF` o `+QF Oficina Virtual`) adaptando sus menús y formularios dinámicamente.</p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- AMBIENTES DE PRODUCCIÓN VS DESARROLLO Y ACCESO VISUAL -->
         <div class="grid-2col">
             
-            <!-- PANEL DE ESPECIFICACIONES DE LA NUEVA INFRAESTRUCTURA -->
-            <div class="card-panel">
+            <!-- ENTORNO DE PRODUCCIÓN (PROD) -->
+            <div class="card-panel" style="margin-bottom:0;">
                 <div class="panel-header">
-                    <h2><i class="fa-solid fa-sliders" style="color:var(--accent-purple);"></i> Especificaciones Reales Auditadas por SSH</h2>
-                    <span style="font-size:12px; color:var(--accent-emerald); font-weight:700;">● Online 100%</span>
+                    <h2><i class="fa-solid fa-shield-halved" style="color:var(--accent-emerald);"></i> 🏭 AMBIENTE DE PRODUCCIÓN (PROD)</h2>
+                    <span style="font-size:12px; color:var(--accent-emerald); font-weight:700;">● 24/7/365 Activo</span>
                 </div>
                 <div class="spec-list">
                     <div class="spec-item">
-                        <div class="title">Dirección IP Pública</div>
-                        <div class="value" style="color:var(--primary);">169.58.51.147</div>
+                        <div class="title">Subdominio Web Oficial</div>
+                        <div class="value" style="color:var(--primary);">plataforma.mqf.com</div>
                     </div>
                     <div class="spec-item">
-                        <div class="title">Sistema Operativo</div>
-                        <div class="value">Ubuntu 24.04 / 22.04 LTS</div>
+                        <div class="title">Subdominio App Android</div>
+                        <div class="value" style="color:var(--accent-emerald);">app.masquefianzas.com</div>
                     </div>
                     <div class="spec-item">
-                        <div class="title">Almacenamiento NVMe</div>
-                        <div class="value">300 GB SSD (289 GB Libres)</div>
+                        <div class="title">Ruta Física en VPS</div>
+                        <div class="value">/var/www/plataforma_integrada/</div>
                     </div>
                     <div class="spec-item">
-                        <div class="title">Credenciales SSH / PuTTY</div>
-                        <div class="value">Port 22 | root / admin</div>
+                        <div class="title">Base de Datos MySQL</div>
+                        <div class="value">masque_fianzas_integrada_01</div>
                     </div>
                     <div class="spec-item">
-                        <div class="title">Seguridad Firewall</div>
-                        <div class="value">UFW + Fail2ban + SSL</div>
+                        <div class="title">Asignación InnoDB RAM</div>
+                        <div class="value" style="color:var(--accent-cyan);">16 GB RAM Pool dedicado</div>
                     </div>
                     <div class="spec-item">
-                        <div class="title">Garantía Uptime</div>
-                        <div class="value" style="color:var(--accent-emerald);">99.95% SLA Cloud</div>
+                        <div class="title">Seguridad & Certificado</div>
+                        <div class="value">SSL Let's Encrypt + UFW + Fail2ban</div>
                     </div>
                 </div>
             </div>
 
-            <!-- PANEL DE IMPACTO COMPARATIVO -->
-            <div class="card-panel">
+            <!-- ENTORNO DE DESARROLLO Y PRUEBAS (DEV / STAGING) -->
+            <div class="card-panel" style="margin-bottom:0;">
                 <div class="panel-header">
-                    <h2><i class="fa-solid fa-chart-line" style="color:var(--accent-emerald);"></i> Matriz de Impacto vs Servidor Local</h2>
+                    <h2><i class="fa-solid fa-flask-vial" style="color:var(--accent-amber);"></i> 🧪 AMBIENTE DE DESARROLLO (DEV / STAGING)</h2>
+                    <span style="font-size:12px; color:var(--accent-amber); font-weight:700;">● Pair Programming Live</span>
                 </div>
-                <table class="exec-table">
-                    <thead>
-                        <tr>
-                            <th>Métrica Operativa</th>
-                            <th>Entorno Anterior (WAMP)</th>
-                            <th>Nueva VPS Cloud High-Perf</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Capacidad de Usuarios</td>
-                            <td><span class="val-badge val-old">10 - 20 simultáneos</span></td>
-                            <td><span class="val-badge val-new">3,000+ concurrentes</span></td>
-                        </tr>
-                        <tr>
-                            <td>Rendimiento de DB</td>
-                            <td>1 GB RAM Caché</td>
-                            <td><span class="val-badge val-new">16 GB InnoDB Memory Pool</span></td>
-                        </tr>
-                        <tr>
-                            <td>Latencia de Solicitudes</td>
-                            <td>350ms - 600ms</td>
-                            <td><span class="val-badge val-new">&lt; 25 ms (Ultra-rápido)</span></td>
-                        </tr>
-                        <tr>
-                            <td>Velocidad de Lectura/Escritura</td>
-                            <td>Disco HDD / SATA Local</td>
-                            <td><span class="val-badge val-new">3,000 MB/s NVMe SSD</span></td>
-                        </tr>
-                        <tr>
-                            <td>Disponibilidad Comercial</td>
-                            <td>Sujeta a la PC Local</td>
-                            <td><span class="val-badge val-new">24/7/365 Nube Continua</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="spec-list">
+                    <div class="spec-item">
+                        <div class="title">Subdominio / Puerto DEV</div>
+                        <div class="value" style="color:var(--accent-amber);">dev.plataforma.mqf.com</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="title">Acceso Gráfico OS (RDP)</div>
+                        <div class="value" style="color:var(--primary);">IP:3389 (Escritorio Remoto)</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="title">Ruta Física en VPS</div>
+                        <div class="value">/var/www/dev_plataforma/</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="title">Base de Datos MySQL DEV</div>
+                        <div class="value">masque_fianzas_dev</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="title">IDE Web Colaborativo</div>
+                        <div class="value">code-server (Puerto :8443)</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="title">Gestor DB Visual</div>
+                        <div class="value">Adminer / phpMyAdmin (:8080)</div>
+                    </div>
+                </div>
             </div>
 
         </div>
 
-        <!-- TIMELINE DE DESPLIEGUE PASO A PASO -->
-        <div class="card-panel">
+        <!-- TIMELINE DE DESPLIEGUE PASO A PASO EN LA VPS -->
+        <div class="card-panel" style="margin-top:30px;">
             <div class="panel-header">
-                <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Hoja de Ruta de Despliegue Automatizado (Paso a Paso Refinado)</h2>
+                <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Hoja de Ruta de Despliegue Automatizado en la VPS</h2>
             </div>
             <div class="timeline">
                 <div class="timeline-step">
-                    <h4>Paso 1: Aprovisionamiento del Entorno LEMP en Ubuntu</h4>
+                    <h4>Paso 1: Aprovisionamiento del Entorno LEMP en Ubuntu (`85.239.248.147`)</h4>
                     <p>Instalación automatizada por SSH de Nginx Web Server, PHP 8.3 FPM con extensiones de alto rendimiento, MySQL Server 8.4 y utilidades de seguridad (UFW + Fail2ban).</p>
                 </div>
-                <div class="timeline-step">
-                    <h4>Paso 2: Configuración de Base de Datos e Importación Atómica</h4>
-                    <p>Creación del usuario seguro `mqf_user`, base de datos `masque_fianzas_integrada_01` e importación del dump `db_backup.sql` asignando 16 GB de memoria RAM para índices InnoDB.</p>
-                </div>
                 <div class="timeline-step highlight">
-                    <span class="badge-sec">🔒 REQUERIMIENTO DE SEGURIDAD REFINADO</span>
-                    <h4>Paso 3: Sincronización Segura de Código + Bundle de Credenciales de Producción</h4>
+                    <span class="badge-sec">🖥️ HABILITACIÓN DE ENTORNO GRÁFICO VISUAL</span>
+                    <h4>Paso 2: Instalación de Escritorio Remoto RDP (XFCE4 + XRDP) & Dashboard Web</h4>
+                    <p>Instalación del entorno gráfico completo de Ubuntu XFCE4 y el servidor XRDP (Puerto `:3389`), permitiendo a Jhenri conectarse visualmente por Conexión a Escritorio Remoto de Windows.</p>
+                </div>
+                <div class="timeline-step">
+                    <h4>Paso 3: Configuración de Bases de Datos PROD y DEV</h4>
+                    <p>Creación de la base de datos de producción `masque_fianzas_integrada_01` y la base de desarrollo `masque_fianzas_dev` asignando 16 GB de RAM a InnoDB.</p>
+                </div>
+                <div class="timeline-step">
+                    <h4>Paso 4: Transferencia de Código Local (WAMP + PAD-28/32) + Bundle de Credenciales</h4>
                     <p>
-                        Transferencia directa por canal cifrado SSH/SCP de la copia de seguridad completa (código fuente + bundle de credenciales en `/backend/config/` incluyendo claves privadas de OCR, API keys, credenciales SMTP y de pasarelas de pago) desde la <strong>PC Local / Google Drive Seguro</strong> hacia `/var/www/masque_fianzas/`.
-                        <br><em style="color:#34d399; font-size:12px;">✓ Garantiza el funcionamiento operativo 100% inmediato sin exponer credenciales sensibles en repositorios públicos/compartidos de GitHub.</em>
+                        Transferencia cifrada de la plataforma local WAMP y componentes PAD-28/32 a `/var/www/plataforma_integrada/` (PROD) y `/var/www/dev_plataforma/` (DEV).
                     </p>
                 </div>
                 <div class="timeline-step">
-                    <h4>Paso 4: Certificación SSL y Cifrado HTTPS</h4>
-                    <p>Emisión e instalación automatizada del certificado SSL wildcard mediante Certbot (Let's Encrypt) y configuración de renovación automática diaria.</p>
+                    <h4>Paso 5: Certificación SSL y Cifrado HTTPS (`plataforma.mqf.com`, `app.masquefianzas.com` y `dev.plataforma.mqf.com`)</h4>
+                    <p>Emisión e instalación automatizada de certificados SSL Let's Encrypt para los subdominios de Producción, App Android y Desarrollo.</p>
                 </div>
             </div>
         </div>
 
         <!-- FOOTER EJECUTIVO -->
         <footer class="exec-footer">
-            <p>MÁS QUE FIANZAS — Sistema Integrado de Gestión | Plan Ejecutivo de Infraestructura Cloud v4.1 (Protocolo Seguro)</p>
-            <p style="font-size:11px; margin-top:4px; color:var(--text-muted);">Auditado y Generado por Antigravity AI Engine para la VPS 169.58.51.147</p>
+            <p>MÁS QUE FIANZAS — Sistema Integrado de Gestión | Plan Ejecutivo v6.0 (Migración Específica Jotform 3 Apps & Norma NOFTRAB 4.0)</p>
+            <p style="font-size:11px; margin-top:4px; color:var(--text-muted);">Auditado y Generado por Antigravity AI Engine para la VPS 85.239.248.147 / 169.58.51.147</p>
         </footer>
 
     </div>

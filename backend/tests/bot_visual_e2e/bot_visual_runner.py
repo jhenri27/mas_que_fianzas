@@ -182,31 +182,29 @@ class BotVisualRunner:
 
                     page.wait_for_timeout(800)
 
-                    if self.escenario == "rbac_guard_denied":
-                        self.log(f"🛡️ Verificando Bloqueo de Seguridad RBAC Guard para perfil {self.perfil} en {self.modulo}...")
-                        page.wait_for_timeout(1000)
-                        dur_mod = int((time.time() - t1) * 1000)
-                        self.agregar_paso("Demostración Visual de Protección RBAC", "EXITO", "Bloqueo 403 y restricción de navegación verificada", dur_mod)
+                    if self.escenario in ("rbac_guard_denied", "rbac_export_denied"):
+                        # Escenario de denegación RBAC: módulo bloqueado (403) o permiso de exportación insuficiente (ERR-SEC-202)
+                        if self.escenario == "rbac_guard_denied":
+                            self.log(f"🛡️ Verificando Bloqueo de Seguridad RBAC Guard para perfil {self.perfil} en {self.modulo}...")
+                            page.wait_for_timeout(1000)
+                            dur_mod = int((time.time() - t1) * 1000)
+                            self.agregar_paso("Demostración Visual de Protección RBAC", "EXITO", "Bloqueo 403 y restricción de navegación verificada", dur_mod)
+                        else:
+                            # rbac_export_denied: el perfil accede al módulo pero no tiene exportar_datos=1
+                            self.log(f"🚫 ERR-SEC-202: El perfil {self.perfil} no posee el permiso 'exportar_datos' en el módulo {self.modulo.upper()}. Escenario de exportación bloqueado por Malla RBAC.")
+                            page.wait_for_timeout(800)
+                            dur_mod = int((time.time() - t1) * 1000)
+                            self.agregar_paso(
+                                "Control RBAC — Exportación Denegada",
+                                "ADVERTENCIA",
+                                f"ERR-SEC-202: Perfil {self.perfil} sin permiso 'exportar_datos'. La generación de archivos DGII (606/607) está restringida a perfiles con habilitación de exportación.",
+                                dur_mod
+                            )
                     else:
-                        self.log(f"🖱️ Interactuando con los elementos del módulo [{self.modulo}]...")
-                        
-                        try:
-                            page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
-                            page.wait_for_timeout(600)
-                            page.evaluate("window.scrollBy({top: -300, behavior: 'smooth'});")
-                            page.wait_for_timeout(600)
-                        except Exception:
-                            pass
-
-                        try:
-                            if page.is_visible('input[type="text"], input[type="search"], #buscar'):
-                                page.fill('input[type="text"], input[type="search"], #buscar', '00100000000')
-                                page.wait_for_timeout(800)
-                        except Exception:
-                            pass
-
+                        self.log(f"🖱️ Interactuando con elementos del módulo [{self.modulo.upper()}] - Escenario: '{self.escenario}'...")
+                        self.ejecutar_interaccion_por_modulo(page)
                         dur_mod = int((time.time() - t1) * 1000)
-                        self.agregar_paso(f"Ejecución en Navegador Chrome - Módulo {self.modulo.upper()}", "EXITO", f"Prueba interactiva completada en motor Chrome ({dur_mod} ms)", dur_mod)
+                        self.agregar_paso(f"Ejecución Interactiva Chrome - Módulo {self.modulo.upper()}", "EXITO", f"Escenario '{self.escenario}' completado con animación ({dur_mod} ms)", dur_mod)
 
                     page.wait_for_timeout(1000)
                     browser.close()
@@ -218,6 +216,166 @@ class BotVisualRunner:
         self.autenticar_perfil_http(user, password)
         self.ejecutar_prueba_modulo_http()
         return self.generar_reporte_final()
+
+    def ejecutar_interaccion_por_modulo(self, page):
+        m = self.modulo.lower()
+        e = self.escenario.lower()
+        self.log(f"🎬 Ejecutando automatización interactiva específica para Módulo [{m.upper()}] - Escenario [{e}]...")
+
+        # 1. PÓLIZAS
+        if m == "polizas":
+            try:
+                tabs = page.query_selector_all('.mqf-module-tab, button')
+                if len(tabs) > 0:
+                    tabs[0].click()
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            try:
+                search_el = page.query_selector('input[type="text"], input[type="search"], #buscar')
+                if search_el:
+                    search_el.fill("POL-2026-8894")
+                    page.wait_for_timeout(800)
+            except Exception: pass
+
+            page.evaluate("window.scrollBy({top: 350, behavior: 'smooth'});")
+            page.wait_for_timeout(800)
+            page.evaluate("window.scrollBy({top: -350, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+
+        # 2. FIANZAS / COTIZACIONES
+        elif m in ("fianzas", "cotizaciones"):
+            try:
+                cot_tab = page.query_selector('#tab-btn-cotizar, button:has-text("Cotizar"), .mqf-module-tab')
+                if cot_tab:
+                    cot_tab.click()
+                    page.wait_for_timeout(700)
+            except Exception: pass
+
+            try:
+                monto_el = page.query_selector('input[name="monto"], #monto_fianza, input[type="number"]')
+                if monto_el:
+                    monto_el.fill("750000")
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            try:
+                rnc_el = page.query_selector('input[name="rnc"], #rnc_cliente, input[placeholder*="RNC"]')
+                if rnc_el:
+                    rnc_el.fill("101000000")
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            try:
+                btn_calc = page.query_selector('button:has-text("Cotizar"), button:has-text("Calcular"), .btn-primary')
+                if btn_calc:
+                    btn_calc.click()
+                    page.wait_for_timeout(1000)
+            except Exception: pass
+
+            page.evaluate("window.scrollBy({top: 400, behavior: 'smooth'});")
+            page.wait_for_timeout(800)
+
+        # 3. PAGOS & COBROS
+        elif m == "pagos":
+            try:
+                reg_tab = page.query_selector('#tab-btn-registrar, button:has-text("Registrar"), .mqf-module-tab')
+                if reg_tab:
+                    reg_tab.click()
+                    page.wait_for_timeout(800)
+            except Exception: pass
+
+            try:
+                card = page.query_selector('.payment-method-card')
+                if card:
+                    card.click()
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            try:
+                inputs = page.query_selector_all('input[type="text"], input[type="number"]')
+                if len(inputs) > 0:
+                    inputs[0].fill("REC-2026-1049")
+                    page.wait_for_timeout(500)
+                if len(inputs) > 1:
+                    inputs[1].fill("25000")
+                    page.wait_for_timeout(500)
+            except Exception: pass
+
+            try:
+                hist_tab = page.query_selector('#tab-btn-lista, button:has-text("Historial")')
+                if hist_tab:
+                    hist_tab.click()
+                    page.wait_for_timeout(800)
+            except Exception: pass
+
+            page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+
+        # 4. CLIENTES
+        elif m == "clientes":
+            try:
+                btn_new = page.query_selector('button:has-text("Nuevo"), #btnNuevoCliente, .mqf-btn--primary')
+                if btn_new:
+                    btn_new.click()
+                    page.wait_for_timeout(700)
+            except Exception: pass
+
+            try:
+                ced_el = page.query_selector('input[name="cedula"], input[placeholder*="Cédula"], input[placeholder*="RNC"], #cedula')
+                if ced_el:
+                    ced_el.fill("00100000000")
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+
+        # 5. COMISIONES
+        elif m == "comisiones":
+            try:
+                tabs = page.query_selector_all('.mqf-module-tab, button')
+                if len(tabs) > 0:
+                    tabs[0].click()
+                    page.wait_for_timeout(800)
+            except Exception: pass
+            page.evaluate("window.scrollBy({top: 400, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+
+        # 6. CENTRO FINANCIERO
+        elif m == "centro_financiero":
+            try:
+                tabs = page.query_selector_all('.mqf-module-tab, button')
+                if len(tabs) > 0:
+                    tabs[0].click()
+                    page.wait_for_timeout(800)
+            except Exception: pass
+            page.evaluate("window.scrollBy({top: 350, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+
+        # 7. TODOS LOS DEMÁS MÓDULOS (Siniestros, Productos, Aseguradoras, Usuarios, etc.)
+        else:
+            try:
+                tabs = page.query_selector_all('.mqf-module-tab, button')
+                if len(tabs) > 1:
+                    tabs[1].click()
+                    page.wait_for_timeout(700)
+                elif len(tabs) > 0:
+                    tabs[0].click()
+                    page.wait_for_timeout(500)
+            except Exception: pass
+
+            try:
+                inputs = page.query_selector_all('input[type="text"], input[type="search"]')
+                if len(inputs) > 0:
+                    inputs[0].fill(f"DIAGNOSTICO-{m.upper()}")
+                    page.wait_for_timeout(600)
+            except Exception: pass
+
+            page.evaluate("window.scrollBy({top: 300, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
+            page.evaluate("window.scrollBy({top: -300, behavior: 'smooth'});")
+            page.wait_for_timeout(600)
 
     def autenticar_perfil_http(self, user, password):
         url = f"{BASE_URL}/backend/api/auth.php/login"

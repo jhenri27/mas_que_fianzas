@@ -24,6 +24,7 @@ $generation_date = date('d/m/Y H:i');
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="docs/mqf_docs_theme.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -178,35 +179,7 @@ $generation_date = date('d/m/Y H:i');
             color: #64748b;
             margin-top: 8px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        th {
-            background: #6366f1;
-            color: white;
-            padding: 14px;
-            text-align: left;
-            font-weight: 600;
-        }
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #475569;
-        }
-        tr:nth-child(even) td { background: #f8fafc; }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-ok { background: #dcfce7; color: #166534; }
-        .badge-warn { background: #fef3c7; color: #92400e; }
-        .badge-info { background: #dbeafe; color: #1e40af; }
+        /* Estilos de tablas diferidos a mqf_docs_theme.css */
         .feature-card {
             background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
             border: 2px solid #e2e8f0;
@@ -1631,6 +1604,118 @@ function dispararEvento(evento, monto) {
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- DOCUMENTO 6: CENTRO DE NEGOCIOS -->
+<!-- ========================================== -->
+<div class="documento" id="documento6">
+    <div class="doc-header">
+        <h1><i class="fa-solid fa-chart-line" style="color:#6366f1;"></i> Centro de Negocios y Fuerza de Ventas</h1>
+        <div class="meta">
+            <span><i class="fa-solid fa-code-branch"></i> Versión: 4.0 NOFTRAB</span>
+            <span><i class="fa-solid fa-calendar"></i> Actualizado: <?php echo $generation_date; ?></span>
+            <span><i class="fa-solid fa-shield-halved"></i> Norma: ISO 27001 / RBAC Granular</span>
+        </div>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card cumple">
+            <div class="label">KPIs & Métricas</div>
+            <div class="value">Tiempo Real</div>
+            <div class="desc">Matriz de rendimiento por Punto de Venta (PDV)</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Enlaces Venta Online</div>
+            <div class="value">Serverless</div>
+            <div class="desc">Generación de enlaces dinámicos y códigos QR</div>
+        </div>
+        <div class="status-card cumple">
+            <div class="label">Control Exportación</div>
+            <div class="value">Malla RBAC</div>
+            <div class="desc">ERR-SEC-202: Verificación granular exportar_datos</div>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-circle-info"></i> Resumen Ejecutivo y Alcance</h2>
+        <p>El módulo de <strong>Centro de Negocios</strong> centraliza la inteligencia comercial, el seguimiento de la fuerza de ventas y la exportación de declaraciones fiscales (606, 607 e ISC 16%) de la plataforma <strong>MÁS QUE FIANZAS</strong>. Proporciona herramientas avanzadas para la gestión de comisionantes, socios comerciales y Puntos de Venta (PDV).</p>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-gears"></i> Funcionalidades Principales</h2>
+
+        <div class="feature-card">
+            <h4><i class="fa-solid fa-award"></i> Configuración de Bonos e Incentivos (CN_BONOS_CONFIG)</h4>
+            <ul>
+                <li>Definición de matriz de cumplimiento y metas de venta por período comercial.</li>
+                <li>Asignación de incentivos escalonados según volumen emitido en fianzas y pólizas.</li>
+                <li>Cálculo automático de liquidación de bonos y trazabilidad contable.</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4><i class="fa-solid fa-qrcode"></i> Generador de Enlaces de Venta Online (CN_ENLACES_CREAR)</h4>
+            <ul>
+                <li>Generación de URLs únicas con parámetros dinámicos por agente o canal comercial.</li>
+                <li>Creación instantánea de códigos QR para colocación en Puntos de Venta físicos.</li>
+                <li>Atribución directa de comisiones y primas al canal de origen.</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4><i class="fa-solid fa-file-invoice-dollar"></i> Declaración Fiscal DGII (606, 607 e ISC 16%)</h4>
+            <ul>
+                <li>Exportación de libros de compras (606) y ventas (607) cumpliendo estándar DGII.</li>
+                <li>Cálculo e informe de Impuesto Selectivo al Consumo (ISC 16%) según exención de ITBIS en primas.</li>
+                <li>Protección estricta de seguridad: Acceso bloqueado con código <strong>ERR-SEC-202</strong> para perfiles sin permiso <code>exportar_datos = 1</code>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-database"></i> Estructura de Datos Asociada</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tabla</th>
+                    <th>Descripción</th>
+                    <th>Campos Clave</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>bonos_configuracion</code></td>
+                    <td>Parámetros y escalas de incentivos comerciales</td>
+                    <td><code>id, perfil_id, meta_emision, porcentaje_bono, estado</code></td>
+                </tr>
+                <tr>
+                    <td><code>enlaces_venta_online</code></td>
+                    <td>Registro de URLs y códigos QR de venta serverless</td>
+                    <td><code>id, codigo_enlace, usuario_id, total_visitas, estado</code></td>
+                </tr>
+                <tr>
+                    <td><code>cf_ncf</code> / <code>cf_ncf_secuencias</code></td>
+                    <td>Secuencias NCF activas (B01, B02, B12, B15)</td>
+                    <td><code>tipo, prefijo, secuencia_actual, secuencia_final</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="doc-section">
+        <h2><i class="fa-solid fa-shield-halved"></i> Matriz de Permisos RBAC Granular (NOFTRAB)</h2>
+        <div class="code-block">
+CN_BONOS_CONFIG  → Permiso "editar"    (ID Función: 131) → Configuración de bonos y metas
+CN_ENLACES_CREAR → Permiso "crear"     (ID Función: 132) → Generación de enlaces y QR
+EXPORTACION_DGII → Permiso "exportar"  (ERR-SEC-202)     → Generación 606/607 (Requiere exportar_datos = 1)
+        </div>
+    </div>
+
+    <div class="footer-doc">
+        <p><strong><?php echo $platform_name; ?></strong> - Centro de Negocios | Documentación Técnica</p>
+        <p>Clasificación: <strong>CONFIDENCIAL / INTERNO</strong> | Normas: NOFTRAB v4.0 & Regla 4-VAF</p>
+    </div>
+</div>
+
 <script>
 let documentoActivo = null;
 
@@ -1647,7 +1732,8 @@ function mostrarDocumento(num) {
         '📄 Verificar Pago',
         '📄 UX Skins',
         '📄 Helpdesk',
-        ' Finance Lab'
+        ' Finance Lab',
+        '📊 Centro de Negocios'
     ];
     document.getElementById('actionTitle').textContent = titulos[num - 1];
     
@@ -1704,7 +1790,8 @@ async function descargarPDF() {
             'Verificar_Pago',
             'UX_Skins',
             'Helpdesk',
-            'Finance_Lab'
+            'Finance_Lab',
+            'Centro_Negocios'
         ];
         
         doc.save('Documentacion_Plataforma_Parte3_' + nombres[documentoActivo - 1] + '.pdf');
@@ -1724,20 +1811,21 @@ async function descargarPDF() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Heredar skin del dashboard padre
+    try {
+        if (window.parent && window.parent.document) {
+            const parentSkin = window.parent.document.documentElement.getAttribute('data-skin');
+            if (parentSkin) document.documentElement.setAttribute('data-skin', parentSkin);
+        }
+    } catch(e) {}
+
     const urlParams = new URLSearchParams(window.location.search);
     const docParam = urlParams.get('doc');
     if (docParam) {
         mostrarDocumento(parseInt(docParam));
         const btnVolver = document.querySelector('button[onclick="volverMenu()"]');
         if (btnVolver) btnVolver.style.display = 'none';
-        document.body.style.background = '#ffffff';
-        document.body.style.padding = '0';
-        const docDiv = document.getElementById('documento' + docParam);
-        if (docDiv) {
-            docDiv.style.boxShadow = 'none';
-            docDiv.style.margin = '0 auto';
-            docDiv.style.padding = '20px';
-        }
+        // Premium dark theme — no override to white
     }
 });
 </script>

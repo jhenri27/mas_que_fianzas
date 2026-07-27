@@ -24,6 +24,7 @@ $generation_date = date('d/m/Y H:i');
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="docs/mqf_docs_theme.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -178,35 +179,7 @@ $generation_date = date('d/m/Y H:i');
             color: #64748b;
             margin-top: 8px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 14px;
-        }
-        th {
-            background: #6366f1;
-            color: white;
-            padding: 14px;
-            text-align: left;
-            font-weight: 600;
-        }
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-            color: #475569;
-        }
-        tr:nth-child(even) td { background: #f8fafc; }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-ok { background: #dcfce7; color: #166534; }
-        .badge-warn { background: #fef3c7; color: #92400e; }
-        .badge-info { background: #dbeafe; color: #1e40af; }
+        /* Estilos de tablas diferidos a mqf_docs_theme.css */
         .feature-card {
             background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
             border: 2px solid #e2e8f0;
@@ -1830,22 +1803,23 @@ async function descargarPDF() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const docParam = urlParams.get('doc');
-    if (docParam) {
-        mostrarDocumento(parseInt(docParam));
-        const btnVolver = document.querySelector('button[onclick="volverMenu()"]');
-        if (btnVolver) btnVolver.style.display = 'none';
-        document.body.style.background = '#ffffff';
-        document.body.style.padding = '0';
-        const docDiv = document.getElementById('documento' + docParam);
-        if (docDiv) {
-            docDiv.style.boxShadow = 'none';
-            docDiv.style.margin = '0 auto';
-            docDiv.style.padding = '20px';
+        // Heredar skin del dashboard padre
+        try {
+            if (window.parent && window.parent.document) {
+                const parentSkin = window.parent.document.documentElement.getAttribute('data-skin');
+                if (parentSkin) document.documentElement.setAttribute('data-skin', parentSkin);
+            }
+        } catch(e) {}
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const docParam = urlParams.get('doc');
+        if (docParam) {
+            mostrarDocumento(parseInt(docParam));
+            const btnVolver = document.querySelector('button[onclick="volverMenu()"]');
+            if (btnVolver) btnVolver.style.display = 'none';
+            // Premium dark theme — no override to white
         }
-    }
-});
+    });
 </script>
 
 </body>

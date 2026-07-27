@@ -134,9 +134,9 @@ $modulo_metadata = [
         'cumplimiento' => 99,
         'iso' => 'ISO 27001 / NOFTRAB'
     ],
-    'catalogo_errores_noftrab.md' => [
+    'catalogo_errores_noftrab.html' => [
         'nombre' => 'Catálogo KEDB de Errores Codificados',
-        'doc_url' => '../../docs/catalogo_errores_noftrab.md',
+        'doc_url' => '../../docs/catalogo_errores_noftrab.html',
         'cumplimiento' => 100,
         'iso' => 'NOFTRAB v4.0 / KEDB'
     ]
@@ -210,31 +210,87 @@ $total_tamano_kb = round($total_tamano / 1024, 1);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root {
+        :root, [data-skin="indigo"] {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --bg-body: #f8fafc;
+            --bg-body: #f4f6fb;
             --bg-card: #ffffff;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-secondary: #64748b;
             --border: #e2e8f0;
         }
 
-        /* Skin adaptivity */
+        /* Obsidian Dark */
         [data-skin="obsidian"] {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
             --success: #34d399;
             --warning: #fbbf24;
             --danger: #f87171;
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
+            --bg-body: #080d18;
+            --bg-card: #0f1729;
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(255,255,255,0.1);
+        }
+
+        /* Coral Finance */
+        [data-skin="coral"] {
+            --primary: #f43f5e;
+            --primary-hover: #e11d48;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #fff8f7;
+            --bg-card: #ffffff;
+            --text-main: #18181b;
+            --text-secondary: #71717a;
+            --border: #fce7f3;
+        }
+
+        /* Emerald Fresh */
+        [data-skin="emerald"] {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg-body: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-main: #064e3b;
+            --text-secondary: #047857;
+            --border: #dcfce7;
+        }
+
+        /* Midnight Navy */
+        [data-skin="midnight"] {
+            --primary: #38bdf8;
+            --primary-hover: #0284c7;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --bg-body: #0b1329;
+            --bg-card: #0f172a;
             --text-main: #f1f5f9;
             --text-secondary: #94a3b8;
-            --border: #334155;
+            --border: rgba(56,189,248,0.15);
+        }
+
+        /* Amber Gold */
+        [data-skin="amber"] {
+            --primary: #d97706;
+            --primary-hover: #b45309;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #fffbeb;
+            --bg-card: #ffffff;
+            --text-main: #451a03;
+            --text-secondary: #78350f;
+            --border: #fef3c7;
         }
 
         * {
@@ -634,26 +690,77 @@ $total_tamano_kb = round($total_tamano / 1024, 1);
     </div>
 
     <script>
-        // Heredar skin de la ventana principal
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.parent && window.parent.document) {
-                const parentSkin = window.parent.document.documentElement.getAttribute('data-skin');
-                if (parentSkin) {
-                    document.body.setAttribute('data-skin', parentSkin);
-                    document.documentElement.setAttribute('data-skin', parentSkin);
+        function aplicarSkinGlobal(skin) {
+            if (!skin) return;
+            if (skin.endsWith('-classic')) skin = skin.replace('-classic', '');
+            document.body.setAttribute('data-skin', skin);
+            document.documentElement.setAttribute('data-skin', skin);
+            
+            // Propagar al iframe del modal si está abierto
+            const iframe = document.getElementById('modalIframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.postMessage({ type: 'mqf-skin-set', skin: skin }, '*');
+                    if (iframe.contentDocument) {
+                        iframe.contentDocument.documentElement.setAttribute('data-skin', skin);
+                        if (iframe.contentDocument.body) {
+                            iframe.contentDocument.body.setAttribute('data-skin', skin);
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
+
+        function sincronizarSkin() {
+            let skin = localStorage.getItem('mqf-skin') || localStorage.getItem('skin') || 'indigo';
+            try {
+                if (window.parent && window.parent.document) {
+                    const pSkin = window.parent.document.documentElement.getAttribute('data-skin') || 
+                                window.parent.document.body.getAttribute('data-skin');
+                    if (pSkin) skin = pSkin;
                 }
+            } catch(e) {}
+            aplicarSkinGlobal(skin);
+        }
+
+        document.addEventListener('DOMContentLoaded', sincronizarSkin);
+        sincronizarSkin();
+
+        // Escuchar mensajes postMessage para cambios de skin en tiempo real
+        window.addEventListener('message', (e) => {
+            if (e.data && (e.data.type === 'mqf-skin-change' || e.data.type === 'mqf-skin-set')) {
+                aplicarSkinGlobal(e.data.skin);
             }
         });
 
         function verDocumentacion(modulo, url) {
+            const currentSkin = document.documentElement.getAttribute('data-skin') || 'indigo';
             document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-book-open" style="color:var(--primary);"></i> Manual Técnico: ' + modulo;
-            document.getElementById('modalIframe').src = url;
+            
+            const iframe = document.getElementById('modalIframe');
+            iframe.src = url;
+            
+            // Cuando el iframe termine de cargar, aplicarle el skin activo
+            iframe.onload = () => {
+                try {
+                    if (iframe.contentDocument) {
+                        iframe.contentDocument.documentElement.setAttribute('data-skin', currentSkin);
+                        if (iframe.contentDocument.body) {
+                            iframe.contentDocument.body.setAttribute('data-skin', currentSkin);
+                        }
+                    }
+                    iframe.contentWindow.postMessage({ type: 'mqf-skin-set', skin: currentSkin }, '*');
+                } catch(e) {}
+            };
+
             document.getElementById('docModal').classList.add('active');
         }
 
         function cerrarModal() {
             document.getElementById('docModal').classList.remove('active');
-            document.getElementById('modalIframe').src = '';
+            const iframe = document.getElementById('modalIframe');
+            iframe.onload = null;
+            iframe.src = '';
         }
     </script>
 </body>

@@ -6,6 +6,8 @@
     <title>PLATING INSURTECH — Estrategia Comercial & Hoja de Ruta B2B / SaaS</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --bg-dark: #070a12;
@@ -223,6 +225,9 @@
                 <button class="btn-action" onclick="window.print()">
                     <i class="fa-solid fa-print"></i> Exportar Informe
                 </button>
+                <button class="btn-action" id="btn-plating-pdf" onclick="descargarPDFPlating()" style="background: linear-gradient(135deg,#10b981,#059669); box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                    <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+                </button>
             </div>
         </header>
 
@@ -366,6 +371,40 @@
         </footer>
 
     </div>
+
+<script>
+async function descargarPDFPlating() {
+    const btn = document.getElementById('btn-plating-pdf');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const element = document.querySelector('.container');
+        const canvas = await html2canvas(element, { scale: 1.8, useCORS: true, backgroundColor: '#070a12', logging: false });
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210, pageHeight = 297;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight, position = 0;
+        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            doc.addPage();
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+        doc.save('PLATING_INSURTECH_Estrategia_Comercial.pdf');
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Descargado';
+        setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 2500);
+    } catch(err) {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        window.print();
+    }
+}
+</script>
 
 </body>
 </html>

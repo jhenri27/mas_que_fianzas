@@ -302,6 +302,77 @@
   color-scheme: light;
 }
 
+/* ── SKIN 5: EMERALD FRESH (Modern Glassmorphic - Eco Emerald) ── */
+[data-skin="emerald"] {
+  --mqf-primary:         #10b981;
+  --mqf-primary-dark:    #059669;
+  --mqf-primary-light:   #dcfce7;
+  --mqf-primary-hover:   rgba(16,185,129,.08);
+  --mqf-secondary:       #047857;
+  --mqf-gradient:        linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+  --mqf-text:            #064e3b;
+  --mqf-text-secondary:  #047857;
+  --mqf-text-muted:      #059669;
+  --mqf-text-light:      #34d399;
+  --mqf-text-inverse:    #ffffff;
+  --mqf-shadow-primary:  0 8px 20px rgba(16,185,129,.25);
+  color-scheme: light;
+  --mqf-glass-bg:        rgba(255, 255, 255, 0.65);
+  --mqf-glass-border:    rgba(16, 185, 129, 0.15);
+  --mqf-bg:              #f0fdf4;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(255, 255, 255, 0.4);
+  --mqf-border:          var(--mqf-glass-border);
+}
+
+/* ── SKIN 6: MIDNIGHT NAVY (Modern Glassmorphic - Dark Navy & Cyan) ── */
+[data-skin="midnight"] {
+  --mqf-primary:         #38bdf8;
+  --mqf-primary-dark:    #0284c7;
+  --mqf-primary-light:   rgba(56, 189, 248, 0.15);
+  --mqf-primary-hover:   rgba(56, 189, 248, 0.25);
+  --mqf-secondary:       #818cf8;
+  --mqf-gradient:        linear-gradient(135deg, #0b1329 0%, #1e293b 100%);
+  --mqf-text:            #f1f5f9;
+  --mqf-text-secondary:  #cbd5e1;
+  --mqf-text-muted:      #94a3b8;
+  --mqf-text-light:      #64748b;
+  --mqf-text-inverse:    #0b1329;
+  --mqf-shadow-primary:  0 8px 20px rgba(56, 189, 248, 0.3);
+  color-scheme: dark;
+  --mqf-glass-bg:        rgba(15, 23, 42, 0.7);
+  --mqf-glass-border:    rgba(56, 189, 248, 0.25);
+  --mqf-bg:              #0b1329;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(30, 41, 59, 0.7);
+  --mqf-border:          var(--mqf-glass-border);
+}
+
+/* ── SKIN 7: AMBER GOLD (Modern Glassmorphic - Prestige Gold) ── */
+[data-skin="amber"] {
+  --mqf-primary:         #d97706;
+  --mqf-primary-dark:    #b45309;
+  --mqf-primary-light:   #fef3c7;
+  --mqf-primary-hover:   rgba(217,119,6,.08);
+  --mqf-secondary:       #f59e0b;
+  --mqf-gradient:        linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  --mqf-gradient-subtle: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  --mqf-text:            #451a03;
+  --mqf-text-secondary:  #78350f;
+  --mqf-text-muted:      #92400e;
+  --mqf-text-light:      #f59e0b;
+  --mqf-text-inverse:    #ffffff;
+  --mqf-shadow-primary:  0 8px 20px rgba(217,119,6,.25);
+  color-scheme: light;
+  --mqf-glass-bg:        rgba(255, 255, 255, 0.65);
+  --mqf-glass-border:    rgba(217, 119, 6, 0.15);
+  --mqf-bg:              #fffbeb;
+  --mqf-surface:         var(--mqf-glass-bg);
+  --mqf-surface-2:       rgba(255, 255, 255, 0.4);
+  --mqf-border:          var(--mqf-glass-border);
+}
+
 /* ── SKIN 4: CUSTOM BRAND (tokens inyectados via JS) ── */
 [data-skin="custom"] {
   /* Los valores son inyectados dinámicamente por MQF.applySkin() */
@@ -1039,7 +1110,77 @@
 }
 [data-skin="obsidian"] .sidebar-footer {
   border-top: 1px solid rgba(16, 185, 129, 0.2) !important;
+/* Emerald Fresh Sidebar */
+[data-skin="emerald"] .sidebar {
+  background: linear-gradient(135deg, #022c22 0%, #064e3b 60%, #022c22 100%) !important;
+  border-right: 1px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(16, 185, 129, 0.1) !important;
 }
+[data-skin="emerald"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="emerald"] .sidebar .nav-item:hover {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  padding-left: 24px !important;
+}
+[data-skin="emerald"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.15) 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #10b981 !important;
+  box-shadow: inset 3px 0 0 #10b981 !important;
+}
+[data-skin="emerald"] .sidebar-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; }
+[data-skin="emerald"] .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, 0.1) !important; }
+
+/* Midnight Navy Sidebar */
+[data-skin="midnight"] .sidebar {
+  background: linear-gradient(135deg, #070d1e 0%, #0f172a 60%, #0b1329 100%) !important;
+  border-right: 1px solid rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(56, 189, 248, 0.1) !important;
+}
+[data-skin="midnight"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.75) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="midnight"] .sidebar .nav-item:hover {
+  background: rgba(56, 189, 248, 0.18) !important;
+  color: #7dd3fc !important;
+  padding-left: 24px !important;
+}
+[data-skin="midnight"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.3) 0%, rgba(129, 140, 248, 0.15) 100%) !important;
+  color: #7dd3fc !important;
+  border-left-color: #38bdf8 !important;
+  box-shadow: inset 3px 0 0 #38bdf8 !important;
+}
+[data-skin="midnight"] .sidebar-header { border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important; }
+[data-skin="midnight"] .sidebar-footer { border-top: 1px solid rgba(56, 189, 248, 0.2) !important; }
+
+/* Amber Gold Sidebar */
+[data-skin="amber"] .sidebar {
+  background: linear-gradient(135deg, #2a1205 0%, #451a03 60%, #1f0b02 100%) !important;
+  border-right: 1px solid rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(245, 158, 11, 0.1) !important;
+}
+[data-skin="amber"] .sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[data-skin="amber"] .sidebar .nav-item:hover {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fde68a !important;
+  padding-left: 24px !important;
+}
+[data-skin="amber"] .sidebar .nav-item.active {
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.3) 0%, rgba(245, 158, 11, 0.15) 100%) !important;
+  color: #ffffff !important;
+  border-left-color: #d97706 !important;
+  box-shadow: inset 3px 0 0 #d97706 !important;
+}
+[data-skin="amber"] .sidebar-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important; }
+[data-skin="amber"] .sidebar-footer { border-top: 1px solid rgba(255, 255, 255, 0.1) !important; }
 
 /* ── 2. MEJORA DE CONTRASTE EXTREMO PARA TEMAS CLAROS (INDIGO Y CORAL) ── */
 
@@ -2180,60 +2321,60 @@ select option {
   color: var(--mqf-text-secondary, #94a3b8) !important;
 }
 
-/* ── Módulo de Configuración (dentro de dashboard.html) ── */
-[data-skin="obsidian"] .config-sidebar {
-  background: var(--mqf-surface, rgba(15, 23, 42, 0.8)) !important;
-  border-right: 1px solid var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+/* ── Módulo de Configuración (Adaptativo para TODOS los Skins) ── */
+.config-sidebar {
+  background: var(--mqf-surface) !important;
+  border-right: 1px solid var(--mqf-border) !important;
 }
 
-[data-skin="obsidian"] .config-nav-btn {
-  color: var(--mqf-text-secondary, #94a3b8) !important;
+.config-nav-btn {
+  color: var(--mqf-text-secondary) !important;
   background: transparent !important;
   border: none !important;
 }
 
-[data-skin="obsidian"] .config-nav-btn:hover,
-[data-skin="obsidian"] .config-nav-btn.active {
-  background: var(--mqf-primary-hover, rgba(16, 185, 129, 0.1)) !important;
-  color: var(--mqf-primary, #10b981) !important;
-  border-left: 3px solid var(--mqf-primary, #10b981) !important;
+.config-nav-btn:hover,
+.config-nav-btn.active {
+  background: var(--mqf-primary-light) !important;
+  color: var(--mqf-primary) !important;
+  border-left: 3px solid var(--mqf-primary) !important;
 }
 
-[data-skin="obsidian"] .config-panel {
-  background: var(--mqf-bg, #020617) !important;
-  color: var(--mqf-text, #f8fafc) !important;
+.config-panel {
+  background: var(--mqf-bg) !important;
+  color: var(--mqf-text) !important;
 }
 
-[data-skin="obsidian"] .config-layout {
-  background: var(--mqf-surface, rgba(15, 23, 42, 0.7)) !important;
-  border: 1px solid var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+.config-layout {
+  background: var(--mqf-surface) !important;
+  border: 1px solid var(--mqf-border) !important;
   border-radius: 12px !important;
 }
 
 /* Tarjetas de configuración (module-header) */
-[data-skin="obsidian"] .module-header {
-  background: var(--mqf-surface, rgba(15, 23, 42, 0.9)) !important;
+.module-header {
+  background: var(--mqf-surface) !important;
   border-bottom: 1px solid var(--mqf-border) !important;
   color: var(--mqf-text) !important;
 }
 
-[data-skin="obsidian"] .module-header h2 {
-  color: var(--mqf-text, #f8fafc) !important;
+.module-header h2 {
+  color: var(--mqf-text) !important;
 }
 
-/* Fondos inline hardcoded blancos en tablas del panel notificaciones */
-[data-skin="obsidian"] .table-responsive {
-  background: var(--mqf-surface, rgba(15, 23, 42, 0.7)) !important;
-  border-color: var(--mqf-border, rgba(16, 185, 129, 0.25)) !important;
+/* Fondos inline en tablas del panel notificaciones */
+.table-responsive {
+  background: var(--mqf-surface) !important;
+  border-color: var(--mqf-border) !important;
 }
 
-[data-skin="obsidian"] .table-responsive table {
+.table-responsive table {
   background: transparent !important;
 }
 
-[data-skin="obsidian"] .table-responsive th {
-  background: var(--mqf-surface-2, rgba(15, 23, 42, 0.9)) !important;
-  color: var(--mqf-primary, #10b981) !important;
+.table-responsive th {
+  background: var(--mqf-surface-2) !important;
+  color: var(--mqf-primary) !important;
   border-color: var(--mqf-border) !important;
 }
 

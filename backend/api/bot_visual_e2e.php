@@ -331,37 +331,70 @@ if ($action === 'get_scenarios') {
 
     // Consultar permisos RBAC reales si se especifica un perfil
     $permisos_permitidos_modulo_ids = [];
+    // Mapa de permisos granulares de exportación por módulo: modulo_id => bool
+    $permisos_exportar_por_modulo = [];
+
     if ($perfil_target_id === 1) {
-        // Admin tiene acceso a TODOS los módulos
+        // Admin tiene acceso TOTAL a todos los módulos y permisos de exportación
         foreach ($todos_los_modulos as $m) {
             $permisos_permitidos_modulo_ids[] = $m['modulo_id'];
+            $permisos_exportar_por_modulo[$m['modulo_id']] = true;
         }
     } else {
         if ($db_conn_ok && $db) {
+            // Consultar permisos de módulo (acceso general)
             $res_perm = $db->query("SELECT DISTINCT modulo_id FROM permisos_perfil WHERE perfil_id = $perfil_target_id AND (puede_ejecutar = 1 OR ver_datos = 1 OR ver_reportes = 1)");
             if ($res_perm) {
                 while ($pr = $res_perm->fetch_assoc()) {
                     $permisos_permitidos_modulo_ids[] = (int)$pr['modulo_id'];
                 }
             }
+            // Consultar permiso granular de exportación por módulo (ERR-SEC-202)
+            $res_exp = $db->query("SELECT modulo_id, MAX(exportar_datos) as puede_exportar FROM permisos_perfil WHERE perfil_id = $perfil_target_id GROUP BY modulo_id");
+            if ($res_exp) {
+                while ($pe = $res_exp->fetch_assoc()) {
+                    $permisos_exportar_por_modulo[(int)$pe['modulo_id']] = ((int)$pe['puede_exportar'] === 1);
+                }
+            }
         }
     }
+
+    // Escenarios que requieren permiso específico de exportación (exportar_datos = 1)
+    $escenarios_requieren_exportar = ['exportacion_dgii', 'exportar_606', 'exportar_607', 'descarga_declaracion'];
 
     // Filtrar/Etiquetar módulos según permisos RBAC
     $modulos_procesados = [];
     foreach ($todos_los_modulos as $mod) {
         $tiene_acceso = in_array($mod['modulo_id'], $permisos_permitidos_modulo_ids);
+        $puede_exportar = $permisos_exportar_por_modulo[$mod['modulo_id']] ?? false;
         $mod_item = $mod;
         $mod_item['rbac_permitido'] = $tiene_acceso;
-        
+        $mod_item['rbac_exportar'] = $puede_exportar;
+
         if (!$tiene_acceso) {
-            // Añadir escenario de prueba negativa de seguridad RBAC Guard
+            // Módulo sin acceso: reemplazar con prueba negativa de seguridad RBAC Guard
             $mod_item['escenarios'] = [
                 [
                     "codigo" => "rbac_guard_denied",
                     "nombre" => "🛡️ Prueba Negativa de Seguridad (Verificar Bloqueo RBAC 403)"
                 ]
             ];
+        } elseif (!$puede_exportar && $perfil_target_id !== 1) {
+            // Módulo con acceso pero sin permiso de exportación:
+            // Filtrar escenarios que requieren exportar_datos=1 (ERR-SEC-202)
+            $escenarios_filtrados = [];
+            foreach ($mod_item['escenarios'] as $esc) {
+                if (in_array($esc['codigo'], $escenarios_requieren_exportar)) {
+                    // Reemplazar con escenario de denegación de exportación
+                    $escenarios_filtrados[] = [
+                        "codigo" => "rbac_export_denied",
+                        "nombre" => "🚫 " . $esc['nombre'] . " (Exportación Denegada - ERR-SEC-202: Sin permiso 'exportar_datos')"
+                    ];
+                } else {
+                    $escenarios_filtrados[] = $esc;
+                }
+            }
+            $mod_item['escenarios'] = $escenarios_filtrados;
         }
         $modulos_procesados[] = $mod_item;
     }
@@ -381,10 +414,34 @@ if ($action === 'run_test') {
     $raw_input = file_get_contents('php://input');
     $input = json_decode($raw_input, true) ?: $_POST;
 
-    $perfil = escapeshellarg($input['perfil'] ?? '5');
-    $modulo = escapeshellarg($input['modulo'] ?? 'polizas');
-    $escenario = escapeshellarg($input['escenario'] ?? 'emision_individual');
-    $visible = ($input['visible'] ?? true) ? 'true' : 'false';
+    $perfil_raw = $input['perfil'] ?? '5';
+    $modulo_raw = $input['modulo'] ?? 'polizas';
+    $escenario_raw = $input['escenario'] ?? 'emision_individual';
+    $visible_bool = ($input['visible'] ?? true) ? true : false;
+
+    // 1. Intentar invocación a través del Servicio Desktop Bridge (Session 1 en pantalla visible)
+    $service_url = "http://127.0.0.1:9998/run?perfil=" . urlencode($perfil_raw) . "&modulo=" . urlencode($modulo_raw) . "&escenario=" . urlencode($escenario_raw) . "&visible=" . ($visible_bool ? 'true' : 'false');
+    
+    $ch = curl_init($service_url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 40);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+    $service_response = curl_exec($ch);
+    curl_close($ch);
+
+    if ($service_response) {
+        $res_obj = json_decode($service_response, true);
+        if ($res_obj && isset($res_obj['exito']) && $res_obj['exito']) {
+            echo json_encode(["exito" => true, "reporte" => $res_obj['reporte'], "output_raw" => "Ejecutado en Pantalla Visible vía Desktop Runner (Session 1)"]);
+            exit;
+        }
+    }
+
+    // 2. Fallback a ejecución local CLI
+    $perfil = escapeshellarg($perfil_raw);
+    $modulo = escapeshellarg($modulo_raw);
+    $escenario = escapeshellarg($escenario_raw);
+    $visible = $visible_bool ? 'true' : 'false';
 
     $python_script = dirname(__DIR__) . '/tests/bot_visual_e2e/bot_visual_runner.py';
     $cmd = "python " . escapeshellarg($python_script) . " --perfil $perfil --modulo $modulo --escenario $escenario --visible $visible 2>&1";

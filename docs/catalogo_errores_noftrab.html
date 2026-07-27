@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo KEDB de Errores Codificados — NOFTRAB v4.0 | MÁS QUE FIANZAS</title>
+    <meta name="description" content="Known Error Database (KEDB) — Taxonomía oficial de errores del sistema MÁS QUE FIANZAS bajo Normas NOFTRAB v4.0 y Regla 4-VAF.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="mqf_docs_theme.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: var(--mqf-bg, #080d18);
+            --surface-1: var(--mqf-surface-1, #0f1729);
+            --surface-2: var(--mqf-surface-2, #131e33);
+            --surface-card: var(--mqf-surface-card, #111827);
+            --border-glass: var(--mqf-border, rgba(255, 255, 255, 0.07));
+            --border-accent: var(--mqf-border-acc, rgba(99, 102, 241, 0.3));
+            --primary: var(--mqf-primary, #6366f1);
+            --primary-glow: var(--mqf-primary-glow, rgba(99, 102, 241, 0.35));
+            --primary-light: var(--mqf-primary-lt, #818cf8);
+            --accent-purple: var(--mqf-purple, #a855f7);
+            --accent-emerald: var(--mqf-emerald, #10b981);
+            --accent-amber: var(--mqf-amber, #f59e0b);
+            --accent-rose: var(--mqf-rose, #f43f5e);
+            --accent-cyan: var(--mqf-cyan, #06b6d4);
+            --text-primary: var(--mqf-text, #f1f5f9);
+            --text-secondary: var(--mqf-text-2, #94a3b8);
+            --text-muted: var(--mqf-text-3, #64748b);
+            --code-bg: var(--mqf-code-bg, rgba(99, 102, 241, 0.12));
+            --code-border: var(--mqf-code-border, rgba(99, 102, 241, 0.25));
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 5% 5%, rgba(99,102,241,0.18) 0%, transparent 40%),
+                radial-gradient(circle at 95% 90%, rgba(168,85,247,0.14) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(6,182,212,0.05) 0%, transparent 60%);
+            color: var(--text-primary);
+            line-height: 1.7;
+            padding: 30px 20px 60px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* ═══ HEADER ═══════════════════════════════════════════════ */
+        .doc-header {
+            background: var(--surface-1);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-top: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 32px 36px;
+            margin-bottom: 28px;
+            box-shadow: 0 24px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.1) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--accent-purple), transparent);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 8px 24px var(--primary-glow);
+            flex-shrink: 0;
+        }
+
+        .header-title h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .header-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-primary { background: rgba(99,102,241,0.15); color: var(--primary-light); border: 1px solid rgba(99,102,241,0.3); }
+        .badge-purple { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+        .badge-emerald { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+        .badge-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-rose { background: rgba(244,63,94,0.15); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+        .badge-cyan { background: rgba(6,182,212,0.15); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); }
+
+        .header-intro {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border-glass);
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .header-intro strong { color: var(--text-primary); }
+
+        /* ═══ TAXONOMÍA TABLE ══════════════════════════════════════ */
+        .taxonomy-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            backdrop-filter: blur(12px);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .section-title .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .taxonomy-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .taxonomy-table th {
+            background: rgba(99,102,241,0.1);
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-glass);
+            text-align: left;
+        }
+
+        .taxonomy-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+            vertical-align: top;
+        }
+
+        .taxonomy-table tr:last-child td { border-bottom: none; }
+        .taxonomy-table tr:hover td { background: rgba(255,255,255,0.025); }
+
+        .range-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: var(--primary-light);
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* ═══ SECCIONES DE ERRORES ════════════════════════════════ */
+        .error-section {
+            margin-bottom: 32px;
+        }
+
+        .error-section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .error-section-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border-glass), transparent);
+        }
+
+        /* ═══ TARJETA DE ERROR ════════════════════════════════════ */
+        .error-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-glass);
+            border-left: 3px solid;
+            border-radius: 14px;
+            padding: 22px 26px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .error-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .error-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+            border-left-width: 4px;
+        }
+
+        .error-card.vaf { border-left-color: var(--accent-rose); }
+        .error-card.ui  { border-left-color: var(--accent-cyan); }
+        .error-card.sec { border-left-color: var(--accent-amber); }
+        .error-card.doc { border-left-color: var(--accent-emerald); }
+
+        .error-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .error-code-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .badge-vaf { background: rgba(244,63,94,0.15); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+        .badge-ui  { background: rgba(6,182,212,0.15); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); }
+        .badge-sec { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-doc { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+
+        .error-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .error-fields {
+            display: grid;
+            gap: 10px;
+        }
+
+        .error-field {
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 10px;
+            align-items: baseline;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .error-field { grid-template-columns: 1fr; gap: 3px; }
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .field-label.sintoma  { color: var(--field-sintoma, #dc2626); }
+        .field-label.causa    { color: var(--field-causa, #b45309); }
+        .field-label.regla    { color: var(--field-regla, #6d28d9); }
+        .field-label.solucion { color: var(--field-solucion, #047857); }
+
+        .field-value {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .field-value strong { color: var(--text-primary); font-weight: 700; }
+
+        code.inline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: var(--mqf-code-text, #3730a3);
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        /* ═══ FOOTER ══════════════════════════════════════════════ */
+        .doc-footer {
+            margin-top: 40px;
+            padding: 20px 28px;
+            background: var(--surface-1);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .doc-footer strong { color: var(--text-secondary); }
+
+        /* ═══ RESPONSIVE ══════════════════════════════════════════ */
+        @media (max-width: 700px) {
+            .header-top { flex-direction: column; }
+            .taxonomy-table th, .taxonomy-table td { font-size: 11.5px; padding: 8px 10px; }
+            .error-card { padding: 16px 18px; }
+            .doc-footer { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ═══ HEADER ══════════════════════════════════════════════════ -->
+    <header class="doc-header" role="banner">
+        <div class="header-top">
+            <div class="header-brand">
+                <div class="header-icon">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div class="header-title">
+                    <h1>📚 Catálogo de Errores Codificados (KEDB)</h1>
+                    <p>Known Error Database — Guía Oficial de Resolución de Incidencias</p>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-primary"><i class="fa-solid fa-shield-halved"></i> NOFTRAB v4.0</span>
+                <span class="badge badge-purple"><i class="fa-solid fa-scale-balanced"></i> Regla 4-VAF</span>
+                <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> ISO 9001</span>
+                <span class="badge badge-cyan"><i class="fa-solid fa-lock"></i> ISO 27001</span>
+            </div>
+        </div>
+        <p class="header-intro">
+            Este catálogo codificado (<strong>Known Error Database — KEDB</strong>) establece la taxonomía oficial de errores
+            del sistema <strong>MÁS QUE FIANZAS</strong> bajo las <strong>Normas NOFTRAB v4.0</strong> y la
+            <strong>Regla 4-VAF</strong>. Permite clasificar, auditar y resolver de forma acelerada cualquier incidencia
+            funcional, impositiva, de seguridad o de interfaz de usuario.
+        </p>
+    </header>
+
+    <!-- ═══ TOOLBAR DE ACCIONES ═══════════════════════════════════════ -->
+    <div class="mqf-doc-toolbar" role="toolbar" aria-label="Acciones del documento">
+        <div class="mqf-doc-toolbar-title">
+            <i class="fa-solid fa-database"></i>
+            <span>Catálogo KEDB — NOFTRAB v4.0</span>
+        </div>
+        <div class="mqf-doc-toolbar-actions">
+            <button class="mqf-btn-tool print" onclick="window.print()" title="Imprimir documento">
+                <i class="fa-solid fa-print"></i> Imprimir
+            </button>
+            <button class="mqf-btn-tool download" id="btn-kedb-pdf" onclick="descargarPDFKedb()" title="Descargar como PDF">
+                <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══ TAXONOMÍA ════════════════════════════════════════════════ -->
+    <section class="taxonomy-card" aria-label="Taxonomía General de Codificación">
+        <h2 class="section-title">
+            <span class="icon" style="background: rgba(99,102,241,0.15); color: var(--primary-light);">
+                <i class="fa-solid fa-list-ul"></i>
+            </span>
+            Taxonomía General de Codificación
+        </h2>
+        <table class="taxonomy-table" role="table" aria-label="Rangos de códigos de error">
+            <thead>
+                <tr>
+                    <th>Rango de Código</th>
+                    <th>Categoría Dominio</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="range-code">ERR-VAF-[001..099]</span></td>
+                    <td><span class="badge badge-rose"><i class="fa-solid fa-gavel"></i> VAF</span></td>
+                    <td>Validaciones de Cédula, RNC, Chasis/VIN, Placas, Fianzas y Justificaciones.</td>
+                </tr>
+                <tr>
+                    <td><span class="range-code">ERR-UI-[100..199]</span></td>
+                    <td><span class="badge badge-cyan"><i class="fa-solid fa-palette"></i> UX/UI</span></td>
+                    <td>Skins Obsidian Dark, modales <code class="inline">MQF.confirm</code>, responsive layouts y CSS.</td>
+                </tr>
+                <tr>
+                    <td><span class="range-code">ERR-SEC-[200..299]</span></td>
+                    <td><span class="badge badge-amber"><i class="fa-solid fa-lock"></i> CSO</span></td>
+                    <td>Tokens JWT/Bearer, permisos granulares RBAC, OWASP y carga de archivos.</td>
+                </tr>
+                <tr>
+                    <td><span class="range-code">ERR-DOC-[300..399]</span></td>
+                    <td><span class="badge badge-emerald"><i class="fa-solid fa-file-invoice-dollar"></i> Fiscal</span></td>
+                    <td>Régimen fiscal ISC 16% / ITBIS 0%, motores PDF y catálogo de manuales.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ═══ SECCIÓN 1: REGLAS DE NEGOCIO ════════════════════════════ -->
+    <section class="error-section" id="seccion-vaf" aria-labelledby="title-vaf">
+        <div class="error-section-header">
+            <span class="badge badge-rose" style="font-size: 13px; padding: 6px 14px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> ERR-VAF-*
+            </span>
+            <h2 id="title-vaf">Sección 1: Reglas de Negocio y Unicidad</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <!-- ERR-VAF-001 -->
+        <article class="error-card vaf" id="err-vaf-001">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-001</span>
+                <h3 class="error-card-title">Intento de Documento Duplicado entre Clientes Distintos</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">La API responde con mensaje de advertencia e impide guardar la cotización o expediente de cliente.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El documento (Cédula/RNC/Pasaporte) ya se encuentra registrado a nombre de otro cliente en la tabla <code class="inline">clientes</code>, <code class="inline">cotizaciones</code> o <code class="inline">usuarios</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label regla"><i class="fa-solid fa-gavel"></i> Regla NOFTRAB</span>
+                    <span class="field-value"><em>No se permite asignar el mismo documento de identidad a dos clientes o entidades distintas.</em></span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Verificar si el cliente ya existe en el padrón del sistema o corregir el número introducido.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-VAF-002 -->
+        <article class="error-card vaf" id="err-vaf-002">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-002</span>
+                <h3 class="error-card-title">Error de Algoritmo Luhn Mod 10 en Cédula Dominicana</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Aparece un badge naranja de advertencia <code class="inline">#c2410c</code> y se desactiva el botón de guardado directo.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La cédula introducida no satisface la suma ponderada del dígito verificador del algoritmo Luhn (11 dígitos).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Corregir la cédula por una oficial emitida por la JCE.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-VAF-003 -->
+        <article class="error-card vaf" id="err-vaf-003">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-003</span>
+                <h3 class="error-card-title">Error de Algoritmo Mod 11 DGII en RNC Comercial</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Rechazo automático en la creación de sociedades o personas jurídicas.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El RNC de 9 dígitos no cumple con el algoritmo oficial de verificación de la DGII.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Validar el RNC directamente en la consulta pública de la DGII antes de ingresarlo.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-VAF-004 -->
+        <article class="error-card vaf" id="err-vaf-004">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-004</span>
+                <h3 class="error-card-title">Intento de Vehículo Duplicado (Chasis/VIN o Placa)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Mensaje de error: <em>"El Chasis/VIN o Placa ya se encuentra registrado en la cotización/póliza X…"</em></span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Se intenta procesar una fianza/seguro para un vehículo con el mismo Chasis o Placa registrado en otra póliza activa.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Consultar el estado de la póliza previa o solicitar un ajuste excepcional en el <strong>Centro Técnico</strong>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-VAF-005 -->
+        <article class="error-card vaf" id="err-vaf-005">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-005</span>
+                <h3 class="error-card-title">Intento de Número de Fianza Duplicado</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Impedimento de guardado de emisión de fianza en <code class="inline">fianzas.php</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El correlativo o número de fianza ya existe en la tabla <code class="inline">fianzas</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Asignar un nuevo correlativo de fianza autorizado por la aseguradora.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-VAF-006 -->
+        <article class="error-card vaf" id="err-vaf-006">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-006</span>
+                <h3 class="error-card-title">Justificación Técnica Insuficiente en Cambio VAF</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">El botón "Enviar a Validación" permanece inactivo o el servidor retorna HTTP 400.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El texto introducido en la justificación de cambio posee menos de 15 caracteres.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Redactar una justificación formal detallada describiendo el motivo del ajuste.</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- ═══ SECCIÓN 2: UI/UX ═════════════════════════════════════════ -->
+    <section class="error-section" id="seccion-ui" aria-labelledby="title-ui">
+        <div class="error-section-header">
+            <span class="badge badge-cyan" style="font-size: 13px; padding: 6px 14px;">
+                <i class="fa-solid fa-palette"></i> ERR-UI-*
+            </span>
+            <h2 id="title-ui">Sección 2: Diseño e Interfaz Frontend</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <!-- ERR-UI-101 -->
+        <article class="error-card ui" id="err-ui-101">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">ERR-UI-101</span>
+                <h3 class="error-card-title">Desviación de Skin Obsidian Dark (Estilos Blancos Hardcodeados)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Un cuadro modal o formulario muestra fondo blanco estridencial en lugar del tema oscuro de vidrio templado.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Presencia de inline styles con <code class="inline">#ffffff</code>, <code class="inline">#f8fafc</code> o <code class="inline">#fff7ed</code> en lugar de las variables del tema (<code class="inline">var(--mqf-surface-1)</code>, <code class="inline">var(--mqf-surface-2)</code>, <code class="inline">var(--mqf-border)</code>).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Reemplazar los colores hardcodeados por variables CSS de superficie y bordes con resplandor.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-UI-102 -->
+        <article class="error-card ui" id="err-ui-102">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">ERR-UI-102</span>
+                <h3 class="error-card-title">Uso de Diálogos o Confirmaciones Nativas del Navegador</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Aparece una ventana emergente gris nativa del navegador (<code class="inline">window.confirm()</code>).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Invocación directa de funciones síncronas de JavaScript no estilizadas.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Sustituir la llamada por <code class="inline">await MQF.confirm({ title, message, type: 'danger' })</code> provisto en <code class="inline">components.js</code>.</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- ═══ SECCIÓN 3: SEGURIDAD ═════════════════════════════════════ -->
+    <section class="error-section" id="seccion-sec" aria-labelledby="title-sec">
+        <div class="error-section-header">
+            <span class="badge badge-amber" style="font-size: 13px; padding: 6px 14px;">
+                <i class="fa-solid fa-shield-halved"></i> ERR-SEC-*
+            </span>
+            <h2 id="title-sec">Sección 3: Seguridad, Permisos y Sesiones</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <!-- ERR-SEC-201 -->
+        <article class="error-card sec" id="err-sec-201">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-sec">ERR-SEC-201</span>
+                <h3 class="error-card-title">Sesión Expirada o Token Inválido (HTTP 401)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">La llamada API retorna error de autenticación y redirige al login.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El token Bearer/JWT almacenado en <code class="inline">localStorage</code> caducó por inactividad.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Volver a iniciar sesión para generar un nuevo token.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ERR-SEC-202 -->
+        <article class="error-card sec" id="err-sec-202">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-sec">ERR-SEC-202</span>
+                <h3 class="error-card-title">Permiso Granular Insuficiente (HTTP 403)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value"><em>"Acceso denegado: Su perfil no cuenta con permisos para ejecutar esta acción"</em></span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El perfil del usuario no posee activada la casilla <code class="inline">crear_datos</code>, <code class="inline">editar_datos</code>, <code class="inline">eliminar_datos</code> o <code class="inline">exportar_datos</code> en <code class="inline">permisos_perfil</code> para el módulo objetivo.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Solicitar al Administrador la concesión del permiso granular en el Administrador de Perfiles.</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- ═══ SECCIÓN 4: IMPUESTOS Y DOCUMENTACIÓN ═══════════════════ -->
+    <section class="error-section" id="seccion-doc" aria-labelledby="title-doc">
+        <div class="error-section-header">
+            <span class="badge badge-emerald" style="font-size: 13px; padding: 6px 14px;">
+                <i class="fa-solid fa-file-invoice-dollar"></i> ERR-DOC-*
+            </span>
+            <h2 id="title-doc">Sección 4: Impresión, Impuestos y Documentación</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <!-- ERR-DOC-301 -->
+        <article class="error-card doc" id="err-doc-301">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">ERR-DOC-301</span>
+                <h3 class="error-card-title">Declaración Errónea de ITBIS en Cotizaciones de Seguros</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Un reporte o comprobante muestra ITBIS (18.00%) sobre primas de seguros.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Confusión impositiva entre ventas gravadas generales e intermediación de seguros.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label regla"><i class="fa-solid fa-gavel"></i> Regla Fiscal</span>
+                    <span class="field-value"><em>Las primas de seguros están <strong>exentas de ITBIS (0%)</strong> según la Ley de Seguros 146-02 (SIS) y normativa DGII, aplicándose únicamente el <strong>Impuesto Selectivo al Consumo (ISC 16%)</strong>.</em></span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Verificar que el cálculo utilice la exención de ITBIS y aplique la tasa del 16% ISC.</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
+    <footer class="doc-footer" role="contentinfo">
+        <div>
+            <strong>MÁS QUE FIANZAS, S.R.L.</strong> — Catálogo KEDB Versión NOFTRAB v4.0
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span class="badge badge-primary"><i class="fa-solid fa-database"></i> KEDB Activo</span>
+            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 10 Errores Codificados</span>
+            <span class="badge badge-amber"><i class="fa-solid fa-clock"></i> Última actualización: 2026</span>
+        </div>
+    </footer>
+
+</div>
+<script>
+    // Heredar y sincronizar skin activo en tiempo real
+    (function() {
+        function aplicar(s) {
+            if (!s) return;
+            if (s.endsWith('-classic')) s = s.replace('-classic', '');
+            document.documentElement.setAttribute('data-skin', s);
+            if (document.body) document.body.setAttribute('data-skin', s);
+        }
+        function sync() {
+            let s = localStorage.getItem('mqf-skin') || localStorage.getItem('skin') || 'indigo';
+            try {
+                if (window.parent && window.parent.document) {
+                    let p = window.parent.document.documentElement.getAttribute('data-skin') || window.parent.document.body.getAttribute('data-skin');
+                    if (p) s = p;
+                }
+            } catch(e) {}
+            aplicar(s);
+        }
+        sync();
+        document.addEventListener('DOMContentLoaded', sync);
+        window.addEventListener('message', function(e) {
+            if (e.data && (e.data.type === 'mqf-skin-change' || e.data.type === 'mqf-skin-set')) {
+                aplicar(e.data.skin);
+            }
+        });
+    })();
+</script>
+
+<script>
+    // ═══ FUNCIÓN DE DESCARGA PDF ════════════════════════════════════
+    async function descargarPDFKedb() {
+        const btn = document.getElementById('btn-kedb-pdf');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+            // Capturar el contenedor principal
+            const element = document.querySelector('.container');
+            const toolbar = document.querySelector('.mqf-doc-toolbar');
+            if (toolbar) toolbar.style.display = 'none';
+
+            const canvas = await html2canvas(element, {
+                scale: 1.8,
+                useCORS: true,
+                backgroundColor: '#080d18',
+                logging: false,
+                windowWidth: 1100
+            });
+
+            if (toolbar) toolbar.style.display = '';
+
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 210;
+            const pageHeight = 297;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            doc.save('Catalogo_KEDB_NOFTRAB_v4.0.pdf');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Descargado';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 2500);
+
+        } catch (err) {
+            console.error('Error PDF:', err);
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            window.print(); // fallback
+        }
+    }
+</script>
+
+<style>
+    /* ═══ TOOLBAR DE ACCIONES — estilos inline para KEDB ═══════════ */
+    .mqf-doc-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(15,23,41,0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-top: 2px solid var(--primary);
+        border-radius: 16px;
+        padding: 14px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        flex-wrap: wrap;
+        gap: 12px;
+        position: sticky;
+        top: 8px;
+        z-index: 200;
+        animation: fadeUp 0.3s ease both;
+    }
+
+    .mqf-doc-toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .mqf-doc-toolbar-title i { color: var(--primary-light); }
+
+    .mqf-doc-toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .mqf-btn-tool {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        border: none;
+        font-family: 'Outfit', sans-serif;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .mqf-btn-tool.print {
+        background: rgba(99,102,241,0.15);
+        color: var(--primary-light);
+        border: 1px solid rgba(99,102,241,0.3);
+    }
+    .mqf-btn-tool.print:hover {
+        background: rgba(99,102,241,0.28);
+        box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+        transform: translateY(-1px);
+    }
+
+    .mqf-btn-tool.download {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+    }
+    .mqf-btn-tool.download:hover {
+        box-shadow: 0 6px 20px rgba(16,185,129,0.5);
+        transform: translateY(-1px);
+    }
+
+    .mqf-btn-tool:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    @media print {
+        .mqf-doc-toolbar { display: none !important; }
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+</body>
+</html>

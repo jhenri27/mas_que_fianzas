@@ -1112,6 +1112,7 @@
 
         async function cargarDashboardOrqhid() {
             orqLog('Inicializando Hub Administrativo ORQHID-BOT (Davis AI)...', 'cmd');
+            orqLog('💡 Nota Windows: Apache corre como Servicio en Session 0. Playwright ejecuta la navegación autónoma en segundo plano. Para ver la ventana física de Chrome en su monitor, ejecute Lanzar_Bot_Visual_En_Pantalla.bat', 'sys');
             try {
                 const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
                 const res = await fetch(`${BV_API}?action=get_scenarios&perfil_id=1&token_sesion=${token}`).then(r => r.json());
@@ -1220,6 +1221,9 @@
                     }
                 } else {
                     orqLog(`❌ Error en la ejecución: ${resp.mensaje || 'Fallo desconocido'}`, 'err');
+                    if (resp.output_raw) {
+                        orqLog(`<pre style="margin:0;">${resp.output_raw}</pre>`, 'sys');
+                    }
                 }
             } catch(e) {
                 orqLog(`❌ Error de red: ${e.message}`, 'err');
@@ -1250,9 +1254,48 @@
                     body: JSON.stringify({modulo})
                 }).then(r => r.json());
 
-                if (resp.exito) {
+                if (resp.exito && resp.reporte) {
+                    const rep = resp.reporte;
                     orqLog(`✅ Simulación Workshop Live completada. Pantalla Chrome animada.`, 'res');
+                    
+                    if (rep.davis_score) {
+                        const scoreEl = document.getElementById('orq-davis-score');
+                        if (scoreEl) scoreEl.textContent = rep.davis_score;
+                    }
+
+                    const tbody = document.getElementById('orq-pasos-body');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        if (rep.pasos && rep.pasos.length > 0) {
+                            rep.pasos.forEach((p, idx) => {
+                                const tr = document.createElement('tr');
+                                tr.style.borderBottom = '1px solid var(--mqf-border, #e2e8f0)';
+                                const badgeClass = p.estado === 'EXITO' ? 'badge-success' : 'badge-warning';
+                                tr.innerHTML = `
+                                    <td style="padding:10px 15px; font-weight:700;">${idx + 1}</td>
+                                    <td style="padding:10px 15px;"><span class="badge badge-info">${p.origen || 'BVT'}</span></td>
+                                    <td style="padding:10px 15px; font-weight:600; color:var(--mqf-text);">${p.paso}</td>
+                                    <td style="padding:10px 15px;"><span class="badge ${badgeClass}">${p.estado}</span></td>
+                                    <td style="padding:10px 15px; color:#475569; font-size:12px;">${p.detalle}</td>
+                                    <td style="padding:10px 15px; font-weight:700; color:#ec4899;">${p.duracion_ms || 0} ms</td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    }
+
+                    if (rep.logs) {
+                        rep.logs.forEach(l => {
+                            orqLog(l.mensaje, l.tipo === 'ERROR' ? 'err' : (l.tipo === 'WARN' ? 'sys' : 'res'));
+                        });
+                    }
+
                     if (window.MQF && window.MQF.toast) MQF.toast(`Modo Workshop finalizado con éxito.`, 'success');
+                } else {
+                    orqLog(`❌ Error en Workshop: ${resp.mensaje || 'Fallo desconocido'}`, 'err');
+                    if (resp.output_raw) {
+                        orqLog(`<pre style="margin:0;">${resp.output_raw}</pre>`, 'sys');
+                    }
                 }
             } catch(e) {
                 orqLog(`❌ Error en Workshop: ${e.message}`, 'err');
@@ -1329,6 +1372,7 @@
 
         async function cargarEscenariosBotVisual() {
             bvLog('Cargando mapa de 23 Módulos y 11 Perfiles RBAC desde la base de datos...', 'cmd');
+            bvLog('💡 Nota Windows: Apache corre como Servicio en Session 0. Playwright ejecuta la navegación autónoma en segundo plano. Para ver la ventana física de Chrome en su monitor, ejecute Lanzar_Bot_Visual_En_Pantalla.bat', 'sys');
             try {
                 const token = sessionStorage.getItem('mqf_token_sesion') || localStorage.getItem('token_sesion') || '';
                 const res = await fetch(`${BV_API}?action=get_scenarios&token_sesion=${token}`).then(r => r.json());

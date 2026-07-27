@@ -140,7 +140,73 @@
       </div>
     </div>
 
-    <!-- SKIN 4: Custom Brand -->
+    <!-- SKIN 4: Emerald Fresh -->
+    <div class="skin-card" id="card-emerald" onclick="seleccionarSkin('emerald')">
+      <div class="skin-preview" style="background:#f0fdf4;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#10b981,#059669);"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#10b981;width:60%"></div>
+          <div class="sp-card" style="background: var(--bg-card, #ffffff);border:1px solid #dcfce7"></div>
+          <div class="sp-card" style="background: var(--bg-card, #ffffff);border:1px solid #dcfce7"></div>
+          <div class="sp-btn" style="background:#10b981"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Emerald Fresh <span class="skin-badge badge-premium" id="badge-emerald"></span></div>
+        <div class="skin-desc">🍃 Fresco, eco-financiero, tono verde esmeralda</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#10b981;" title="#10b981"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#059669;" title="#059669"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#f0fdf4;border:1px solid #dcfce7;" title="#f0fdf4"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 5: Midnight Navy -->
+    <div class="skin-card" id="card-midnight" onclick="seleccionarSkin('midnight')">
+      <div class="skin-preview" style="background:#0b1329;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#1e293b,#0b1329);border-right:1px solid rgba(56,189,248,0.2);"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#38bdf8;width:60%"></div>
+          <div class="sp-card" style="background:#152342;border:1px solid rgba(56,189,248,0.2)"></div>
+          <div class="sp-card" style="background:#152342;border:1px solid rgba(56,189,248,0.2)"></div>
+          <div class="sp-btn" style="background:#38bdf8"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Midnight Navy <span class="skin-badge badge-premium" id="badge-midnight"></span></div>
+        <div class="skin-desc">🌌 Azul noche profundo, modo oscuro técnico</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#38bdf8;" title="#38bdf8"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#818cf8;" title="#818cf8"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#0b1329;" title="#0b1329"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 6: Amber Gold -->
+    <div class="skin-card" id="card-amber" onclick="seleccionarSkin('amber')">
+      <div class="skin-preview" style="background:#fffbeb;">
+        <div class="sp-sidebar" style="background:linear-gradient(135deg,#d97706,#f59e0b);"></div>
+        <div class="sp-content">
+          <div class="sp-bar" style="background:#d97706;width:60%"></div>
+          <div class="sp-card" style="background: var(--bg-card, #ffffff);border:1px solid #fef3c7"></div>
+          <div class="sp-card" style="background: var(--bg-card, #ffffff);border:1px solid #fef3c7"></div>
+          <div class="sp-btn" style="background:#d97706"></div>
+        </div>
+      </div>
+      <div class="skin-info">
+        <div class="skin-name">Amber Gold <span class="skin-badge badge-premium" id="badge-amber"></span></div>
+        <div class="skin-desc">🏆 Cálido, prestigioso, tono dorado ámbar</div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <div style="width:16px;height:16px;border-radius:50%;background:#d97706;" title="#d97706"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#f59e0b;" title="#f59e0b"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:#fffbeb;border:1px solid #fef3c7;" title="#fffbeb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKIN 7: Custom Brand -->
     <div class="skin-card" id="card-custom" onclick="seleccionarSkin('custom')">
       <div class="skin-preview" style="background:linear-gradient(135deg,#f0f4ff,#faf5ff);display:flex;align-items:center;justify-content:center;">
         <div style="text-align:center;">
@@ -247,6 +313,9 @@ const SKIN_LABELS = {
   indigo:   'Indigo Corp ☀️',
   obsidian: 'Obsidian Dark 🌙',
   coral:    'Coral Finance 🐚',
+  emerald:  'Emerald Fresh 🍃',
+  midnight: 'Midnight Navy 🌌',
+  amber:    'Amber Gold 🏆',
   custom:   'Custom Brand 🏢'
 };
 
@@ -351,7 +420,7 @@ function aplicarSkinLocalmente(skin) {
   document.body.setAttribute('data-skin', resolvedSkin);
   
   // Actualizar badges
-  ['indigo','obsidian','coral','custom'].forEach(s => {
+  ['indigo','obsidian','coral','emerald','midnight','amber','custom'].forEach(s => {
     const b = document.getElementById('badge-' + s);
     if (b) { b.textContent = ''; b.className = 'skin-badge'; }
   });

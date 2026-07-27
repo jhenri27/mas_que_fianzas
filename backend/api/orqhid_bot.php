@@ -94,7 +94,7 @@ if ($action === 'run_hybrid_diagnostic') {
     $output_str = implode("\n", $output);
 
     $reporte_json = null;
-    if (preg_match('/--- ORQHID_RESULT_START ---\s*(\{.*?\})\s*--- ORQHID_RESULT_END ---/s', $output_str, $matches)) {
+    if (preg_match('/--- (?:ORQHID_RESULT|JSON_RESULT)_START ---\s*(\{.*?\})\s*--- (?:ORQHID_RESULT|JSON_RESULT)_END ---/s', $output_str, $matches)) {
         $reporte_json = json_decode($matches[1], true);
     }
 
@@ -124,7 +124,7 @@ if ($action === 'run_workshop_demo') {
     $output_str = implode("\n", $output);
 
     $reporte_json = null;
-    if (preg_match('/--- ORQHID_RESULT_START ---\s*(\{.*?\})\s*--- ORQHID_RESULT_END ---/s', $output_str, $matches)) {
+    if (preg_match('/--- (?:ORQHID_RESULT|JSON_RESULT)_START ---\s*(\{.*?\})\s*--- (?:ORQHID_RESULT|JSON_RESULT)_END ---/s', $output_str, $matches)) {
         $reporte_json = json_decode($matches[1], true);
     }
 
