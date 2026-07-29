@@ -5,11 +5,14 @@
  */
 
 // ==================== CONFIGURACIÓN DE BASE DE DATOS ====================
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASSWORD', ''); // Por defecto en WAMP
-define('DB_NAME', 'masque_fianzas_integrada_01');
-define('DB_PORT', 3306);
+if (file_exists(dirname(__FILE__) . '/config.local.php')) {
+    require_once dirname(__FILE__) . '/config.local.php';
+}
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+if (!defined('DB_USER')) define('DB_USER', 'root');
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', '');
+if (!defined('DB_NAME')) define('DB_NAME', 'masque_fianzas_integrada_01');
+if (!defined('DB_PORT')) define('DB_PORT', 3306);
 
 // ==================== CONFIGURACIÓN DE APLICACIÓN ====================
 define('APP_NAME', 'MAS QUE FIANZAS');
