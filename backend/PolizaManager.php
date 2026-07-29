@@ -156,8 +156,15 @@ class PolizaManager {
             $aseguradora = $datos['aseguradora'] ?? 'MULTISEGUROS';
             $perfil = $datos['perfil_cobertura'] ?? 'Seguro de Ley';
             $total = floatval($datos['prima_total']);
-            $itbis = $total * 0.16; // Cálculo estándar RD si no viene desglosado (16% ISC)
-            $neta = $total - $itbis;
+            if (isset($datos['prima_neta']) && floatval($datos['prima_neta']) > 0) {
+                $neta = round(floatval($datos['prima_neta']), 2);
+                $itbis = isset($datos['itbis']) ? round(floatval($datos['itbis']), 2) : round($neta * 0.16, 2);
+                $total = isset($datos['prima_total']) ? round(floatval($datos['prima_total']), 2) : round($neta + $itbis, 2);
+            } else {
+                $total = round(floatval($datos['prima_total']), 2);
+                $neta = round($total / 1.16, 2);
+                $itbis = round($total - $neta, 2);
+            }
             $otros = 0;
             $periodo = $datos['periodicidad_pago'] ?? 'anual';
             $cuota_total = intval($datos['cuota_total'] ?? 1); 
@@ -191,7 +198,7 @@ class PolizaManager {
                 'lineas' => [
                     ['cuenta' => '1.1.02.01', 'nombre' => 'Primas por Cobrar - Vigentes', 'tipo' => 'debito', 'monto' => $total, 'glosa' => 'Cuentas por cobrar clientes'],
                     ['cuenta' => '4.1.01.01', 'nombre' => 'Primas Netas de Seguros - Automóviles', 'tipo' => 'credito', 'monto' => $neta, 'glosa' => 'Ingreso por prima neta'],
-                    ['cuenta' => '2.1.03.01', 'nombre' => 'ITBIS por Pagar', 'tipo' => 'credito', 'monto' => $itbis, 'glosa' => 'ITBIS 18%']
+                    ['cuenta' => '2.1.03.01', 'nombre' => 'ISC por Pagar (16%)', 'tipo' => 'credito', 'monto' => $itbis, 'glosa' => 'ISC Ley 146-02 16%']
                 ]
             ]);
 

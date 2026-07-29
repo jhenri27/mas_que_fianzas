@@ -425,7 +425,7 @@
                     </div>
                     <div class="form-group">
                         <label>Aseguradora</label>
-                        <select id="w-aseguradora">
+                        <select id="w-aseguradora" onchange="autoCalcularTarifaVehiculo()">
                             <option value="MULTISEGUROS">MULTISEGUROS</option>
                             <option value="SEGUROS RESERVAS">SEGUROS RESERVAS</option>
                             <option value="MAPFRE">MAPFRE</option>
@@ -479,7 +479,7 @@
                     </div>
                     <div class="form-group">
                         <label>Tipo de Vehículo</label>
-                        <select id="w-tipo-veh">
+                        <select id="w-tipo-veh" onchange="autoCalcularTarifaVehiculo()">
                             <option value="AUTOMOVIL">Automóvil</option>
                             <option value="JEEPETA">Jeepeta / SUV</option>
                             <option value="MOTOCICLETA">Motocicleta</option>
@@ -490,7 +490,7 @@
                     </div>
                     <div class="form-group">
                         <label>Uso</label>
-                        <select id="w-uso">
+                        <select id="w-uso" onchange="autoCalcularTarifaVehiculo()">
                             <option value="PRIVADO">Privado</option>
                             <option value="PUBLICO">Público / Concho</option>
                             <option value="RENT CAR">Rent-a-Car</option>
@@ -510,12 +510,12 @@
                     </div>
                     <div class="form-group">
                         <label>Capacidad del Motor</label>
-                        <select id="w-capacidad">
+                        <select id="w-capacidad" onchange="autoCalcularTarifaVehiculo()">
                             <option value="Hasta 4 Cilindros">Hasta 4 Cilindros</option>
                             <option value="Hasta 6 Cilindros">Hasta 6 Cilindros</option>
-                            <option value="8 o Más Cilindros">8 o Más Cilindros</option>
-                            <option value="Hasta 200cc">Moto Hasta 200cc</option>
-                            <option value="Hasta 750cc">Moto Hasta 750cc</option>
+                            <option value="Más de 6 Cilindros">Más de 6 Cilindros</option>
+                            <option value="Hasta 250 cc">Moto Hasta 250 cc</option>
+                            <option value="Mas de 250 cc">Moto Mas de 250 cc</option>
                         </select>
                     </div>
                 </div>
@@ -560,7 +560,7 @@
                     <h4 style="color:#4f46e5;margin:0 0 12px;font-size:14px;"><i class="fa-solid fa-calculator"></i> Desglose Calculado (Solo lectura)</h4>
                     <div class="form-grid form-grid-4">
                         <div><span style="font-size:11px;color:#64748b;">Prima Neta</span><div id="calc-neta" style="font-size:16px;font-weight:700;color:#1e293b;">—</div></div>
-                        <div><span style="font-size:11px;color:#64748b;">ITBIS (18%)</span><div id="calc-itbis" style="font-size:16px;font-weight:700;color:#d97706;">—</div></div>
+                        <div><span style="font-size:11px;color:#64748b;">Impuesto (16% ISC)</span><div id="calc-itbis" style="font-size:16px;font-weight:700;color:#d97706;">—</div></div>
                         <div><span style="font-size:11px;color:#64748b;">Total</span><div id="calc-total" style="font-size:16px;font-weight:700;color:#4f46e5;">—</div></div>
                         <div><span style="font-size:11px;color:#64748b;">Cuota según período</span><div id="calc-cuota" style="font-size:16px;font-weight:700;color:#16a34a;">—</div></div>
                     </div>
@@ -1689,7 +1689,7 @@ function renderizarDetalle(p) {
             ${campo('Vigencia Hasta', `<strong style="color:${estaVencida(p.fecha_vencimiento)?'#dc2626':'#16a34a'}">${formatFecha(p.fecha_vencimiento)}</strong>`)}
             ${campo('Prima Total', `<strong style="font-size:16px;">${fmtMoneda(p.prima_total)}</strong>`)}
             ${campo('Prima Neta', fmtMoneda(p.prima_neta))}
-            ${campo('ITBIS', fmtMoneda(p.itbis))}
+            ${campo('Impuesto (16% ISC)', fmtMoneda(p.itbis))}
             ${campo('Periodicidad', p.periodicidad_pago)}
             ${campo('Estado', `<span class="badge badge-${(p.estado||'').toLowerCase()}">${(p.estado||'').toUpperCase()}</span>`)}
             ${campo('Validada', p.validada === 'Si' ? '<span class="badge badge-si">✓ SÍ</span>' : '<span class="badge badge-no">✗ NO</span>')}
@@ -2278,10 +2278,71 @@ function actualizarWizard() {
     btnSig.className = `btn ${pasoWizard === 4 ? 'btn-success' : 'btn-primary'}`;
 }
 
+let pricingRowsPolizas = [];
+async function cargarTarifarioPolizas() {
+    if (pricingRowsPolizas.length > 0) return;
+    try {
+        const r = await fetch('pricing-data/pricing_multiseguros.json?v=' + Date.now());
+        pricingRowsPolizas = await r.json();
+    } catch(e) {
+        console.warn('Error cargando tarifario multiseguros:', e);
+    }
+}
+
+async function autoCalcularTarifaVehiculo() {
+    await cargarTarifarioPolizas();
+    if (!pricingRowsPolizas || !pricingRowsPolizas.length) return;
+
+    const aseg = (document.getElementById('w-aseguradora')?.value || 'MULTISEGUROS').trim().toUpperCase();
+    if (!aseg.includes('MULTI')) return;
+
+    const tipoVeh = (document.getElementById('w-tipo-veh')?.value || '').trim().toUpperCase();
+    const uso = (document.getElementById('w-uso')?.value || '').trim().toUpperCase();
+    const cap = (document.getElementById('w-capacidad')?.value || '').trim().toUpperCase();
+
+    let jsonTipo = 'AUTOMOVILES';
+    if (tipoVeh.includes('MOTO')) jsonTipo = 'MOTOCICLETAS';
+    else if (tipoVeh.includes('JEEP')) jsonTipo = 'JEEP';
+    else if (tipoVeh.includes('PICK') || tipoVeh.includes('CAMIONETA')) jsonTipo = 'CAMIONETAS';
+    else if (tipoVeh.includes('CAMION')) jsonTipo = 'CAMION (CAMA O CAJA)';
+    else if (tipoVeh.includes('BUS')) jsonTipo = 'AUTOBUS';
+    else if (tipoVeh.includes('VAN') || tipoVeh.includes('FURGONETA')) jsonTipo = 'MINIVAN / VANETTES';
+
+    const matches = pricingRowsPolizas.filter(r => 
+        (r.tipo_vehiculo || '').toUpperCase() === jsonTipo &&
+        (r.uso || '').toUpperCase() === uso &&
+        (r.capacidad || '').trim().toUpperCase() === cap
+    );
+
+    if (matches.length > 0) {
+        const primaBase = parseFloat(matches[0].prima || 0);
+        if (primaBase > 0) {
+            const isc = Math.round((primaBase * 0.16) * 100) / 100;
+            const total = Math.round((primaBase + isc) * 100) / 100;
+
+            document.getElementById('w-prima-total').value = total.toFixed(2);
+            window._wizardPrimaNeta = primaBase;
+            window._wizardItbis = isc;
+            calcularPrima();
+
+            const infoEl = document.getElementById('cotizacion-info');
+            if (infoEl) {
+                infoEl.style.display = 'block';
+                infoEl.style.background = '#e0e7ff';
+                infoEl.style.borderColor = '#6366f1';
+                infoEl.style.color = '#3730a3';
+                infoEl.innerHTML = `<i class="fa-solid fa-calculator"></i> <strong>Tarifa Multiseguros Sugerida:</strong> Prima Neta ${fmtMoneda(primaBase)} + ISC (16%) ${fmtMoneda(isc)} = Total <strong>${fmtMoneda(total)}</strong>`;
+            }
+        }
+    }
+}
+
 function calcularPrima() {
     const total = parseFloat(document.getElementById('w-prima-total').value) || 0;
-    const itbis = total * 0.18;
-    const neta = total - itbis;
+    const neta = window._wizardPrimaNeta && Math.round((window._wizardPrimaNeta * 1.16) * 100) / 100 === total 
+        ? window._wizardPrimaNeta 
+        : Math.round((total / 1.16) * 100) / 100;
+    const isc = Math.round((total - neta) * 100) / 100;
     const periodo = document.getElementById('w-periodicidad').value;
     const divisores = { mensual: 12, trimestral: 4, semestral: 2, anual: 1 };
     const numCuotas = divisores[periodo] || 1;
@@ -2289,10 +2350,12 @@ function calcularPrima() {
 
     // Guardar en estado global para usarlo al emitir
     window._wizardCuotaTotal = numCuotas;
+    window._wizardPrimaNeta = neta;
+    window._wizardItbis = isc;
 
     const fmt = n => new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n);
     document.getElementById('calc-neta').textContent = fmt(neta);
-    document.getElementById('calc-itbis').textContent = fmt(itbis);
+    document.getElementById('calc-itbis').textContent = fmt(isc);
     document.getElementById('calc-total').textContent = fmt(total);
     document.getElementById('calc-cuota').textContent = `${fmt(cuota)} × ${numCuotas} cuota${numCuotas > 1 ? 's' : ''}`;
 }
@@ -2322,6 +2385,10 @@ async function buscarVehiculoPorPlaca() {
             document.getElementById('w-chasis').value = v.chasis || '';
             document.getElementById('w-motor').value = v.motor || '';
             document.getElementById('w-valor').value = v.valor_comercial || '';
+            if (v.tipo_vehiculo) document.getElementById('w-tipo-veh').value = v.tipo_vehiculo;
+            if (v.uso) document.getElementById('w-uso').value = v.uso;
+            if (v.capacidad) document.getElementById('w-capacidad').value = v.capacidad;
+            autoCalcularTarifaVehiculo();
             mostrarToast('Vehículo encontrado y datos cargados', 'success');
         } else {
             mostrarToast('Vehículo no encontrado, complete los datos manualmente', 'info');
@@ -2333,8 +2400,8 @@ async function buscarVehiculoPorPlaca() {
 
 function construirResumen() {
     const total = parseFloat(document.getElementById('w-prima-total').value) || 0;
-    const itbis = total * 0.18;
-    const neta  = total - itbis;
+    const neta  = window._wizardPrimaNeta || Math.round((total / 1.16) * 100) / 100;
+    const isc   = window._wizardItbis || Math.round((total - neta) * 100) / 100;
     const fmt   = n => new Intl.NumberFormat('es-DO', { style:'currency', currency:'DOP' }).format(n);
 
     document.getElementById('resumen-container').innerHTML = `
@@ -2353,7 +2420,7 @@ function construirResumen() {
                  <div style="font-size:18px;font-weight:800;color:#1e293b;">${fmt(neta)}</div></div>
         </div>`;
 
-    // Comisiones simuladas (en producción vendrían del servidor según el usuario activo)
+    // Comisiones simuladas
     document.getElementById('comisiones-preview').innerHTML = `
         <div class="comision-card">
             <div><div class="cc-label">Tu Comisión (20%)</div><div class="cc-value">${fmt(neta * 0.20)}</div></div>
@@ -2379,6 +2446,9 @@ async function emitirPoliza() {
     const periodoDivisores = { mensual: 12, trimestral: 4, semestral: 2, anual: 1 };
     const periodo = document.getElementById('w-periodicidad').value;
     const cuotaTotal = window._wizardCuotaTotal || periodoDivisores[periodo] || 1;
+    const totalVal = parseFloat(document.getElementById('w-prima-total').value) || 0;
+    const netaVal = window._wizardPrimaNeta || Math.round((totalVal / 1.16) * 100) / 100;
+    const iscVal = window._wizardItbis || Math.round((totalVal - netaVal) * 100) / 100;
 
     const datos = {
         cotizacion_id: window._wizardCotId || null,
@@ -2388,7 +2458,9 @@ async function emitirPoliza() {
         ramo: document.getElementById('w-ramo').value,
         aseguradora: document.getElementById('w-aseguradora').value,
         perfil_cobertura: document.getElementById('w-cobertura').value,
-        prima_total: parseFloat(document.getElementById('w-prima-total').value),
+        prima_total: totalVal,
+        prima_neta: netaVal,
+        itbis: itbisVal,
         periodicidad_pago: periodo,
         cuota_total: cuotaTotal,
         fecha_vencimiento: document.getElementById('w-fecha-vence').value,
