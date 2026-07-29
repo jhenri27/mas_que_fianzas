@@ -479,7 +479,7 @@
                     </div>
                     <div class="form-group">
                         <label>Tipo de Vehículo</label>
-                        <select id="w-tipo-veh" onchange="autoCalcularTarifaVehiculo()">
+                        <select id="w-tipo-veh" onchange="actualizarCapacidadesSegunTipo(); autoCalcularTarifaVehiculo();">
                             <option value="AUTOMOVIL">Automóvil</option>
                             <option value="JEEPETA">Jeepeta / SUV</option>
                             <option value="MOTOCICLETA">Motocicleta</option>
@@ -2278,6 +2278,49 @@ function actualizarWizard() {
     btnSig.className = `btn ${pasoWizard === 4 ? 'btn-success' : 'btn-primary'}`;
 }
 
+function actualizarCapacidadesSegunTipo() {
+    const tipoVeh = (document.getElementById('w-tipo-veh')?.value || '').trim().toUpperCase();
+    const capSelect = document.getElementById('w-capacidad');
+    if (!capSelect) return;
+
+    const valActual = capSelect.value;
+    if (tipoVeh.includes('MOTO')) {
+        capSelect.innerHTML = `
+            <option value="Hasta 250 cc">Moto Hasta 250 cc</option>
+            <option value="Mas de 250 cc">Moto Mas de 250 cc</option>
+            <option value="Mas de 350 cc">Moto Mas de 350 cc</option>
+            <option value="Bicicleta Eléctrica">Bicicleta Eléctrica</option>
+            <option value="Patineta Eléctrica">Patineta Eléctrica</option>
+            <option value="Buggy">Buggy</option>
+            <option value="Cuatrimoto">Cuatrimoto</option>
+            <option value="Motonetas (Trimotor)">Motonetas (Trimotor)</option>
+            <option value="Four Wheel">Four Wheel</option>
+        `;
+    } else if (tipoVeh.includes('CAMION')) {
+        capSelect.innerHTML = `
+            <option value="Hasta 5 Toneladas">Hasta 5 Toneladas</option>
+            <option value="De 5 a 10 Toneladas">De 5 a 10 Toneladas</option>
+            <option value="Mas de 10 Toneladas">Mas de 10 Toneladas</option>
+        `;
+    } else if (tipoVeh.includes('BUS')) {
+        capSelect.innerHTML = `
+            <option value="Hasta 15 Pasajeros">Hasta 15 Pasajeros</option>
+            <option value="Hasta 30 Pasajeros">Hasta 30 Pasajeros</option>
+            <option value="Mas de 30 Pasajeros">Mas de 30 Pasajeros</option>
+        `;
+    } else {
+        capSelect.innerHTML = `
+            <option value="Hasta 4 Cilindros">Hasta 4 Cilindros</option>
+            <option value="Hasta 6 Cilindros">Hasta 6 Cilindros</option>
+            <option value="Más de 6 Cilindros">Más de 6 Cilindros</option>
+        `;
+    }
+
+    if ([...capSelect.options].some(opt => opt.value === valActual)) {
+        capSelect.value = valActual;
+    }
+}
+
 let pricingRowsPolizas = [];
 async function cargarTarifarioPolizas() {
     if (pricingRowsPolizas.length > 0) return;
@@ -2290,6 +2333,10 @@ async function cargarTarifarioPolizas() {
 }
 
 async function autoCalcularTarifaVehiculo() {
+    if (window._cotizacionCargada) {
+        // Regla NOFTRAB: Si los datos vienen de una cotización, no alterar su precio con recálculo automático
+        return;
+    }
     await cargarTarifarioPolizas();
     if (!pricingRowsPolizas || !pricingRowsPolizas.length) return;
 
@@ -2517,17 +2564,16 @@ async function buscarCotizacion() {
     if (!num) { mostrarToast('Ingrese un número de cotización', 'info'); return; }
 
     const infoEl = document.getElementById('cotizacion-info');
-    infoEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...';
+    infoEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando cotización N° <strong>' + num + '</strong>...';
     infoEl.style.display = 'block';
 
     try {
-        // Optimización Arquitectónica: Búsqueda directa en base de datos por número
-        const r = await fetch(`${BASE_API}/cotizaciones.php?action=listar&numero=${encodeURIComponent(num)}`);
+        const r = await fetch(`${BASE_API}/cotizaciones.php?action=listar&search=${encodeURIComponent(num)}&numero=${encodeURIComponent(num)}`);
         const d = await r.json();
 
-        // La respuesta del helper respuestaJSON viene en d.datos
         const lista = d.datos || d.data || [];
-        const cot = (lista.length > 0) ? lista[0] : null;
+        let cot = lista.find(x => (x.numero || '').toLowerCase() === num.toLowerCase() || String(x.id) === num);
+        if (!cot && lista.length > 0) cot = lista[0];
 
         if (!cot) {
             infoEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Cotización "' + num + '" no encontrada. Verifique el número o complete manualmente.';
@@ -2535,45 +2581,64 @@ async function buscarCotizacion() {
             return;
         }
 
-        // AUTO-RELLENAR campos del wizard desde la cotización
-        const tipoMap = {
-            'SEGURO DE LEY': 'Seguro de Ley - Vehículo Liviano',
-            'FIANZA': 'Fianza Judicial'
-        };
-        const tipoSeg = tipoMap[cot.tipo] || cot.tipo || '';
-        document.getElementById('w-tipo-seguro').value = tipoSeg;
+        // Marcar que hay una cotización cargada para proteger su precio contra recálculos
+        window._cotizacionCargada = true;
+        window._wizardCotId = cot.id;
 
-        // Cobertura
+        // Auto-rellenar tipo de seguro y tipo de vehículo
+        const subtipoUpper = (cot.subtipo || cot.tipo || '').toUpperCase();
+        const cobUpper = (cot.cobertura || '').toUpperCase();
+        if (subtipoUpper.includes('MOTO') || cobUpper.includes('MOTO')) {
+            document.getElementById('w-tipo-seguro').value = 'Seguro de Ley - Motocicleta';
+            if (document.getElementById('w-tipo-veh')) {
+                document.getElementById('w-tipo-veh').value = 'MOTOCICLETA';
+                actualizarCapacidadesSegunTipo();
+            }
+        } else if (subtipoUpper.includes('FIANZA') || (cot.tipo || '').toUpperCase().includes('FIANZA')) {
+            document.getElementById('w-tipo-seguro').value = 'Fianza Judicial';
+        } else {
+            document.getElementById('w-tipo-seguro').value = 'Seguro de Ley - Vehículo Liviano';
+        }
+
+        // Cobertura y Aseguradora
         if (cot.cobertura) document.getElementById('w-cobertura').value = cot.cobertura;
         if (cot.aseguradora) setAseguradoraValue(cot.aseguradora);
 
-        // Prima total
-        const prima = parseFloat(cot.total || cot.prima_total || 0);
+        // Prima total exacta de la cotización
+        const prima = parseFloat(cot.total || cot.prima_total || cot.prima_base || 0);
         if (prima > 0) {
             document.getElementById('w-prima-total').value = prima.toFixed(2);
             calcularPrima();
         }
 
+        // Rellenar datos detallados del vehículo si vienen en la cotización
+        if (cot.uso && document.getElementById('w-uso')) document.getElementById('w-uso').value = cot.uso;
+        if (cot.capacidad && document.getElementById('w-capacidad')) document.getElementById('w-capacidad').value = cot.capacidad;
+        if (cot.placa && document.getElementById('w-placa')) document.getElementById('w-placa').value = cot.placa;
+        if (cot.marca && document.getElementById('w-marca')) document.getElementById('w-marca').value = cot.marca;
+        if (cot.modelo && document.getElementById('w-modelo')) document.getElementById('w-modelo').value = cot.modelo;
+        if (cot.anio && document.getElementById('w-anio')) document.getElementById('w-anio').value = cot.anio;
+        if (cot.color && document.getElementById('w-color')) document.getElementById('w-color').value = cot.color;
+        if (cot.chasis && document.getElementById('w-chasis')) document.getElementById('w-chasis').value = cot.chasis;
+        if (cot.motor && document.getElementById('w-motor')) document.getElementById('w-motor').value = cot.motor;
+
         // Cliente: pre-cargar si viene en la cotización
         if (cot.cliente) {
             document.getElementById('w-cliente-nombre').value = cot.cliente;
-            // Intentar buscar el cliente automáticamente
             const rc = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(cot.cliente)}`);
             const dc = await rc.json();
             const lista2 = dc.datos || dc.data || [];
             if (lista2.length === 1) {
                 seleccionarCliente(lista2[0].id, lista2[0].nombre_razon_social);
             } else if (lista2.length > 1) {
-                // Mostrar sugerencias si hay varios
                 buscarCliente(cot.cliente);
             }
         }
 
-        window._wizardCotId = cot.id;
         infoEl.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
                 <div style="flex:1;">
-                    <i class="fa-solid fa-circle-check"></i> Cotización cargada: <strong>${cot.tipo || ''} ${cot.cobertura || ''}</strong> — Prima: <strong>${fmtMoneda(prima)}</strong>
+                    <i class="fa-solid fa-circle-check"></i> Cotización N° ${cot.numero || cot.id} cargada: <strong>${cot.subtipo || cot.tipo || ''} (${cot.cobertura || ''})</strong> — Prima Total: <strong>${fmtMoneda(prima)}</strong>
                 </div>
                 <button class="btn btn-secondary btn-sm" onclick="actualizarCotizacionWizard()" style="padding:4px 10px; font-size:11px; white-space:nowrap; background: var(--bg-card, #ffffff); border-color:#86efac; color:#166534;">
                     <i class="fa-solid fa-rotate"></i> Guardar Cambios en Cotización

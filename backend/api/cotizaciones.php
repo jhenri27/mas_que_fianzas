@@ -141,17 +141,19 @@ try {
     // LISTAR
     if ($action === 'listar' && $metodo === 'GET') {
         $limite = intval($_GET['limite'] ?? 200);
-        $numero = $_GET['numero'] ?? '';
+        $numero = $_GET['numero'] ?? ($_GET['search'] ?? '');
         
         $soloPropios = restringirSoloPropios($usuario_actual, 'Cotizaciones');
         
         if (!empty($numero)) {
+            $numEscaped = '%' . $numero . '%';
+            $idSearch = intval($numero);
             if ($soloPropios) {
-                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? AND creado_por = ? LIMIT 1");
-                $stmt->bind_param('si', $numero, $usuario_actual);
+                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE (numero = ? OR numero LIKE ? OR cliente LIKE ? OR id = ?) AND creado_por = ? ORDER BY fecha DESC LIMIT ?");
+                $stmt->bind_param('sssiii', $numero, $numEscaped, $numEscaped, $idSearch, $usuario_actual, $limite);
             } else {
-                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE numero = ? LIMIT 1");
-                $stmt->bind_param('s', $numero);
+                $stmt = $db->prepare("SELECT * FROM cotizaciones WHERE (numero = ? OR numero LIKE ? OR cliente LIKE ? OR id = ?) ORDER BY fecha DESC LIMIT ?");
+                $stmt->bind_param('sssii', $numero, $numEscaped, $numEscaped, $idSearch, $limite);
             }
             $stmt->execute();
             $result = $stmt->get_result();
