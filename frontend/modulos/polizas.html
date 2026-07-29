@@ -1105,8 +1105,16 @@ let polizaActual = null;
 let paginaActual = 1;
 let pasoWizard = 1;
 
-// Estandarización de rutas de API (Absolutas desde la raíz del proyecto)
-const BASE_API = '/PLATAFORMA_INTEGRADA/backend/api';
+const BASE_PREFIX = (function() {
+    const p = window.location.pathname;
+    if (p.includes('/frontend/')) return p.split('/frontend/')[0];
+    if (p.includes('/modulos/')) return p.split('/modulos/')[0];
+    if (p.startsWith('/PLATAFORMA_INTEGRADA')) return '/PLATAFORMA_INTEGRADA';
+    if (p.startsWith('/dev_plataforma')) return '/dev_plataforma';
+    if (p.startsWith('/plataforma_integrada')) return '/plataforma_integrada';
+    return '';
+})();
+const BASE_API = `${BASE_PREFIX}/backend/api`;
 
 // ═══════════════════════════════════════
 // TABS

@@ -5,9 +5,16 @@
 
 class APIClient {
     constructor() {
-        // Detectar automáticamente si la app corre en subdirectorio (WAMP) o raíz (VPS)
-        const isSubdir = window.location.pathname.startsWith('/PLATAFORMA_INTEGRADA');
-        this.basePrefix = isSubdir ? '/PLATAFORMA_INTEGRADA' : '';
+        const p = window.location.pathname;
+        let prefix = '';
+        if (p.includes('/frontend/')) prefix = p.split('/frontend/')[0];
+        else if (p.includes('/modulos/')) prefix = p.split('/modulos/')[0];
+        else if (p.includes('/backend/')) prefix = p.split('/backend/')[0];
+        else if (p.startsWith('/PLATAFORMA_INTEGRADA')) prefix = '/PLATAFORMA_INTEGRADA';
+        else if (p.startsWith('/dev_plataforma')) prefix = '/dev_plataforma';
+        else if (p.startsWith('/plataforma_integrada')) prefix = '/plataforma_integrada';
+
+        this.basePrefix = prefix;
         this.baseURL = `${this.basePrefix}/backend/api`;
         this.tokenSesion = localStorage.getItem('token_sesion') || null;
         this.usuario = JSON.parse(localStorage.getItem('usuario_actual') || 'null');
