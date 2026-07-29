@@ -129,35 +129,62 @@ try {
         respuestaJSON($resultado['exito'], $resultado['mensaje'], null, $resultado['exito'] ? 200 : 400);
 
     } elseif ($metodo === 'GET' && (strpos($ruta, '/listar') !== false || substr($ruta, -12) === 'clientes.php')) {
-        // Soporte de búsqueda por parámetro ?search=
-        if (!empty($_GET['search'])) {
-            $q = '%' . $_GET['search'] . '%';
+        // Soporte de búsqueda por parámetro ?search= (si está vacío, retorna los 15 más recientes)
+        if (isset($_GET['search'])) {
+            $searchVal = trim($_GET['search']);
             $db = Database::getInstance()->getConnection();
-            if (restringirSoloPropios($usuario_actual, 'clientes')) {
-                $stmt = $db->prepare(
-                    "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
-                            telefono, email,
-                            IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
-                            estado as estatus
-                     FROM clientes 
-                     WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
-                       AND estado = 'activo'
-                       AND creado_por = ?
-                     ORDER BY nombre LIMIT 15"
-                );
-                $stmt->bind_param('sssi', $q, $q, $q, $usuario_actual);
+            if ($searchVal !== '') {
+                $q = '%' . $searchVal . '%';
+                if (restringirSoloPropios($usuario_actual, 'clientes')) {
+                    $stmt = $db->prepare(
+                        "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                                telefono, email,
+                                IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                                estado as estatus
+                         FROM clientes 
+                         WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ? OR email LIKE ? OR telefono LIKE ?) 
+                           AND estado = 'activo'
+                           AND creado_por = ?
+                         ORDER BY nombre LIMIT 15"
+                    );
+                    $stmt->bind_param('sssssi', $q, $q, $q, $q, $q, $usuario_actual);
+                } else {
+                    $stmt = $db->prepare(
+                        "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                                telefono, email,
+                                IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                                estado as estatus
+                         FROM clientes 
+                         WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ? OR email LIKE ? OR telefono LIKE ?) 
+                           AND estado = 'activo'
+                         ORDER BY nombre LIMIT 15"
+                    );
+                    $stmt->bind_param('sssss', $q, $q, $q, $q, $q);
+                }
             } else {
-                $stmt = $db->prepare(
-                    "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
-                            telefono, email,
-                            IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
-                            estado as estatus
-                     FROM clientes 
-                     WHERE (nombre LIKE ? OR cedula LIKE ? OR razon_social LIKE ?) 
-                       AND estado = 'activo'
-                     ORDER BY nombre LIMIT 15"
-                );
-                $stmt->bind_param('sss', $q, $q, $q);
+                // Si la búsqueda es vacía (onfocus), listar los 15 más recientes
+                if (restringirSoloPropios($usuario_actual, 'clientes')) {
+                    $stmt = $db->prepare(
+                        "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                                telefono, email,
+                                IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                                estado as estatus
+                         FROM clientes 
+                         WHERE estado = 'activo' AND creado_por = ?
+                         ORDER BY id DESC LIMIT 15"
+                    );
+                    $stmt->bind_param('i', $usuario_actual);
+                } else {
+                    $stmt = $db->prepare(
+                        "SELECT id, nombre as nombre_razon_social, cedula as rnc, 
+                                telefono, email,
+                                IF(tipo_cliente='empresa','Juridica','Fisica') as tipo_persona,
+                                estado as estatus
+                         FROM clientes 
+                         WHERE estado = 'activo'
+                         ORDER BY id DESC LIMIT 15"
+                    );
+                }
             }
             $stmt->execute();
             $clientes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

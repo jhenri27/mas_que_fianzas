@@ -391,15 +391,15 @@
                     <div class="form-group" style="position:relative;">
                         <label>Cliente <span style="color:#dc2626;">*</span></label>
                         <div style="display:flex;gap:8px;">
-                            <input type="text" id="w-cliente-nombre" placeholder="Buscar por nombre o cédula..." 
-                                   oninput="buscarCliente(this.value)" autocomplete="off" style="flex:1;">
+                            <input type="text" id="w-cliente-nombre" placeholder="Buscar cliente por nombre, cédula o teléfono..." 
+                                   oninput="buscarCliente(this.value)" onfocus="mostrarListaClientesExistentes()" autocomplete="off" style="flex:1;">
                             <button type="button" class="btn btn-outline btn-sm" onclick="abrirCrearCliente()" title="Crear cliente nuevo" style="white-space:nowrap;">
-                                <i class="fa-solid fa-user-plus"></i>
+                                <i class="fa-solid fa-user-plus"></i> Crear Nuevo
                             </button>
                         </div>
                         <input type="hidden" id="w-cliente-id">
-                        <div id="cliente-sugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background: var(--bg-card, #ffffff);border:1px solid #e0e7ff;border-radius:8px;z-index:1000;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;"></div>
-                        <span class="hint" id="cliente-seleccionado-info" style="color:#16a34a;display:none;"><i class="fa-solid fa-circle-check"></i> Cliente seleccionado</span>
+                        <div id="cliente-sugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background: var(--bg-card, #ffffff);border:1px solid #cbd5e1;border-radius:8px;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:260px;overflow-y:auto;margin-top:4px;"></div>
+                        <span class="hint" id="cliente-seleccionado-info" style="color:#16a34a;display:none;margin-top:4px;"></span>
                     </div>
                     <div class="form-group">
                         <label>Tipo de Seguro <span style="color:#dc2626;">*</span></label>
@@ -2685,37 +2685,43 @@ async function actualizarCotizacionWizard() {
     }
 }
 
-// BUG FIX 3: buscarCliente corregido — usa d.datos (campo correcto de la API)
 async function buscarCliente(query) {
-    if (!query || query.length < 2) {
-        document.getElementById('cliente-sugerencias').style.display = 'none';
-        return;
-    }
     try {
-        const r = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(query)}`);
+        const q = (query || '').trim();
+        const r = await fetch(`${BASE_API}/clientes.php?search=${encodeURIComponent(q)}`);
         const d = await r.json();
         const box = document.getElementById('cliente-sugerencias');
-        // La API usa respuestaJSON que guarda la lista en 'datos'
         const lista = d.datos || d.data || [];
+        
         if (lista.length > 0) {
-            box.innerHTML = lista.slice(0, 8).map(c =>
+            const tituloHeader = q 
+                ? `<div style="padding:6px 12px;font-size:11px;font-weight:700;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;"><i class="fa-solid fa-magnifying-glass"></i> RESULTADOS ENCONTRADOS (${lista.length})</div>`
+                : `<div style="padding:6px 12px;font-size:11px;font-weight:700;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;"><i class="fa-solid fa-users"></i> CLIENTES REGISTRADOS RECIENTES</div>`;
+
+            box.innerHTML = tituloHeader + lista.slice(0, 10).map(c =>
                 `<div onclick="seleccionarCliente('${c.id}','${(c.nombre_razon_social || '').replace(/'/g, "&apos;")}')" 
                       style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;"
                       onmouseover="this.style.background='#f0f0ff'" onmouseout="this.style.background=''">
-                    <i class="fa-solid fa-user" style="color:#a5b4fc;margin-right:6px;"></i>
-                    <strong>${c.nombre_razon_social || '—'}</strong>
-                    <span style="float:right;font-size:11px;color:#94a3b8;">${c.rnc || ''}</span><br>
-                    <span style="font-size:11px;color:#94a3b8;margin-left:18px;">${c.tipo_persona || ''} ${c.telefono ? '· ' + c.telefono : ''}</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong><i class="fa-solid fa-user-tie" style="color:#6366f1;margin-right:6px;"></i>${c.nombre_razon_social || '—'}</strong>
+                        <span style="font-size:11px;background:#e0e7ff;color:#3730a3;padding:2px 8px;border-radius:12px;font-weight:600;">${c.rnc || 'Sin RNC'}</span>
+                    </div>
+                    <div style="font-size:11px;color:#64748b;margin-top:3px;margin-left:18px;">
+                        <span style="color:#475569;font-weight:500;">${c.tipo_persona || 'Persona Natural'}</span> ${c.telefono ? ' · 📞 ' + c.telefono : ''} ${c.email ? ' · ✉️ ' + c.email : ''}
+                    </div>
                  </div>`
             ).join('') +
-            `<div onclick="abrirCrearCliente()" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:1px solid #e0e7ff;">
-                <i class="fa-solid fa-user-plus"></i> Crear cliente "${query}"
+            `<div onclick="abrirCrearCliente()" style="padding:11px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:2px solid #e0e7ff;display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-user-plus" style="font-size:14px;"></i> Crear cliente nuevo ${q ? '"' + q + '"' : ''}
             </div>`;
             box.style.display = 'block';
         } else {
-            box.innerHTML = `<div style="padding:12px 14px;font-size:13px;color:#64748b;">Sin resultados para "${query}"</div>
-                <div onclick="abrirCrearCliente()" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:1px solid #e0e7ff;">
-                    <i class="fa-solid fa-user-plus"></i> Crear nuevo cliente
+            box.innerHTML = `
+                <div style="padding:12px 14px;font-size:13px;color:#64748b;">
+                    <i class="fa-solid fa-user-slash" style="color:#94a3b8;margin-right:6px;"></i> No existe cliente con "${q}"
+                </div>
+                <div onclick="abrirCrearCliente()" style="padding:11px 14px;cursor:pointer;font-size:13px;color:#4f46e5;font-weight:600;background:#f8f7ff;border-top:1px solid #e0e7ff;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-user-plus" style="font-size:14px;"></i> Crear cliente nuevo "${q}"
                 </div>`;
             box.style.display = 'block';
         }
@@ -2724,14 +2730,40 @@ async function buscarCliente(query) {
     }
 }
 
+function mostrarListaClientesExistentes() {
+    const val = document.getElementById('w-cliente-nombre').value;
+    buscarCliente(val);
+}
+
 function seleccionarCliente(id, nombre) {
     document.getElementById('w-cliente-id').value = id;
     document.getElementById('w-cliente-nombre').value = nombre;
     document.getElementById('cliente-sugerencias').style.display = 'none';
-    // Mostrar confirmación
+    
     const info = document.getElementById('cliente-seleccionado-info');
-    if (info) info.style.display = 'inline';
+    if (info) {
+        info.style.display = 'inline-flex';
+        info.style.alignItems = 'center';
+        info.style.gap = '6px';
+        info.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> Cliente asignado (ID #${id}) <a href="javascript:void(0)" onclick="deseleccionarCliente()" style="color:#dc2626;margin-left:8px;font-weight:600;text-decoration:none;"><i class="fa-solid fa-xmark"></i> Cambiar</a>`;
+    }
 }
+
+function deseleccionarCliente() {
+    document.getElementById('w-cliente-id').value = '';
+    document.getElementById('w-cliente-nombre').value = '';
+    const info = document.getElementById('cliente-seleccionado-info');
+    if (info) info.style.display = 'none';
+    document.getElementById('w-cliente-nombre').focus();
+}
+
+document.addEventListener('click', function(e) {
+    const box = document.getElementById('cliente-sugerencias');
+    const input = document.getElementById('w-cliente-nombre');
+    if (box && input && !box.contains(e.target) && !input.contains(e.target)) {
+        box.style.display = 'none';
+    }
+});
 
 // Crear cliente rápido desde el wizard
 function abrirCrearCliente() {
