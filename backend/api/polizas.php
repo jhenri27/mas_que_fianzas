@@ -20,7 +20,8 @@ require_once '../config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? apache_request_headers()['authorization'] ?? '') : '');
+$headers = function_exists('getallheaders') ? getallheaders() : [];
+$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? $headers['Authorization'] ?? $headers['authorization'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? apache_request_headers()['authorization'] ?? '') : '');
 if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
     $bearer_token = trim($matches[1]);
 }

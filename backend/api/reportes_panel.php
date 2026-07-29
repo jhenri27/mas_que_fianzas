@@ -20,7 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $bearer_token = null;
-$auth_header  = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+$headers = function_exists('getallheaders') ? getallheaders() : [];
+$auth_header  = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? $headers['Authorization'] ?? $headers['authorization']
     ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? apache_request_headers()['authorization'] ?? '') : '');
 
 if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
