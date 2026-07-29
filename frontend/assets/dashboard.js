@@ -737,7 +737,7 @@ class Dashboard {
             const iframe = document.getElementById('cotizador-iframe');
             if (iframe) {
                 // Always reload to avoid caching issues
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/cotizaciones.html?t=' + Date.now();
+                iframe.src = 'modulos/cotizaciones.html?t=' + Date.now();
                 iframe.dataset.loaded = 'true';
                 console.log('Iframe src set to:', iframe.src);
             } else {
@@ -750,7 +750,7 @@ class Dashboard {
             const iframe = document.getElementById('clientes-iframe');
             if (iframe && !iframe.dataset.loaded) {
                 // Forzar obtención sin caché del iframe durante el desarrollo
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/clientes.html?v=4';
+                iframe.src = 'modulos/clientes.html?v=4';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -759,7 +759,7 @@ class Dashboard {
         if (modulo === 'usuarios') {
             const iframe = document.getElementById('usuarios-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/usuarios.html?v=1';
+                iframe.src = 'modulos/usuarios.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -768,7 +768,7 @@ class Dashboard {
         if (modulo === 'fianzas') {
             const iframe = document.getElementById('fianzas-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/fianzas.html?v=1';
+                iframe.src = 'modulos/fianzas.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -777,7 +777,7 @@ class Dashboard {
         if (modulo === 'pagos') {
             const iframe = document.getElementById('pagos-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/pagos.html?v=1';
+                iframe.src = 'modulos/pagos.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -786,7 +786,7 @@ class Dashboard {
         if (modulo === 'siniestros') {
             const iframe = document.getElementById('siniestros-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/siniestros.html?v=1';
+                iframe.src = 'modulos/siniestros.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -795,7 +795,7 @@ class Dashboard {
         if (modulo === 'productos') {
             const iframe = document.getElementById('productos-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/productos.html?v=1';
+                iframe.src = 'modulos/productos.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -804,7 +804,7 @@ class Dashboard {
         if (modulo === 'centro_financiero') {
             const iframe = document.getElementById('finance-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_financiero.html?v=1';
+                iframe.src = 'modulos/centro_financiero.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -813,7 +813,7 @@ class Dashboard {
         if (modulo === 'labs_qa') {
             const iframe = document.getElementById('labs-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/labs-qa.html?v=4';
+                iframe.src = 'modulos/labs-qa.html?v=4';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -822,7 +822,7 @@ class Dashboard {
         if (modulo === 'centro_tecnico') {
             const iframe = document.getElementById('centro-tecnico-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_tecnico.html?v=1';
+                iframe.src = 'modulos/centro_tecnico.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -831,7 +831,7 @@ class Dashboard {
         if (modulo === 'modelador_pdf') {
             const iframe = document.getElementById('modelador-iframe');
             if (iframe) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/modelador_pdf.html?t=' + Date.now();
+                iframe.src = 'modulos/modelador_pdf.html?t=' + Date.now();
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -840,7 +840,7 @@ class Dashboard {
         if (modulo === 'centro_negocios') {
             const iframe = document.getElementById('centro-negocios-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/centro_negocios.html?v=1';
+                iframe.src = 'modulos/centro_negocios.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -849,7 +849,7 @@ class Dashboard {
         if (modulo === 'perfil_data') {
             const iframe = document.getElementById('perfil-data-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/perfil_data.html?v=1';
+                iframe.src = 'modulos/perfil_data.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
