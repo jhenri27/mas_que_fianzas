@@ -2695,14 +2695,15 @@ async function guardarClienteRapido() {
     };
 
     try {
-        const r = await fetch(`${BASE_API}/clientes/crear`, {
+        const r = await fetch(`${BASE_API}/clientes.php/crear`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         });
         const d = await r.json();
         if (d.exito) {
-            seleccionarCliente(d.datos?.id || d.id, nombre);
+            const newId = d.datos?.id || d.datos?.datos?.id || d.id;
+            seleccionarCliente(newId, nombre);
             cerrarModal('modal-crear-cliente');
             mostrarToast(`Cliente "${nombre}" creado y seleccionado`, 'success');
             // Limpiar modal

@@ -61,7 +61,8 @@ try {
 }
 
 try {
-    if (strpos($ruta, '/crear') !== false && $metodo === 'POST') {
+    $action = $_GET['action'] ?? '';
+    if ((strpos($ruta, '/crear') !== false || $action === 'crear') && $metodo === 'POST') {
         $datos = json_decode(file_get_contents('php://input'), true);
         if (empty($datos['nombre_razon_social']) || empty($datos['rnc'])) {
              respuestaJSON(false, 'Nombre/Razón Social y RNC/Cédula son obligatorios', null, 400);
