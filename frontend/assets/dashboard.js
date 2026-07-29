@@ -32,8 +32,8 @@ class Dashboard {
 
         // 3. Verificar Sesión
         if (!api.tieneSesion()) {
-            console.warn('[Dashboard] Sesión no detectada, redirigiendo...');
-            window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
+            console.warn('[Dashboard] Sesión no detectada, redirigiendo a login...');
+            window.location.href = 'index.html';
             return;
         }
 
@@ -1253,9 +1253,7 @@ class Dashboard {
 
     async logout() {
         const resultado = await api.logout();
-        if (resultado.exito) {
-            window.location.href = '/PLATAFORMA_INTEGRADA/frontend/';
-        }
+        window.location.href = 'index.html';
     }
 
     // --- SISTEMA DE CONSULTA GLOBAL ---
