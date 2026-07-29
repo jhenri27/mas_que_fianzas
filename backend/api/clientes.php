@@ -24,8 +24,7 @@ require_once '../ClienteManager.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$bearer_token = null;
-$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? '') : '');
+$auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? (function_exists('apache_request_headers') ? (apache_request_headers()['Authorization'] ?? apache_request_headers()['authorization'] ?? '') : '');
 if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
     $bearer_token = trim($matches[1]);
 }

@@ -1,6 +1,9 @@
+# Pass Authorization header to PHP (Crucial for VPS Bearer token authentication)
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /PLATAFORMA_INTEGRADA/
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
     # No reescribir archivos y carpetas existentes
     RewriteCond %{REQUEST_FILENAME} !-f
