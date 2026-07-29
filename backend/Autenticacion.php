@@ -154,7 +154,7 @@ class Autenticacion {
 
             // 6. Crear sesión en base de datos
             $token_sesion = $this->generarTokenSesion();
-            $fecha_expiracion = date('Y-m-d H:i:s', strtotime('+' . SESSION_TIMEOUT_MINUTES . ' minutes'));
+            $fecha_expiracion = date('Y-m-d H:i:s', strtotime('+30 days'));
 
             $sql_sesion = "INSERT INTO sesiones_usuario 
                           (usuario_id, token_sesion, direccion_ip, navegador_user_agent, fecha_expiracion, activa) 
