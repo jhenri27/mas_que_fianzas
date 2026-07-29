@@ -6,11 +6,37 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
-    # Permitir acceso directo a archivos PHP
+    # Permitir acceso directo a archivos PHP y estáticos
     RewriteCond %{REQUEST_URI} \.(php|html|js|css|jpg|jpeg|png|gif|svg|woff|woff2|ttf|eot)$ [OR]
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
+</IfModule>
+
+# ==============================================================================
+# COMPRESIÓN GZIP (Acelera la VPS reduciendo el peso de transferencia en ~80%)
+# ==============================================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript application/json
+    AddOutputFilterByType DEFLATE image/svg+xml font/opentype application/x-font-ttf font/eot
+</IfModule>
+
+# ==============================================================================
+# CACHÉ DE NAVEGADOR PARA RECURSOS ESTÁTICOS (Evita descargas repetidas)
+# ==============================================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
 # Proteger archivos sensibles
