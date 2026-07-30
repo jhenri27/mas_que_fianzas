@@ -1270,8 +1270,7 @@
                                 if (target === 'config-documentacion') {
                                     const iframe = document.getElementById('documentacion-iframe');
                                     if (iframe) {
-                                        const prefix = (window.location.pathname.indexOf('/dev_plataforma/') !== -1) ? '/dev_plataforma/' : ((window.location.pathname.indexOf('/PLATAFORMA_INTEGRADA/') !== -1) ? '/PLATAFORMA_INTEGRADA/' : '/');
-                                        iframe.src = prefix + 'frontend/modulos/documentacion.php?t=' + Date.now();
+                                        iframe.src = 'modulos/documentacion.php?t=' + Date.now();
                                     }
                                 }
                             });
