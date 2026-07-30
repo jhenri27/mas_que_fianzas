@@ -20,8 +20,8 @@ session_start();
 // Validar token de autorización si no hay sesión PHP activa
 $bearer_token = null;
 $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-if (empty($auth_header) && function_exists('apache_request_headers')) {
-    $headers = apache_request_headers();
+if (empty($auth_header) && function_exists('getallheaders')) {
+    $headers = getallheaders();
     $auth_header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 }
 if (preg_match('/Bearer\s+(.+)$/i', $auth_header, $matches)) {
