@@ -60,7 +60,7 @@ $python_script = dirname(__DIR__) . '/perfiles_engine.py';
 
 // Función para ejecutar comando python
 function runPythonCommand($cmd, $args = []) {
-    $python_bin = 'python'; // Por defecto
+    $python_bin = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'python' : 'python3';
     
     // Si conocemos la ruta de Python de WAMP podemos usarla o simplemente 'python'
     $full_cmd = $python_bin . ' ' . escapeshellarg($cmd);

@@ -5,18 +5,33 @@ import json
 import pymysql
 import pymysql.cursors
 
-# Configuración de base de datos
+import os
+
+# Configuración de base de datos dinámica para Windows (WAMP) y VPS Linux
+DB_USER = os.getenv('DB_USER', 'masque_user')
+DB_PASS = os.getenv('DB_PASS', 'MasQF_2026_Secure!')
+cwd = os.getcwd().replace('\\', '/')
+DB_NAME = os.getenv('DB_NAME', 'masque_fianzas_dev' if 'dev_plataforma' in cwd else 'masque_fianzas_integrada_01')
+
+# Si estamos en Windows con WAMP sin masque_user, fallback a root
 DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',
-    'database': 'masque_fianzas_integrada_01',
+    'host': '127.0.0.1',
+    'user': DB_USER,
+    'password': DB_PASS,
+    'database': DB_NAME,
     'charset': 'utf8mb4',
     'cursorclass': pymysql.cursors.DictCursor
 }
 
 def get_connection():
-    return pymysql.connect(**DB_CONFIG)
+    try:
+        return pymysql.connect(**DB_CONFIG)
+    except Exception as e:
+        # Fallback a root sin password para WAMP local si masque_user no existe localmente
+        alt_config = DB_CONFIG.copy()
+        alt_config['user'] = 'root'
+        alt_config['password'] = ''
+        return pymysql.connect(**alt_config)
 
 def load_json_param(param):
     import os
