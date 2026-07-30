@@ -33,7 +33,7 @@ try {
 
     if ($res_check->num_rows == 0) {
         $stmt_ins = $db->prepare("INSERT INTO perfiles (nombre_perfil, siglas, descripcion, nivel_jerarquico, estado, es_predeterminado, creado_por) VALUES (?, ?, ?, ?, ?, 0, 1)");
-        $stmt_ins->bind_param('sssiss', $nombre_perfil, $siglas, $descripcion, $nivel_jerarquico, $estado);
+        $stmt_ins->bind_param('sssis', $nombre_perfil, $siglas, $descripcion, $nivel_jerarquico, $estado);
         if ($stmt_ins->execute()) {
             $perfil_id = $stmt_ins->insert_id;
             echo "[OK] Perfil '$nombre_perfil' creado exitosamente con ID: $perfil_id\n";
