@@ -1246,7 +1246,7 @@
                             <div id="config-documentacion" class="config-panel" style="padding:0;overflow:hidden;">
                                 <iframe
                                     id="documentacion-iframe"
-                                    src=""
+                                    src="modulos/documentacion.php"
                                     style="width:100%;height:calc(100vh - 130px);border:none;display:block;"
                                     title="Documentación Técnica Modular">
                                 </iframe>
@@ -1263,7 +1263,17 @@
                                 document.querySelectorAll('.config-panel').forEach(p => p.classList.remove('active'));
                                 
                                 btn.classList.add('active');
-                                document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+                                const target = btn.getAttribute('data-target');
+                                const panel = document.getElementById(target);
+                                if (panel) panel.classList.add('active');
+
+                                if (target === 'config-documentacion') {
+                                    const iframe = document.getElementById('documentacion-iframe');
+                                    if (iframe) {
+                                        const prefix = (window.location.pathname.indexOf('/dev_plataforma/') !== -1) ? '/dev_plataforma/' : ((window.location.pathname.indexOf('/PLATAFORMA_INTEGRADA/') !== -1) ? '/PLATAFORMA_INTEGRADA/' : '/');
+                                        iframe.src = prefix + 'frontend/modulos/documentacion.php?t=' + Date.now();
+                                    }
+                                }
                             });
                         });
                         
