@@ -81,17 +81,12 @@ try {
             }
 
             if (empty($funciones_ids)) {
-                $funciones_ids = [NULL];
+                $funciones_ids = [0];
             }
 
             foreach ($funciones_ids as $fn_id) {
-                if ($fn_id === NULL) {
-                    $stmt_p = $db->prepare("INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ver, puede_crear, puede_editar, puede_eliminar) VALUES (?, ?, NULL, 1, 1, 1, 0) ON DUPLICATE KEY UPDATE puede_ver = 1, puede_crear = 1, puede_editar = 1");
-                    $stmt_p->bind_param('ii', $perfil_id, $modulo_id);
-                } else {
-                    $stmt_p = $db->prepare("INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ver, puede_crear, puede_editar, puede_eliminar) VALUES (?, ?, ?, 1, 1, 1, 0) ON DUPLICATE KEY UPDATE puede_ver = 1, puede_crear = 1, puede_editar = 1");
-                    $stmt_p->bind_param('iii', $perfil_id, $modulo_id, $fn_id);
-                }
+                $stmt_p = $db->prepare("INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ejecutar, ver_datos, crear_datos, editar_datos, eliminar_datos) VALUES (?, ?, ?, 1, 1, 1, 1, 0) ON DUPLICATE KEY UPDATE puede_ejecutar = 1, ver_datos = 1, crear_datos = 1, editar_datos = 1");
+                $stmt_p->bind_param('iii', $perfil_id, $modulo_id, $fn_id);
                 $stmt_p->execute();
                 $stmt_p->close();
                 $permisos_creados++;

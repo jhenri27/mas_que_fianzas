@@ -24,21 +24,23 @@ INSERT INTO perfiles (
     estado = 'activo';
 
 -- Asignar Permisos del Sistema para el Perfil Perito-Mensajero (ID derivado)
-INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ver, puede_crear, puede_editar, puede_eliminar)
+INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ejecutar, ver_datos, crear_datos, editar_datos, eliminar_datos)
 SELECT 
     p.id AS perfil_id,
     m.id AS modulo_id,
-    f.id AS funcion_id,
-    1 AS puede_ver,
-    1 AS puede_crear,
-    1 AS puede_editar,
-    0 AS puede_eliminar
+    COALESCE(f.id, 0) AS funcion_id,
+    1 AS puede_ejecutar,
+    1 AS ver_datos,
+    1 AS crear_datos,
+    1 AS editar_datos,
+    0 AS eliminar_datos
 FROM perfiles p
 CROSS JOIN modulos m
 LEFT JOIN funciones f ON f.modulo_id = m.id
 WHERE p.nombre_perfil = 'Perito-Mensajero'
   AND m.nombre_modulo IN ('dashboard', 'clientes', 'polizas', 'siniestros', 'perfil_data', 'notificaciones', 'helpdesk')
 ON DUPLICATE KEY UPDATE 
-    puede_ver = 1, 
-    puede_crear = 1, 
-    puede_editar = 1;
+    puede_ejecutar = 1, 
+    ver_datos = 1, 
+    crear_datos = 1, 
+    editar_datos = 1;
