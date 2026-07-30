@@ -1,3 +1,11 @@
+
+const getApiPrefix = () => {
+    const p = window.location.pathname;
+    if (p.indexOf('/dev_plataforma/') !== -1) return '/dev_plataforma/';
+    if (p.indexOf('/PLATAFORMA_INTEGRADA/') !== -1) return '/PLATAFORMA_INTEGRADA/';
+    return '/';
+};
+
 /**
  * Lógica del Dashboard Principal
  * Sistema Integrado MAS QUE FIANZAS
@@ -97,7 +105,7 @@ class Dashboard {
                 });
                 
                 // Fetch Admin Sys Info
-                fetch('/PLATAFORMA_INTEGRADA/backend/api/system_info.php', {
+                fetch(getApiPrefix() + 'backend/api/system_info.php', {
                     headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('token_sesion') || '') }
                 })
                 .then(resp => resp.json())
@@ -117,7 +125,7 @@ class Dashboard {
             
             // Carga dinámica de permisos en BD
             const token = localStorage.getItem('token_sesion') || '';
-            fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles.php/obtener/${perfilId}`, {
+            fetch(`${getApiPrefix()}backend/api/perfiles.php/obtener/${perfilId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             })
             .then(resp => resp.json())
@@ -198,7 +206,7 @@ class Dashboard {
         try {
             const token = localStorage.getItem('token_sesion') || '';
             if (!token) return;
-            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+            const resp = await fetch(getApiPrefix() + 'backend/api/mi_perfil.php', {
                 credentials: 'include',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
@@ -543,7 +551,7 @@ class Dashboard {
 
         // 2. Cotizaciones (Fianzas & Seguros de Ley)
         try {
-            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/cotizaciones.php?action=listar&limite=500');
+            const resp = await fetch(getApiPrefix() + 'backend/api/cotizaciones.php?action=listar&limite=500');
             const data = await resp.json();
             if (data.exito && Array.isArray(data.datos)) {
                 const hist = data.datos;
@@ -717,7 +725,7 @@ class Dashboard {
         if (modulo === 'auditoria_lineal') {
             const iframe = document.getElementById('auditoria-lineal-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/auditoria_lineal.html?v=1';
+                iframe.src = getApiPrefix() + 'frontend/modulos/auditoria_lineal.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -726,7 +734,7 @@ class Dashboard {
         if (modulo === 'helpdesk') {
             const iframe = document.getElementById('helpdesk-iframe');
             if (iframe && !iframe.dataset.loaded) {
-                iframe.src = '/PLATAFORMA_INTEGRADA/frontend/modulos/helpdesk.html?v=1';
+                iframe.src = getApiPrefix() + 'frontend/modulos/helpdesk.html?v=1';
                 iframe.dataset.loaded = 'true';
             }
         }
@@ -1420,13 +1428,13 @@ class Dashboard {
             const token = localStorage.getItem('token_sesion') || '';
             
             // 1. Obtener todos los módulos y funciones
-            const respModulos = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/listar', {
+            const respModulos = await fetch(getApiPrefix() + 'backend/api/perfiles_engine.php/listar', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const dataModulos = await respModulos.json();
             
             // 2. Obtener los permisos guardados del perfil seleccionado
-            const respPermisos = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/obtener/${perfilId}`, {
+            const respPermisos = await fetch(`${getApiPrefix()}backend/api/perfiles_engine.php/obtener/${perfilId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const dataPermisos = await respPermisos.json();
@@ -1509,7 +1517,7 @@ class Dashboard {
             // Cargar datos del perfil data para resumen superior
             const resumenContainer = document.getElementById('perfilResumenInfoContainer');
             if (resumenContainer) {
-                fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfil_data.php?perfil_id=${perfilId}`, {
+                fetch(`${getApiPrefix()}backend/api/perfil_data.php?perfil_id=${perfilId}`, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
                 .then(r => r.json())
@@ -1583,7 +1591,7 @@ class Dashboard {
         
         try {
             const token = localStorage.getItem('token_sesion') || '';
-            const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/guardar/${perfilId}`, {
+            const resp = await fetch(`${getApiPrefix()}backend/api/perfiles_engine.php/guardar/${perfilId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1654,7 +1662,7 @@ class Dashboard {
     async cargarPerfilesMantenimiento() {
         try {
             const token = localStorage.getItem('token_sesion') || '';
-            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=listar', {
+            const resp = await fetch(getApiPrefix() + 'backend/api/perfiles_mantenimiento.php?action=listar', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const result = await resp.json();
@@ -1771,7 +1779,7 @@ class Dashboard {
             
             try {
                 const token = localStorage.getItem('token_sesion') || '';
-                const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
+                const resp = await fetch(`${getApiPrefix()}backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 const result = await resp.json();
@@ -1824,7 +1832,7 @@ class Dashboard {
         
         try {
             const token = localStorage.getItem('token_sesion') || '';
-            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=guardar', {
+            const resp = await fetch(getApiPrefix() + 'backend/api/perfiles_mantenimiento.php?action=guardar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1853,7 +1861,7 @@ class Dashboard {
         
         try {
             const token = localStorage.getItem('token_sesion') || '';
-            const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=actualizar_estado', {
+            const resp = await fetch(getApiPrefix() + 'backend/api/perfiles_mantenimiento.php?action=actualizar_estado', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1883,7 +1891,7 @@ class Dashboard {
         
         try {
             const token = localStorage.getItem('token_sesion') || '';
-            const resp = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=auditoria&perfil_id=${perfilId}`, {
+            const resp = await fetch(`${getApiPrefix()}backend/api/perfiles_mantenimiento.php?action=auditoria&perfil_id=${perfilId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const result = await resp.json();
@@ -1940,13 +1948,13 @@ class Dashboard {
             MQF.toast('Obteniendo información del perfil para exportar...', 'info');
             
             // 1. Obtener detalles del perfil
-            const respP = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
+            const respP = await fetch(`${getApiPrefix()}backend/api/perfiles_mantenimiento.php?action=obtener&id=${perfilId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const dataP = await respP.json();
             
             // 2. Obtener permisos de la malla
-            const respM = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/perfiles_engine.php/obtener/${perfilId}`, {
+            const respM = await fetch(`${getApiPrefix()}backend/api/perfiles_engine.php/obtener/${perfilId}`, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const dataM = await respM.json();
@@ -2109,7 +2117,7 @@ async function abrirMiPerfil() {
     // Luego buscar datos completos desde el backend (foto_perfil, teléfono, etc.)
     try {
         const token = localStorage.getItem('token_sesion') || '';
-        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+        const resp = await fetch(getApiPrefix() + 'backend/api/mi_perfil.php', {
             credentials: 'include',
             headers: { 'Authorization': 'Bearer ' + token }
         });
@@ -2150,7 +2158,7 @@ async function subirFotoPerfil(file) {
     formData.append('foto', file);
     try {
         const token = localStorage.getItem('token_sesion') || '';
-        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+        const resp = await fetch(getApiPrefix() + 'backend/api/mi_perfil.php', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Authorization': 'Bearer ' + token },
@@ -2198,7 +2206,7 @@ async function guardarMiPerfil() {
     statusEl.style.color = '#6366f1';
     try {
         const token = localStorage.getItem('token_sesion') || '';
-        const resp = await fetch('/PLATAFORMA_INTEGRADA/backend/api/mi_perfil.php', {
+        const resp = await fetch(getApiPrefix() + 'backend/api/mi_perfil.php', {
             method: 'PUT',
             credentials: 'include',
             headers: {
