@@ -68,29 +68,11 @@ try {
             $mod_data = $res_mod->fetch_assoc();
             $modulo_id = $mod_data['id'];
 
-            // Buscar funciones del módulo
-            $stmt_fn = $db->prepare("SELECT id FROM funciones WHERE modulo_id = ?");
-            $stmt_fn->bind_param('i', $modulo_id);
-            $stmt_fn->execute();
-            $res_fn = $stmt_fn->get_result();
-            $stmt_fn->close();
-
-            $funciones_ids = [];
-            while ($f_row = $res_fn->fetch_assoc()) {
-                $funciones_ids[] = $f_row['id'];
-            }
-
-            if (empty($funciones_ids)) {
-                $funciones_ids = [0];
-            }
-
-            foreach ($funciones_ids as $fn_id) {
-                $stmt_p = $db->prepare("INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ejecutar, ver_datos, crear_datos, editar_datos, eliminar_datos) VALUES (?, ?, ?, 1, 1, 1, 1, 0) ON DUPLICATE KEY UPDATE puede_ejecutar = 1, ver_datos = 1, crear_datos = 1, editar_datos = 1");
-                $stmt_p->bind_param('iii', $perfil_id, $modulo_id, $fn_id);
-                $stmt_p->execute();
-                $stmt_p->close();
-                $permisos_creados++;
-            }
+            $stmt_p = $db->prepare("INSERT INTO permisos_perfil (perfil_id, modulo_id, funcion_id, puede_ejecutar, ver_datos, crear_datos, editar_datos, eliminar_datos) VALUES (?, ?, 0, 1, 1, 1, 1, 0) ON DUPLICATE KEY UPDATE puede_ejecutar = 1, ver_datos = 1, crear_datos = 1, editar_datos = 1");
+            $stmt_p->bind_param('ii', $perfil_id, $modulo_id);
+            $stmt_p->execute();
+            $stmt_p->close();
+            $permisos_creados++;
         }
     }
 
