@@ -122,6 +122,12 @@ Este catálogo codificado (**Known Error Database - KEDB**) establece la taxonom
 - **Causa Raíz**: 1) Ausencia del archivo `/var/www/dev_plataforma/backend/config.local.php`, provocando que la conexión a MySQL utilizara `root@localhost` sin contraseña. 2) Falta de reglas de alias explícitas en Nginx para `/dev/` y `/PLATAFORMA_INTEGRADA/dev/` con manejo `$uri $uri/`, respondiendo con `index.html` (text/html) ante peticiones CSS/JS. 3) Falta de enrutamiento REST para la API de autenticación `/backend/api/auth/login` en DEV.
 - **Solución**: 1) Creación de `/var/www/dev_plataforma/backend/config.local.php` con credenciales válidas (`masque_user`). 2) Configuración de bloques `location` en Nginx para `/dev/`, `/dev_plataforma/` y `/PLATAFORMA_INTEGRADA/dev/` con ejecución PHP y entrega estricta de CSS/JS. 3) Adición de enrutador REST para `/backend/api/auth/(.*)$` en DEV. 4) Actualización de hashes de contraseñas para los usuarios `admin`, `jtaveras` y `pdv.prueba`.
 
+### `ERR-DOC-308`: Pérdida de Contexto DEV y Redirección Indebida al Dashboard de Producción
+- **Síntoma**: Al iniciar sesión en DEV (`/dev/frontend/`) o navegar entre módulos, el sistema redirigía al usuario a `http://169.58.51.147/frontend/dashboard.html` (Producción), perdiendo el contexto de desarrollo.
+- **Causa Raíz**: 1) `login.js` y los listeners de navegación evaluaban prefijos rígidos que omitían la subcarpeta `/dev/` al calcular las rutas relativas. 2) Los módulos carecían de un script detector de ambiente global para marcar la distintiva `[DEV]` en los títulos de pestañas del navegador, barras superiores y logotipos.
+- **Solución**: 1) Creación de `frontend/assets/env-detector.js` para detectar automáticamente el ambiente DEV, anteponer `[DEV]` al `document.title` de las pestañas del navegador, inyectar la barra superior de advertencia `🧪 [DEV] AMBIENTE DE DESARROLLO Y PRUEBAS`, añadir insignias `DEV` al logo y encabezados, y reescribir redirecciones internas. 2) Inyección de `env-detector.js` en los 45 archivos HTML/PHP del frontend. 3) Actualización de `login.js`, `dashboard.js`, `api-client.js` y `control_remoto_listener.js` con `obtenerRutaBaseFrontend()`.
+
 ---
 *Fin del Catálogo KEDB — MÁS QUE FIANZAS, S.R.L. | Versión NOFTRAB v4.0*
+
 

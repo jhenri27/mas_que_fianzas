@@ -1248,20 +1248,6 @@
                 </div>
             </div>
         </article>
-
-        <!-- FAIL-021 -->
-        <article class="error-card ui" id="fail-021">
-            <div class="error-card-header">
-                <span class="error-code-badge badge-ui">FAIL-021</span>
-                <h3 class="error-card-title">Desalineación y Espaciado Vertical Insuficiente en Filas de Datos de Tipo de Fianza y Aseguradora en Cotización Resumen PDF</h3>
-            </div>
-            <div class="error-fields">
-                <div class="error-field">
-                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
-                    <span class="field-value">Los datos de las secciones "Tipo de Fianza" y "Aseguradora" se renderizaban pegados e invadiendo la línea inferior de los rectángulos grises de encabezado.</span>
-                </div>
-                <div class="error-field">
-                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
                     <span class="field-value">En <code class="inline">dibujarCotizacionFianzaSimplePDF</code> (<code class="inline">frontend/assets/data-export.js</code>), el salto previo a la impresión del texto de datos era insuficiente (<code class="inline">y += 8</code>), dejando solo 2mm entre el fondo del rectángulo gris y el baseline del texto.</span>
                 </div>
                 <div class="error-field">
@@ -1289,6 +1275,28 @@
                 <div class="error-field">
                     <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
                     <span class="field-value">1) Creación de <code class="inline">/var/www/dev_plataforma/backend/config.local.php</code> con credenciales válidas (<code class="inline">masque_user</code>). 2) Configuración de bloques <code class="inline">location</code> en Nginx para <code class="inline">/dev/</code>, <code class="inline">/dev_plataforma/</code> y <code class="inline">/PLATAFORMA_INTEGRADA/dev/</code> con ejecución PHP y entrega estricta de CSS/JS. 3) Adición de enrutador REST para <code class="inline">/backend/api/auth/(.*)$</code> en DEV. 4) Actualización de hashes de contraseñas para los usuarios <code class="inline">admin</code>, <code class="inline">jtaveras</code> y <code class="inline">pdv.prueba</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-023 -->
+        <article class="error-card ui" id="fail-023">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-023</span>
+                <h3 class="error-card-title">Pérdida de Contexto DEV y Redirección Indebida al Dashboard de Producción</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al iniciar sesión en DEV (<code class="inline">/dev/frontend/</code>) o navegar entre módulos, el sistema redirigía al usuario a <code class="inline">http://169.58.51.147/frontend/dashboard.html</code> (Producción), perdiendo el contexto de desarrollo.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) <code class="inline">login.js</code> y los listeners de navegación evaluaban prefijos rígidos que omitían la subcarpeta <code class="inline">/dev/</code> al calcular las rutas relativas. 2) Los módulos carecían de un script detector de ambiente global para marcar la distintiva <code class="inline">[DEV]</code> en los títulos de pestañas del navegador, barras superiores y logotipos.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Creación de <code class="inline">frontend/assets/env-detector.js</code> para detectar automáticamente el ambiente DEV, anteponer <code class="inline">[DEV]</code> al <code class="inline">document.title</code> de las pestañas del navegador, inyectar la barra superior de advertencia <code class="inline">🧪 [DEV] AMBIENTE DE DESARROLLO Y PRUEBAS</code>, añadir insignias <code class="inline">DEV</code> al logo y encabezados, y reescribir redirecciones internas. 2) Inyección de <code class="inline">env-detector.js</code> en los 45 archivos HTML/PHP del frontend. 3) Actualización de <code class="inline">login.js</code>, <code class="inline">dashboard.js</code>, <code class="inline">api-client.js</code> y <code class="inline">control_remoto_listener.js</code> con <code class="inline">obtenerRutaBaseFrontend()</code>.</span>
                 </div>
             </div>
         </article>

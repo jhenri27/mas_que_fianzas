@@ -162,6 +162,11 @@ To prevent falsification, duplication, and dirty data entry, all platform inputs
 - **Cause:** 1) Missing `/var/www/dev_plataforma/backend/config.local.php` file, causing MySQL connection fallback to `root@localhost` with empty password. 2) Nginx lacked explicit `/dev/` and `/PLATAFORMA_INTEGRADA/dev/` alias location blocks with `$uri $uri/` fallbacks, serving `index.html` for CSS/JS requests. 3) Nginx lacked REST API endpoint route for `/backend/api/auth/login` in DEV.
 - **Solution:** 1) Created `/var/www/dev_plataforma/backend/config.local.php` with `masque_user` credentials. 2) Configured Nginx location blocks for `/dev/`, `/dev_plataforma/`, and `/PLATAFORMA_INTEGRADA/dev/` with FastCGI PHP execution and exact MIME type asset delivery. 3) Added DEV REST API location block for `/backend/api/auth/(.*)$` passing `PATH_INFO`. 4) Updated password hashes for `admin`, `jtaveras`, and `pdv.prueba`.
 
+### [FAIL-023]: Pérdida de Contexto DEV y Redirección Indebida al Dashboard de Producción
+- **Symptom:** Logging in from DEV (`/dev/frontend/`) or navigating between modules redirected the user to `http://169.58.51.147/frontend/dashboard.html` (Production), losing the `[DEV]` environment context.
+- **Cause:** 1) `login.js` and module navigation listeners contained hardcoded prefix logic (`const basePrefix = isSubdir ? '/PLATAFORMA_INTEGRADA' : '';`) that omitted `/dev/` when evaluating `/dev/frontend/` pathnames. 2) Modules lacked a global environment detector script to enforce `[DEV]` branding in browser titles, headers, and top banners.
+- **Solution:** 1) Implemented `frontend/assets/env-detector.js` to automatically detect DEV environments, prepend `[DEV]` to `document.title`, inject a top warning bar, append `DEV` badges to sidebar logos and header titles, and rewrite internal redirects. 2) Injected `env-detector.js` across all 45 HTML/PHP pages. 3) Updated `login.js`, `dashboard.js`, `api-client.js`, and `control_remoto_listener.js` with `obtenerRutaBaseFrontend()`.
+
 ---
 
 ## 🛡️ Norma VAF y Regla de Actualización Obligatoria KEDB (NOFTRAB v4.0 Cláusula 4 y 5)
