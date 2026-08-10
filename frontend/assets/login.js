@@ -9,12 +9,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.querySelector('.btn-login');
     const alertaContainer = document.getElementById('alertaContainer');
 
-    const isSubdir = window.location.pathname.startsWith('/PLATAFORMA_INTEGRADA');
-    const basePrefix = isSubdir ? '/PLATAFORMA_INTEGRADA' : '';
+    function obtenerRutaBaseFrontend() {
+        const p = window.location.pathname;
+        if (p.includes('/dev_plataforma/')) return '/dev_plataforma/frontend';
+        if (p.includes('/PLATAFORMA_INTEGRADA/dev/')) return '/PLATAFORMA_INTEGRADA/dev/frontend';
+        if (p.includes('/dev/')) return '/dev/frontend';
+        if (p.includes('/PLATAFORMA_INTEGRADA/')) return '/PLATAFORMA_INTEGRADA/frontend';
+        return '/frontend';
+    }
+
+    const baseFrontendPath = obtenerRutaBaseFrontend();
+    const esAmbienteDev = window.location.pathname.includes('/dev');
+
+    // Inyectar distintivo visual si estamos en ambiente DEV
+    if (esAmbienteDev) {
+        const loginHeader = document.querySelector('.login-header');
+        if (loginHeader && !document.getElementById('devEnvBanner')) {
+            const devBanner = document.createElement('div');
+            devBanner.id = 'devEnvBanner';
+            devBanner.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: white; padding: 8px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px; margin: 12px 0 15px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; gap: 8px;';
+            devBanner.innerHTML = '🧪 AMBIENTE DE DESARROLLO (DEV)';
+            loginHeader.appendChild(devBanner);
+        }
+    }
 
     // Verificar si ya hay sesión activa
     if (api.tieneSesion()) {
-        window.location.href = `${basePrefix}/frontend/dashboard.html`;
+        window.location.href = `${baseFrontendPath}/dashboard.html`;
     }
 
     /**
@@ -43,12 +64,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (resultado.exito) {
                 mostrarAlerta('¡Bienvenido! Redirigiendo...', 'success');
 
-                // Redirigir al dashboard
+                // Redirigir al dashboard preservando el ambiente DEV o PROD
                 setTimeout(() => {
                     if (resultado.requiere_cambio_password) {
-                        window.location.href = `${basePrefix}/frontend/cambiar-password.html`;
+                        window.location.href = `${baseFrontendPath}/cambiar-password.html`;
                     } else {
-                        window.location.href = `${basePrefix}/frontend/dashboard.html`;
+                        window.location.href = `${baseFrontendPath}/dashboard.html`;
                     }
                 }, 1500);
             } else {
@@ -70,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 btnD.disabled = true;
                                 btnD.style.opacity = '0.7';
                                 try {
-                                    const req = await fetch('http://localhost/PLATAFORMA_INTEGRADA/backend/api/auth.php/solicitar-desbloqueo', {
+                                    const req = await fetch(`${basePrefix}/backend/api/auth.php/solicitar-desbloqueo`, {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ username: usernameInput.value.trim() })

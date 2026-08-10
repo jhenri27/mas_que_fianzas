@@ -82,33 +82,53 @@
             case 'NAVIGATE_POLIZAS':
                 mostrarBannerIA('IA Navegando al Módulo de Pólizas en Vivo...');
                 setTimeout(() => {
-                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/modulos/polizas.html';
+                    const p = window.location.pathname;
+                    let prefix = '/PLATAFORMA_INTEGRADA';
+                    if (p.includes('/dev_plataforma/')) prefix = '/dev_plataforma';
+                    else if (p.includes('/PLATAFORMA_INTEGRADA/dev/')) prefix = '/PLATAFORMA_INTEGRADA/dev';
+                    else if (p.includes('/dev/')) prefix = '/dev';
+                    window.location.href = `${prefix}/frontend/modulos/polizas.html`;
                 }, 1500);
                 break;
 
             case 'NAVIGATE_FIANZAS':
                 mostrarBannerIA('IA Navegando al Módulo de Fianzas en Vivo...');
                 setTimeout(() => {
-                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/modulos/fianzas.html';
+                    const p = window.location.pathname;
+                    let prefix = '/PLATAFORMA_INTEGRADA';
+                    if (p.includes('/dev_plataforma/')) prefix = '/dev_plataforma';
+                    else if (p.includes('/PLATAFORMA_INTEGRADA/dev/')) prefix = '/PLATAFORMA_INTEGRADA/dev';
+                    else if (p.includes('/dev/')) prefix = '/dev';
+                    window.location.href = `${prefix}/frontend/modulos/fianzas.html`;
                 }, 1500);
                 break;
 
             case 'NAVIGATE_PRODUCTOS':
                 mostrarBannerIA('IA Navegando al Catálogo de Productos en Vivo...');
                 setTimeout(() => {
-                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/modulos/productos.html';
+                    const p = window.location.pathname;
+                    let prefix = '/PLATAFORMA_INTEGRADA';
+                    if (p.includes('/dev_plataforma/')) prefix = '/dev_plataforma';
+                    else if (p.includes('/PLATAFORMA_INTEGRADA/dev/')) prefix = '/PLATAFORMA_INTEGRADA/dev';
+                    else if (p.includes('/dev/')) prefix = '/dev';
+                    window.location.href = `${prefix}/frontend/modulos/productos.html`;
                 }, 1500);
                 break;
 
             case 'NAVIGATE_DASHBOARD':
                 mostrarBannerIA('IA Regresando al Dashboard Principal...');
                 setTimeout(() => {
-                    window.location.href = '/PLATAFORMA_INTEGRADA/frontend/dashboard.html';
+                    const p = window.location.pathname;
+                    let prefix = '/PLATAFORMA_INTEGRADA';
+                    if (p.includes('/dev_plataforma/')) prefix = '/dev_plataforma';
+                    else if (p.includes('/PLATAFORMA_INTEGRADA/dev/')) prefix = '/PLATAFORMA_INTEGRADA/dev';
+                    else if (p.includes('/dev/')) prefix = '/dev';
+                    window.location.href = `${prefix}/frontend/dashboard.html`;
                 }, 1500);
                 break;
         }
     }
 
     // Polling cada 1 segundo
-    setInterval(escucharComandoRemotos, 1000);
+    setInterval(escucharComandosRemotos, 1000);
 })();

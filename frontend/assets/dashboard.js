@@ -2,6 +2,8 @@
 const getApiPrefix = () => {
     const p = window.location.pathname;
     if (p.indexOf('/dev_plataforma/') !== -1) return '/dev_plataforma/';
+    if (p.indexOf('/PLATAFORMA_INTEGRADA/dev/') !== -1) return '/PLATAFORMA_INTEGRADA/dev/';
+    if (p.indexOf('/dev/') !== -1) return '/dev/';
     if (p.indexOf('/PLATAFORMA_INTEGRADA/') !== -1) return '/PLATAFORMA_INTEGRADA/';
     return '/';
 };
@@ -57,6 +59,27 @@ class Dashboard {
     }
 
     setupUI() {
+        // Inyectar distintivo visual si estamos en ambiente DEV
+        const esAmbienteDev = window.location.pathname.includes('/dev');
+        if (esAmbienteDev) {
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle && !document.getElementById('devEnvHeaderBadge')) {
+                const badge = document.createElement('span');
+                badge.id = 'devEnvHeaderBadge';
+                badge.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 0 12px rgba(217, 119, 6, 0.6); border: 1px solid rgba(255,255,255,0.4); margin-left: 12px; vertical-align: middle; display: inline-flex; align-items: center; gap: 6px;';
+                badge.innerHTML = '🧪 AMBIENTE DE DESARROLLO (DEV)';
+                pageTitle.appendChild(badge);
+            }
+            
+            if (!document.getElementById('devTopBarAlert')) {
+                const topAlert = document.createElement('div');
+                topAlert.id = 'devTopBarAlert';
+                topAlert.style.cssText = 'background: linear-gradient(90deg, #b45309, #d97706, #b45309); color: #ffffff; font-size: 12px; font-weight: 700; text-align: center; padding: 5px 10px; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 100000; position: relative; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;';
+                topAlert.innerHTML = '🧪 <strong>MODO DESARROLLO (DEV)</strong> — Estás operando en el entorno de pruebas de MÁS QUE FIANZAS.';
+                document.body.insertBefore(topAlert, document.body.firstChild);
+            }
+        }
+
         // Actualizar información del usuario
         const userName = document.getElementById('userName');
         if (this.usuarioActual && this.usuarioActual.nombre_completo) {
@@ -302,14 +325,47 @@ class Dashboard {
             });
         });
 
-        // Menu toggle mobile
-        const menuToggle = document.getElementById('menuToggle');
-        if (menuToggle) {
-            menuToggle.addEventListener('click', () => {
-                const sidebar = document.querySelector('.sidebar-nav');
+        // Menu toggle mobile (Off-Canvas Drawer & Backdrop)
+        document.querySelectorAll('.menu-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sidebar = document.querySelector('.sidebar');
+                if (!sidebar) return;
+
+                sidebar.classList.toggle('mobile-open');
                 sidebar.classList.toggle('active');
+
+                let backdrop = document.querySelector('.sidebar-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.className = 'sidebar-backdrop';
+                    document.body.appendChild(backdrop);
+                    backdrop.addEventListener('click', () => {
+                        sidebar.classList.remove('mobile-open', 'active');
+                        backdrop.classList.remove('active');
+                    });
+                }
+
+                const isOpened = sidebar.classList.contains('mobile-open') || sidebar.classList.contains('active');
+                if (isOpened) {
+                    backdrop.classList.add('active');
+                } else {
+                    backdrop.classList.remove('active');
+                }
             });
-        }
+        });
+
+        // Cierre automático del menú móvil al seleccionar cualquier módulo
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.querySelector('.sidebar');
+                    const backdrop = document.querySelector('.sidebar-backdrop');
+                    if (sidebar) sidebar.classList.remove('mobile-open', 'active');
+                    if (backdrop) backdrop.classList.remove('active');
+                }
+            });
+        });
 
         // Logout
         const logoutBtn = document.getElementById('logoutBtn');
@@ -772,11 +828,11 @@ class Dashboard {
             }
         }
 
-        // Si es fianzas, forzar carga del iframe (Norma NOFTRAB)
+        // Si es fianzas, forzar carga del iframe con timestamp (Norma NOFTRAB)
         if (modulo === 'fianzas') {
             const iframe = document.getElementById('fianzas-iframe');
-            if (iframe && !iframe.dataset.loaded) {
-                iframe.src = 'modulos/fianzas.html?v=1';
+            if (iframe) {
+                iframe.src = 'modulos/fianzas.html?t=' + Date.now();
                 iframe.dataset.loaded = 'true';
             }
         }
