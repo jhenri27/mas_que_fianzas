@@ -42,7 +42,9 @@
         }
 
         // 2. Barra Superior Global DEV (Única y elegante)
-        if (!document.getElementById('mqf-dev-global-bar')) {
+        const isLoginPage = !!(document.querySelector('.login-page') || document.querySelector('.login-container'));
+        
+        if (!isLoginPage && !document.getElementById('mqf-dev-global-bar')) {
             const devBar = document.createElement('div');
             devBar.id = 'mqf-dev-global-bar';
             devBar.style.cssText = 'background: linear-gradient(90deg, #b45309, #d97706, #b45309); color: #ffffff; font-size: 11px; font-weight: 800; text-align: center; padding: 5px 12px; letter-spacing: 0.8px; text-transform: uppercase; box-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative; z-index: 999999; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: system-ui, -apple-system, sans-serif;';
@@ -77,12 +79,30 @@
             pageTitle.appendChild(headerTag);
         }
 
-        // 5. Insignia en la pantalla de Login (si existe .login-header)
+        // 5. Diferenciador DEV dentro del Área de Bienvenida (Login Side)
+        const loginSideContent = document.querySelector('.login-side-content');
+        if (loginSideContent && !document.getElementById('mqf-dev-welcome-card')) {
+            const welcomeCard = document.createElement('div');
+            welcomeCard.id = 'mqf-dev-welcome-card';
+            welcomeCard.style.cssText = 'background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 12px; padding: 14px 18px; color: #ffffff; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); font-family: system-ui, -apple-system, sans-serif; text-align: left;';
+            welcomeCard.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <span style="background: #f59e0b; color: #111111; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">🧪 ENTORNO DEV</span>
+                    <span>PRUEBAS & DESARROLLO</span>
+                </div>
+                <div style="font-size: 12px; opacity: 0.92; margin-top: 8px; line-height: 1.45;">
+                    Plataforma de pruebas para homologación de usuarios, perfiles y permisos de la plataforma.
+                </div>
+            `;
+            loginSideContent.insertBefore(welcomeCard, loginSideContent.firstChild);
+        }
+
+        // 6. Insignia sobria en la tarjeta de formulario de Login (.login-header)
         const loginHeader = document.querySelector('.login-header');
         if (loginHeader && !document.getElementById('mqf-dev-login-tag')) {
             const loginTag = document.createElement('div');
             loginTag.id = 'mqf-dev-login-tag';
-            loginTag.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: white; padding: 6px 14px; border-radius: 8px; text-align: center; font-weight: 800; font-size: 12px; margin: 10px 0 15px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; gap: 6px;';
+            loginTag.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: white; padding: 5px 14px; border-radius: 20px; text-align: center; font-weight: 800; font-size: 11px; margin: 10px auto 5px auto; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3); border: 1px solid rgba(255,255,255,0.3); display: inline-flex; align-items: center; justify-content: center; gap: 6px; letter-spacing: 0.5px;';
             loginTag.innerHTML = '🧪 AMBIENTE DE DESARROLLO (DEV)';
             loginHeader.appendChild(loginTag);
         }

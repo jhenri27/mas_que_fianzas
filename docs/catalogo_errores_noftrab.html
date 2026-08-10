@@ -1309,7 +1309,28 @@
                 </div>
             </div>
         </article>
-    </section>
+            <!-- FAIL-025 -->
+        <article class="error-card ui" id="fail-025">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-025</span>
+                <h3 class="error-card-title">Desalineación de Marcas DEV en Login, Omisión de Opciones en Select de Perfil y Fallo de Carga en Malla de Permisos</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">1) En la pantalla de login (<code class="inline">/dev/frontend/index.html</code>), la barra DEV sobresalía horizontalmente en el margen izquierdo. 2) Al editar al usuario <code class="inline">jtaveras</code> en la modal USUARIOS, no se guardaba el perfil <code class="inline">Supervisor Comercial</code>. 3) Al seleccionar un perfil en <code class="inline">Configuración -> Perfiles y Permisos</code>, se mostraba el error <code class="inline">"No se pudieron cargar los datos de permisos"</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) <code class="inline">#mqf-dev-global-bar</code> carecía de detección de diseño para la página de login, rompiendo los márgenes laterales. 2) La modal <code class="inline">&lt;select id="usuarioPerfil"&gt;</code> carecía de elementos <code class="inline">&lt;option&gt;</code> en el HTML estático y no se poblaba dinámicamente en JS, haciendo que la asignación <code class="inline">.value</code> fallara silenciosamente. 3) La consulta de permisos en <code class="inline">dashboard.js</code> dependía estrictamente del token en <code class="inline">localStorage</code> sin fallback, retornando 401 si no existía o si la API de Python requería contingencia.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Se actualizó <code class="inline">env-detector.js</code> para suprimir la barra superior de margen en login e inyectar una tarjeta DEV estilizada dentro del panel "Bienvenido" (<code class="inline">.login-side-content</code>). 2) Se actualizó <code class="inline">abrirModalUsuario()</code> en <code class="inline">dashboard.js</code> para poblar dinámicamente el <code class="inline">&lt;select id="usuarioPerfil"&gt;</code> antes de asignar el valor del perfil, y se actualizó a <code class="inline">jtaveras</code> con <code class="inline">perfil_id = 9</code> (Supervisor Comercial). 3) Se añadieron fallbacks de token (<code class="inline">sessionStorage</code>, <code class="inline">MQF_TOKEN</code>) y fallback a <code class="inline">/backend/api/perfiles.php</code> en <code class="inline">cargarPermisosPerfilSeleccionado()</code>.</span>
+                </div>
+            </div>
+        </article>
+</section>
 
     <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
     <footer class="doc-footer" role="contentinfo">
@@ -1318,7 +1339,7 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <span class="badge badge-primary"><i class="fa-solid fa-database"></i> KEDB Activo</span>
-            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 24 Errores Codificados</span>
+            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 25 Errores Codificados</span>
             <span class="badge badge-amber"><i class="fa-solid fa-clock"></i> Última actualización: 2026</span>
         </div>
     </footer>

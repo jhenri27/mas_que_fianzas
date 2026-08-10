@@ -1111,6 +1111,21 @@ class Dashboard {
         form.reset();
         seccionComision.style.display = 'none';
         
+        // Poblar dinámicamente el select de perfiles (Norma NOFTRAB)
+        const selectPerfil = document.getElementById('usuarioPerfil');
+        if (selectPerfil) {
+            selectPerfil.innerHTML = '<option value="">Selecciona un perfil</option>';
+            if (this.perfilesCache.length === 0) {
+                await this.cargarPerfiles();
+            }
+            this.perfilesCache.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.nombre_perfil;
+                selectPerfil.appendChild(opt);
+            });
+        }
+        
         // Llenar select de referentes
         await this.llenarSelectReferentes(usuarioId);
 
@@ -1129,7 +1144,9 @@ class Dashboard {
                     document.getElementById('usuarioApellido').value = u.apellido;
                     document.getElementById('usuarioEmail').value = u.email;
                     document.getElementById('usuarioUsername').value = u.username;
-                    document.getElementById('usuarioPerfil').value = u.perfil_id;
+                    if (selectPerfil && u.perfil_id) {
+                        selectPerfil.value = u.perfil_id;
+                    }
                     
                     document.getElementById('usuarioEsComisionante').checked = u.es_comisionante == 1;
                     if (u.es_comisionante == 1) {
@@ -1462,29 +1479,49 @@ class Dashboard {
         wrapper.style.display = 'block';
         
         try {
-            const token = localStorage.getItem('token_sesion') || '';
+            const token = localStorage.getItem('token_sesion') || sessionStorage.getItem('token_sesion') || window.MQF_TOKEN || '';
+            const authHeaders = token ? { 'Authorization': 'Bearer ' + token } : {};
+            const queryToken = token ? `?token_sesion=${encodeURIComponent(token)}` : '';
             
             // 1. Obtener todos los módulos y funciones
-            const respModulos = await fetch(getApiPrefix() + 'backend/api/perfiles_engine.php/listar', {
-                headers: { 'Authorization': 'Bearer ' + token }
+            let respModulos = await fetch(getApiPrefix() + 'backend/api/perfiles_engine.php/listar' + queryToken, {
+                headers: authHeaders
             });
-            const dataModulos = await respModulos.json();
+            let dataModulos = await respModulos.json().catch(() => null);
+            
+            if (!dataModulos || !dataModulos.exito) {
+                // Fallback a perfiles.php nativo
+                respModulos = await fetch(getApiPrefix() + 'backend/api/perfiles.php/malla-permisos' + queryToken, {
+                    headers: authHeaders
+                });
+                dataModulos = await respModulos.json().catch(() => null);
+            }
             
             // 2. Obtener los permisos guardados del perfil seleccionado
-            const respPermisos = await fetch(`${getApiPrefix()}backend/api/perfiles_engine.php/obtener/${perfilId}`, {
-                headers: { 'Authorization': 'Bearer ' + token }
+            let respPermisos = await fetch(`${getApiPrefix()}backend/api/perfiles_engine.php/obtener/${perfilId}${queryToken}`, {
+                headers: authHeaders
             });
-            const dataPermisos = await respPermisos.json();
+            let dataPermisos = await respPermisos.json().catch(() => null);
             
-            if (!dataModulos.exito || !dataPermisos.exito) {
+            if (!dataPermisos || !dataPermisos.exito) {
+                respPermisos = await fetch(`${getApiPrefix()}backend/api/perfiles.php/obtener/${perfilId}${queryToken}`, {
+                    headers: authHeaders
+                });
+                dataPermisos = await respPermisos.json().catch(() => null);
+            }
+            
+            if ((!dataModulos || !dataModulos.exito) && (!dataPermisos || !dataPermisos.exito)) {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px; color:#ef4444;">No se pudieron cargar los datos de permisos.</td></tr>';
                 status.textContent = '❌ Error al cargar';
                 status.style.color = '#ef4444';
                 return;
             }
             
-            const modulos = dataModulos.datos || [];
-            const permisosExistentes = dataPermisos.datos || [];
+            status.textContent = '● Permisos cargados';
+            status.style.color = '#10b981';
+            
+            const modulos = (dataModulos && (dataModulos.datos || dataModulos.data)) ? (dataModulos.datos || dataModulos.data) : [];
+            const permisosExistentes = (dataPermisos && (dataPermisos.datos || dataPermisos.data || (dataPermisos.perfil ? dataPermisos.perfil.permisos : []))) ? (dataPermisos.datos || dataPermisos.data || (dataPermisos.perfil ? dataPermisos.perfil.permisos : [])) : [];
             
             // Crear mapa de permisos por funcion_id para rápido acceso
             const permisosMap = {};
