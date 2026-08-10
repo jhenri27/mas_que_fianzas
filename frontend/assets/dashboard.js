@@ -59,26 +59,7 @@ class Dashboard {
     }
 
     setupUI() {
-        // Inyectar distintivo visual si estamos en ambiente DEV
-        const esAmbienteDev = window.location.pathname.includes('/dev');
-        if (esAmbienteDev) {
-            const pageTitle = document.getElementById('pageTitle');
-            if (pageTitle && !document.getElementById('devEnvHeaderBadge')) {
-                const badge = document.createElement('span');
-                badge.id = 'devEnvHeaderBadge';
-                badge.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: #ffffff; font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 0 12px rgba(217, 119, 6, 0.6); border: 1px solid rgba(255,255,255,0.4); margin-left: 12px; vertical-align: middle; display: inline-flex; align-items: center; gap: 6px;';
-                badge.innerHTML = '🧪 AMBIENTE DE DESARROLLO (DEV)';
-                pageTitle.appendChild(badge);
-            }
-            
-            if (!document.getElementById('devTopBarAlert')) {
-                const topAlert = document.createElement('div');
-                topAlert.id = 'devTopBarAlert';
-                topAlert.style.cssText = 'background: linear-gradient(90deg, #b45309, #d97706, #b45309); color: #ffffff; font-size: 12px; font-weight: 700; text-align: center; padding: 5px 10px; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 100000; position: relative; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;';
-                topAlert.innerHTML = '🧪 <strong>MODO DESARROLLO (DEV)</strong> — Estás operando en el entorno de pruebas de MÁS QUE FIANZAS.';
-                document.body.insertBefore(topAlert, document.body.firstChild);
-            }
-        }
+        // Branding DEV gestionado centralizadamente por env-detector.js
 
         // Actualizar información del usuario
         const userName = document.getElementById('userName');

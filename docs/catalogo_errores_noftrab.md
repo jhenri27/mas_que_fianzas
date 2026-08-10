@@ -127,7 +127,13 @@ Este catálogo codificado (**Known Error Database - KEDB**) establece la taxonom
 - **Causa Raíz**: 1) `login.js` y los listeners de navegación evaluaban prefijos rígidos que omitían la subcarpeta `/dev/` al calcular las rutas relativas. 2) Los módulos carecían de un script detector de ambiente global para marcar la distintiva `[DEV]` en los títulos de pestañas del navegador, barras superiores y logotipos.
 - **Solución**: 1) Creación de `frontend/assets/env-detector.js` para detectar automáticamente el ambiente DEV, anteponer `[DEV]` al `document.title` de las pestañas del navegador, inyectar la barra superior de advertencia `🧪 [DEV] AMBIENTE DE DESARROLLO Y PRUEBAS`, añadir insignias `DEV` al logo y encabezados, y reescribir redirecciones internas. 2) Inyección de `env-detector.js` en los 45 archivos HTML/PHP del frontend. 3) Actualización de `login.js`, `dashboard.js`, `api-client.js` y `control_remoto_listener.js` con `obtenerRutaBaseFrontend()`.
 
+### `ERR-DOC-309`: Renderizado de Plantilla HTML Flotante, Banners Duplicados y Redirección a Producción por Rutas Nginx e Inyección Regex Incorrecta
+- **Síntoma**: 1) En modo incógnito DEV, se mostraba una tarjeta de plantilla de correo sin renderizar (`MAS QUE FIANZAS Notificación Automática — {{TIPO_LABEL}}`) flotando en el centro del dashboard. 2) Se superponían dos barras de advertencia DEV y dos insignias simultáneamente. 3) Al escribir `169.58.51.147/dev` en el navegador normal, se enviaba al usuario a Producción.
+- **Causa Raíz**: 1) La inyección automática mediante regex insertó `<script src="assets/env-detector.js"></script>` dentro de un template literal JS (`notif_plantillaPiloto()`) en `dashboard.html`, corrompiendo el parser HTML del navegador. 2) Tanto `dashboard.js` como `env-detector.js` creaban banners e insignias independientes con IDs distintos. 3) Nginx carecía de reglas de redirección 302 explícitas para `/dev` y `/dev/`.
+- **Solución**: 1) Limpieza estricta de `dashboard.html` y los 45 archivos del frontend asegurando EXACTAMENTE UNA etiqueta `env-detector.js` en el `<head>` del documento. 2) Unificación centralizada del branding DEV en `env-detector.js` y eliminación de banners duplicados en `dashboard.js` y `login.js`. 3) Adición de reglas de redirección Nginx `location = /dev { return 302 /dev/frontend/; }` y `location = /dev/ { return 302 /dev/frontend/; }`.
+
 ---
 *Fin del Catálogo KEDB — MÁS QUE FIANZAS, S.R.L. | Versión NOFTRAB v4.0*
+
 
 

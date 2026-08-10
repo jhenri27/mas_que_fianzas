@@ -19,19 +19,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const baseFrontendPath = obtenerRutaBaseFrontend();
-    const esAmbienteDev = window.location.pathname.includes('/dev');
 
-    // Inyectar distintivo visual si estamos en ambiente DEV
-    if (esAmbienteDev) {
-        const loginHeader = document.querySelector('.login-header');
-        if (loginHeader && !document.getElementById('devEnvBanner')) {
-            const devBanner = document.createElement('div');
-            devBanner.id = 'devEnvBanner';
-            devBanner.style.cssText = 'background: linear-gradient(135deg, #d97706, #b45309); color: white; padding: 8px 16px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px; margin: 12px 0 15px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; gap: 8px;';
-            devBanner.innerHTML = '🧪 AMBIENTE DE DESARROLLO (DEV)';
-            loginHeader.appendChild(devBanner);
-        }
-    }
+    // Distintivo DEV en login es gestionado por env-detector.js
 
     // Verificar si ya hay sesión activa
     if (api.tieneSesion()) {

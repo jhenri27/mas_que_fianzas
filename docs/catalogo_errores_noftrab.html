@@ -1244,20 +1244,7 @@
                 </div>
                 <div class="error-field">
                     <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
-                    <span class="field-value">1) Declaración explícita de <code class="inline">window.obtenerLogoMQFB64</code> en <code class="inline">logo_b64.js</code> y <code class="inline">data-export.js</code>. 2) Implementación de evaluación condicional tolerante <code class="inline">typeof window.obtenerLogoMQFB64 === 'function'</code> con fallback directo a <code class="inline">window.LOGO_MQF_B64</code>. 3) Actualización de parámetros de cache-busting a <code class="inline">?v=20260810_v8</code> en los módulos HTML (<code class="inline">fianzas.html</code>, <code class="inline">cotizaciones.html</code>, <code class="inline">pwa/index.html</code>).</span>
-                </div>
-            </div>
-        </article>
-                    <span class="field-value">En <code class="inline">dibujarCotizacionFianzaSimplePDF</code> (<code class="inline">frontend/assets/data-export.js</code>), el salto previo a la impresión del texto de datos era insuficiente (<code class="inline">y += 8</code>), dejando solo 2mm entre el fondo del rectángulo gris y el baseline del texto.</span>
-                </div>
-                <div class="error-field">
-                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
-                    <span class="field-value">Se ajustó la altura del rectángulo gris a 5.5mm, se incrementó el salto vertical previo a <code class="inline">y += 10.5</code> (creando un margen limpio de 3.0mm entre la barra gris y la tipografía) y se ajustó el tamaño de fuente a 8.5pt, alineándose exactamente con el diseño de la Imagen 2.</span>
-                </div>
-            </div>
-        </article>
-
-        <!-- FAIL-022 -->
+                    <span class="field-value">1) Declaración explícita de <code class="inline">window.obtenerLogoMQFB64</code> en         <!-- FAIL-022 -->
         <article class="error-card backend" id="fail-022">
             <div class="error-card-header">
                 <span class="error-code-badge badge-backend">FAIL-022</span>
@@ -1300,6 +1287,28 @@
                 </div>
             </div>
         </article>
+
+        <!-- FAIL-024 -->
+        <article class="error-card ui" id="fail-024">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-024</span>
+                <h3 class="error-card-title">Renderizado de Plantilla HTML Flotante, Banners Duplicados y Redirección a Producción por Rutas Nginx e Inyección Regex Incorrecta</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">1) En modo incógnito DEV, se mostraba una tarjeta de plantilla de correo sin renderizar (<code class="inline">MAS QUE FIANZAS Notificación Automática — {{TIPO_LABEL}}</code>) flotando en el centro del dashboard. 2) Se superponían dos barras de advertencia DEV y dos insignias simultáneamente. 3) Al escribir <code class="inline">169.58.51.147/dev</code> en el navegador normal, se enviaba al usuario a Producción.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) La inyección automática mediante regex insertó <code class="inline">&lt;script src="assets/env-detector.js"&gt;&lt;/script&gt;</code> dentro de un template literal JS (<code class="inline">notif_plantillaPiloto()</code>) en <code class="inline">dashboard.html</code>, corrompiendo el parser HTML del navegador. 2) Tanto <code class="inline">dashboard.js</code> como <code class="inline">env-detector.js</code> creaban banners e insignias independientes con IDs distintos. 3) Nginx carecía de reglas de redirección 302 explícitas para <code class="inline">/dev</code> y <code class="inline">/dev/</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Limpieza estricta de <code class="inline">dashboard.html</code> y los 45 archivos del frontend asegurando EXACTAMENTE UNA etiqueta <code class="inline">env-detector.js</code> en el <code class="inline">&lt;head&gt;</code> del documento. 2) Unificación centralizada del branding DEV en <code class="inline">env-detector.js</code> y eliminación de banners duplicados en <code class="inline">dashboard.js</code> y <code class="inline">login.js</code>. 3) Adición de reglas de redirección Nginx <code class="inline">location = /dev { return 302 /dev/frontend/; }</code> y <code class="inline">location = /dev/ { return 302 /dev/frontend/; }</code>.</span>
+                </div>
+            </div>
+        </article>
     </section>
 
     <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
@@ -1309,187 +1318,9 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <span class="badge badge-primary"><i class="fa-solid fa-database"></i> KEDB Activo</span>
-            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 22 Errores Codificados</span>
+            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 24 Errores Codificados</span>
             <span class="badge badge-amber"><i class="fa-solid fa-clock"></i> Última actualización: 2026</span>
         </div>
     </footer>
-</div>
-<script>
-    // Heredar y sincronizar skin activo en tiempo real
-    (function() {
-        function aplicar(s) {
-            if (!s) return;
-            if (s.endsWith('-classic')) s = s.replace('-classic', '');
-            document.documentElement.setAttribute('data-skin', s);
-            if (document.body) document.body.setAttribute('data-skin', s);
-        }
-        function sync() {
-            let s = localStorage.getItem('mqf-skin') || localStorage.getItem('skin') || 'indigo';
-            try {
-                if (window.parent && window.parent.document) {
-                    let p = window.parent.document.documentElement.getAttribute('data-skin') || window.parent.document.body.getAttribute('data-skin');
-                    if (p) s = p;
-                }
-            } catch(e) {}
-            aplicar(s);
-        }
-        sync();
-        document.addEventListener('DOMContentLoaded', sync);
-        window.addEventListener('message', function(e) {
-            if (e.data && (e.data.type === 'mqf-skin-change' || e.data.type === 'mqf-skin-set')) {
-                aplicar(e.data.skin);
-            }
-        });
-    })();
-</script>
-
-<script>
-    // ═══ FUNCIÓN DE DESCARGA PDF ════════════════════════════════════
-    async function descargarPDFKedb() {
-        const btn = document.getElementById('btn-kedb-pdf');
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando PDF...';
-
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-            // Capturar el contenedor principal
-            const element = document.querySelector('.container');
-            const toolbar = document.querySelector('.mqf-doc-toolbar');
-            if (toolbar) toolbar.style.display = 'none';
-
-            const canvas = await html2canvas(element, {
-                scale: 1.8,
-                useCORS: true,
-                backgroundColor: '#080d18',
-                logging: false,
-                windowWidth: 1100
-            });
-
-            if (toolbar) toolbar.style.display = '';
-
-            const imgData = canvas.toDataURL('image/png');
-            const imgWidth = 210;
-            const pageHeight = 297;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight;
-                doc.addPage();
-                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-            }
-
-            doc.save('Catalogo_KEDB_NOFTRAB_v4.0.pdf');
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Descargado';
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }, 2500);
-
-        } catch (err) {
-            console.error('Error PDF:', err);
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            window.print(); // fallback
-        }
-    }
-</script>
-
-<style>
-    /* ═══ TOOLBAR DE ACCIONES — estilos inline para KEDB ═══════════ */
-    .mqf-doc-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: rgba(15,23,41,0.92);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-top: 2px solid var(--primary);
-        border-radius: 16px;
-        padding: 14px 22px;
-        margin-bottom: 22px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        flex-wrap: wrap;
-        gap: 12px;
-        position: sticky;
-        top: 8px;
-        z-index: 200;
-        animation: fadeUp 0.3s ease both;
-    }
-
-    .mqf-doc-toolbar-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--text-primary);
-    }
-
-    .mqf-doc-toolbar-title i { color: var(--primary-light); }
-
-    .mqf-doc-toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-    .mqf-btn-tool {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        border: none;
-        font-family: 'Outfit', sans-serif;
-        font-size: 12.5px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-    .mqf-btn-tool.print {
-        background: rgba(99,102,241,0.15);
-        color: var(--primary-light);
-        border: 1px solid rgba(99,102,241,0.3);
-    }
-    .mqf-btn-tool.print:hover {
-        background: rgba(99,102,241,0.28);
-        box-shadow: 0 4px 15px rgba(99,102,241,0.35);
-        transform: translateY(-1px);
-    }
-
-    .mqf-btn-tool.download {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        box-shadow: 0 4px 15px rgba(16,185,129,0.3);
-    }
-    .mqf-btn-tool.download:hover {
-        box-shadow: 0 6px 20px rgba(16,185,129,0.5);
-        transform: translateY(-1px);
-    }
-
-    .mqf-btn-tool:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
-        transform: none !important;
-    }
-
-    @media print {
-        .mqf-doc-toolbar { display: none !important; }
-    }
-
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-</style>
-
 </body>
 </html>
