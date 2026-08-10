@@ -48,6 +48,12 @@ Este catálogo codificado (**Known Error Database - KEDB**) establece la taxonom
 - **Causa Raíz**: El texto introducido en la justificación de cambio posee menos de 15 caracteres.
 - **Solución**: Redactar una justificación formal detallada describiendo el motivo del ajuste.
 
+### `ERR-VAF-007`: Desviación por Valores Hardcodeados (Incumplimiento de Principio Fundamental)
+- **Síntoma**: Incongruencias en comportamientos dinámicos, valores estáticos no configurables o pérdida de interconexión entre módulos.
+- **Causa Raíz**: Hardcodear cadenas, IDs, tasas, rutas o parámetros estáticos en lugar de utilizar las fuentes dinámicas de base de datos, APIs o servicios interconectados.
+- **Regla NOFTRAB (Principio Fundamental)**: *Evita el harcodear: En cualquier escenario que se presente evita harcodear utilizando todos los medios posibles para mantener las interconexiones entre funciones y módulos.*
+- **Solución**: Refactorizar para consultar dinámicamente el valor desde las configuraciones del sistema, base de datos o endpoints de API correspondientes.
+
 ---
 
 ## 🎨 Sección 2: Diseño e Interfaz Frontend (`ERR-UI-*`)
@@ -85,6 +91,31 @@ Este catálogo codificado (**Known Error Database - KEDB**) establece la taxonom
 - **Causa Raíz**: Confusión impositiva entre ventas gravadas generales e intermediación de seguros.
 - **Regla Fiscal**: *Las primas de seguros están exentas de ITBIS (0%) según la Ley de Seguros 146-02 (SIS) y normativa DGII, aplacándose únicamente el Impuesto Selectivo al Consumo (ISC 16%).*
 - **Solución**: Verificar que el cálculo utilice la exención de ITBIS y aplique la tasa del 16% ISC.
+
+### `ERR-DOC-302`: Presentación de Etiquetas de Vehículos en Validación QR de Fianzas Comerciales
+- **Síntoma**: Al escanear el código QR de validación de una fianza comercial (`FZ-2026-00001`), la página de verificación o la API devolvían etiquetas de vehículos (*Marca / Modelo*, *Año / Color*, *Placa*, *Matrícula*, *No. Chasis (VIN)*) y mensajes de *"circulación nacional"*.
+- **Causa Raíz**: Ausencia de consulta a la tabla `fianzas` en `verificar_poliza.php` y evaluación estricta en `verificar-poliza.html` / `validar.html` que provocaba fallback a los elementos HTML por defecto de pólizas de vehículos.
+- **Solución**: Implementar consulta explícita a la tabla `fianzas` en el backend cuando el número inicia por `FZ-` o el ramo es `FIANZAS COMERCIALES`, y conmutar dinámicamente la UI a *"Especificaciones de la Fianza Comercial"*, mostrando *Tipo de Fianza*, *Beneficiario*, *Monto Afianzado*, *Objeto / Referencia* y alerta de auditoría NOFTRAB v4.0.
+
+### `ERR-DOC-303`: Impresión Indebida de Borrador de Póliza en Botón PDF de Cotización de Fianzas y Falta de Botón de Borrador Independiente
+- **Síntoma**: Al presionar el botón azul "PDF" en Mis Cotizaciones de Fianzas, se generaba un cuerpo legal de póliza en borrador (Condiciones Particulares con 8 cláusulas y marca de agua) en lugar del formato limpio de Cotización Resumen. Además, no existía un botón dedicado para imprimir el Borrador de Póliza de forma independiente.
+- **Causa Raíz**: La función renderizadora `renderTablaCotizaciones` en `frontend/modulos/fianzas.html` invocaba `imprimirFianzaPDF()` (motor del cuerpo legal de póliza) en lugar de `imprimirCotizacionFzPDF()` (motor de Cotización Resumen).
+- **Solución**: Se vinculó el botón azul `PDF` a `imprimirCotizacionFzPDF(f.id, origen)` para imprimir la Cotización Resumen (formato de propuesta comercial con logo, desglose, requisitos, notas, contacto y código QR) y se agregó el botón morado `Borrador` vinculado a `imprimirBorradorFzPDF(f.id, origen)` para imprimir el cuerpo legal en borrador (con 8 cláusulas, marca de agua "Borrador Sin Valor Comercial" y código QR).
+
+### `ERR-DOC-304`: Superposición Estética de Logo de Aseguradora en Encabezado de Cotización Resumen PDF
+- **Síntoma**: La Cotización Resumen PDF mostraba el logo de la aseguradora seleccionada (*MultiSeguros*) estirado horizontalmente e invadiendo el rectángulo azul del encabezado del corredor. Asimismo, el documento carecía del logo institucional de MÁS QUE FIANZAS (+QF) en la esquina superior izquierda.
+- **Causa Raíz**: `dibujarCotizacionFianzaSimplePDF` en `frontend/assets/data-export.js` cargaba `obtenerLogoAseguradoraB64(asegName)` dibujando una imagen ancha (28mm) que colisionaba con la barra azul iniciada en `ML + 26`.
+- **Solución**: Se actualizó `dibujarCotizacionFianzaSimplePDF` para cargar únicamente `obtenerLogoMQFB64()` (logo oficial de +QUE FIANZAS) con ajuste proporcional `(ML, 7, 24, 20)`, asegurando la alineación limpia con la barra azul del corredor, manteniendo la aseguradora en la sección de tablas `Aseguradora | Precio / Prima Total` y el código QR de validación en la esquina inferior derecha.
+
+### `ERR-DOC-305`: ReferenceError: obtenerLogoMQFB64 is not defined al Generar PDF de Cotización Resumen de Fianzas
+- **Síntoma**: Al presionar el botón azul "PDF" en Mis Cotizaciones de Fianzas, se desplegaba una alerta roja (toast) `Error al generar PDF: obtenerLogoMQFB64 is not defined` y se interrumpía la descarga del archivo PDF.
+- **Causa Raíz**: 1) Invocación de `obtenerLogoMQFB64()` sin verificación previa de existencia ni asignación global a `window` en `logo_b64.js` / `data-export.js`. 2) La caché del navegador retenía versiones obsoletas de los archivos JS (`data-export.js?v=20260808_v5`).
+- **Solución**: 1) Declaración explícita de `window.obtenerLogoMQFB64` en `logo_b64.js` y `data-export.js`. 2) Implementación de evaluación condicional tolerante `typeof window.obtenerLogoMQFB64 === 'function'` con fallback directo a `window.LOGO_MQF_B64`. 3) Actualización de parámetros de cache-busting a `?v=20260810_v8` en los módulos HTML (`fianzas.html`, `cotizaciones.html`, `pwa/index.html`).
+
+### `ERR-DOC-306`: Desalineación y Espaciado Vertical Insuficiente en Filas de Datos de Tipo de Fianza y Aseguradora en Cotización Resumen PDF
+- **Síntoma**: Los datos de las secciones "Tipo de Fianza" y "Aseguradora" se renderizaban pegados e invadiendo la línea inferior de los rectángulos grises de encabezado.
+- **Causa Raíz**: En `dibujarCotizacionFianzaSimplePDF` (`frontend/assets/data-export.js`), el salto previo a la impresión del texto de datos era insuficiente (`y += 8`), dejando solo 2mm entre el fondo del rectángulo gris y el baseline del texto.
+- **Solución**: Se ajustó la altura del rectángulo gris a 5.5mm, se incrementó el salto vertical previo a `y += 10.5` (creando un margen limpio de 3.0mm entre la barra gris y la tipografía) y se ajustó el tamaño de fuente a 8.5pt, alineándose exactamente con el diseño de la Imagen 2.
 
 ---
 *Fin del Catálogo KEDB — MÁS QUE FIANZAS, S.R.L. | Versión NOFTRAB v4.0*

@@ -6,9 +6,9 @@
     <title>Dashboard - MAS QUE FIANZAS</title>
     <link rel="icon" type="image/x-icon" href="assets/mqf-favicon.ico">
     <link rel="shortcut icon" type="image/x-icon" href="assets/mqf-favicon.ico">
-    <link rel="stylesheet" href="assets/dashboard.css?v=9.2.0">
-    <link rel="stylesheet" href="assets/modulos.css?v=9.0.0">
-    <link rel="stylesheet" href="assets/skin-engine.css?v=12.0">
+    <link rel="stylesheet" href="assets/dashboard.css?v=14.0.0">
+    <link rel="stylesheet" href="assets/modulos.css?v=14.0.0">
+    <link rel="stylesheet" href="assets/skin-engine.css?v=14.0.0">
     <script src="assets/components.js?v=9.0.0" defer></script>
     <link rel="stylesheet" href="assets/lib/fontawesome/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -125,6 +125,7 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle" title="Abrir Menú Lateral">☰</button>
                     <h1 id="pageTitle">INICIO</h1>
                 </div>
                 <div class="header-right">
@@ -358,9 +359,9 @@
                         <h2>Configuración del Sistema</h2>
                     </div>
                     
-                    <div class="config-layout">
+                    <div class="config-layout" style="display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: flex-start !important; gap: 24px !important; width: 100% !important; margin-top: 15px !important;">
                         <!-- Sidebar de Configuración -->
-                        <div class="config-sidebar">
+                        <div class="config-sidebar" style="width: 260px !important; min-width: 260px !important; max-width: 260px !important; flex: 0 0 260px !important; flex-shrink: 0 !important;">
                             <button id="btn-conf-generales" class="config-nav-btn active" data-target="config-generales" onclick="cargarConfigGenerales()">
                                 <span>🌐</span> Generales
                             </button>
@@ -394,7 +395,7 @@
                         </div>
                         
                         <!-- Paneles de Configuración -->
-                        <div class="config-content-panels">
+                        <div class="config-content-panels" style="flex: 1 1 0% !important; min-width: 0 !important; width: auto !important; max-width: 100% !important;">
 
                             <!-- Panel Perfiles y Permisos (NOFTRAB Python) -->
                             <div id="config-perfiles" class="config-panel">

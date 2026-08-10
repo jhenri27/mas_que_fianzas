@@ -14,7 +14,13 @@
   <!-- SheetJS para Excel/CSV -->
   <script src="../assets/lib/xlsx.full.min.js"></script>
   <!-- Logo MQF en Base64 -->
-  <script src="../assets/logo_b64.js?v=4"></script>
+  <script src="../assets/logo_b64.js?v=20260810_v8"></script>
+  <!-- QRCode Generator -->
+  <script src="../assets/lib/qrcode.min.js"></script>
+  <!-- Logos de Aseguradoras en Base64 -->
+  <script src="../assets/logos_aseguradoras.js?v=20260809"></script>
+  <!-- Motor de exportación con generarPDFFianza() -->
+  <script src="../assets/data-export.js?v=20260810_v8"></script>
   <!-- API Client -->
   <script src="../assets/api-client.js?v=8.0.0"></script>
   <!-- Components Utility -->
@@ -927,14 +933,14 @@
               <input type="number" id="wiz-porc-afianzar" placeholder="Ej: 20" step="0.01" min="0" max="100" oninput="calcularValorAfianzar()">
             </div>
             <div class="form-group modo-a-fields" id="campo-valor-calculado">
-              <label>Valor a Afianzar (calculado)</label>
-              <input type="text" id="wiz-valor-calculado" disabled style="background:#f9fafb; font-weight:600; color:#4f46e5;">
+              <label>Valor a Afianzar (DOP / calculado) *</label>
+              <input type="number" id="wiz-valor-calculado" placeholder="0.00" min="0" step="0.01" oninput="onValorDirectoInput()" style="background:#ffffff; font-weight:600; color:#4f46e5;">
             </div>
 
             <!-- MODO B: Valor directo -->
             <div class="form-group modo-b-fields" id="campo-valor-directo">
               <label>Valor a Afianzar (DOP) *</label>
-              <input type="number" id="wiz-valor-directo" placeholder="0.00" min="0">
+              <input type="number" id="wiz-valor-directo" placeholder="0.00" min="0" step="0.01" oninput="onValorDirectoInput()">
             </div>
 
             <div class="form-group">
@@ -995,7 +1001,7 @@
               <span class="r-value" id="rg-prima-base">—</span>
             </div>
             <div class="result-row">
-              <span class="r-label">ISC (16%)</span>
+              <span class="r-label">Impuesto (16% Ley 146-02)</span>
               <span class="r-value" id="rg-itbis">—</span>
             </div>
             <div class="result-row total-row">
@@ -1283,8 +1289,9 @@
         <td>${fmtFecha(f.fecha_inicio || f.fecha_emision || f.fecha)}</td>
         <td>${badgeOrigen}</td>
         <td style="text-align:center; white-space:nowrap;">
-          <button class="btn-action btn-edit" onclick="editarCotizacionFz(${f.id}, '${origen}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn-action btn-pdf"    onclick="imprimirFianzaPDF(${f.id}, '${origen}')" title="PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+          <button class="btn-action btn-edit" onclick="editarCotizacionFz(${f.id}, '${origen}')" title="Editar cotización"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-action btn-pdf" onclick="imprimirCotizacionFzPDF(${f.id}, '${origen}')" title="Imprimir Cotización Resumen (Con QR)"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+          <button class="btn-action btn-shield" style="background-color:#4338ca;color:#fff;" onclick="imprimirBorradorFzPDF(${f.id}, '${origen}')" title="Imprimir Borrador de Póliza (Marca de agua y QR)"><i class="fa-solid fa-file-shield"></i> Borrador</button>
           ${origen === 'fianzas' ? `<button class="btn-action btn-ok" onclick="convertirVigente(${f.id})" title="Convertir a Vigente"><i class="fa-solid fa-circle-check"></i> Vigente</button>` : ''}
           ${origen === 'fianzas' ? `<button class="btn-action btn-danger" onclick="eliminarFianza(${f.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>` : ''}
         </td>
@@ -1501,7 +1508,8 @@
         <td>${badgeOrigen}</td>
         <td style="text-align:center; white-space:nowrap;">
           ${canEdit && esCotizacion ? `<button class="btn-action btn-edit" onclick="editarCotizacionFz(${f.id}, '${origen}')" title="Editar cotización"><i class="fa-solid fa-pen"></i></button>` : ''}
-          <button class="btn-action btn-pdf" onclick="imprimirFianzaPDF(${f.id}, '${origen}')"><i class="fa-solid fa-file-pdf"></i></button>
+          <button class="btn-action btn-pdf" onclick="imprimirCotizacionFzPDF(${f.id}, '${origen}')" title="Ver Cotización (Resumen)"><i class="fa-solid fa-file-pdf"></i> Cotización</button>
+          <button class="btn-action btn-shield" style="background-color:#4338ca;color:#fff;" onclick="imprimirBorradorFzPDF(${f.id}, '${origen}')" title="Ver Borrador Póliza (Marca de agua)"><i class="fa-solid fa-file-shield"></i> Borrador</button>
         </td>
       </tr>`;
     });
@@ -1830,6 +1838,10 @@
       'wiz-num-contrato':  _wizData.num_contrato,
       'wiz-observaciones': _wizData.observaciones,
       'wiz-fecha-inicio':  _wizData.fecha_inicio,
+      'wiz-monto-contrato': f.monto_contrato || _wizData.valor_afianzado || f.monto_afianzado || '',
+      'wiz-porc-afianzar':  f.porc_afianzar  || f.porcentaje || '',
+      'wiz-valor-directo':  _wizData.valor_afianzado || f.monto_afianzado || '',
+      'wiz-valor-calculado': _wizData.valor_afianzado || f.monto_afianzado || '',
       'wiz-tasa-manual':   '' // tasa nunca se muestra - NOFTRAB R1
     };
     Object.entries(campos).forEach(([id, val]) => {
@@ -2039,24 +2051,45 @@
   }
 
   function calcularValorAfianzar() {
-    const monto = parseFloat(document.getElementById('wiz-monto-contrato').value) || 0;
-    const porc  = parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0;
-    const valor = monto * (porc / 100);
-    const el    = document.getElementById('wiz-valor-calculado');
-    if (el) el.value = valor > 0 ? fmt(valor) : '';
+    const monto = parseFloat(document.getElementById('wiz-monto-contrato')?.value) || 0;
+    const porc  = parseFloat(document.getElementById('wiz-porc-afianzar')?.value) || 0;
+    const valor = (monto > 0 && porc > 0) ? (monto * (porc / 100)) : 0;
+    
+    const elCalc = document.getElementById('wiz-valor-calculado');
+    const elDir  = document.getElementById('wiz-valor-directo');
+    
+    if (elCalc && valor > 0) elCalc.value = valor.toFixed(2);
+    if (elDir && valor > 0)  elDir.value  = valor.toFixed(2);
+  }
+
+  function onValorDirectoInput() {
+    const elCalc = document.getElementById('wiz-valor-calculado');
+    const elDir  = document.getElementById('wiz-valor-directo');
+    const monto  = parseFloat(document.getElementById('wiz-monto-contrato')?.value) || 0;
+    
+    const val = parseFloat(elCalc?.value || elDir?.value || 0);
+    if (monto > 0 && val > 0) {
+      const p = (val / monto) * 100;
+      const elP = document.getElementById('wiz-porc-afianzar');
+      if (elP && !document.activeElement.isSameNode(elP)) {
+        elP.value = p.toFixed(2);
+      }
+    }
   }
 
   function getValorAfianzado() {
     const sel  = document.getElementById('wiz-tipo');
-    const selected = sel.options[sel.selectedIndex];
-    const modo = selected ? (selected.dataset.modo || 'B') : 'B';
-    if (modo === 'A') {
-      const monto = parseFloat(document.getElementById('wiz-monto-contrato').value) || 0;
-      const porc  = parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0;
-      return monto * (porc / 100);
-    } else {
-      return parseFloat(document.getElementById('wiz-valor-directo').value) || 0;
-    }
+    const selected = sel ? sel.options[sel.selectedIndex] : null;
+    
+    const monto = parseFloat(document.getElementById('wiz-monto-contrato')?.value) || 0;
+    const porc  = parseFloat(document.getElementById('wiz-porc-afianzar')?.value) || 0;
+    const vCalcFromPorc = (monto > 0 && porc > 0) ? (monto * (porc / 100)) : 0;
+    
+    const vCalcInput = parseFloat(document.getElementById('wiz-valor-calculado')?.value) || 0;
+    const vDirInput  = parseFloat(document.getElementById('wiz-valor-directo')?.value) || 0;
+
+    const finalVal = vCalcFromPorc || vCalcInput || vDirInput || (monto > 0 ? monto : 0);
+    return finalVal;
   }
 
   async function calcularFianzaWizard() {
@@ -2127,30 +2160,30 @@
     const asegSel  = document.getElementById('wiz-aseguradora');
     const tipoSel  = document.getElementById('wiz-tipo');
     const plazoSel = document.getElementById('wiz-plazo');
-    const asegNombre = asegSel.options[asegSel.selectedIndex]?.text || '';
-    const tipoNombre = tipoSel.options[tipoSel.selectedIndex]?.text || '';
+    const asegNombre = asegSel ? (asegSel.options[asegSel.selectedIndex]?.text || '') : '';
+    const tipoNombre = tipoSel ? (tipoSel.options[tipoSel.selectedIndex]?.text || '') : '';
     const primer = document.querySelector('input[name="primer-req"]:checked');
 
     _wizData = {
-      nombre:            document.getElementById('wiz-nombre').value.trim(),
-      telefono:          document.getElementById('wiz-telefono').value.trim(),
-      email:             document.getElementById('wiz-email').value.trim(),
-      objeto_referencia: document.getElementById('wiz-proyecto').value.trim(),
-      beneficiario:      document.getElementById('wiz-beneficiario').value.trim(),
+      nombre:            document.getElementById('wiz-nombre')?.value.trim() || '',
+      telefono:          document.getElementById('wiz-telefono')?.value.trim() || '',
+      email:             document.getElementById('wiz-email')?.value.trim() || '',
+      objeto_referencia: document.getElementById('wiz-proyecto')?.value.trim() || '',
+      beneficiario:      document.getElementById('wiz-beneficiario')?.value.trim() || '',
       primer_requerimiento: primer ? primer.value : 'no',
-      aseguradora_id:    document.getElementById('wiz-aseguradora').value,
+      aseguradora_id:    document.getElementById('wiz-aseguradora')?.value || '',
       aseguradora_nombre: asegNombre,
-      tipo_id:           document.getElementById('wiz-tipo').value,
+      tipo_id:           document.getElementById('wiz-tipo')?.value || '',
       tipo_nombre:       tipoNombre,
-      cedula:            document.getElementById('wiz-cedula').value.trim(),
-      plazo_meses:       document.getElementById('wiz-plazo').value,
-      fecha_inicio:      document.getElementById('wiz-fecha-inicio').value,
-      num_contrato:      document.getElementById('wiz-num-contrato').value.trim(),
-      generar_ncf:       document.getElementById('wiz-ncf').checked,
-      observaciones:     document.getElementById('wiz-observaciones').value.trim(),
+      cedula:            document.getElementById('wiz-cedula')?.value.trim() || '',
+      plazo_meses:       document.getElementById('wiz-plazo')?.value || '12',
+      fecha_inicio:      document.getElementById('wiz-fecha-inicio')?.value || '',
+      num_contrato:      document.getElementById('wiz-num-contrato')?.value.trim() || '',
+      generar_ncf:       document.getElementById('wiz-ncf')?.checked || false,
+      observaciones:     document.getElementById('wiz-observaciones')?.value.trim() || '',
       valor_afianzado:   getValorAfianzado(),
-      monto_contrato:    parseFloat(document.getElementById('wiz-monto-contrato').value) || 0,
-      porc_afianzar:     parseFloat(document.getElementById('wiz-porc-afianzar').value) || 0,
+      monto_contrato:    parseFloat(document.getElementById('wiz-monto-contrato')?.value) || 0,
+      porc_afianzar:     parseFloat(document.getElementById('wiz-porc-afianzar')?.value) || 0,
       ..._wizCalcResult
     };
 
@@ -2163,29 +2196,31 @@
 
     // Renderizar resumen grid
     const grid = document.getElementById('resumen-grid');
-    const items = [
-      ['Cliente / Asegurado',  _wizData.nombre],
-      ['Teléfono',             _wizData.telefono],
-      ['Correo',               _wizData.email],
-      ['Proyecto / Objeto',    _wizData.objeto_referencia],
-      ['Beneficiario',         _wizData.beneficiario],
-      ['Primer Requerimiento', _wizData.primer_requerimiento === 'si' ? 'Sí' : 'No'],
-      ['Aseguradora',          _wizData.aseguradora_nombre],
-      ['Tipo de Fianza',       _wizData.tipo_nombre],
-      ['Cédula / RNC',         _wizData.cedula || '—'],
-      ['Plazo',                _wizData.plazo_meses + ' meses'],
-      ['Fecha Inicio',         fmtFecha(_wizData.fecha_inicio)],
-      ['Fecha Vencimiento',    fmtFecha(_wizData.fecha_vencimiento)],
-      ['N° Contrato',          _wizData.num_contrato || '—'],
-      ['Valor a Afianzar',     fmt(_wizData.valor_afianzado || 0)],
-      ['Prima Base',           fmt(_wizData.prima_base || _wizData.prima || 0)],
-      ['ISC (16%)',            fmt(_wizData.itbis || 0)],
-      ['TOTAL A PAGAR',        fmt(_wizData.total || 0)],
-      ['Generar NCF',          _wizData.generar_ncf ? 'Sí (B02)' : 'No'],
-    ];
-    grid.innerHTML = items.map(([l, v]) =>
-      `<div class="summary-item"><div class="s-label">${l}</div><div class="s-value">${v || '—'}</div></div>`
-    ).join('');
+    if (grid) {
+      const items = [
+        ['Cliente / Asegurado',  _wizData.nombre],
+        ['Teléfono',             _wizData.telefono],
+        ['Correo',               _wizData.email],
+        ['Proyecto / Objeto',    _wizData.objeto_referencia],
+        ['Beneficiario',         _wizData.beneficiario],
+        ['Primer Requerimiento', _wizData.primer_requerimiento === 'si' ? 'Sí' : 'No'],
+        ['Aseguradora',          _wizData.aseguradora_nombre],
+        ['Tipo de Fianza',       _wizData.tipo_nombre],
+        ['Cédula / RNC',         _wizData.cedula || '—'],
+        ['Plazo',                _wizData.plazo_meses + ' meses'],
+        ['Fecha Inicio',         fmtFecha(_wizData.fecha_inicio)],
+        ['Fecha Vencimiento',    fmtFecha(_wizData.fecha_vencimiento)],
+        ['N° Contrato',          _wizData.num_contrato || '—'],
+        ['Valor a Afianzar',     fmt(_wizData.valor_afianzado || 0)],
+        ['Prima Base',           fmt(_wizData.prima_base || _wizData.prima || 0)],
+        ['Impuesto (16% Ley 146-02)', fmt(_wizData.impuesto_isc || _wizData.itbis || 0)],
+        ['TOTAL A PAGAR',        fmt(_wizData.total || 0)],
+        ['Generar NCF',          _wizData.generar_ncf ? 'Sí (B02)' : 'No'],
+      ];
+      grid.innerHTML = items.map(([l, v]) =>
+        `<div class="summary-item"><div class="s-label">${l}</div><div class="s-value">${v || '—'}</div></div>`
+      ).join('');
+    }
 
     // Checklist
     const checks = [
@@ -2196,20 +2231,21 @@
       { ok: (_wizData.valor_afianzado > 0), txt: 'Valor a afianzar válido' },
       { ok: !!_wizCalcResult,             txt: 'Prima calculada por el servidor' },
     ];
-    document.getElementById('checklist-items').innerHTML = checks.map(c =>
-      `<div style="display:flex; align-items:center; gap:8px; color:${c.ok ? '#15803d' : '#b91c1c'};">
-         <i class="fa-solid ${c.ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-         <span>${c.txt}</span>
-       </div>`
-    ).join('');
+    const checkEl = document.getElementById('checklist-items');
+    if (checkEl) {
+      checkEl.innerHTML = checks.map(c =>
+        `<div style="display:flex; align-items:center; gap:8px; color:${c.ok ? '#15803d' : '#b91c1c'};">
+           <i class="fa-solid ${c.ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+           <span>${c.txt}</span>
+         </div>`
+      ).join('');
+    }
   }
 
   // ═══════════════════════════════════════════════════════
   // WIZARD — PROCESAR / GUARDAR
-  // Soporta modo creación (action=crear) y modo edición (action=actualizar)
   // ═══════════════════════════════════════════════════════
   async function procesarFianza(estado) {
-    // Modo edición: _wizData puede existir incluso sin _wizCalcResult (si no recalculó)
     if (!_wizData || (!_wizCalcResult && !_editingFianzaId)) {
       MQF.toast('Complete todos los pasos del wizard', 'warning');
       return;
@@ -2256,14 +2292,11 @@
       declaracion_cesion:    true
     };
 
-    // Modo edición: agregar ID y usar action correcto
     let endpoint = '/fianzas.php?action=crear';
     if (modoEdicion) {
       payload.id = _editingFianzaId;
       if (origenEdicion === 'cotizaciones') {
-        // Cotizaciones del cotizador rápido se actualizan en su propia tabla
         endpoint = '/cotizaciones.php?action=actualizar';
-        // Normalizar campos para cotizaciones.php
         payload.tipo    = 'FIANZA';
         payload.subtipo = _wizData.tipo_nombre;
         payload.cliente = _wizData.nombre;
@@ -2293,16 +2326,19 @@
           : '✅ ' + (estado === 'cotizacion' ? 'Cotización guardada' : 'Fianza procesada') + ': ' + numFianza;
         MQF.toast(msg, 'success');
 
-        if (estado !== 'cotizacion' || modoEdicion) {
-          // En modo edición siempre genera PDF; en modo creación solo si es vigente
-          if (estado !== 'cotizacion' || modoEdicion) generarPDFFianza(_wizData);
+        if (estado === 'cotizacion') {
+          if (typeof window.exportarCotizacionFianzaSimplePDF === 'function') {
+            window.exportarCotizacionFianzaSimplePDF(_wizData);
+          } else {
+            invocarMotorPDFFianza(_wizData);
+          }
+        } else {
+          invocarMotorPDFFianza(_wizData);
         }
 
-        // Limpiar modo edición
         _editingFianzaId    = null;
         _editingFianzaOrigen = 'fianzas';
 
-        // Ir a pantalla de gracias
         _wizStep = 5;
         mostrarWizPanel(5);
         const footer = document.getElementById('wizard-footer');
@@ -2322,29 +2358,32 @@
   }
 
   function descargarPDFActual() {
-    if (_wizData) generarPDFFianza(_wizData);
+    if (_wizData) {
+      if (_wizData.estado === 'cotizacion' || !_wizData.estado) {
+        if (typeof window.exportarCotizacionFianzaSimplePDF === 'function') {
+          window.exportarCotizacionFianzaSimplePDF(_wizData);
+        } else {
+          invocarMotorPDFFianza(_wizData);
+        }
+      } else {
+        invocarMotorPDFFianza(_wizData);
+      }
+    }
   }
 
-  // ═══════════════════════════════════════════════════════
-  // PDF GENERATION
-  // origen: 'fianzas' (tabla fianzas) | 'cotizaciones' (cotizador rápido)
-  // ═══════════════════════════════════════════════════════
-  async function imprimirFianzaPDF(id, origen) {
+  async function obtenerObjetoFianza(id, origen) {
     const fuentes = [...(_fianzasActivas || []), ...(_historialFz || []), ...(_cotizacionesTab || [])];
-    let f = origen
-      ? fuentes.find(x => String(x.id) === String(id) && (x._origen || 'fianzas') === origen)
-      : fuentes.find(x => String(x.id) === String(id));
+    let f = fuentes.find(x => String(x.id) === String(id) || String(x.numero) === String(id) || String(x.numero_fianza) === String(id));
 
-    // Si no está en memoria, o si el nombre de la aseguradora es un ID o está vacío
-    const necesitaFetch = !f || !f.aseguradora || !isNaN(f.aseguradora);
-
-    if (necesitaFetch) {
+    if (!f || !f.aseguradora || !isNaN(f.aseguradora)) {
       try {
-        MQF.toast('Cargando detalles de la fianza...', 'info');
-        const res = await api.solicitud('/fianzas.php?action=obtener&id=' + id, 'GET');
+        const endpoint = (origen === 'cotizaciones')
+          ? '/cotizaciones.php?action=obtener&id=' + id
+          : '/fianzas.php?action=obtener&id=' + id;
+        const res = await api.solicitud(endpoint, 'GET');
         if (res.exito && res.datos) {
           f = res.datos;
-          f._origen = 'fianzas';
+          f._origen = origen || 'fianzas';
           f.numero = f.numero || f.numero_fianza;
           f.cliente = f.cliente || f.cliente_nombre;
           f.aseguradora = f.aseguradora_nombre || f.aseguradora;
@@ -2353,157 +2392,50 @@
         console.error('Error fetching fianza details:', e);
       }
     }
-
-    if (!f) { MQF.toast('No se encontró la fianza ID: ' + id, 'error'); return; }
-    generarPDFFianza(f);
+    return f;
   }
 
-  function generarPDFFianza(data) {
-    try {
-      if (!window.jspdf) { MQF.toast('Motor PDF no cargado', 'error'); return; }
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-      const logo = window.MQF_LOGO_B64 || window.LOGO_B64 || null;
-      const W = 210;
-      let y = 15;
+  // Cotización Resumen (Imagen 1)
+  async function imprimirCotizacionFzPDF(id, origen) {
+    const f = await obtenerObjetoFianza(id, origen);
+    if (!f) { MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return; }
+    if (typeof window.exportarCotizacionFianzaSimplePDF === 'function') {
+      await window.exportarCotizacionFianzaSimplePDF(f);
+    } else {
+      await invocarMotorPDFFianza(f);
+    }
+  }
 
-      // Normalizar campos con fallbacks seguros
-      const num        = data.numero || data.numero_fianza || ('FZ-' + Date.now());
-      const cliente    = data.cliente || data.cliente_nombre || data.nombre || '—';
-      const cedula     = data.cedula  || data.cliente_cedula  || '—';
-      const benef      = data.beneficiario || '—';
-      const objeto     = data.objeto_referencia || data.objeto || '—';
-      let aseguradora  = data.aseguradora || data.aseguradora_nombre || '—';
-      
-      // Si aseguradora es numérico, buscar fallback de nombre
-      if (!isNaN(aseguradora) && parseInt(aseguradora) > 0) {
-        const idBusqueda = parseInt(aseguradora);
-        const found = (window._wizAseguradoras || []).find(a => parseInt(a.id) === idBusqueda);
-        if (found) {
-          aseguradora = found.nombre;
-        } else {
-          const foundSimple = (window._aseguradorasSimplesList || []).find(a => parseInt(a.id) === idBusqueda);
-          if (foundSimple) aseguradora = foundSimple.nombre;
-        }
-      }
-      const tipo_fza   = data.tipo_fianza  || data.tipo_nombre || data.subtipo || '—';
-      const monto      = parseFloat(data.monto_afianzado || data.valor_afianzado || 0);
-      const plazo      = data.plazo_meses  || data.plazo || '—';
-      const fi         = data.fecha_inicio  || data.fecha_emision || data.fecha || '';
-      const fv         = data.fecha_vencimiento || '';
-      const primer_req = (data.primer_requerimiento === true || data.primer_requerimiento === 1
-                       || String(data.primer_requerimiento).toLowerCase() === 'si'
-                       || String(data.primer_requerimiento).toLowerCase() === '1');
-      const num_contrato = data.numero_contrato || data.num_contrato || '';
-      const pbase      = parseFloat(data.prima_base || data.prima || 0);
-      const itbis      = parseFloat(data.itbis || data.impuesto || pbase * 0.16);
-      const total      = parseFloat(data.total || pbase + itbis);
-      const ncf        = data.ncf || data.usar_ncf || false;
+  // Borrador de Fianza (Con Marca de Agua - Imagen 2)
+  async function imprimirBorradorFzPDF(id, origen) {
+    const f = await obtenerObjetoFianza(id, origen);
+    if (!f) { MQF.toast('No se encontró el registro ID: ' + id, 'error'); return; }
+    if (typeof window.exportarBorradorFianzaPDF === 'function') {
+      await window.exportarBorradorFianzaPDF(f);
+    } else {
+      const copy = Object.assign({}, f, { es_borrador: true });
+      await invocarMotorPDFFianza(copy);
+    }
+  }
 
-      const cfg = getInstitutionalData();
-      // ── HEADER ──
-      doc.setFillColor(30, 58, 138);
-      doc.rect(0, 0, W, 40, 'F');
-      if (logo) { try { doc.addImage(logo, 'PNG', 10, 6, 35, 14); } catch(e) {} }
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-      doc.text('CERTIFICADO DE FIANZA', W / 2, 18, { align: 'center' });
-      doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-      doc.text(cfg.empresa_nombre, W / 2, 26, { align: 'center' });
-      doc.text('RNC: ' + cfg.empresa_rnc + ' · Licencia No. CMS-1561-A', W / 2, 32, { align: 'center' });
-      y = 48;
+  // Póliza Oficial Vigente (Sin Marca de Agua - Imagen 2 limpia)
+  async function imprimirFianzaPDF(id, origen) {
+    const f = await obtenerObjetoFianza(id, origen);
+    if (!f) { MQF.toast('No se encontró el registro ID: ' + id, 'error'); return; }
+    if (typeof window.exportarPolizaFianzaVigentePDF === 'function') {
+      await window.exportarPolizaFianzaVigentePDF(f);
+    } else {
+      await invocarMotorPDFFianza(f);
+    }
+  }
 
-      // N° y Fecha
-      doc.setTextColor(0, 0, 0);
-      doc.setFillColor(238, 242, 255);
-      doc.roundedRect(10, y, W - 20, 14, 3, 3, 'F');
-      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(79, 70, 229);
-      doc.text('N° FIANZA: ' + num, 15, y + 6);
-      doc.text('FECHA EMISIÓN: ' + fmtFecha(fi || new Date()), W - 15, y + 6, { align: 'right' });
-      y += 20;
-
-      // ── ASEGURADO ──
-      doc.setTextColor(0,0,0); doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
-      doc.text('EL ASEGURADO', 10, y);
-      doc.setDrawColor(199,210,254); doc.line(10, y+1, W-10, y+1); y += 6;
-      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
-      doc.text('Nombre: ' + cliente, 12, y); y += 5;
-      doc.text('Cédula / RNC: ' + cedula, 12, y); y += 10;
-
-      // ── BENEFICIARIO ──
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
-      doc.text('EL BENEFICIARIO', 10, y);
-      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
-      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
-      doc.text(benef, 12, y); y += 10;
-
-      // ── OBJETO ──
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
-      doc.text('OBJETO DE LA FIANZA', 10, y);
-      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 6;
-      doc.setFont('helvetica', 'normal'); doc.setTextColor(30,30,30); doc.setFontSize(10);
-      const objText = doc.splitTextToSize(objeto, W - 24);
-      doc.text(objText, 12, y); y += objText.length * 5 + 5;
-
-      // ── DETALLES EN TABLA ──
-      const detalles = [
-        ['EMITIDA POR', aseguradora],
-        ['TIPO DE GARANTÍA', tipo_fza],
-        ['MONTO GARANTIZADO', fmt(monto)],
-        ['VIGENCIA', plazo + ' meses, desde ' + fmtFecha(fi) + ' hasta ' + fmtFecha(fv)],
-      ];
-      if (num_contrato) detalles.push(['N° CONTRATO / LICITACIÓN', num_contrato]);
-
-      doc.autoTable({
-        body: detalles, startY: y, margin: { left: 10, right: 10 },
-        columnStyles: { 0: { fontStyle:'bold', textColor:[79,70,229], cellWidth:55 }, 1: { textColor:[30,30,30] } },
-        styles: { fontSize:9.5, cellPadding:3 },
-        alternateRowStyles: { fillColor:[249,250,251] },
-      });
-      y = doc.lastAutoTable.finalY + 8;
-
-      // ── PRIMER REQUERIMIENTO ──
-      if (primer_req) {
-        doc.setFillColor(239,246,255); doc.roundedRect(10,y,W-20,16,2,2,'F');
-        doc.setFontSize(9); doc.setFont('helvetica', 'italic'); doc.setTextColor(30,64,175);
-        const clausulaText = doc.splitTextToSize('Esta fianza es pagadera a primer requerimiento escrito del Beneficiario, sin que éste deba probar el incumplimiento del Afianzado.', W-26);
-        doc.text(clausulaText, 14, y+5); y += clausulaText.length * 4.5 + 8;
-      }
-
-      // ── DESGLOSE PRIMA (sin tasa) ──
-      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(79,70,229);
-      doc.text('DESGLOSE DE PRIMA', 10, y);
-      doc.setDrawColor(199,210,254); doc.line(10,y+1,W-10,y+1); y += 3;
-
-      doc.autoTable({
-        head: [['Concepto','Monto']],
-        body: [['Prima Base', fmt(pbase)], ['ISC (16%)', fmt(itbis)], ['TOTAL A PAGAR', fmt(total)]],
-        startY: y, margin: { left:10, right:10 },
-        headStyles: { fillColor:[79,70,229], textColor:255, fontStyle:'bold' },
-        styles: { fontSize:9.5, cellPadding:3 },
-        columnStyles: { 1: { halign:'right', fontStyle:'bold' } },
-      });
-      y = doc.lastAutoTable.finalY + 6;
-
-      if (ncf) {
-        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(107,114,128);
-        doc.text('Comprobante Fiscal (NCF): B02 — ' + (typeof ncf==='string' ? ncf : 'Pendiente'), 10, y); y += 6;
-      }
-      doc.setFontSize(8); doc.setFont('helvetica', 'italic'); doc.setTextColor(156,163,175);
-      doc.text('El solicitante aceptó la Declaración de Veracidad y Autorización de Administración y Cesión de Información.', 10, y, { maxWidth: W-20 }); y += 8;
-
-      // PIE
-      doc.setFillColor(30,58,138); doc.rect(0,285,W,12,'F');
-      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(255,255,255);
-      doc.text(cfg.empresa_nombre + ' · RNC: ' + cfg.empresa_rnc + ' · Licencia No. CMS-1561-A', W/2, 291, { align:'center' });
-      doc.text('Documento generado electrónicamente · ' + new Date().toLocaleString('es-DO'), W/2, 295, { align:'center' });
-
-      doc.save('fianza_' + num + '.pdf');
-      MQF.toast('✅ PDF generado: fianza_' + num + '.pdf', 'success');
-
-    } catch(e) {
-      console.error('Error generando PDF:', e);
-      MQF.toast('Error al generar PDF: ' + e.message, 'error');
+  async function invocarMotorPDFFianza(data) {
+    if (typeof window.MQF_generarPDFFianza === 'function') {
+      return await window.MQF_generarPDFFianza(data);
+    } else if (typeof window.generarPDFFianza === 'function' && window.generarPDFFianza !== invocarMotorPDFFianza) {
+      return await window.generarPDFFianza(data);
+    } else {
+      MQF.toast('Motor PDF no disponible', 'error');
     }
   }
 

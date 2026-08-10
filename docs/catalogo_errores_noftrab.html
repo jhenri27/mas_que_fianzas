@@ -405,6 +405,9 @@
                 <span class="badge badge-purple"><i class="fa-solid fa-scale-balanced"></i> Regla 4-VAF</span>
                 <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> ISO 9001</span>
                 <span class="badge badge-cyan"><i class="fa-solid fa-lock"></i> ISO 27001</span>
+                <span class="badge badge-purple" onclick="document.getElementById('seccion-fail').scrollIntoView({behavior:'smooth'})" style="cursor:pointer; color:#c084fc; background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.4);" title="Ir a Sección 5: Hot-Fixes y Fallas Codificadas">
+                    <i class="fa-solid fa-wrench"></i> 13 Hot-Fixes (FAIL-001..013)
+                </span>
             </div>
         </div>
         <p class="header-intro">
@@ -468,9 +471,27 @@
                     <td><span class="badge badge-emerald"><i class="fa-solid fa-file-invoice-dollar"></i> Fiscal</span></td>
                     <td>Régimen fiscal ISC 16% / ITBIS 0%, motores PDF y catálogo de manuales.</td>
                 </tr>
+                <tr style="background: rgba(168,85,247,0.12);">
+                    <td><span class="range-code" style="color:#c084fc; border-color:rgba(168,85,247,0.4);">FAIL-[001..014]</span></td>
+                    <td><span class="badge badge-purple"><i class="fa-solid fa-bug-slash"></i> Hot-Fixes</span></td>
+                    <td><strong>Incidencias y Soluciones Recientes:</strong> Parches de infraestructura, PWA, Nginx y Backend.</td>
+                </tr>
             </tbody>
         </table>
     </section>
+
+    
+
+    
+    <!-- ═══ NAVEGACIÓN RÁPIDA DE SECCIONES KEDB ═══════════════════════ -->
+    <div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:12px; font-weight:700; color:var(--text-secondary);">Ir a Sección:</span>
+        <a href="#seccion-vaf" class="badge badge-rose" style="text-decoration:none;"><i class="fa-solid fa-gavel"></i> Sec 1: VAF</a>
+        <a href="#seccion-ui" class="badge badge-cyan" style="text-decoration:none;"><i class="fa-solid fa-palette"></i> Sec 2: UX/UI</a>
+        <a href="#seccion-sec" class="badge badge-amber" style="text-decoration:none;"><i class="fa-solid fa-lock"></i> Sec 3: Seguridad</a>
+        <a href="#seccion-doc" class="badge badge-emerald" style="text-decoration:none;"><i class="fa-solid fa-file-invoice-dollar"></i> Sec 4: Fiscal</a>
+        <a href="#seccion-fail" class="badge badge-purple" style="text-decoration:none; font-weight:800; border:1px solid #a855f7;"><i class="fa-solid fa-bug-slash"></i> Sec 5: Hot-Fixes (FAIL-001..014)</a>
+    </div>
 
     <!-- ═══ SECCIÓN 1: REGLAS DE NEGOCIO ════════════════════════════ -->
     <section class="error-section" id="seccion-vaf" aria-labelledby="title-vaf">
@@ -614,6 +635,28 @@
                 <div class="error-field">
                     <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
                     <span class="field-value">Redactar una justificación formal detallada describiendo el motivo del ajuste.</span>
+        <!-- ERR-VAF-007 -->
+        <article class="error-card vaf" id="err-vaf-007">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">ERR-VAF-007</span>
+                <h3 class="error-card-title">Desviación por Valores Hardcodeados (Incumplimiento de Principio Fundamental)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Incongruencias en comportamientos dinámicos, valores estáticos no configurables o pérdida de interconexión entre módulos.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Hardcodear cadenas, IDs, tasas, rutas o parámetros estáticos en lugar de utilizar las fuentes dinámicas de base de datos, APIs o servicios interconectados.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label regla"><i class="fa-solid fa-gavel"></i> Regla NOFTRAB (Principio Fundamental)</span>
+                    <span class="field-value"><strong>Evita el harcodear:</strong> En cualquier escenario que se presente evita harcodear utilizando todos los medios posibles para mantener las interconexiones entre funciones y módulos.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Refactorizar para consultar dinámicamente el valor desde las configuraciones del sistema, base de datos o endpoints de API correspondientes.</span>
                 </div>
             </div>
         </article>
@@ -766,6 +809,469 @@
         </article>
     </section>
 
+    
+
+    <!-- ═══ SECCIÓN 5: HISTÓRICO DE FALLAS CODIFICADAS (FAIL-001..FAIL-010) ═══════════════════ -->
+    <section class="error-section" id="seccion-fail" aria-labelledby="title-fail">
+        <div class="error-section-header">
+            <span class="badge badge-purple" style="font-size: 13px; padding: 6px 14px;">
+                <i class="fa-solid fa-bug-slash"></i> FAIL-001..FAIL-010
+            </span>
+            <h2 id="title-fail">Sección 5: Incidencias Codificadas y Hot-Fixes Plataforma</h2>
+            <div class="section-line"></div>
+        </div>
+
+        <!-- FAIL-001 -->
+        <article class="error-card vaf" id="fail-001">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">FAIL-001</span>
+                <h3 class="error-card-title">Logo de Aseguradora Oculto en el Cotizador</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">La tarjeta de cotización se oculta y la descarga de PDFs jsPDF se detiene.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El String Base64 del logo contiene secuencias de escape literales de 'n' (<code class="inline">\n</code>). La limpieza regex de Qwen QA fallaba al no reemplazarlas.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Mantener <code class="inline">/\\n/g</code> como reemplazo en <code class="inline">cotizaciones.html</code>: <code class="inline">str.replace(/[\r\n\s]+/g, '').replace(/\\n/g, '').replace(/"+/g, '')</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-002 -->
+        <article class="error-card doc" id="fail-002">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-002</span>
+                <h3 class="error-card-title">Inserción de Nuevas Secuencias NCF (B12 y B15)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Fallo de emisión de comprobantes fiscales tipos B12 y B15 en Centro Financiero por falta de registro DB.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Ausencia de registros en la tabla <code class="inline">cf_ncf_secuencias</code> para los prefijos B12 y B15.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Ejecutar inserción SQL en la tabla <code class="inline">cf_ncf_secuencias</code> para registrar prefijos B12 y B15.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-003 -->
+        <article class="error-card sec" id="fail-003">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-sec">FAIL-003</span>
+                <h3 class="error-card-title">Permisos de Administrador (Bypass de Carga de Permisos)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Usuarios Administradores (ID 1) no podían visualizar configuraciones avanzadas ni popular el array global <code class="inline">window.MQF_PERMISOS</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value"><code class="inline">dashboard.js</code> poseía un <code class="inline">return;</code> prematuro en el perfil 1 que omitía la llamada a <code class="inline">/backend/api/perfiles.php</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Remover el <code class="inline">return;</code> dentro del bloque de bypass Administrador en <code class="inline">dashboard.js</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-004 -->
+        <article class="error-card ui" id="fail-004">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-004</span>
+                <h3 class="error-card-title">Desplazamiento y Ocultamiento de Navegación Inferior en PWA Móvil</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">En vistas móviles Android los iconos de la barra inferior quedaban cortados y requerían desplazamiento vertical.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La barra PWA carecía de posicionamiento fijo al viewport y control z-index de área segura.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Aplicar <code class="inline">position: fixed !important; bottom: 0 !important; z-index: 99999 !important;</code> a <code class="inline">.pwa-navbar</code> en <code class="inline">pwa-style.css</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-005 -->
+        <article class="error-card doc" id="fail-005">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-005</span>
+                <h3 class="error-card-title">Formato PDF de Cotización de Vehículos y Distorsión de Logo</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Impresión de cotizaciones de vehículos devolvía documentos en blanco o generaba el logo distorsionado sobre el texto.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Variable <code class="inline">benef</code> no definida causando excepción en jsPDF, sumada a proporciones no mantenidas (1.111:1).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Actualizar <code class="inline">dibujarCotizacionPDF</code> usando el modelo <code class="inline">SL-TEMP-5839.pdf</code> con escala 22x19.8mm y compensación Y dinámico (<code class="inline">yHead + 24mm</code>).</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-006 -->
+        <article class="error-card doc" id="fail-006">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-006</span>
+                <h3 class="error-card-title">Valor de Referencia Estático "ASDE-CCC-CP-2026-0008" en Cotizaciones PDF</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Todas las cotizaciones de vehículos o motos impresas mostraban el texto rígido <code class="inline">ASDE-CCC-CP-2026-0008</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La variable <code class="inline">refContrato</code> fue asignada como literal estático en <code class="inline">data-export.js</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Reemplazar literal estático por evaluación dinámica a partir del número de cotización e ID.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-007 -->
+        <article class="error-card doc" id="fail-007">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-007</span>
+                <h3 class="error-card-title">Código QR de Validación con Ruta Inválida / Error 404</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">El escaneo de los códigos QR incrustados en los PDFs conducía a un enlace no encontrado 404.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El generador QR apuntaba a rutas internas sin un endpoint público de auditoría.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Crear <code class="inline">/frontend/modulos/validar.html</code> con sello NOFTRAB v4.0, agregar rewrite en Nginx <code class="inline">/validar</code> y actualizar la URL en <code class="inline">data-export.js</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-008 -->
+        <article class="error-card sec" id="fail-008">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-sec">FAIL-008</span>
+                <h3 class="error-card-title">Disparidad de Token de Sesión vs Cookie PHP en Métricas PWA</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Usuario PDV autenticado (<code class="inline">pdv.prueba</code>) veía 0 comisiones y 0 cotizaciones teniendo 22 cotizaciones activas en MySQL.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Backend prioritizaba <code class="inline">$_SESSION['usuario_id']</code> sobre <code class="inline">Authorization: Bearer</code> / <code class="inline">token_sesion</code>, fallando cuando no había cookie PHP.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Reordenar validación de token en <code class="inline">cotizaciones.php</code> y <code class="inline">comisiones_panel.php</code> priorizando el Bearer token de <code class="inline">localStorage</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-009 -->
+        <article class="error-card sec" id="fail-009">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-sec">FAIL-009</span>
+                <h3 class="error-card-title">Error Nginx 405 Not Allowed en Endpoints REST sin Extensión .php</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Iniciar sesión en la Web mostraba mensaje en rojo "Error de conexión con el servidor".</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Nginx trataba rutas REST como <code class="inline">/backend/api/auth/login</code> como directorio estático al existir la carpeta <code class="inline">/backend/api/auth/</code>, retornando 405 Not Allowed en POST.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Configurar handler FastCGI directo en Nginx: <code class="inline">location ~ ^/(PLATAFORMA_INTEGRADA/)?backend/api/auth/(.*)$</code> pasando <code class="inline">SCRIPT_FILENAME</code> a <code class="inline">auth.php</code> con <code class="inline">PATH_INFO</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-010 -->
+        <article class="error-card ui" id="fail-010">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-010</span>
+                <h3 class="error-card-title">Error Nginx 403 Forbidden en la Ruta Raíz del Servidor</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Acceso directo a la IP <code class="inline">http://169.58.51.147/</code> mostraba pantalla blanca con <code class="inline">403 Forbidden</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">El directorio raíz <code class="inline">/var/www/plataforma_integrada</code> no poseía un archivo <code class="inline">index.html</code> en el nivel superior.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Agregar directiva en Nginx <code class="inline">location = / { return 302 /PLATAFORMA_INTEGRADA/frontend/; }</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-011 -->
+        <article class="error-card doc" id="fail-011">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-011</span>
+                <h3 class="error-card-title">ReferenceError: esPrimerReq is not defined en Generación de PDF y Campo Faltante 'A Primer Requerimiento'</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al presionar "PDF" en la tabla de cotizaciones de fianzas (<code class="inline">F-2026-3218</code>), la app arrojaba la alerta <code class="inline">Error al generar PDF: esPrimerReq is not defined</code> y la edición de la fianza carecía del selector del parámetro.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La variable <code class="inline">esPrimerReq</code> no estaba declarada en <code class="inline">data-export.js</code> ni en <code class="inline">fianzas.html</code>. La tabla <code class="inline">cotizaciones</code> carecía de la columna <code class="inline">primer_requerimiento</code> y el formulario de edición no tenía el control HTML.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Ejecutado <code class="inline">ALTER TABLE cotizaciones ADD primer_requerimiento TINYINT(1) DEFAULT 0</code>, declarada la variable con evaluación binaria en los PDF y agregado el control <code class="inline">&lt;select id="f_primer_requerimiento"&gt;</code> en <code class="inline">cotizaciones.html</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-012 -->
+        <article class="error-card doc" id="fail-012">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-012</span>
+                <h3 class="error-card-title">Incongruencia de Etiqueta Fiscal de Impuestos en Cotizaciones Digitales (ITBIS vs ISC 16% Ley 146-02)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">En el desglose impositivo de las cotizaciones digitales en PDF y HTML figuraba el renglón <code class="inline">IMPUESTO (ITBIS/Otros)</code> en vez del régimen fiscal legal de seguros.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Cadena de texto HTML rígida <code class="inline">IMPUESTO (ITBIS/Otros)</code> en <code class="inline">renderPremiumQuoteHTML</code> en <code class="inline">backend/api/chat.php</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Actualizada la etiqueta en <code class="inline">backend/api/chat.php</code> a la nomenclatura oficial <code class="inline">IMPUESTO (16% Ley 146-02)</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-013 -->
+        <article class="error-card ui" id="fail-013">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-013</span>
+                <h3 class="error-card-title">Renderizado de Iconos SVG Genéricos en Cotizaciones por Disparidad de Logos de Aseguradoras</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Cotizaciones digitales descargadas o visualizadas para aseguradoras (Multiseguros, Midas, Patria, Pepín) mostraban figuras SVG geométricas simples en lugar de los logos de las empresas.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">Disparidad de nombres de archivos Base64 en <code class="inline">uploads/logos/</code> y falta de fallback a imágenes PNG/JPG nítidas en <code class="inline">renderPremiumQuoteHTML</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Procesados y desplegados los logos desde la unidad local <code class="inline">F:\LOGOS PARA ARTE DE MAS QUE FIANZAS</code> en <code class="inline">frontend/assets/logos/aseguradoras/</code> y Data-URI Base64, actualizando la tabla <code class="inline">fianza_aseguradoras</code> y <code class="inline">chat.php</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-014 -->
+        <article class="error-card doc" id="fail-014">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-014</span>
+                <h3 class="error-card-title">Formato PDF de Fianza Tipo Cotización Simple vs Cuerpo Oficial de Póliza Legal con 2 Modos y QR</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al imprimir la fianza activa (<code class="inline">FZ-2026-00001</code>), la app generaba una hoja informal de cotización simple en vez del contrato legal de póliza con 8 cláusulas, código QR y control de marcas de agua.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La función <code class="inline">generarPDFFianza</code> en <code class="inline">data-export.js</code> y <code class="inline">fianzas.html</code> renderizaba el diseño preliminar de cotizaciones de seguros en lugar de las Condiciones Particulares de Póliza.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Reestructurada <code class="inline">generarPDFFianza</code> para generar el documento legal de Póliza de Fianzas Comerciales (Condiciones Particulares) con 8 cláusulas, código QR de validación y 2 modos (Modo 1: Cotización/Borrador con marca de agua <code class="inline">Borrador Sin Valor Comercial</code>; Modo 2: Vigente/Pagada limpia y sin marca de agua).</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-015 -->
+        <article class="error-card ui" id="fail-015">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-015</span>
+                <h3 class="error-card-title">Ausencia de Código QR en PDF de Cotizaciones por Fallo de Fetch CORS y Omisión de Cache-Busting</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al descargar cotizaciones (ej: <code class="inline">2026-00003</code> o <code class="inline">FZ-2026-00001</code>), los PDFs se renderizaban sin el código QR de validación o mantenían la vista en caché previa.</span>
+            <!-- FAIL-016 -->
+        <article class="error-card vaf" id="fail-016">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-vaf">FAIL-016</span>
+                <h3 class="error-card-title">Bloqueo de Cálculo y Sombrado de Nombre en Motor de PDF en Módulo de Fianzas</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al editar una cotización de fianza, al presionar "Calcular Prima" se mostraba la advertencia <code class="inline">⚠️ Ingrese el valor a afianzar</code> pese a tener Monto del Contrato. Al hacer clic en PDF no abría el documento.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) <code class="inline">getValorAfianzado()</code> en <code class="inline">fianzas.html</code> dependía strictly de <code class="inline">% a Afianzar</code> en modo 'A'. 2) La función local <code class="inline">generarPDFFianza</code> en <code class="inline">fianzas.html</code> sombreaba la función global de <code class="inline">data-export.js</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Habilitado ingreso directo y fallback dinámico en <code class="inline">getValorAfianzado()</code>, renombrado el wrapper local en <code class="inline">fianzas.html</code> a <code class="inline">invocarMotorPDFFianza</code> y exportada <code class="inline">window.MQF_generarPDFFianza</code>.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-017 -->
+        <article class="error-card doc" id="fail-017">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-017</span>
+                <h3 class="error-card-title">Presentación de Etiquetas y Campos de Vehículos en Validación QR de Fianzas Comerciales</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al escanear el código QR de validación de una fianza comercial (<code class="inline">FZ-2026-00001</code>), la interfaz mostraba <code class="inline">DATOS DEL VEHÍCULO</code> con campos incompatibles (*Marca / Modelo*, *Año / Color*, *Placa*, *Matrícula*, *No. Chasis*) y texto de *"circulación nacional"*.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) <code class="inline">verificar_poliza.php</code> consultaba únicamente la tabla <code class="inline">polizas</code> unida a <code class="inline">vehiculos</code> sin buscar en <code class="inline">fianzas</code>. 2) <code class="inline">verificar-poliza.html</code> tenía reglas estrictas de detección de <code class="inline">isFianza</code> que evaluaban a <code class="inline">false</code> cuando la estructura de respuesta utilizaba <code class="inline">resData.datos</code>, ejecutando el fallback HTML de vehículos.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Actualizado el backend (<code class="inline">verificar_poliza.php</code> y <code class="inline">checkout_process.php</code>) para buscar en las tablas <code class="inline">fianzas</code> y <code class="inline">cotizaciones</code> retornando datos limpios de fianza. 2) Ampliada la detección de <code class="inline">isFianza</code> en <code class="inline">verificar-poliza.html</code> y <code class="inline">validar.html</code> para conmutar a *"Especificaciones de la Fianza Comercial"*, ocultar campos de vehículos y mostrar alerta de auditoría NOFTRAB v4.0.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-018 -->
+        <article class="error-card doc" id="fail-018">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-doc">FAIL-018</span>
+                <h3 class="error-card-title">Impresión Indebida de Borrador de Póliza en Botón PDF de Cotización de Fianzas y Falta de Botón de Borrador Independiente</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al presionar el botón azul "PDF" en Mis Cotizaciones de Fianzas, se generaba un cuerpo legal de póliza en borrador (Condiciones Particulares con 8 cláusulas y marca de agua) en lugar del formato limpio de Cotización Resumen. Además, no existía un botón dedicado para imprimir el Borrador de Póliza de forma independiente.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">La función renderizadora <code class="inline">renderTablaCotizaciones</code> en <code class="inline">frontend/modulos/fianzas.html</code> invocaba <code class="inline">imprimirFianzaPDF()</code> (motor de la póliza legal) en lugar de <code class="inline">imprimirCotizacionFzPDF()</code> (motor de Cotización Resumen).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Se vinculó el botón azul <code class="inline">PDF</code> a <code class="inline">imprimirCotizacionFzPDF(f.id, origen)</code> para imprimir la Cotización Resumen (propuesta comercial con logo, desglose, requisitos, notas, contacto y código QR) y se agregó el botón morado <code class="inline">Borrador</code> vinculado a <code class="inline">imprimirBorradorFzPDF(f.id, origen)</code> para imprimir el cuerpo legal en borrador (con 8 cláusulas, marca de agua "Borrador Sin Valor Comercial" y código QR).</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-019 -->
+        <article class="error-card ui" id="fail-019">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-019</span>
+                <h3 class="error-card-title">Superposición Estética de Logo de Aseguradora en Encabezado de Cotización Resumen PDF</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">La Cotización Resumen PDF mostraba el logo de la aseguradora seleccionada (*MultiSeguros*) estirado horizontalmente e invadiendo el rectángulo azul del encabezado del corredor. Asimismo, el documento carecía del logo institucional de MÁS QUE FIANZAS (+QF) en la esquina superior izquierda.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value"><code class="inline">dibujarCotizacionFianzaSimplePDF</code> en <code class="inline">frontend/assets/data-export.js</code> cargaba <code class="inline">obtenerLogoAseguradoraB64(asegName)</code> dibujando una imagen ancha (28mm) que colisionaba con la barra azul iniciada en <code class="inline">ML + 26</code>.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Se actualizó <code class="inline">dibujarCotizacionFianzaSimplePDF</code> para cargar únicamente <code class="inline">obtenerLogoMQFB64()</code> (logo oficial de +QUE FIANZAS) con ajuste proporcional <code class="inline">(ML, 7, 24, 20)</code>, asegurando la alineación limpia con la barra azul del corredor, manteniendo la aseguradora en la sección de tablas <code class="inline">Aseguradora | Precio / Prima Total</code> y el código QR de validación en la esquina inferior derecha.</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-020 -->
+        <article class="error-card code" id="fail-020">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-code">FAIL-020</span>
+                <h3 class="error-card-title">ReferenceError: obtenerLogoMQFB64 is not defined al Generar PDF de Cotización Resumen de Fianzas</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al presionar el botón azul "PDF" en Mis Cotizaciones de Fianzas, se desplegaba una alerta roja (toast) <code class="inline">Error al generar PDF: obtenerLogoMQFB64 is not defined</code> y se interrumpía la descarga del archivo PDF.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) Invocación de <code class="inline">obtenerLogoMQFB64()</code> sin verificación previa de existencia ni asignación global a <code class="inline">window</code> en <code class="inline">logo_b64.js</code> / <code class="inline">data-export.js</code>. 2) La caché del navegador retenía versiones obsoletas de los archivos JS (<code class="inline">data-export.js?v=20260808_v5</code>).</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Declaración explícita de <code class="inline">window.obtenerLogoMQFB64</code> en <code class="inline">logo_b64.js</code> y <code class="inline">data-export.js</code>. 2) Implementación de evaluación condicional tolerante <code class="inline">typeof window.obtenerLogoMQFB64 === 'function'</code> con fallback directo a <code class="inline">window.LOGO_MQF_B64</code>. 3) Actualización de parámetros de cache-busting a <code class="inline">?v=20260810_v8</code> en los módulos HTML (<code class="inline">fianzas.html</code>, <code class="inline">cotizaciones.html</code>, <code class="inline">pwa/index.html</code>).</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- FAIL-021 -->
+        <article class="error-card ui" id="fail-021">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-ui">FAIL-021</span>
+                <h3 class="error-card-title">Desalineación y Espaciado Vertical Insuficiente en Filas de Datos de Tipo de Fianza y Aseguradora en Cotización Resumen PDF</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Los datos de las secciones "Tipo de Fianza" y "Aseguradora" se renderizaban pegados e invadiendo la línea inferior de los rectángulos grises de encabezado.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">En <code class="inline">dibujarCotizacionFianzaSimplePDF</code> (<code class="inline">frontend/assets/data-export.js</code>), el salto previo a la impresión del texto de datos era insuficiente (<code class="inline">y += 8</code>), dejando solo 2mm entre el fondo del rectángulo gris y el baseline del texto.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">Se ajustó la altura del rectángulo gris a 5.5mm, se incrementó el salto vertical previo a <code class="inline">y += 10.5</code> (creando un margen limpio de 3.0mm entre la barra gris y la tipografía) y se ajustó el tamaño de fuente a 8.5pt, alineándose exactamente con el diseño de la Imagen 2.</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
     <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
     <footer class="doc-footer" role="contentinfo">
         <div>
@@ -773,11 +1279,10 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <span class="badge badge-primary"><i class="fa-solid fa-database"></i> KEDB Activo</span>
-            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 10 Errores Codificados</span>
+            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 21 Errores Codificados</span>
             <span class="badge badge-amber"><i class="fa-solid fa-clock"></i> Última actualización: 2026</span>
         </div>
     </footer>
-
 </div>
 <script>
     // Heredar y sincronizar skin activo en tiempo real

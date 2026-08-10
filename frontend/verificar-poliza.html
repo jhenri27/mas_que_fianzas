@@ -234,26 +234,22 @@
                         <span class="info-val" id="pol-fin"></span>
                     </div>
 
-                    <div class="section-title">Datos del Vehículo</div>
+                    <div class="section-title" id="sec-detalles-title">Detalles Complementarios</div>
                     <div class="info-row">
-                        <span class="info-label">Marca / Modelo:</span>
+                        <span class="info-label" id="lbl-marca-modelo">Marca / Modelo:</span>
                         <span class="info-val" id="veh-marca-modelo"></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Año / Color:</span>
+                        <span class="info-label" id="lbl-anio-color">Año / Color:</span>
                         <span class="info-val" id="veh-anio-color"></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Placa:</span>
+                        <span class="info-label" id="lbl-placa">Placa:</span>
                         <span class="info-val" id="veh-placa" style="color:#fbbf24;"></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Matrícula:</span>
+                        <span class="info-label" id="lbl-matricula">Matrícula:</span>
                         <span class="info-val" id="veh-matricula"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">No. Chasis (VIN):</span>
-                        <span class="info-val" id="veh-chasis" style="font-family:monospace; font-size:12px;"></span>
                     </div>
                 </div>
 
@@ -279,13 +275,19 @@
 
         async function consultarPoliza(numero) {
             try {
-                const res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=verificar_publico&n=${encodeURIComponent(numero)}`);
+                let res = await fetch(`/backend/api/checkout_process.php?action=verificar_publico&n=${encodeURIComponent(numero)}`);
+                if (!res.ok) {
+                    res = await fetch(`/PLATAFORMA_INTEGRADA/backend/api/checkout_process.php?action=verificar_publico&n=${encodeURIComponent(numero)}`);
+                }
+                if (!res.ok) {
+                    res = await fetch(`/backend/api/verificar_poliza.php?n=${encodeURIComponent(numero)}`);
+                }
                 const data = await res.json();
                 
                 document.getElementById('view-loading').style.display = 'none';
 
                 if (data.exito) {
-                    mostrarDatos(data.data);
+                    mostrarDatos(data);
                 } else {
                     showError(data.mensaje || "Póliza no encontrada.");
                 }
@@ -295,48 +297,78 @@
             }
         }
 
-        function mostrarDatos(p) {
-            document.getElementById('pol-numero').textContent = p.numero_poliza;
-            document.getElementById('pol-aseguradora').textContent = p.aseguradora;
-            document.getElementById('pol-ramo').textContent = p.ramo;
-            document.getElementById('pol-cliente').textContent = p.cliente_nombre;
+        function mostrarDatos(resData) {
+            const p = resData.data || resData.datos || resData;
+
+            const isFianza = resData.tipo_registro === 'fianza' || 
+                             resData.tipo_registro === 'fianza_cotizacion' || 
+                             (p && (p.numero_fianza || p.tipo_fianza || p.monto_afianzado)) ||
+                             (p && String(p.ramo || p.tipo_seguro || '').toUpperCase().includes('FIANZA')) ||
+                             (p && String(p.numero_poliza || p.numero_fianza || p.numero || '').toUpperCase().startsWith('FZ-'));
+
+            document.getElementById('pol-numero').textContent = p.numero_fianza || p.numero_poliza || '—';
+            document.getElementById('pol-aseguradora').textContent = p.aseguradora || 'MULTISEGUROS';
+            document.getElementById('pol-ramo').textContent = p.ramo || (isFianza ? 'FIANZAS COMERCIALES' : 'SEGUROS');
+            document.getElementById('pol-cliente').textContent = p.cliente_nombre || p.asegurado || '—';
             document.getElementById('pol-inicio').textContent = formatFecha(p.fecha_emision);
             document.getElementById('pol-fin').textContent = formatFecha(p.fecha_vencimiento);
 
-            const v = p.vehiculo || {};
-            document.getElementById('veh-marca-modelo').textContent = `${v.marca || ''} ${v.modelo || ''}`;
-            document.getElementById('veh-anio-color').textContent = `${v.anio || ''} / ${v.color || ''}`;
-            document.getElementById('veh-placa').textContent = v.placa || 'N/D';
-            document.getElementById('veh-matricula').textContent = v.matricula || 'N/D';
-            document.getElementById('veh-chasis').textContent = v.chasis || 'N/D';
+            const secTitle = document.getElementById('sec-detalles-title');
+
+            if (isFianza) {
+                if (secTitle) secTitle.textContent = "Especificaciones de la Fianza Comercial";
+                document.getElementById('lbl-marca-modelo').textContent = "Tipo de Fianza:";
+                document.getElementById('lbl-anio-color').textContent = "Beneficiario:";
+                document.getElementById('lbl-placa').textContent = "Monto Afianzado:";
+                document.getElementById('lbl-matricula').textContent = "Objeto / Referencia:";
+
+                document.getElementById('veh-marca-modelo').textContent = p.tipo_fianza || p.cobertura || 'Garantía Comercial';
+                document.getElementById('veh-anio-color').textContent = p.beneficiario || 'EL BENEFICIARIO';
+                document.getElementById('veh-placa').textContent = p.monto_afianzado_fmt || (p.monto_afianzado ? 'RD$ ' + Number(p.monto_afianzado).toLocaleString('es-DO', {minimumFractionDigits: 2}) : 'N/D');
+                document.getElementById('veh-matricula').textContent = p.objeto_referencia || 'En Orden';
+            } else {
+                const v = p.vehiculo || {};
+                if (secTitle) secTitle.textContent = "Datos del Vehículo";
+                document.getElementById('lbl-marca-modelo').textContent = "Marca / Modelo:";
+                document.getElementById('lbl-anio-color').textContent = "Año / Color:";
+                document.getElementById('lbl-placa').textContent = "Placa:";
+                document.getElementById('lbl-matricula').textContent = "Matrícula:";
+
+                document.getElementById('veh-marca-modelo').textContent = `${v.marca || p.vehiculo_marca || ''} ${v.modelo || p.vehiculo_modelo || ''}`.trim() || 'N/D';
+                document.getElementById('veh-anio-color').textContent = `${v.anio || p.vehiculo_anio || ''} / ${v.color || p.vehiculo_color || ''}`.trim() || 'N/D';
+                document.getElementById('veh-placa').textContent = v.placa || p.vehiculo_placa || 'N/D';
+                document.getElementById('veh-matricula').textContent = v.matricula || p.vehiculo_matricula || 'N/D';
+            }
 
             const badge = document.getElementById('badge-estado');
             const alertBox = document.getElementById('alert-pago');
 
-            if (p.estado === 'activa') {
+            const estadoNorm = String(p.estado || '').toLowerCase();
+
+            if (estadoNorm === 'activa' || estadoNorm === 'vigente' || estadoNorm === 'emitida' || estadoNorm === 'pagada') {
                 badge.className = "status-badge activa";
-                badge.innerHTML = '<i class="fas fa-check-circle"></i> Póliza Activa';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> ' + (isFianza ? 'Fianza Vigente y Confirmada' : 'Póliza Activa');
                 
                 alertBox.style.display = 'block';
                 alertBox.className = "alert-box success";
-                alertBox.innerHTML = '<i class="fas fa-shield-alt"></i> Cobertura confirmada y válida para circulación nacional.';
-            } else if (p.estado === 'pendiente_pago') {
+                alertBox.innerHTML = '<i class="fas fa-shield-alt"></i> ' + (isFianza ? 'Fianza comercial emitida y confirmada en el registro oficial de Más Que Fianzas SRL.' : 'Cobertura confirmada y válida para circulación nacional.');
+            } else if (estadoNorm === 'pendiente_pago' || estadoNorm === 'cotizacion' || estadoNorm === 'pendiente') {
                 badge.className = "status-badge pendiente_pago";
-                badge.innerHTML = '<i class="fas fa-clock"></i> Pendiente de Aprobación';
+                badge.innerHTML = '<i class="fas fa-clock"></i> ' + (isFianza ? 'Cotización de Fianza Registrada' : 'Pendiente de Aprobación');
 
                 alertBox.style.display = 'block';
                 alertBox.className = "alert-box warning";
-                alertBox.innerHTML = '<i class="fas fa-exclamation-circle"></i> <strong>PAGO EN PROCESO DE VALIDACIÓN:</strong> Esta póliza se encuentra emitida de forma temporal y NO TIENE validez de cobertura para circular hasta que la transferencia bancaria sea verificada por el departamento financiero de Más Que Fianzas.';
+                alertBox.innerHTML = '<i class="fas fa-exclamation-circle"></i> <strong>DOCUMENTO EN ESTADO COTIZACIÓN/BORRADOR:</strong> Registro válido como propuesta de fianza comercial, pendiente de emisión de póliza legal definitiva.';
             } else {
                 badge.className = "status-badge inactiva";
-                badge.innerHTML = `<i class="fas fa-times-circle"></i> Póliza ${p.estado.toUpperCase()}`;
+                badge.innerHTML = `<i class="fas fa-times-circle"></i> ` + (isFianza ? 'Fianza Inactiva' : `Póliza ${p.estado.toUpperCase()}`);
                 
                 alertBox.style.display = 'block';
                 alertBox.className = "alert-box warning";
                 alertBox.style.background = "rgba(239, 68, 68, 0.1)";
                 alertBox.style.borderColor = "rgba(239, 68, 68, 0.2)";
                 alertBox.style.color = "#fca5a5";
-                alertBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> La póliza especificada no cuenta con cobertura activa actualmente.';
+                alertBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> La fianza o póliza especificada no cuenta con cobertura activa actualmente.';
             }
 
             document.getElementById('view-data').style.display = 'block';

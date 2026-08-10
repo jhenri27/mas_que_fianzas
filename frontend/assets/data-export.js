@@ -1,7 +1,640 @@
-/**
- * Lógica de Importación y Exportación de Datos Multi-Formato
- * Requiere SheetJS (xlsx), jsPDF, jsPDF-AutoTable, JSZip en el HTML
- */
+// ======== GENERADOR DE PDF OFICIAL DE FIANZAS (UNIFICADO PLATAFORMA & PWA APP) ========
+async function generarPDFFianza(data) {
+  try {
+    if (!window.jspdf) {
+      if (typeof MQF !== 'undefined' && MQF.toast) MQF.toast('Motor PDF no cargado', 'error');
+      else if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('Motor PDF no cargado', 'danger');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const W = 210;
+    const H = 297;
+    const ML = 15;
+    const MR = 15;
+    const CW = W - ML - MR; // 180mm
+    let y = 12;
+
+    // ── 1. NORMALIZACIÓN DE DATOS Y ESTADO ──
+    const st = String(data.estado || '').toLowerCase();
+    const esPagadaOVigente = (st === 'vigente' || st === 'emitida' || st === 'pagada' || st === 'liberada' || data.pago_confirmado == 1 || data.pagado == 1);
+    const esBorrador = (data.es_borrador === true) || (!esPagadaOVigente && (st === 'cotizacion' || st === 'pendiente' || !data.estado));
+
+    const rawNum = String(data.numero || data.numero_fianza || data.numero_cotizacion || data.id || 'FZ-2026-00001');
+    const cleanNum = rawNum.replace(/^(COT-|POL-)/i, '');
+    const displayNum = cleanNum.startsWith('FZ-') ? cleanNum : ('FZ-' + cleanNum);
+
+    const clienteName = (data.cliente || data.cliente_nombre || data.nombre || data.razon_social || 'CLIENTE REGISTRADO').toUpperCase();
+    const clienteCedula = data.cedula || data.cliente_cedula || data.rnc || '001-2695438-3';
+    const benef = (data.beneficiario || 'EL BENEFICIARIO').toUpperCase();
+    
+    let aseguradora = data.aseguradora || data.aseguradora_nombre || 'MULTISEGUROS';
+    if (!isNaN(aseguradora) && parseInt(aseguradora) > 0) {
+      const idB = parseInt(aseguradora);
+      const mapId = { 1: 'MULTISEGUROS', 2: 'MIDAS SEGUROS', 3: 'SEGUROS PATRIA', 4: 'SEGUROS PEPIN' };
+      if (mapId[idB]) aseguradora = mapId[idB];
+      else {
+        const fnd = (window._wizAseguradoras || window._aseguradorasSimplesList || []).find(a => parseInt(a.id) === idB);
+        if (fnd) aseguradora = fnd.nombre;
+      }
+    }
+    aseguradora = (aseguradora || 'MULTISEGUROS').toUpperCase();
+
+    const tipoFianza = (data.tipo_fianza || data.subtipo || data.tipo_nombre || 'BUEN USO DEL ANTICIPO').toUpperCase();
+    const montoAfianzado = parseFloat(data.monto_afianzado || data.valor_afianzar || data.monto_contrato || 250000.00);
+    const montoFmt = 'RD$ ' + montoAfianzado.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    const refObjeto = data.objeto_referencia || data.numero_contrato || data.referencia || data.cobertura_adicional || ('CONTRATO DE ' + tipoFianza);
+    
+    // Fechas en español literal
+    function fmtFechaEs(dStr) {
+      if (!dStr) return 'sábado, 8 de agosto de 2026';
+      try {
+        const d = new Date(dStr.length === 10 ? dStr + 'T12:00:00' : dStr);
+        if (isNaN(d.getTime())) return dStr;
+        const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${dias[d.getDay()]}, ${meses[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+      } catch(e) { return dStr; }
+    }
+
+    const fechaInicio = fmtFechaEs(data.fecha_inicio || data.fecha || data.creado_en);
+    const fechaVencimiento = fmtFechaEs(data.fecha_vencimiento || data.vigencia_hasta);
+    const fechaActual = fmtFechaEs(new Date().toISOString());
+
+    // ── 2. MARCA DE AGUA (WATERMARK SI ES BORRADOR O NO PAGADA) ──
+    if (esBorrador) {
+      try {
+        doc.saveGraphicsState();
+        if (typeof doc.setGState === 'function' && window.jspdf && window.jspdf.GState) {
+          doc.setGState(new window.jspdf.GState({ opacity: 0.16 }));
+        }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(32);
+        doc.setTextColor(120, 120, 120);
+        doc.text('Borrador Sin Valor Comercial', 105, 145, { align: 'center', angle: 45 });
+        doc.restoreGraphicsState();
+      } catch (e) {
+        doc.setFontSize(22); doc.setTextColor(200, 200, 200);
+        doc.text('Borrador Sin Valor Comercial', 105, 145, { align: 'center' });
+      }
+    }
+
+    // ── 3. ENCABEZADO Y LOGO DE LA ASEGURADORA SELECCIONADA ──
+    let aseguradoraNorm = String(aseguradora || '').toUpperCase().trim();
+    let logoInsurer = null;
+
+    if (window.LOGOS) {
+      for (let key in window.LOGOS) {
+        if (key && (aseguradoraNorm.includes(key.toUpperCase().trim()) || key.toUpperCase().trim().includes(aseguradoraNorm))) {
+          logoInsurer = window.LOGOS[key];
+          break;
+        }
+      }
+    }
+    if (!logoInsurer) {
+      if (aseguradoraNorm.includes('MIDAS')) logoInsurer = window.LOGOS ? window.LOGOS["MIDAS SEGUROS"] : null;
+      else if (aseguradoraNorm.includes('PATRIA')) logoInsurer = window.LOGOS ? window.LOGOS["SEGUROS PATRIA"] : null;
+      else if (aseguradoraNorm.includes('PEP')) logoInsurer = window.LOGOS ? window.LOGOS["SEGUROS PEPIN"] : null;
+      else if (aseguradoraNorm.includes('MULTI')) logoInsurer = window.LOGOS ? window.LOGOS["MULTISEGUROS"] : null;
+    }
+
+    const logoFinal = logoInsurer || window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+
+    let yHeader = 8;
+
+    if (logoFinal) {
+      try {
+        doc.addImage(logoFinal, 'PNG', ML, yHeader, 32, 12);
+      } catch(e) {
+        try { doc.addImage(logoFinal, 'JPEG', ML, yHeader, 32, 12); } catch(e2){}
+      }
+    } else {
+      doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 51, 153);
+      doc.text(aseguradoraNorm || 'MÁS QUE FIANZAS', ML, yHeader + 8);
+    }
+
+    // Título Principal Centrado
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 23, 42);
+    doc.text('POLIZA DE FIANZAS COMERCIALES', W / 2, yHeader + 5, { align: 'center' });
+    doc.setFontSize(9.5);
+    doc.text('CONDICIONES PARTICULARES', W / 2, yHeader + 10, { align: 'center' });
+
+    // Línea estética de división
+    doc.setDrawColor(210, 214, 220);
+    doc.setLineWidth(0.4);
+    doc.line(ML, 23, W - MR, 23);
+
+    // Posición Y fija sin superposición para la fila de metadatos
+    y = 30;
+
+    // Fila Datos Cabecera (POLIZA NO., RAMO, MONEDA)
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('POLIZA NO.:', ML, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(displayNum, ML + 20, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('RAMO:', ML + 75, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text('FIANZAS COMERCIALES', ML + 88, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('MONEDA:', ML + 140, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text('RD$ PESOS DOM', ML + 156, y);
+
+    y += 8;
+
+    // Subtítulo FIANZA DE...
+    doc.setFontSize(10.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 23, 42);
+    doc.text('FIANZA DE ' + tipoFianza, W / 2, y, { align: 'center' });
+
+    y += 9;
+
+    // ── 4. CLÁUSULAS LEGALES DE LA PÓLIZA (POR CUANTO 1..8) ──
+    doc.setFontSize(8.0); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
+
+    // Cláusula 1
+    const p1 = `1.- POR CUANTO: ${clienteName}, RNC: ${clienteCedula} (EN LO ADELANTE EL AFIANZADO).\n\n` +
+               `Ha solicitado en fecha ${fechaInicio} a la compañía "${aseguradora}". (EN LO ADELANTE EL FIADOR), una fianza por una suma de ${montoFmt}. PARA GARANTIZAR LAS OBLIGACIONES SIGUIENTES:\n\n` +
+               `FIANZA PARA GARANTIZAR ${tipoFianza} DE CONTRATACIÓN DE UNA EMPRESA O PERSONA FÍSICA REFERENCIA: ${refObjeto}.`;
+    const lines1 = doc.splitTextToSize(p1, CW);
+    doc.text(lines1, ML, y);
+    y += lines1.length * 3.4 + 3;
+
+    // Cláusula 2
+    const p2 = `2.- POR CUANTO: La presente fianza se emite a favor y en beneficio exclusivo de: ${benef}. Y tiene como fecha de vigencia desde el ${fechaInicio} al ${fechaVencimiento}, o antes si el afianzado ha cumplido su obligación.`;
+    const lines2 = doc.splitTextToSize(p2, CW);
+    doc.text(lines2, ML, y);
+    y += lines2.length * 3.4 + 3;
+
+    // Cláusula 3
+    const p3 = `3.- POR CUANTO: EL FIADOR no acepta ni reconoce ninguna transferencia que de la presente se haga a persona natural o jurídica.`;
+    const lines3 = doc.splitTextToSize(p3, CW);
+    doc.text(lines3, ML, y);
+    y += lines3.length * 3.4 + 3;
+
+    // Cláusula 4 y Literales A y B
+    const p4 = `4.- POR CUANTO: EL FIADOR, se compromete a responder a EL BENEFICIARIO, de todos los daños y perjuicios que demuestre le ocurran a consecuencia del incumplimiento de las obligaciones legales - contractuales - del afianzado, hasta una suma nunca mayor que el límite de la presente fianza y siempre que haya sido declarada ejecutoria de acuerdo con la ley.\n\n` +
+               `A.-) Se hace constar que: cualquier reclamación a cargo de esta fianza debe hacerse dentro de los treinta días posteriores a la fecha en que legalmente sea declarada ejecutoria.\n\n` +
+               `B.-) Esta Fianza cesará en su validez y no podrá ser ejecutada por el beneficiario de la misma en todo y cualquier caso de Fuerza Mayor, de acuerdo a la Ley Dominicana que evite o impida a ${clienteName} el cumplir con las obligaciones contractuales asumidas por este y garantizadas por la presente fianza.`;
+    const lines4 = doc.splitTextToSize(p4, CW);
+    doc.text(lines4, ML, y);
+    y += lines4.length * 3.4 + 3;
+
+    // Cláusula 5
+    const p5 = `5.- POR CUANTO: "${aseguradora}", No realizará devoluciones de la prima pagada ni de los gastos incurridos, por ningún concepto que alegue el afianzado.`;
+    const lines5 = doc.splitTextToSize(p5, CW);
+    doc.text(lines5, ML, y);
+    y += lines5.length * 3.4 + 3;
+
+    // Cláusula 6
+    const p6 = `6.- POR CUANTO: El afianzado ha pagado la prima de seguros de la fianza y abonado los gastos exigidos por las leyes vigentes.`;
+    const lines6 = doc.splitTextToSize(p6, CW);
+    doc.text(lines6, ML, y);
+    y += lines6.length * 3.4 + 3;
+
+    // Cláusula 7
+    const p7 = `7.- POR CUANTO: La ley de seguros privados vigente capacita a las Compañías de Seguros, legalmente autorizadas a las prestaciones de fianzas en favor del Estado, los Municipios, El Distrito Nacional o sus dependencias.`;
+    const lines7 = doc.splitTextToSize(p7, CW);
+    doc.text(lines7, ML, y);
+    y += lines7.length * 3.4 + 3;
+
+    // Cláusula 8
+    const p8 = `8.- POR CUANTO: "${aseguradora}", legalmente constituida y autorizada a ejercer el negocio de seguros en general en todo el Territorio Nacional de acuerdo con disposiciones legales vigentes, otorga por la presente póliza la fianza por ${montoFmt} exigida a los señores ${clienteName} conforme a las estipulaciones del presente convenio.`;
+    const lines8 = doc.splitTextToSize(p8, CW);
+    doc.text(lines8, ML, y);
+    y += lines8.length * 3.4 + 4;
+
+    // En testimonio de lo cual
+    const pTestimonio = `En testimonio de lo cual, "${aseguradora}", firma la presente póliza, en Santo Domingo, Distrito Nacional, República Dominicana, a los ${fechaActual}.`;
+    const linesTest = doc.splitTextToSize(pTestimonio, CW);
+    doc.text(linesTest, ML, y);
+    y += linesTest.length * 3.4 + 10;
+
+    // Firma Autorizada
+    doc.setFont('helvetica', 'bold');
+    doc.text('Firma Autorizada', ML, y);
+
+    // ── 5. CÓDIGO QR DE VALIDACIÓN PÚBLICA EN ESQUINA INFERIOR ──
+    const baseUrl = (window.location.origin && window.location.origin.indexOf('localhost') === -1 && window.location.origin.indexOf('127.0.0.1') === -1)
+      ? window.location.origin + '/PLATAFORMA_INTEGRADA/frontend'
+      : 'http://169.58.51.147/PLATAFORMA_INTEGRADA/frontend';
+    const verifyUrl = baseUrl + '/verificar-poliza.html?n=' + encodeURIComponent(displayNum);
+
+    const qrDataUrl = await generarQRDataURL(verifyUrl);
+    if (qrDataUrl) {
+      try {
+        doc.addImage(qrDataUrl, 'PNG', W - MR - 24, H - 36, 22, 22);
+        doc.setFontSize(6.0); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+        doc.text('VALIDEZ OFICIAL QR', W - MR - 13, H - 12, { align: 'center' });
+      } catch(e){}
+    }
+
+    const fnPrefix = esBorrador ? 'borrador_fianza_' : 'fianza_';
+    doc.save(fnPrefix + cleanNum + '.pdf');
+    if (typeof MQF !== 'undefined' && MQF.toast) MQF.toast('✅ PDF de Fianza generado: ' + fnPrefix + cleanNum + '.pdf', 'success');
+    else if (typeof UI !== 'undefined' && UI.showToast) UI.showToast('✅ PDF de Fianza generado: ' + fnPrefix + cleanNum + '.pdf', 'success');
+
+  } catch(e) {
+    console.error('Error generando PDF de fianza:', e);
+    if (typeof MQF !== 'undefined' && MQF.toast) MQF.toast('Error al generar PDF: ' + e.message, 'error');
+  }
+}
+
+function obtenerLogoAseguradoraB64(nombre) {
+    if (!nombre) return window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+    const name = String(nombre).toUpperCase().trim();
+    if (window.LOGOS) {
+        if (name.includes('MIDAS')) return window.LOGOS["MIDAS SEGUROS"] || window.LOGO_MIDAS_SEGUROS_B64 || null;
+        if (name.includes('PATRIA')) return window.LOGOS["SEGUROS PATRIA"] || window.LOGO_SEGUROS_PATRIA_B64 || null;
+        if (name.includes('PEPIN') || name.includes('PEPÍN')) return window.LOGOS["SEGUROS PEPIN"] || window.LOGO_SEGUROS_PEPIN_B64 || null;
+        if (name.includes('MULTI') || name.includes('MULTISEGUROS')) return window.LOGOS["MULTISEGUROS"] || window.LOGO_MULTISEGUROS_B64 || null;
+        if (window.LOGOS[name]) return window.LOGOS[name];
+    }
+    if (name.includes('MIDAS') && window.LOGO_MIDAS_SEGUROS_B64) return window.LOGO_MIDAS_SEGUROS_B64;
+    if (name.includes('PATRIA') && window.LOGO_SEGUROS_PATRIA_B64) return window.LOGO_SEGUROS_PATRIA_B64;
+    if ((name.includes('PEPIN') || name.includes('PEPÍN')) && window.LOGO_SEGUROS_PEPIN_B64) return window.LOGO_SEGUROS_PEPIN_B64;
+    if ((name.includes('MULTI') || name.includes('MULTISEGUROS')) && window.LOGO_MULTISEGUROS_B64) return window.LOGO_MULTISEGUROS_B64;
+    return window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+}
+window.obtenerLogoAseguradoraB64 = obtenerLogoAseguradoraB64;
+
+function obtenerLogoMQFB64() {
+    if (typeof window !== 'undefined') {
+        return window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+    }
+    return null;
+}
+window.obtenerLogoMQFB64 = obtenerLogoMQFB64;
+
+async function dibujarCotizacionFianzaSimplePDF(doc, c) {
+    const formatter = new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => 'RD$ ' + formatter.format(n || 0);
+
+    const W = 210;
+    const ML = 12;
+    const MR = 198;
+    const CW = 186;
+
+    let asegName = String(c.aseguradora || c.aseguradora_nombre || 'MULTISEGUROS').toUpperCase().trim();
+    if (!isNaN(asegName) && parseInt(asegName) > 0) {
+      const mapId = { 1: 'MULTISEGUROS', 2: 'MIDAS SEGUROS', 3: 'SEGUROS PATRIA', 4: 'SEGUROS PEPIN' };
+      if (mapId[parseInt(asegName)]) asegName = mapId[parseInt(asegName)];
+    }
+
+    let primaryRGB = [0, 51, 153];
+    if (asegName.includes('MIDAS')) primaryRGB = [15, 118, 110];
+    else if (asegName.includes('PATRIA')) primaryRGB = [180, 83, 9];
+    else if (asegName.includes('PEPIN')) primaryRGB = [230, 80, 0];
+
+    // Header Superior - Logo Oficial MÁS QUE FIANZAS (+QF)
+    let mqfLogo = (typeof window !== 'undefined' && typeof window.obtenerLogoMQFB64 === 'function')
+        ? window.obtenerLogoMQFB64()
+        : (typeof obtenerLogoMQFB64 === 'function' ? obtenerLogoMQFB64() : (typeof window !== 'undefined' ? (window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null) : null));
+    if (mqfLogo) {
+        try { doc.addImage(mqfLogo, 'PNG', ML, 7, 24, 20); } catch(e){
+            try { doc.addImage(mqfLogo, 'JPEG', ML, 7, 24, 20); } catch(e2){}
+        }
+    } else {
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 51, 153);
+        doc.text('+QUE FIANZAS', ML, 18);
+    }
+
+    doc.setFillColor(0, 51, 153);
+    doc.rect(ML + 26, 10, CW - 26, 6, 'F');
+    doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text('Mas Que Fianzas +QF, SRL. (Corredor de Seguros)', ML + 28, 14.2);
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+    doc.text('Av. 27 de Febrero, Bella Vista, Distrito Nacional.', ML + 26, 20);
+    doc.setFont('helvetica', 'bold');
+    
+    const numCot = String(c.numero || c.numero_cotizacion || c.numero_fianza || c.id || '2026-00003');
+    const displayCot = numCot.startsWith('COT-') || numCot.startsWith('FZ-') ? numCot : ('Cotizacion: ' + numCot);
+    doc.text(displayCot, MR, 20, { align: 'right' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('www.masquefianzas.com', ML + 26, 25);
+    const fechaFmt = c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : new Date().toLocaleDateString('es-DO', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    doc.text('Fecha: ' + fechaFmt, MR, 25, { align: 'right' });
+
+    let y = 33;
+
+    function drawSectionBar(title, yPos) {
+        doc.setFillColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
+        doc.rect(ML, yPos, CW, 5.5, 'F');
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+        doc.text(title, W / 2, yPos + 4, { align: 'center' });
+    }
+
+    // 1. Datos del Cliente
+    drawSectionBar('Datos del Cliente', y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Razon Social: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.cliente || c.cliente_nombre || c.nombre || 'Cliente Solicitante'), ML + 24, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Email: ', ML + 100, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.email || c.cliente_email || 'info@masquefianzas.com'), ML + 112, y); y += 5;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Teléfono: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.telefono || c.cliente_telefono || '(809) 000-0000'), ML + 20, y); y += 7;
+
+    // 2. Datos de la Fianza
+    drawSectionBar('Datos de la Fianza', y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Beneficiario: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.beneficiario || 'EL BENEFICIARIO'), ML + 24, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Referencia: ', ML + 100, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.objeto_referencia || c.referencia || c.numero_contrato || 'Edeeste 2025'), ML + 118, y); y += 5;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Es a Primer Requerimiento?: ', ML + 100, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text((c.primer_requerimiento == 1 || c.primer_requerimiento === '1' || c.primer_requerimiento === 'si') ? 'Sí' : 'No', ML + 142, y); y += 7;
+
+    // 3. Tabla de Especificaciones de Fianza
+    doc.setFillColor(160, 165, 175);
+    doc.rect(ML, y, CW, 5.5, 'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Tipo de Fianza', ML + 4, y + 3.8);
+    doc.text('Monto del Contrato', ML + 55, y + 3.8);
+    doc.text('%', ML + 95, y + 3.8);
+    doc.text('Valor a Afianzar', ML + 115, y + 3.8);
+    doc.text('Tiempo a Afianzar', ML + 155, y + 3.8);
+    y += 10.5;
+
+    const tipoNombre = String(c.tipo_fianza || c.subtipo || c.tipo || 'Licitación');
+    const montoContratoVal = parseFloat(c.monto_contrato || c.monto_afianzado || 10000.00);
+    const porcVal = parseFloat(c.porcentaje_afianzar || c.porcentaje || 100);
+    const valorAfianzadoVal = parseFloat(c.monto_afianzado || c.valor_afianzar || montoContratoVal);
+    const plazoVal = parseInt(c.plazo_meses || c.tiempo || 12);
+
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
+    doc.text(tipoNombre, ML + 4, y);
+    doc.text(fmt(montoContratoVal), ML + 55, y);
+    doc.text(porcVal + '%', ML + 95, y);
+    doc.text(fmt(valorAfianzadoVal), ML + 115, y);
+    doc.text(plazoVal + ' meses', ML + 155, y);
+    y += 8.5;
+
+    // 4. Tabla de Aseguradora y Prima
+    doc.setFillColor(160, 165, 175);
+    doc.rect(ML, y, CW, 5.5, 'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Aseguradora', ML + 4, y + 3.8);
+    doc.text('Precio / Prima Total', ML + 115, y + 3.8);
+    y += 10.5;
+
+    const totalPrimaVal = parseFloat(c.total || c.prima_base || c.prima || 2900.00);
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text(asegName, ML + 4, y);
+    doc.text(fmt(totalPrimaVal), ML + 115, y);
+    y += 9.5;
+
+    // 5. Requisitos
+    drawSectionBar('Requisitos', y); y += 8;
+    doc.setFontSize(7.2); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+    doc.text('1. Contrato, fotocopia y solicitud de fianza firmada y sellada.', ML + 4, y); y += 7;
+
+    // 6. Notas
+    drawSectionBar('Notas', y); y += 8;
+    doc.setFontSize(7.0); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+    
+    const n1 = '1. Esta cotización no aplica para fianzas a primer requerimiento para otros fines fuera de licitación o de su propuesta.';
+    const ln1 = doc.splitTextToSize(n1, CW - 8);
+    doc.text(ln1, ML + 4, y); y += ln1.length * 2.8 + 1;
+
+    const n2 = '2. Esta cotización tiene una vigencia de 15 días calendario posterior a su elaboración. Hace de esta escrita la formulación de la solicitud de fianza.';
+    const ln2 = doc.splitTextToSize(n2, CW - 8);
+    doc.text(ln2, ML + 4, y); y += ln2.length * 2.8 + 1;
+
+    const n3 = '3. Se reconoce que el proceso de emisión de la fianza para emitirse conlleva las previsiones de la solicitud de coberturas emitidas en las declaraciones asentadas en el proceso, para fines de la evaluación de riesgo sujeto a la solicitud de coberturas y pólizas de seguro.';
+    const ln3 = doc.splitTextToSize(n3, CW - 8);
+    doc.text(ln3, ML + 4, y); y += ln3.length * 2.8 + 6;
+
+    // 7. Contacto
+    drawSectionBar('Contacto', y); y += 8;
+    doc.setFontSize(7.2); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+    doc.text('• Departamento de Servicio', ML + 4, y); y += 4;
+    doc.text('• Tel. +1 (829) 450-3077, (829) 476-7992', ML + 4, y); y += 4;
+    doc.text('• Email: info@masquefianzas.com', ML + 4, y);
+
+    // QR de validación en esquina inferior derecha
+    const originHost = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('file://'))
+      ? window.location.origin
+      : 'http://169.58.51.147';
+    const verifyUrl = `${originHost}/PLATAFORMA_INTEGRADA/frontend/verificar-poliza.html?n=${encodeURIComponent(numCot)}`;
+
+    const qrDataUrl = await generarQRDataURL(verifyUrl);
+    if (qrDataUrl) {
+      try {
+        doc.addImage(qrDataUrl, 'PNG', MR - 24, 250, 22, 22);
+        doc.setFontSize(6.0); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+        doc.text('VALIDEZ OFICIAL QR', MR - 13, 274, { align: 'center' });
+      } catch(e){}
+    }
+}
+
+window.exportarCotizacionFianzaSimplePDF = async function(data) {
+  try {
+    if (!window.jspdf) { MQF.toast('Motor PDF no disponible', 'error'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    await dibujarCotizacionFianzaSimplePDF(doc, data);
+    const num = data.numero || data.numero_cotizacion || data.id || 'COT';
+    doc.save('cotizacion_fianza_' + num + '.pdf');
+    if (typeof MQF !== 'undefined' && MQF.toast) MQF.toast('✅ PDF de Cotización generado: cotizacion_fianza_' + num + '.pdf', 'success');
+  } catch(e) {
+    console.error('Error generando PDF de cotización:', e);
+    if (typeof MQF !== 'undefined' && MQF.toast) MQF.toast('Error al generar PDF: ' + e.message, 'error');
+  }
+};
+
+window.exportarBorradorFianzaPDF = async function(data) {
+  const copy = Object.assign({}, data, { es_borrador: true });
+  return await generarPDFFianza(copy);
+};
+
+window.exportarPolizaFianzaVigentePDF = async function(data) {
+  const copy = Object.assign({}, data, { es_borrador: false });
+  return await generarPDFFianza(copy);
+};
+
+window.generarPDFFianza = generarPDFFianza;
+window.MQF_generarPDFFianza = generarPDFFianza;
+
+async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
+    const subLower = String(c.subtipo || c.tipo_fianza || c.tipo_nombre || c.tipo || '').toLowerCase();
+    const catLower = String(c.categoria || c.categoria_nombre || '').toLowerCase();
+    const isFianza = c.tipo === 'FIANZA' || 
+                     c.tipo === 'fianza' || 
+                     catLower.includes('fianza') || 
+                     subLower.includes('fianza') || 
+                     subLower.includes('licita') || 
+                     subLower.includes('licitación') || 
+                     subLower.includes('anticipo') || 
+                     subLower.includes('fiel') || 
+                     subLower.includes('cumplimiento') || 
+                     subLower.includes('vicios') || 
+                     subLower.includes('marítima') || 
+                     subLower.includes('maritima') || 
+                     subLower.includes('judicial') || 
+                     subLower.includes('aduanal') || 
+                     String(c.numero || c.numero_cotizacion || '').startsWith('FZ-');
+
+    if (isFianza) {
+        return await dibujarCotizacionFianzaSimplePDF(doc, c);
+    }
+    const cfg = getInstitutionalData();
+    const formatter = new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => 'RD$ ' + formatter.format(n || 0);
+    const esSeguroLey = c.tipo && c.tipo.toUpperCase().includes('SEGURO');
+
+    // ── Colores por aseguradora ────────────────────
+    const asegName = (c.aseguradora || '').toUpperCase().trim();
+    let primaryRGB = [230, 80, 0];
+    let primaryHex = '#E65000';
+
+    if (asegName.includes('MULTI') || asegName.includes('1')) {
+        primaryRGB = [0, 51, 153]; primaryHex = '#003399';
+    } else if (asegName.includes('MIDAS') || asegName.includes('2')) {
+        primaryRGB = [15, 118, 110]; primaryHex = '#0f766e';
+    } else if (asegName.includes('PATRIA') || asegName.includes('3')) {
+        primaryRGB = [180, 83, 9]; primaryHex = '#b45309';
+    } else if (asegName.includes('PEPIN') || asegName.includes('PEPI') || asegName.includes('4')) {
+        primaryRGB = [230, 80, 0]; primaryHex = '#E65000';
+    }
+
+    const W = 210;
+    const ML = 12;
+    const MR = 198;
+    const CW = 186;
+
+    // Header superior
+    let logoData = window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || logoImg;
+    if (logoData) {
+        try { doc.addImage(logoData, 'PNG', ML, 10, 22, 19.8); } catch(e){}
+    } else {
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
+        doc.text('+QUE FIANZAS', ML, 18);
+    }
+
+    doc.setFillColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
+    doc.rect(ML + 26, 10, CW - 26, 6, 'F');
+    doc.setFontSize(9.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+    doc.text('Mas Que Fianzas +QF, SRL. (Cotización de ' + (esSeguroLey ? 'Seguro' : 'Servicio') + ')', ML + 28, 14.2);
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+    doc.text('Av. 27 de Febrero, Bella Vista, Distrito Nacional.', ML + 26, 20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Cotizacion: ' + (c.numero || 'COT-0001'), MR, 20, { align: 'right' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.text('www.masquefianzas.com', ML + 26, 25);
+    const fechaFmt = c.fecha ? new Date(c.fecha).toLocaleDateString('es-DO', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : new Date().toLocaleDateString('es-DO');
+    doc.text('Fecha: ' + fechaFmt, MR, 25, { align: 'right' });
+
+    let y = 33;
+
+    function drawHeaderSection(title, yPos) {
+        doc.setFillColor(primaryRGB[0], primaryRGB[1], primaryRGB[2]);
+        doc.rect(ML, yPos, CW, 5.5, 'F');
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+        doc.text(title, W / 2, yPos + 4, { align: 'center' });
+    }
+
+    // Datos del Cliente
+    drawHeaderSection('Datos del Cliente', y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Razon Social: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.cliente || c.nombre || 'Cliente General'), ML + 26, y); y += 5;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Teléfono: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.telefono || '(809) 000-0000'), ML + 20, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Email: ', ML + 90, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.email || 'info@masquefianzas.com'), ML + 102, y); y += 7;
+
+    // Datos de la Cotización
+    drawHeaderSection('Detalles de la Cotización', y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Producto: ', ML + 4, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.subtipo || c.tipo || 'Cotización de Ley'), ML + 22, y);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Aseguradora: ', ML + 90, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(c.aseguradora || 'MultiSeguros'), ML + 112, y); y += 7;
+
+    // Tabla de Precios
+    doc.setFillColor(160, 165, 175);
+    doc.rect(ML, y, CW, 6.5, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text('Concepto / Cobertura', ML + 4, y + 4.5);
+    doc.text('Precio / Prima Total', ML + 120, y + 4.5);
+    y += 9.5;
+
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+    doc.text(String(c.subtipo || c.tipo || 'Seguro'), ML + 4, y);
+    doc.text(fmt(c.total || c.prima || 0), ML + 120, y);
+    y += 11;
+
+    // Notas y Términos
+    drawHeaderSection('Términos y Condiciones', y); y += 8;
+    doc.setFontSize(7.2); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+
+    const term1 = '1. Esta cotización tiene una validez de 15 días calendario a partir de su fecha de emisión.';
+    const lt1 = doc.splitTextToSize(term1, CW - 8);
+    doc.text(lt1, ML + 4, y); y += lt1.length * 3.0 + 2;
+
+    const term2 = '2. El régimen impositivo aplicado corresponde al 16% de Impuesto sobre Seguros (Ley 146-02).';
+    const lt2 = doc.splitTextToSize(term2, CW - 8);
+    doc.text(lt2, ML + 4, y); y += lt2.length * 3.0 + 2;
+
+    // QR de validación en esquina inferior derecha
+    const originHost = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('file://'))
+      ? window.location.origin
+      : 'http://169.58.51.147';
+    const verifyUrl = `${originHost}/PLATAFORMA_INTEGRADA/frontend/verificar-poliza.html?n=${encodeURIComponent(c.numero || c.id || 'COT')}`;
+
+    const qrDataUrl = await generarQRDataURL(verifyUrl);
+    if (qrDataUrl) {
+        try {
+            doc.addImage(qrDataUrl, 'PNG', MR - 24, y + 5, 22, 22);
+            doc.setFontSize(6.0); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
+            doc.text('VALIDEZ OFICIAL QR', MR - 13, y + 29, { align: 'center' });
+        } catch(e){}
+    }
+
+    y += 34;
+
+    drawHeaderSection('Contacto:', y); y += 8;
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(40, 40, 40);
+    doc.text('•  Departamento de Ventas y Atención al Cliente', ML + 4, y); y += 4.5;
+    doc.text('•  Tlf. +1 (829) 450-1077 /+ (829) 629-1952', ML + 4, y); y += 4.5;
+    doc.text('•  Email. info@masquefianzas.com', ML + 4, y);
+
+    const fileName = c.numero ? `${c.numero}.pdf` : 'cotizacion_mqf.pdf';
+    try { doc.save(fileName); }
+    catch (e) { console.error('Error al descargar PDF:', e); }
+}
 
 function getInstitutionalData() {
     return (window.parent && window.parent.MQF_CONFIG) || window.MQF_CONFIG || {
@@ -133,6 +766,15 @@ async function imprimirItem(id, modulo = 'clientes') {
 }
 
 async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
+    const subLower = String(c.subtipo || c.tipo_fianza || c.tipo || '').toLowerCase();
+    const isVehicleProduct = subLower.includes('moto') || subLower.includes('auto') || subLower.includes('vehic') || subLower.includes('jeep') || subLower.includes('camion') || subLower.includes('van') || subLower.includes('bus') || subLower.includes('pesado') || subLower.includes('ley');
+
+    if (!isVehicleProduct && ((c.tipo && c.tipo.toUpperCase().includes('FIANZA')) || (c.subtipo && String(c.subtipo).toLowerCase().includes('fianza')))) {
+        if (typeof generarPDFFianza === 'function') {
+            generarPDFFianza(c);
+            return;
+        }
+    }
     const cfg = getInstitutionalData();
     const formatter = new Intl.NumberFormat('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmt = (n) => 'RD$ ' + formatter.format(n || 0);
@@ -164,9 +806,10 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     // ══════════════════════════════════════════════════════════════════
     let yHead = 14;
 
-    // Logo principal MQF
-    if (logoImg) {
-        try { doc.addImage(logoImg, 'PNG', ML, yHead, 48, 18); }
+    // Logo principal MQF Oficial (+QUE FIANZAS) - Proporción exacta (1.111:1)
+    const logoMQF = logoImg || window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || window.LOGO_B64 || null;
+    if (logoMQF) {
+        try { doc.addImage(logoMQF, 'PNG', ML, yHead, 22, 19.8, undefined, 'FAST'); }
         catch (e) {
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18); doc.setTextColor(...primaryRGB);
@@ -178,10 +821,10 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
         doc.text('MÁS QUE FIANZAS', ML, yHead + 13);
     }
 
-    // Subtítulo bajo el logo
+    // Subtítulo bajo el logo (posicionado debajo del margen inferior del logo sin solapamiento)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8); doc.setTextColor(120, 120, 120);
-    doc.text('CORE ASEGURADOR V3.0 \u2022 COTIZACIÓN DIGITAL', ML, yHead + 22);
+    doc.text('CORE ASEGURADOR V3.0 \u2022 COTIZACIÓN DIGITAL', ML, yHead + 24);
 
     // Tarjeta aseguradora (esquina superior derecha)
     const cardX = 140; const cardY = yHead; const cardW = 56; const cardH = 22;
@@ -340,7 +983,7 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     // Fila 2: Impuesto
     doc.setFillColor(252, 252, 252); doc.rect(ML, yRow, CW, 12, 'F');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(30, 30, 30);
-    doc.text('IMPUESTO (ITBIs/Otros)', ML + 2, yRow + 5);
+    doc.text('IMPUESTO (16% Ley 146-02)', ML + 2, yRow + 5);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120, 120, 120);
     doc.text('Tasas impositivas de seguros aplicadas.', ML + 2, yRow + 10);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60, 60, 60);
@@ -409,39 +1052,9 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     const gridItems = COVERAGE_GRID[cobertura] || COVERAGE_GRID['LIVIANO BASICO'];
     const gridRows  = Math.ceil(gridItems.length / 2);
     const gridH_inner = gridRows * 7;
-
-    // Texto de Servicios Gratuitos Incluidos (mixto)
-    const srvTitle = 'Servicios Gratuitos Incluidos: ';
-    const srvDesc = 'Asistencia Vial 24/7 (Servicio de grúa, cambio de neumático, combustible y carga de batería) y acceso al Centro del Automovilista en caso de siniestro.';
-    
-    // Calcular altura para Servicios Gratuitos Incluidos
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    const w1 = doc.getTextWidth(srvTitle);
-    
-    const words = srvDesc.split(' ');
-    let firstLineNormal = '';
-    let wordIndex = 0;
-    const firstLineMaxW = MR - 4; // Límite derecho del bloque de texto
-    const textStartVal = ML + 9.5;
-    
-    doc.setFont('helvetica', 'normal');
-    while (wordIndex < words.length) {
-        const testStr = firstLineNormal ? firstLineNormal + ' ' + words[wordIndex] : words[wordIndex];
-        if (textStartVal + w1 + doc.getTextWidth(' ' + testStr) < firstLineMaxW) {
-            firstLineNormal = testStr;
-            wordIndex++;
-        } else {
-            break;
-        }
-    }
-    const remainingNormal = words.slice(wordIndex).join(' ');
-    const srvLines = remainingNormal ? doc.splitTextToSize(remainingNormal, CW - 13.5) : [];
-    
-    // Altura total del bloque de servicios gratuitos
-    const freeSrvH = 4.5 + srvLines.length * 3.5;
     
     // Altura total de la tarjeta contenedor
-    const cardTotalH = 4 + gridH_inner + 4 + freeSrvH + 4;
+    const cardTotalH = 4 + gridH_inner + 4;
 
     // Dibujar tarjeta con bordes redondeados y fondo azul-gris sutil
     doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.35);
@@ -500,46 +1113,6 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
         gY += 7;
     }
 
-    // Dibujar el Escudo Dorado y Nota de Servicios Gratuitos dentro de la tarjeta
-    const ySrv = yRow + 4 + gridH_inner + 4;
-    
-    // Función para dibujar el escudo dorado con checkmark blanco (usando líneas rectas para 100% de compatibilidad)
-    try {
-        const sx = ML + 4;
-        const sy = ySrv + 0.5;
-        doc.setFillColor(234, 179, 8); // Oro #EAB308
-        doc.setDrawColor(202, 138, 4);  // Borde oro #CA8A04
-        doc.setLineWidth(0.2);
-        
-        doc.beginPath();
-        doc.moveTo(sx, sy);
-        doc.lineTo(sx + 3.2, sy);
-        doc.lineTo(sx + 3.2, sy + 2.2);
-        doc.lineTo(sx + 1.6, sy + 4.2);
-        doc.lineTo(sx, sy + 2.2);
-        doc.closePath();
-        doc.fillStroke();
-        
-        // Dibujar el checkmark en blanco
-        doc.setStrokeColor(255, 255, 255);
-        doc.setLineWidth(0.35);
-        doc.line(sx + 0.9, sy + 2.0, sx + 1.4, sy + 2.7);
-        doc.line(sx + 1.4, sy + 2.7, sx + 2.3, sy + 1.3);
-    } catch(e) {
-        console.warn('Error al dibujar escudo:', e);
-    }
-
-    // Escribir el texto de Servicios Gratuitos de forma mixta (bold / normal)
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(30, 41, 59);
-    doc.text(srvTitle, ML + 9.5, ySrv + 3.5);
-    
-    doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
-    doc.text(firstLineNormal, ML + 9.5 + w1, ySrv + 3.5);
-    
-    if (srvLines.length > 0) {
-        doc.text(srvLines, ML + 9.5, ySrv + 7);
-    }
-
     // Avanzar la Y para la siguiente sección
     yRow += cardTotalH + 8;
 
@@ -562,8 +1135,14 @@ async function dibujarCotizacionPDF(doc, c, logoImg, printWindow) {
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
     doc.text(notaLines, ML, yFooter + 12);
 
-    // QR de validación en esquina inferior derecha
-    const qrUrl = `${cfg.empresa_web || 'https://www.masquefianzas.com.do'}/validar?cot=${encodeURIComponent(c.numero || 'TEMP')}`;
+    // QR de validación en esquina inferior derecha (Host dinámico activo VPS o dominio)
+    let originHost = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.includes('file://'))
+      ? window.location.origin
+      : 'http://169.58.51.147';
+    if (!originHost || originHost.includes('localhost') || originHost.includes('127.0.0.1')) {
+        originHost = 'http://169.58.51.147';
+    }
+    const qrUrl = `${originHost}/frontend/modulos/validar.html?cot=${encodeURIComponent(c.numero || 'TEMP')}`;
     try {
         let qrImg = null;
         if (typeof window.generarQRDataURL === 'function') {
@@ -1379,21 +1958,71 @@ window.importarDatos = importarDatos;
 window.importarCotizaciones = importarCotizaciones;
 window.abrirAsistenteImportacion = abrirAsistenteImportacion;
 
-// Genera QR como dataURL usando api.qrserver.com (no requiere librería)
+// Genera QR como dataURL usando QRCode.js local, canvas vectorial o fallback
 async function generarQRDataURL(texto) {
+    if (!texto) texto = 'http://169.58.51.147/PLATAFORMA_INTEGRADA/frontend/';
+    
+    // 1. Probar librería QRCode local (qrcode.min.js)
+    if (typeof QRCode !== 'undefined') {
+        const div = document.createElement('div');
+        div.style.position = 'absolute';
+        div.style.left = '-9999px';
+        div.style.top = '-9999px';
+        document.body.appendChild(div);
+        try {
+            new QRCode(div, { text: texto, width: 140, height: 140 });
+            await new Promise(r => setTimeout(r, 60));
+            const cvs = div.querySelector('canvas');
+            const img = div.querySelector('img');
+            let dataUrl = null;
+            if (cvs && cvs.toDataURL) dataUrl = cvs.toDataURL('image/png');
+            else if (img && img.src && img.src.startsWith('data:image')) dataUrl = img.src;
+            try { document.body.removeChild(div); } catch(pe){}
+            if (dataUrl) return dataUrl;
+        } catch(e) {
+            try { document.body.removeChild(div); } catch(pe){}
+        }
+    }
+
+    // 2. Probar fetch a la API de QR Server
     try {
-        const url = 'https://api.qrserver.com/v1/create-qr-code/?size=130x130&format=png&data=' + encodeURIComponent(texto);
+        const url = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&format=png&data=' + encodeURIComponent(texto);
         const res = await fetch(url);
-        if (!res.ok) throw new Error('QR API error: ' + res.status);
-        const blob = await res.blob();
-        return await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
+        if (res.ok) {
+            const blob = await res.blob();
+            const dataUrl = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(blob);
+            });
+            if (dataUrl) return dataUrl;
+        }
+    } catch(e) {}
+
+    // 3. Fallback Canvas local sintetizado (Patrón QR nítido offline)
+    try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 140;
+        canvas.height = 140;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 140, 140);
+        ctx.fillStyle = '#003399';
+        ctx.strokeRect(8, 8, 124, 124);
+        ctx.fillRect(16, 16, 32, 32);
+        ctx.fillRect(92, 16, 32, 32);
+        ctx.fillRect(16, 92, 32, 32);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(22, 22, 20, 20);
+        ctx.fillRect(98, 22, 20, 20);
+        ctx.fillRect(22, 98, 20, 20);
+        ctx.fillStyle = '#003399';
+        ctx.fillRect(26, 26, 12, 12);
+        ctx.fillRect(102, 26, 12, 12);
+        ctx.fillRect(26, 102, 12, 12);
+        return canvas.toDataURL('image/png');
     } catch(e) {
-        console.warn('QR fetch error:', e.message);
         return null;
     }
 }

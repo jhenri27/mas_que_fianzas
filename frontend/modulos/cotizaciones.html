@@ -27,13 +27,15 @@
   <!-- JSZip para ZIP -->
   <script src="../assets/lib/jszip.min.js"></script>
   <!-- Logo MQF en Base64 (necesario para PDFs) -->
-  <script src="../assets/logo_b64.js?v=4"></script>
+  <script src="../assets/logo_b64.js?v=20260810_v8"></script>
   <!-- Logos de Aseguradoras en Base64 -->
   <script src="../assets/logos_aseguradoras.js?v=4"></script>
   <!-- API Client -->
   <script src="../assets/api-client.js?v=8.0.0"></script>
+  <!-- QRCode Generator -->
+  <script src="../assets/lib/qrcode.min.js"></script>
   <!-- Motor de exportación con dibujarCotizacionPDF() -->
-  <script src="../assets/data-export.js"></script>
+  <script src="../assets/data-export.js?v=20260810_v8"></script>
   <!-- Componentes UI y Modales de Confirmación MQF -->
   <script src="../assets/components.js"></script>
   <!-- React -->
@@ -381,6 +383,13 @@
           <label>Tasa Especial Manual (%) <span style="color:#9ca3af;">(opcional)</span></label>
           <input type="number" id="f_tasa_manual" placeholder="Ej: 3.0" step="0.01" min="0" oninput="calcularFianza()" class="mqf-input">
         </div>
+        <div class="mqf-form-group">
+          <label>¿Es a Primer Requerimiento? *</label>
+          <select id="f_primer_requerimiento" class="mqf-select">
+            <option value="0">No (Garantía Estándar)</option>
+            <option value="1">Sí (A Primer Requerimiento)</option>
+          </select>
+        </div>
         <div class="mqf-form-group mqf-form-full"><label>Monto Afianzado (DOP) *</label><input type="number" id="f_monto" placeholder="0.00" oninput="calcularFianza()" class="mqf-input"></div>
         <div class="mqf-form-group mqf-form-full"><label>Beneficiario</label><input type="text" id="f_beneficiario" placeholder="Nombre de la entidad" class="mqf-input"></div>
       </div>
@@ -616,7 +625,7 @@
             '<div class="result-row"><span class="label">Monto</span><span class="value">' + fmt(monto) + '</span></div>' +
             '<div class="result-row"><span class="label">Plazo</span><span class="value">' + plazo + ' meses</span></div>' +
             '<div class="result-row"><span class="label">Prima Base</span><span class="value">' + fmt(calc.prima_base) + '</span></div>' +
-            '<div class="result-row"><span class="label">ISC (16%)</span><span class="value">' + fmt(calc.itbis) + '</span></div>' +
+            '<div class="result-row"><span class="label">Impuesto (16% Ley 146-02)</span><span class="value">' + fmt(calc.impuesto_isc || calc.itbis) + '</span></div>' +
             (calc.prima_minima_aplicada ? '<div class="result-row" style="color:#d97706;font-weight:500;"><span class="label">⚠️ Prima Mínima</span><span class="value">Aplicada</span></div>' : '') +
             coberturaHTML +
             '<div class="result-row" style="border-top:2px solid #c7d2fe;margin-top:8px;padding-top:12px;"><span class="label" style="font-weight:600;">Total</span><span class="amount">' + fmt(calc.total) + '</span></div>';
@@ -708,6 +717,7 @@
         total: cot.total,
         cobertura: JSON.stringify(cot.coberturas),
         beneficiario: beneficiario,
+        primer_requerimiento: document.getElementById('f_primer_requerimiento') ? parseInt(document.getElementById('f_primer_requerimiento').value) : 0,
         tasa_manual: cot.tasa_manual,
         fecha: new Date().toISOString(),
         usar_ncf: document.getElementById('f_usar_ncf').checked
@@ -826,13 +836,42 @@
     }
 
     async function generarPDFFianzaProfesional(data) {
+      if (!data) return;
+      const subLower = String(data.subtipo || data.tipo_fianza || data.tipo_nombre || data.tipo || '').toLowerCase();
+      const catLower = String(data.categoria || data.categoria_nombre || '').toLowerCase();
+      const isFianza = data.tipo === 'FIANZA' || 
+                       data.tipo === 'fianza' || 
+                       data.monto_afianzado || 
+                       data.tipo_fianza || 
+                       data.beneficiario ||
+                       catLower.includes('fianza') || 
+                       subLower.includes('fianza') || 
+                       subLower.includes('licita') || 
+                       subLower.includes('licitación') || 
+                       subLower.includes('anticipo') || 
+                       subLower.includes('fiel') || 
+                       subLower.includes('cumplimiento') || 
+                       subLower.includes('vicios') || 
+                       subLower.includes('marítima') || 
+                       subLower.includes('maritima') || 
+                       subLower.includes('judicial') || 
+                       subLower.includes('aduanal') || 
+                       String(data.numero || data.numero_fianza || data.numero_cotizacion || '').startsWith('FZ-') ||
+                       String(data.numero || data.numero_fianza || data.numero_cotizacion || '').startsWith('COT-');
+
+      if (isFianza) {
+        if (typeof window.generarPDFFianza === 'function') {
+          return await window.generarPDFFianza(data);
+        }
+        if (typeof generarPDFFianza === 'function') {
+          return await generarPDFFianza(data);
+        }
+      }
       try {
         const { jsPDF } = window.jspdf;
         if (!jsPDF) { MQF.toast('Motor PDF no disponible', 'error'); return; }
         const doc = new jsPDF();
-        // Normalizar datos: coberturas → string para dibujarCotizacionPDF
         const dataNorm = Object.assign({}, data);
-        // Normalizar campos de nombre cruzado
         dataNorm.cliente    = dataNorm.cliente    || dataNorm.cliente_nombre || dataNorm.nombre || '';
         dataNorm.telefono   = dataNorm.telefono   || dataNorm.cliente_telefono || '';
         dataNorm.email      = dataNorm.email      || dataNorm.cliente_email    || '';
@@ -843,26 +882,11 @@
         dataNorm.impuesto     = parseFloat(dataNorm.impuesto    || dataNorm.itbis || dataNorm.prima_base * 0.16);
         dataNorm.total        = parseFloat(dataNorm.total || 0);
         dataNorm.monto_afianzado = parseFloat(dataNorm.monto_afianzado || dataNorm.valor_afianzado || 0);
-        // Coberturas: asegurar que sea string vacío si es array, y parsear si es JSON string
-        if (typeof dataNorm.cobertura === 'string' && dataNorm.cobertura.trim().startsWith('[')) {
-          try {
-            dataNorm.coberturas = JSON.parse(dataNorm.cobertura);
-          } catch(e) {
-            dataNorm.coberturas = [];
-          }
-        } else if (Array.isArray(dataNorm.cobertura)) {
-          dataNorm.coberturas = dataNorm.cobertura;
-          dataNorm.cobertura = '';
-        }
-        if (Array.isArray(dataNorm.coberturas)) {
-          dataNorm.coberturas = dataNorm.coberturas.map(c => typeof c === 'object' ? (c.nombre || c.tipo || c.label || '') : c);
-        }
         if (typeof dibujarCotizacionPDF === 'function') {
           await dibujarCotizacionPDF(doc, dataNorm, window.LOGO_MQF_B64 || window.MQF_LOGO_B64 || null, null);
           MQF.toast('✅ PDF generado correctamente', 'success');
         } else {
           MQF.toast('Motor PDF no cargado (data-export.js)', 'error');
-          console.error('dibujarCotizacionPDF no disponible — verifica data-export.js');
         }
       } catch (e) {
         MQF.toast('Error al generar PDF: ' + e.message, 'error');
@@ -901,13 +925,6 @@
 
           // Unificar: cotizaciones primero, luego fianzas del wizard
           // Evitar duplicados: si una cotizacion ya referencia una fianza por numero, omitir
-          const numerosEnCot = new Set(cotData.filter(c => (c.tipo||'').toUpperCase()==='FIANZA').map(c => c.numero).filter(Boolean));
-          const fzNuevos = fzData.filter(f => !numerosEnCot.has(f.numero));
-
-          window.cotizacionesData = [...cotData, ...fzNuevos];
-
-          const countLabel = document.getElementById('hist-count-label');
-          if (countLabel) countLabel.textContent = window.cotizacionesData.length + ' registros encontrados';
 
           if (window.cotizacionesData.length > 0) {
             renderizarTablaHistorial(window.cotizacionesData);
@@ -995,16 +1012,21 @@
 
         // Botones: Editar solo para cotizaciones del cotizador, PDF disponible para todos
         let btns = '';
+        const isFianzaRow = (c.tipo === 'FIANZA' || c.tipo === 'fianza' || c.subtipo || String(c.numero || '').startsWith('FZ-') || origen === 'fianzas');
+
         if (origen === 'cotizaciones') {
           btns += '<button class="btn-edit-row" onclick="editarCotizacion(\'' + qId + '\')" title="Editar"><i class="fa-solid fa-pen"></i> Editar</button>';
-          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="PDF"><i class="fa-solid fa-print"></i> PDF</button>';
+          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\')" title="Ver Cotización"><i class="fa-solid fa-file-pdf"></i> Cotización</button>';
+          if (isFianzaRow) {
+            btns += '<button class="btn-print-row" style="background-color:#4338ca;color:#fff;" onclick="imprimirBorradorFianza(\'' + qId + '\')" title="Ver Borrador Póliza"><i class="fa-solid fa-file-shield"></i> Borrador</button>';
+          }
           if (c.tipo === 'SEGURO DE LEY') {
             btns += '<button class="btn-process-row" onclick="procesarCotizacionARegistro(\'' + c.numero + '\')" title="Procesar"><i class="fa-solid fa-gear"></i> Procesar</button>';
           }
           btns += '<button class="btn-delete-row" onclick="eliminarCotizacionHistorial(\'' + qId + '\')" title="Eliminar"><i class="fa-solid fa-trash"></i> Eliminar</button>';
         } else {
-          // Fianzas del wizard: link al módulo de fianzas para editar
-          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\', \'fianzas\')" title="PDF"><i class="fa-solid fa-file-pdf"></i> PDF</button>';
+          btns += '<button class="btn-print-row" onclick="imprimirCotizacion(\'' + qId + '\', \'fianzas\')" title="Ver Cotización"><i class="fa-solid fa-file-pdf"></i> Cotización</button>';
+          btns += '<button class="btn-print-row" style="background-color:#4338ca;color:#fff;" onclick="imprimirBorradorFianza(\'' + qId + '\')" title="Ver Borrador Póliza"><i class="fa-solid fa-file-shield"></i> Borrador</button>';
         }
 
         html += '<tr>' +
@@ -1146,25 +1168,44 @@
       }
     }
 
-    // Imprimir una cotización individual del historial
-    // origen: 'cotizaciones' (por defecto) | 'fianzas' (wizard)
+    // Imprimir una cotización individual (Resumen Simple - Imagen 1)
     async function imprimirCotizacion(id, origen) {
-      if (!window.cotizacionesData) return;
-      const c = window.cotizacionesData.find(item => String(item.id) === String(id));
+      const datos = window.cotizacionesData || [];
+      let c = datos.find(item => String(item.id) === String(id) || String(item.numero) === String(id) || String(item.numero_fianza) === String(id));
+      if (!c) {
+        try {
+          const res = await api.solicitud('/cotizaciones.php?action=obtener&id=' + id);
+          if (res.exito && res.datos) c = res.datos;
+        } catch(e){}
+      }
       if (!c) {
         MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return;
       }
-      // Si es del wizard de fianzas, usar generarPDFFianzaProfesional
-      if ((origen || c._origen) === 'fianzas') {
-        generarPDFFianzaProfesional(c);
-        return;
-      }
-      if (typeof dibujarCotizacionPDF === 'function') {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        await dibujarCotizacionPDF(doc, c, window.LOGO_MQF_B64 || null, null);
+      if (typeof window.exportarCotizacionFianzaSimplePDF === 'function') {
+        await window.exportarCotizacionFianzaSimplePDF(c);
       } else {
-        MQF.toast('Motor PDF no disponible. Recarga la página.', 'error');
+        await generarPDFFianzaProfesional(c);
+      }
+    }
+
+    // Imprimir borrador de póliza de fianza (Con marca de agua - Imagen 2)
+    async function imprimirBorradorFianza(id) {
+      const datos = window.cotizacionesData || [];
+      let c = datos.find(item => String(item.id) === String(id) || String(item.numero) === String(id) || String(item.numero_fianza) === String(id));
+      if (!c) {
+        try {
+          const res = await api.solicitud('/cotizaciones.php?action=obtener&id=' + id);
+          if (res.exito && res.datos) c = res.datos;
+        } catch(e){}
+      }
+      if (!c) {
+        MQF.toast('No se encontró la cotización ID: ' + id, 'error'); return;
+      }
+      if (typeof window.exportarBorradorFianzaPDF === 'function') {
+        await window.exportarBorradorFianzaPDF(c);
+      } else if (typeof window.generarPDFFianza === 'function') {
+        const copy = Object.assign({}, c, { es_borrador: true });
+        await window.generarPDFFianza(copy);
       }
     }
 
@@ -1204,6 +1245,10 @@
         
         if (document.getElementById('f_tasa_manual')) {
           document.getElementById('f_tasa_manual').value = c.tasa_manual || '';
+        }
+        if (document.getElementById('f_primer_requerimiento')) {
+          const prVal = (c.primer_requerimiento == 1 || c.primer_requerimiento === '1' || String(c.primer_requerimiento).toLowerCase() === 'si') ? '1' : '0';
+          document.getElementById('f_primer_requerimiento').value = prVal;
         }
 
         // Buscar Aseguradora ID por nombre en la lista global cargada

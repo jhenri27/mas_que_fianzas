@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Más Que Fianzas — PWA Móvil</title>
+  
+  <!-- Manifest & Theme Color -->
+  <link rel="manifest" href="/PLATAFORMA_INTEGRADA/frontend/pwa/manifest.json">
+  <meta name="theme-color" content="#0f2b48">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MásQueFianzas">
+  <link rel="apple-touch-icon" href="/PLATAFORMA_INTEGRADA/frontend/pwa/img/logo_oficial.png">
+  <link rel="icon" type="image/png" href="/PLATAFORMA_INTEGRADA/frontend/pwa/img/logo_oficial.png">
+
+  <!-- FontAwesome 6 CDN Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
+
+  <!-- PWA Stylesheet -->
+  <link rel="stylesheet" href="/PLATAFORMA_INTEGRADA/frontend/pwa/css/pwa-style.css?v=2.0.0">
+</head>
+<body>
+
+  <div id="app-root">
+    <!-- Renderizado por app.js -->
+  </div>
+
+  <!-- App Core Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/assets/lib/qrcode.min.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/assets/logo_b64.js?v=20260810_v8"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/assets/logos_aseguradoras.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/assets/data-export.js?v=20260810_v8"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/api.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/auth.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/router.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/multiseguros-rates.js"></script>
+  
+  <!-- Role Views Scripts -->
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/views/admin.js"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/views/pdv.js?v=2.1.0"></script>
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/views/cobrador.js"></script>
+
+  <!-- Main App Initializer -->
+  <script src="/PLATAFORMA_INTEGRADA/frontend/pwa/js/app.js"></script>
+
+</body>
+</html>
