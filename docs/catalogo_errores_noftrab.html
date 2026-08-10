@@ -1270,6 +1270,28 @@
                 </div>
             </div>
         </article>
+
+        <!-- FAIL-022 -->
+        <article class="error-card backend" id="fail-022">
+            <div class="error-card-header">
+                <span class="error-code-badge badge-backend">FAIL-022</span>
+                <h3 class="error-card-title">Fallo de Estilos CSS/JS y Error de Autenticación por Desconfiguración Nginx y config.local.php Ausente en Ambiente Desarrollo (DEV)</h3>
+            </div>
+            <div class="error-fields">
+                <div class="error-field">
+                    <span class="field-label sintoma"><i class="fa-solid fa-circle-exclamation"></i> Síntoma</span>
+                    <span class="field-value">Al acceder al ambiente DEV (<code class="inline">/PLATAFORMA_INTEGRADA/dev/frontend/</code>), la interfaz se renderizaba como HTML plano sin estilos CSS ni scripts, y el inicio de sesión fallaba en todos los usuarios.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label causa"><i class="fa-solid fa-bug"></i> Causa Raíz</span>
+                    <span class="field-value">1) Ausencia del archivo <code class="inline">/var/www/dev_plataforma/backend/config.local.php</code>, provocando que la conexión a MySQL utilizara <code class="inline">root@localhost</code> sin contraseña. 2) Falta de reglas de alias explícitas en Nginx para <code class="inline">/dev/</code> y <code class="inline">/PLATAFORMA_INTEGRADA/dev/</code> con manejo <code class="inline">$uri $uri/</code>, respondiendo con <code class="inline">index.html</code> (text/html) ante peticiones CSS/JS. 3) Falta de enrutamiento REST para la API de autenticación <code class="inline">/backend/api/auth/login</code> en DEV.</span>
+                </div>
+                <div class="error-field">
+                    <span class="field-label solucion"><i class="fa-solid fa-wrench"></i> Solución</span>
+                    <span class="field-value">1) Creación de <code class="inline">/var/www/dev_plataforma/backend/config.local.php</code> con credenciales válidas (<code class="inline">masque_user</code>). 2) Configuración de bloques <code class="inline">location</code> en Nginx para <code class="inline">/dev/</code>, <code class="inline">/dev_plataforma/</code> y <code class="inline">/PLATAFORMA_INTEGRADA/dev/</code> con ejecución PHP y entrega estricta de CSS/JS. 3) Adición de enrutador REST para <code class="inline">/backend/api/auth/(.*)$</code> en DEV. 4) Actualización de hashes de contraseñas para los usuarios <code class="inline">admin</code>, <code class="inline">jtaveras</code> y <code class="inline">pdv.prueba</code>.</span>
+                </div>
+            </div>
+        </article>
     </section>
 
     <!-- ═══ FOOTER ═════════════════════════════════════════════════ -->
@@ -1279,7 +1301,7 @@
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <span class="badge badge-primary"><i class="fa-solid fa-database"></i> KEDB Activo</span>
-            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 21 Errores Codificados</span>
+            <span class="badge badge-emerald"><i class="fa-solid fa-circle-check"></i> 22 Errores Codificados</span>
             <span class="badge badge-amber"><i class="fa-solid fa-clock"></i> Última actualización: 2026</span>
         </div>
     </footer>

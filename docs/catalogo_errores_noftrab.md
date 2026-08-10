@@ -117,5 +117,11 @@ Este catálogo codificado (**Known Error Database - KEDB**) establece la taxonom
 - **Causa Raíz**: En `dibujarCotizacionFianzaSimplePDF` (`frontend/assets/data-export.js`), el salto previo a la impresión del texto de datos era insuficiente (`y += 8`), dejando solo 2mm entre el fondo del rectángulo gris y el baseline del texto.
 - **Solución**: Se ajustó la altura del rectángulo gris a 5.5mm, se incrementó el salto vertical previo a `y += 10.5` (creando un margen limpio de 3.0mm entre la barra gris y la tipografía) y se ajustó el tamaño de fuente a 8.5pt, alineándose exactamente con el diseño de la Imagen 2.
 
+### `ERR-DOC-307`: Fallo de Estilos CSS/JS y Error de Autenticación por Desconfiguración Nginx y config.local.php Ausente en Ambiente Desarrollo (DEV)
+- **Síntoma**: Al acceder al ambiente DEV (`/PLATAFORMA_INTEGRADA/dev/frontend/`), la interfaz se renderizaba como HTML plano sin estilos CSS ni scripts, y el inicio de sesión fallaba en todos los usuarios.
+- **Causa Raíz**: 1) Ausencia del archivo `/var/www/dev_plataforma/backend/config.local.php`, provocando que la conexión a MySQL utilizara `root@localhost` sin contraseña. 2) Falta de reglas de alias explícitas en Nginx para `/dev/` y `/PLATAFORMA_INTEGRADA/dev/` con manejo `$uri $uri/`, respondiendo con `index.html` (text/html) ante peticiones CSS/JS. 3) Falta de enrutamiento REST para la API de autenticación `/backend/api/auth/login` en DEV.
+- **Solución**: 1) Creación de `/var/www/dev_plataforma/backend/config.local.php` con credenciales válidas (`masque_user`). 2) Configuración de bloques `location` en Nginx para `/dev/`, `/dev_plataforma/` y `/PLATAFORMA_INTEGRADA/dev/` con ejecución PHP y entrega estricta de CSS/JS. 3) Adición de enrutador REST para `/backend/api/auth/(.*)$` en DEV. 4) Actualización de hashes de contraseñas para los usuarios `admin`, `jtaveras` y `pdv.prueba`.
+
 ---
 *Fin del Catálogo KEDB — MÁS QUE FIANZAS, S.R.L. | Versión NOFTRAB v4.0*
+

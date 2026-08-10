@@ -157,6 +157,11 @@ To prevent falsification, duplication, and dirty data entry, all platform inputs
 - **Cause:** `dibujarCotizacionFianzaSimplePDF` in `frontend/assets/data-export.js` used an insufficient vertical Y increment (`y += 8`) after drawing the 6.0mm grey rectangle, placing the data text baseline only 2mm below the rectangle bottom edge.
 - **Solution:** Adjusted grey rectangle height to 5.5mm, increased pre-text vertical offset to `y += 10.5` (providing 3.0mm clear margin between grey bar and top of text), and adjusted font size to 8.5pt, aligning perfectly with Image 2 design.
 
+### [FAIL-022]: Fallo de Estilos CSS/JS y Error de Autenticación por Desconfiguración Nginx y config.local.php Ausente en Ambiente Desarrollo (DEV)
+- **Symptom:** Accessing DEV environment rendered unstyled HTML without CSS/JS styles (mismatched MIME type `text/html`), and logins failed across all credentials.
+- **Cause:** 1) Missing `/var/www/dev_plataforma/backend/config.local.php` file, causing MySQL connection fallback to `root@localhost` with empty password. 2) Nginx lacked explicit `/dev/` and `/PLATAFORMA_INTEGRADA/dev/` alias location blocks with `$uri $uri/` fallbacks, serving `index.html` for CSS/JS requests. 3) Nginx lacked REST API endpoint route for `/backend/api/auth/login` in DEV.
+- **Solution:** 1) Created `/var/www/dev_plataforma/backend/config.local.php` with `masque_user` credentials. 2) Configured Nginx location blocks for `/dev/`, `/dev_plataforma/`, and `/PLATAFORMA_INTEGRADA/dev/` with FastCGI PHP execution and exact MIME type asset delivery. 3) Added DEV REST API location block for `/backend/api/auth/(.*)$` passing `PATH_INFO`. 4) Updated password hashes for `admin`, `jtaveras`, and `pdv.prueba`.
+
 ---
 
 ## 🛡️ Norma VAF y Regla de Actualización Obligatoria KEDB (NOFTRAB v4.0 Cláusula 4 y 5)
